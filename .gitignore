@@ -1,0 +1,6 @@
+config.py
+/venv*
+/chat*
+/history*
+*__pycache__*
+*.DS_Store*

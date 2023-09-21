@@ -2,7 +2,9 @@
 
 "myHand" is AI assistant, powered by ChatGPT, that can both chat and run tasks on local devices.
 
-"myHand" is a virtual assistant that is more powerful, customisable and compatible than popular virtual assistant, like Siri (macOS, iOS), Cortana (Windows) and Google assistant (Android).
+<img width="1204" alt="myHand_screenshot" src="https://github.com/eliranwong/myHand.ai/assets/25262722/ccfcfa11-b13d-4870-9c4c-8167526342b2">
+
+Though myHand is built on ChatGPT, myHand goes beyond being a mere ChatGPT assistant by embodying the essence of "Actions speak louder than words." Unlike standard ChatGPT, myHand not only engages in conversational interactions but also actively performs tasks on behalf of users, demonstrating its commitment to practical action and tangible results.
 
 Repository: https://github.com/eliranwong/myHand.ai
 
@@ -38,9 +40,17 @@ Read more at https://github.com/eliranwong/myHand.ai/wiki/Features
 
 3. ChatGPT API key (read https://github.com/eliranwong/myHand.ai/wiki/ChatGPT-API-Key)
 
+# Comparison with ChatGPT
+
+myHand offers advanced features beyond standard ChatGPT, including task execution on local devices and real-time access to the internet.
+
+Read https://github.com/eliranwong/myHand.ai/wiki/Compare-with-ChatGPT
+
 # Comparison with Siri and Others
 
-https://github.com/eliranwong/myHand.ai/wiki/Features
+Unlike popular options such as Siri (macOS, iOS), Cortana (Windows), and Google Assistant (Android), myHand offers enhanced power, customization, flexibility, and compatibility.
+
+Read https://github.com/eliranwong/myHand.ai/wiki/Features
 
 # Documentation
 
@@ -48,4 +58,68 @@ Read https://github.com/eliranwong/myHand.ai/wiki
 
 # Setup or Installation
 
-... updating
+> git clone https://github.com/eliranwong/myHand.ai.git
+
+> cd myHand.ai
+
+## macOS or Linux Users
+
+> chmod +x setup.sh
+
+> ./setup.sh
+
+## Windows Users
+
+Double-click the file "setup.bat"
+
+## Others
+
+> python3 -m venv venv
+
+> source venv/bin/activate
+
+> pip3 install -r requirements.txt
+
+> python3 myHand.py
+
+# Quick Start
+
+Double-click desktop shortcut, which is created on first run.
+
+Alternately, run in terminal:
+
+> cd myHand.ai
+
+> source venv/bin/activate
+
+> python3 myHand.py
+
+# Quick Operations
+
+* Enter "..." for options
+
+* Enter "" (blank entry) to change context quickly
+
+* Enter ".quit" to quit
+
+# Update
+
+> git pull
+
+# TODO
+
+* add keyboard shortcuts
+
+* format text output
+
+* improve wiki pages
+
+* documentation on how to create plugins
+
+* add help link
+
+* add dialog to enable / disable enhanced screening
+
+* add interface to customise temperature
+
+* add dialog to enable / disable individual plugins
