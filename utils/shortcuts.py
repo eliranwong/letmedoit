@@ -1,4 +1,5 @@
-import platform, os, config, sys
+import platform, os, config, sys, ctypes
+from shutil import copyfile
 cwd = os.path.dirname(config.myHandFile)
 if os.getcwd() != cwd:
     os.chdir(cwd)
@@ -46,7 +47,7 @@ def createShortcuts():
 [Desktop Entry]
 Version=1.0
 Type=Application
-Terminal=false
+Terminal=true
 Path={0}
 Exec={1} {2}
 Icon={3}
