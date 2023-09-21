@@ -168,7 +168,7 @@ class MyHandAI:
     def enhancedScreening(self, messages, userInput):
         messagesCopy = messages[:]
         context = """In response to the following input, answer me either "python" or "web" or "chat", without extra comments. 
-Answer me "python" when you can write python code to get information or execute a task. 
+Answer me "python" when python code can get information or execute a task according to the input. 
 Answer me "web" when you lack information. 
 Otherwise, answer "chat". 
 Below is the input. """
