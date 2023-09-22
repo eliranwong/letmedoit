@@ -11,12 +11,12 @@ def setConfig():
         ('chatGPTApiMaxTokens', 2048),
         #('chatGPTApiNoOfChoices', 1),
         ('chatGPTApiTemperature', 0.8),
-        ('chatGPTApiFunctionCall', "none"),
+        ('chatGPTApiFunctionCall', "auto"),
         ('chatAfterFunctionCalled', True),
         ('runPythonScriptGlobally', False),
         ('openaiApiKey', ''),
         ('openaiApiOrganization', ''),
-        ('loadingInternetSearches', "none"),
+        ('loadingInternetSearches', "auto"),
         ('maximumInternetSearchResults', 5),
         ('chatGPTApiContextInAllInputs', False),
         ('thisTranslation', thisTranslation),
@@ -30,6 +30,7 @@ def setConfig():
         ('terminal_cancel_action', '.quit'),
         ('developer', False),
         ('enhancedScreening', True),
+        ('autoUpdate', True),
     )
     for key, value in defaultSettings:
         if not hasattr(config, key):

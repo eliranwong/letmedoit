@@ -1,5 +1,5 @@
 # set up config
-import os
+import os, traceback
 if not os.path.isfile("config.py"):
     open("config.py", "a", encoding="utf-8").close()
 import config
@@ -8,7 +8,7 @@ from utils.configDefault import *
 config.myHandFile = os.path.realpath(__file__)
 from utils.shortcuts import *
 # import other libraries
-import platform, sys
+import platform, sys, subprocess
 from utils.shortcuts import *
 from utils.chats import MyHandAI
 
@@ -48,6 +48,21 @@ if __name__ == '__main__':
                     except:
                         pass
 
+    def getLatestUpdate():
+        def isPackageInstalled(package):
+            whichCommand = "where.exe" if platform.system() == "Windows" else "which"
+            try:
+                isInstalled, *_ = subprocess.Popen("{0} {1}".format(whichCommand, package), shell=True, stdout=subprocess.PIPE).communicate()
+                return True if isInstalled else False
+            except:
+                return False
+        if isPackageInstalled("git") and os.path.isdir(".github"):
+            try:
+                os.system("git pull")
+            except:
+                print("Failed to automatically update!")
+
+    getLatestUpdate()
     setOsOpenCmd()
     myHand = MyHandAI()
     myHand.startChats()

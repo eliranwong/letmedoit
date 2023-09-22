@@ -1,4 +1,4 @@
-import config, openai, glob, threading, os, time, traceback, re
+import config, openai, glob, threading, os, time, traceback, re, subprocess
 from datetime import datetime
 from utils.prompts import Prompts
 from prompt_toolkit import PromptSession
