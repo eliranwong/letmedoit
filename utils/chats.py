@@ -154,7 +154,14 @@ class MyHandAI:
 
     def enhancedScreening(self, messages, userInput):
         messagesCopy = messages[:]
-        context = """In response to the following input, answer me either "python" or "web" or "chat", without extra comments. 
+
+        if config.loadingInternetSearches == "none":
+            context = """In response to the following input, answer me either "python" or "chat", without extra comments. 
+Answer me "python" when python code can get information or execute a task according to the input. 
+Otherwise, answer "chat". 
+Below is the input. """
+        else:
+            context = """In response to the following input, answer me either "python" or "web" or "chat", without extra comments. 
 Answer me "python" when python code can get information or execute a task according to the input. 
 Answer me "web" when you lack information. 
 Otherwise, answer "chat". 
@@ -653,5 +660,5 @@ Below is the input. """
             self.print("Error: Issue on OpenAI servers. ")
             self.print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
         except:
-            self.print("Errors!")
+            self.print("Error!")
             self.showErrors()
