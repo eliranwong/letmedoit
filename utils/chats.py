@@ -16,6 +16,7 @@ class MyHandAI:
 
     def setup(self):
         self.divider = "--------------------"
+        self.defaultEntry = ""
 
         # The following config values can be modified with plugins, to extend functionalities
         config.predefinedContexts = {
@@ -73,20 +74,6 @@ class MyHandAI:
                 self.execPythonFile(script)
         if internetSeraches in config.chatGPTPluginExcludeList:
             del config.chatGPTApiFunctionSignatures[0]
-
-    def is_api_key_valid(self):
-        openai.api_key = os.environ["OPENAI_API_KEY"] = config.openaiApiKey
-        try:
-            openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content" : "hello"}],
-                n=1,
-                temperature=0.0,
-                max_tokens=10,
-            )
-        except:
-            self.print("Offline or invalid API key!")
-            self.changeAPIkey()
 
 
     def changeAPIkey(self):
@@ -484,59 +471,61 @@ Below is the input. """
     def startChats(self):
         messages = self.resetMessages()
 
-        try:
+        started = False
+        def startChat():
+            self.print(self.divider)
+            try:
+                from art import text2art
+                self.print(text2art("myHand"))
+            except:
+                self.print(f"myHand AI")
+            self.showCurrentContext()
+            self.print("(blank entry to change context)")
+            self.print("(enter '...' for options)")
             started = False
-            def startChat():
-                self.print(self.divider)
+        startChat()
+        self.multilineInput = False
+        completer = WordCompleter(config.inputSuggestions, ignore_case=True) if config.inputSuggestions else None
+        features = (
+            ".new",
+            ".singleLineInput",
+            ".multiLineInput",
+            ".changeapikey",
+            ".chatgptmodel",
+            ".maxtokens",
+            ".functioncall",
+            ".functionresponse",
+            ".context",
+            ".contextInFirstInputOnly",
+            ".contextInAllInputs",
+            ".latestSearches",
+            ".autolatestSearches",
+            ".noLatestSearches",
+            ".share" if config.terminalEnableTermuxAPI else ".save",
+        )
+        featuresLower = [i.lower() for i in features] + ["...", ".save", ".share"]
+        while True:
+            defaultEntry = self.defaultEntry
+            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=self.multilineInput, completer=completer, default=defaultEntry)
+            self.defaultEntry = ""
+            # display options when empty string is entered
+            if not userInput.strip():
+                userInput = ".context"
+            if userInput.lower().strip() == "...":
+                userInput = self.runOptions(features, userInput)
+            if userInput.strip().lower() == config.terminal_cancel_action:
+                self.saveChat(messages)
+                return self.cancelAction()
+            elif userInput.strip().lower() == ".context":
+                self.changeContext()
+            elif userInput.strip().lower() == ".new" and started:
+                self.saveChat(messages)
+                messages = self.resetMessages()
+                startChat()
+            elif userInput.strip().lower() in (".share", ".save") and started:
+                self.saveChat(messages, openFile=True)
+            elif userInput.strip() and not userInput.strip().lower() in featuresLower:
                 try:
-                    from art import text2art
-                    self.print(text2art("myHand"))
-                except:
-                    self.print(f"myHand AI")
-                self.showCurrentContext()
-                self.print("(blank entry to change context)")
-                self.print("(enter '...' for options)")
-                started = False
-            startChat()
-            self.multilineInput = False
-            completer = WordCompleter(config.inputSuggestions, ignore_case=True) if config.inputSuggestions else None
-            features = (
-                ".new",
-                ".singleLineInput",
-                ".multiLineInput",
-                ".changeapikey",
-                ".chatgptmodel",
-                ".maxtokens",
-                ".functioncall",
-                ".functionresponse",
-                ".context",
-                ".contextInFirstInputOnly",
-                ".contextInAllInputs",
-                ".latestSearches",
-                ".autolatestSearches",
-                ".noLatestSearches",
-                ".share" if config.terminalEnableTermuxAPI else ".save",
-            )
-            featuresLower = [i.lower() for i in features] + ["...", ".save", ".share"]
-            while True:
-                userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=self.multilineInput, completer=completer)
-                # display options when empty string is entered
-                if not userInput.strip():
-                    userInput = ".context"
-                if userInput.lower().strip() == "...":
-                    userInput = self.runOptions(features, userInput)
-                if userInput.strip().lower() == config.terminal_cancel_action:
-                    self.saveChat(messages)
-                    return self.cancelAction()
-                elif userInput.strip().lower() == ".context":
-                    self.changeContext()
-                elif userInput.strip().lower() == ".new" and started:
-                    self.saveChat(messages)
-                    messages = self.resetMessages()
-                    startChat()
-                elif userInput.strip().lower() in (".share", ".save") and started:
-                    self.saveChat(messages, openFile=True)
-                elif userInput.strip() and not userInput.strip().lower() in featuresLower:
                     # start spinning
                     stop_event = threading.Event()
                     spinner_thread = threading.Thread(target=self.spinning_animation, args=(stop_event,))
@@ -584,28 +573,85 @@ Below is the input. """
 
                     started = True
 
-        # error codes: https://platform.openai.com/docs/guides/error-codes/python-library-error-types
+                # error codes: https://platform.openai.com/docs/guides/error-codes/python-library-error-types
+                except openai.error.APIError as e:
+                    try:
+                        stop_event.set()
+                        spinner_thread.join()
+                    except:
+                        pass
+                    #Handle API error here, e.g. retry or log
+                    print(f"OpenAI API returned an API Error: {e}")
+                except openai.error.APIConnectionError as e:
+                    try:
+                        stop_event.set()
+                        spinner_thread.join()
+                    except:
+                        pass
+                    #Handle connection error here
+                    print(f"Failed to connect to OpenAI API: {e}")
+                except openai.error.RateLimitError as e:
+                    try:
+                        stop_event.set()
+                        spinner_thread.join()
+                    except:
+                        pass
+                    #Handle rate limit error (we recommend using exponential backoff)
+                    print(f"OpenAI API request exceeded rate limit: {e}")
+                except:
+                    try:
+                        stop_event.set()
+                        spinner_thread.join()
+                    except:
+                        pass
+                    trace = traceback.format_exc()
+                    if "Please reduce the length of the messages or completion" in trace:
+                        self.print("Maximum tokens reached!")
+                    elif config.developer:
+                        print(self.divider)
+                        self.print(trace)
+                        print(self.divider)
+                    else:
+                        self.print("Errors!")
+                    
+                    self.defaultEntry = userInput
+                    self.print("starting a new chat!")
+                    self.saveChat(messages)
+                    messages = self.resetMessages()
+                    startChat()
+
+    def is_api_key_valid(self):
+        openai.api_key = os.environ["OPENAI_API_KEY"] = config.openaiApiKey
+        try:
+            openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content" : "hello"}],
+                n=1,
+                temperature=0.0,
+                max_tokens=10,
+            )
         except openai.error.APIError as e:
-            try:
-                stop_event.set()
-                spinner_thread.join()
-            except:
-                pass
-            #Handle API error here, e.g. retry or log
-            print(f"OpenAI API returned an API Error: {e}")
-        except openai.error.APIConnectionError as e:
-            try:
-                stop_event.set()
-                spinner_thread.join()
-            except:
-                pass
-            #Handle connection error here
-            print(f"Failed to connect to OpenAI API: {e}")
+            self.print("Error: Issue on OpenAI side.")
+            self.print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
+        except openai.error.Timeout as e:
+            self.print("Error: Request timed out.")
+            self.print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
         except openai.error.RateLimitError as e:
-            try:
-                stop_event.set()
-                spinner_thread.join()
-            except:
-                pass
-            #Handle rate limit error (we recommend using exponential backoff)
-            print(f"OpenAI API request exceeded rate limit: {e}")
+            self.print("Error: You have hit your assigned rate limit.")
+            self.print("Solution: Pace your requests. Read more in OpenAI [Rate limit guide](https://platform.openai.com/docs/guides/rate-limits).")
+        except openai.error.APIConnectionError as e:
+            self.print("Error: Issue connecting to our services.")
+            self.print("Solution: Check your network settings, proxy configuration, SSL certificates, or firewall rules.")
+        except openai.error.InvalidRequestError as e:
+            self.print("Error: Your request was malformed or missing some required parameters, such as a token or an input.")
+            self.print("Solution: The error message should advise you on the specific error made. Check the [documentation](https://platform.openai.com/docs/api-reference/) for the specific API method you are calling and make sure you are sending valid and complete parameters. You may also need to check the encoding, format, or size of your request data.")
+        except openai.error.AuthenticationError as e:
+            self.print("Error: Your API key or token was invalid, expired, or revoked.")
+            self.print("Solution: Check your API key or token and make sure it is correct and active. You may need to generate a new one from your account dashboard.")
+            self.changeAPIkey()
+        except openai.error.ServiceUnavailableError as e:
+            self.print("Error: Issue on OpenAI servers. ")
+            self.print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
+        except:
+            self.print("Errors!")
+            self.showErrors()

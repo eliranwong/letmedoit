@@ -8,7 +8,7 @@ def setConfig():
         ('chatGPTApiModel', 'gpt-3.5-turbo'),
         ('chatGPTApiPredefinedContext', '[none]'),
         ('chatGPTApiCustomContext', ''),
-        ('chatGPTApiMaxTokens', 512),
+        ('chatGPTApiMaxTokens', 2048),
         #('chatGPTApiNoOfChoices', 1),
         ('chatGPTApiTemperature', 0.8),
         ('chatGPTApiFunctionCall', "none"),
