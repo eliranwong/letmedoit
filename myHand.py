@@ -56,7 +56,7 @@ if __name__ == '__main__':
                 return True if isInstalled else False
             except:
                 return False
-        if isPackageInstalled("git") and os.path.isdir(".github"):
+        if isPackageInstalled("git") and (os.path.isdir(".git")):
             try:
                 os.system("git pull")
             except:
