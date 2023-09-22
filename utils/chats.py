@@ -5,6 +5,7 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter
 from utils.terminal_mode_dialogs import TerminalModeDialogs
+from utils.promptValidator import FloatValidator
 
 class MyHandAI:
 
@@ -350,15 +351,14 @@ Below is the input. """
             "multi-line user input",
             "change API key",
             "change ChatGPT model",
+            "change ChatGPT temperature",
             "change maximum tokens",
             "change function call",
             "change function response",
+            "change online searches option",
             "change chat context",
             "apply context in first input ONLY",
             "apply context in ALL inputs",
-            "integrate latest online search result",
-            "integrate latest online search result when needed",
-            "exclude latest online search result",
             "share content" if config.terminalEnableTermuxAPI else "save content",
         )
         feature = self.dialogs.getValidOptions(options=features, descriptions=descriptions, title="myHand AI", default=".new")
@@ -369,6 +369,21 @@ Below is the input. """
                 if model:
                     config.chatGPTApiModel = model
                     self.print(f"ChatGPT model selected: {model}")
+            elif feature == ".latestSearches":
+                options = ("always", "auto", "none")
+                option = self.dialogs.getValidOptions(options=options, title="Latest Online Searches", default=config.loadingInternetSearches)
+                if option:
+                    config.loadingInternetSearches = option
+                    # fine tune
+                    if config.loadingInternetSearches == "auto":
+                        config.chatGPTApiFunctionCall = "auto"
+                        if "integrate google searches" in config.chatGPTPluginExcludeList:
+                            config.chatGPTPluginExcludeList.remove("integrate google searches")
+                    elif config.loadingInternetSearches == "none":
+                        if not "integrate google searches" in config.chatGPTPluginExcludeList:
+                            config.chatGPTPluginExcludeList.append("integrate google searches")
+                    # notify
+                    self.print(f"Latest Online Searches: {option}")
             elif feature == ".functioncall":
                 calls = ("auto", "none")
                 call = self.dialogs.getValidOptions(options=calls, title="ChatGPT Function Call", default=config.chatGPTApiFunctionCall)
@@ -386,6 +401,16 @@ Below is the input. """
                 if maxtokens and not maxtokens.strip().lower() == config.terminal_cancel_action and int(maxtokens) > 0:
                     config.chatGPTApiMaxTokens = int(maxtokens)
                     self.print(f"Maximum tokens entered: {maxtokens}")
+            elif feature == ".temperature":
+                temperature = self.prompts.simplePrompt(validator=FloatValidator(), default=str(config.chatGPTApiTemperature))
+                if temperature and not temperature.strip().lower() == config.terminal_cancel_action:
+                    temperature = float(temperature)
+                    if temperature < 0:
+                        temperature = 0
+                    elif temperature > 2:
+                        temperature = 2
+                    config.chatGPTApiTemperature = round(temperature, 1)
+                    self.print(f"ChatGPT Temperature entered: {temperature}")
             elif feature == ".changeapikey":
                 self.changeAPIkey()
             elif feature == ".singleLineInput":
@@ -394,20 +419,6 @@ Below is the input. """
             elif feature == ".multiLineInput":
                 self.multilineInput = True
                 self.print("Multi-line user input enabled!")
-            elif feature == ".latestSearches":
-                config.loadingInternetSearches = "always"
-                self.print("Latest online search results always enabled!")
-            elif feature == ".autolatestSearches":
-                config.loadingInternetSearches = "auto"
-                config.chatGPTApiFunctionCall = "auto"
-                if "integrate google searches" in config.chatGPTPluginExcludeList:
-                    config.chatGPTPluginExcludeList.remove("integrate google searches")
-                self.print("Latest online search results enabled, if necessary!")
-            elif feature == ".noLatestSearches":
-                config.loadingInternetSearches = "none"
-                if not "integrate google searches" in config.chatGPTPluginExcludeList:
-                    config.chatGPTPluginExcludeList.append("integrate google searches")
-                self.print("Latest online search results disabled!")
             elif feature == ".contextInFirstInputOnly":
                 config.chatGPTApiContextInAllInputs = False
                 self.print("Predefined context is now applied in the first input only!")
@@ -499,15 +510,14 @@ Below is the input. """
             ".multiLineInput",
             ".changeapikey",
             ".chatgptmodel",
+            ".temperature",
             ".maxtokens",
             ".functioncall",
             ".functionresponse",
+            ".latestSearches",
             ".context",
             ".contextInFirstInputOnly",
             ".contextInAllInputs",
-            ".latestSearches",
-            ".autolatestSearches",
-            ".noLatestSearches",
             ".share" if config.terminalEnableTermuxAPI else ".save",
         )
         featuresLower = [i.lower() for i in features] + ["...", ".save", ".share"]

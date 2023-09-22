@@ -75,5 +75,5 @@ if __name__ == '__main__':
     # documentation on how to create plugins
     # add help link
     # add dialog to enable / disable enhanced screening
-    # add interface to customise temperature
     # add dialog to enable / disable individual plugins
+    # add dialog to enable / disable developer option

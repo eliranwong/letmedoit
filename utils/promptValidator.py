@@ -19,6 +19,19 @@ class NumberValidator(Validator):
 
             raise ValidationError(message='This entry accepts numbers only!', cursor_position=i)
 
+
+class FloatValidator(Validator):
+    def validate(self, document):
+        text = document.text
+
+        if text.lower() == config.terminal_cancel_action:
+            pass
+        try:
+            float(text)
+        except:
+            raise ValidationError(message='This entry accepts floating point numbers only!', cursor_position=0)
+
+
 class NoAlphaValidator(Validator):
     def validate(self, document):
         text = document.text
