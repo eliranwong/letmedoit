@@ -50,18 +50,10 @@ if __name__ == '__main__':
                         pass
 
     def getLatestUpdate():
-        def isPackageInstalled(package):
-            whichCommand = "where.exe" if platform.system() == "Windows" else "which"
-            try:
-                isInstalled, *_ = subprocess.Popen("{0} {1}".format(whichCommand, package), shell=True, stdout=subprocess.PIPE).communicate()
-                return True if isInstalled else False
-            except:
-                return False
-        if isPackageInstalled("git") and (os.path.isdir(".git")):
-            try:
-                os.system("git pull")
-            except:
-                print("Failed to automatically update!")
+        try:
+            os.system("git pull")
+        except:
+            print("Failed to automatically update!")
 
     getLatestUpdate()
     setOsOpenCmd()
