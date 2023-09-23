@@ -25,6 +25,8 @@ def setConfig():
         ('terminalEnableTermuxAPIToast', False),
         ('terminal_cancel_action', '.quit'),
         ('terminalResourceLinkColor', 'ansiyellow'),
+        ('terminalCommandEntryColor1', 'ansiyellow'),
+        ('terminalPromptIndicatorColor1', 'ansimagenta'),
         ('terminalCommandEntryColor2', 'ansigreen'),
         ('terminalPromptIndicatorColor2', 'ansicyan'),
         ('terminal_cancel_action', '.quit'),

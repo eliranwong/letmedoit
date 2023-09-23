@@ -157,17 +157,10 @@ class MyHandAI:
         messagesCopy = messages[:]
 
         if config.loadingInternetSearches == "none":
-            context = """In response to the following input, answer me either "python" or "chat", without extra comments. 
-Answer me "python" when python code can get information or execute a task according to the input. 
-Otherwise, answer "chat". 
-Below is the input. """
+            context = """In response to the following input, answer me either "python" or "chat" without extra comments. Answer "python" if you can execute python code to get information or execute a task in relation to the input. Otherwise, answer "chat". Here is the input:"""
         else:
-            context = """In response to the following input, answer me either "python" or "web" or "chat", without extra comments. 
-Answer me "python" when python code can get information or execute a task according to the input. 
-Answer me "web" when you lack information. 
-Otherwise, answer "chat". 
-Below is the input. """
-        messagesCopy.append({"role": "user", "content": f"{context}\n{userInput}"})
+            context = """In response to the following input, answer me either "python", "web", or "chat" without extra comments. Answer "python" if you can execute python code to get information or execute a task in relation to the input. Answer "web" only if you lack information. Otherwise, answer "chat". Here is the input:"""
+        messagesCopy.append({"role": "user", "content": f"{context} {userInput}"})
         completion = openai.ChatCompletion.create(
             model=config.chatGPTApiModel,
             messages=messagesCopy,
@@ -266,11 +259,11 @@ Below is the input. """
                 if function_name:
                     response_message = self.getStreamFunctionResponseMessage(completion, function_name)
                 else:
-                    # when function name is not available
+                    # when function name is not available (very rare)
                     # try again without streaming
                     completion = openai.ChatCompletion.create(
                         model=config.chatGPTApiModel,
-                        messages=thisThisMessage,
+                        messages=thisMessage,
                         n=1,
                         temperature=0.0 if config.chatGPTApiPredefinedContext == "Execute Python Code" else config.chatGPTApiTemperature,
                         max_tokens=config.chatGPTApiMaxTokens,
@@ -439,11 +432,19 @@ Below is the input. """
             if i["role"] == "user":
                 content = i["content"]
                 plainText += f">>> {content}"
-            elif i["role"] == "assistant":
-                content = i["content"]
+            if i["role"] == "function":
                 if plainText:
                     plainText += "\n\n"
-                plainText += f"{content}\n\n"
+                name = i["name"]
+                plainText += f"```\n{name}\n```"
+                content = i["content"]
+                plainText += f"\n\n{content}\n\n"
+            elif i["role"] == "assistant":
+                content = i["content"]
+                if content is not None:
+                    if plainText:
+                        plainText += "\n\n"
+                    plainText += f"{content}\n\n"
         plainText = plainText.strip()
         if config.terminalEnableTermuxAPI:
             pydoc.pipepager(plainText, cmd="termux-share -a send")
