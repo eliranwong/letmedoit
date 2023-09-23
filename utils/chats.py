@@ -1,5 +1,5 @@
 import config, openai, glob, threading, os, time, traceback, re, subprocess
-from datetime import datetime
+import datetime
 from utils.prompts import Prompts
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -38,7 +38,7 @@ class MyHandAI:
             exit(0)
 
         # required
-        self.is_api_key_valid()
+        self.checkCompletion()
         # optional
         if config.openaiApiOrganization:
             openai.organization = config.openaiApiOrganization
@@ -87,7 +87,7 @@ class MyHandAI:
             oid = self.prompts.simplePrompt(default=config.openaiApiOrganization)
             if oid and not oid.strip().lower() == config.terminal_cancel_action:
                 config.openaiApiOrganization = oid
-            self.is_api_key_valid()
+            self.checkCompletion()
             self.print("Updated!")
                 
 
@@ -156,10 +156,11 @@ class MyHandAI:
     def enhancedScreening(self, messages, userInput):
         messagesCopy = messages[:]
 
-        if config.loadingInternetSearches == "none":
-            context = """In response to the following input, answer me either "python" or "chat" without extra comments. Answer "python" if you can execute python code to get information or execute a task in relation to the input. Otherwise, answer "chat". Here is the input:"""
-        else:
-            context = """In response to the following input, answer me either "python", "web", or "chat" without extra comments. Answer "python" if you can execute python code to get information or execute a task in relation to the input. Answer "web" only if you lack information. Otherwise, answer "chat". Here is the input:"""
+        context = """In response to the following request, answer me either "python" or "chat" without extra comments.
+Answer "python" only if you can execute python code to get the requested information or carry out the requested task, e.g. open a web browser.
+Answer "chat" if I explicitly ask you "do not execute" or if the request starts with "how".
+Otherwise, answer "chat". Here is the request:"""
+
         messagesCopy.append({"role": "user", "content": f"{context} {userInput}"})
         completion = openai.ChatCompletion.create(
             model=config.chatGPTApiModel,
@@ -173,12 +174,16 @@ class MyHandAI:
 
         if answer == "python":
             context = config.predefinedContexts["Execute Python Code"]
-            userInput = f"{context}\n{userInput}"
-            messages.append({"role": "user", "content" : userInput})
-            return self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
-        elif answer == "web":
-            messages.append({"role": "user", "content" : userInput})
-            return self.runFunction(messages, config.integrate_google_searches_signature, "integrate_google_searches")
+            userInputWithcontext = f"{context}\n{userInput}"
+            messages.append({"role": "user", "content" : userInputWithcontext})
+            messages = self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
+            if messages[-1]["content"] == "Failed to run the python code!":
+                messages = messages[:-3]
+            else:
+                return messages
+        #elif answer == "web":
+        #    messages.append({"role": "user", "content" : userInput})
+        #    return self.runFunction(messages, config.integrate_google_searches_signature, "integrate_google_searches")
         messages.append({"role": "user", "content" : userInput})
         return messages
 
@@ -423,7 +428,7 @@ class MyHandAI:
         return userInput
 
     def getCurrentDateTime(self):
-        current_datetime = datetime.now()
+        current_datetime = datetime.datetime.now()
         return current_datetime.strftime("%Y-%m-%d_%H_%M_%S")
 
     def saveChat(self, messages, openFile=False):
@@ -460,7 +465,7 @@ class MyHandAI:
                         os.system(f'''{config.open} "{chatFile}"''')
             except:
                 self.print("Failed to save chat!\n")
-                self.showErrors
+                self.showErrors()
 
     def changeContext(self):
         contexts = list(config.predefinedContexts.keys())
@@ -638,7 +643,7 @@ class MyHandAI:
                     messages = self.resetMessages()
                     startChat()
 
-    def is_api_key_valid(self):
+    def checkCompletion(self):
         openai.api_key = os.environ["OPENAI_API_KEY"] = config.openaiApiKey
         try:
             openai.ChatCompletion.create(

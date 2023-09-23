@@ -37,14 +37,19 @@ def execute_python_code(function_args):
     insert_string = "import config\nconfig.pythonFunctionResponse = "
     if "\n" in function_args:
         substrings = function_args.rsplit("\n", 1)
-        new_function_args = f"{substrings[0]}\n{insert_string}{substrings[-1]}"
+        lastLine = re.sub("print\((.*?)\)", r"\1", substrings[-1])
+        new_function_args = f"{substrings[0]}\n{insert_string}{lastLine}"
     else:
         new_function_args = f"{insert_string}{function_args}"
     try:
         exec(new_function_args, globals())
         function_response = str(config.pythonFunctionResponse)
     except:
-        function_response = function_args
+        errorMessage = "Failed to run the python code!"
+        if config.developer:
+            print(errorMessage)
+            print("--------------------")
+        return errorMessage
     info = {"information": function_response}
     function_response = json.dumps(info)
     return json.dumps(info)

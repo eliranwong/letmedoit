@@ -24,7 +24,7 @@ def integrate_google_searches(function_args):
 
 functionSignature = {
     "name": "integrate_google_searches",
-    "description": "Search internet for keywords when ChatGPT does not have information",
+    "description": "Search internet for keywords when ChatGPT lacks information or when user ask about news or latest updates",
     "parameters": {
         "type": "object",
         "properties": {
