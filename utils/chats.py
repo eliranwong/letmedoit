@@ -347,6 +347,8 @@ Otherwise, answer "chat". Here is the request:"""
             "start a new chat",
             "single-line user input",
             "multi-line user input",
+            "change chat context",
+            "change chat context intensity",
             "change API key",
             "change ChatGPT model",
             "change ChatGPT temperature",
@@ -354,12 +356,11 @@ Otherwise, answer "chat". Here is the request:"""
             "change function call",
             "change function response",
             "change online searches option",
-            "change chat context",
-            "apply context in first input ONLY",
-            "apply context in ALL inputs",
+            "change enhanced screening",
+            "change developer mode",
             "share content" if config.terminalEnableTermuxAPI else "save content",
         )
-        feature = self.dialogs.getValidOptions(options=features, descriptions=descriptions, title="myHand AI", default=".new")
+        feature = self.dialogs.getValidOptions(options=features, descriptions=descriptions, title="myHand AI", default=config.defaultBlankEntryAction)
         if feature:
             if feature == ".chatgptmodel":
                 models = ("gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k")
@@ -382,6 +383,24 @@ Otherwise, answer "chat". Here is the request:"""
                             config.chatGPTPluginExcludeList.append("integrate google searches")
                     # notify
                     self.print(f"Latest Online Searches: {option}")
+            elif feature == ".contextintensity":
+                options = ("the first input only", "all inputs")
+                option = self.dialogs.getValidOptions(options=options, title="Apply Predefined Context in ...", default=config.chatGPTApiContextInAllInputs)
+                if option:
+                    config.chatGPTApiContextInAllInputs = True if option == "all inputs" else False
+                    self.print(f"Predefined context intensity: {option}!")
+            elif feature == ".developer":
+                options = ("enable", "disable")
+                option = self.dialogs.getValidOptions(options=options, title="Developer Mode", default="enable" if config.developer else "disable")
+                if option:
+                    config.developer = (option == "enable")
+                    self.print(f"Developer Mode: {option}d!")
+            elif feature == ".screening":
+                options = ("enable", "disable")
+                option = self.dialogs.getValidOptions(options=options, title="Enhanced Screening", default="enable" if config.enhancedScreening else "disable")
+                if option:
+                    config.enhancedScreening = (option == "enable")
+                    self.print(f"Enhanced Screening: {option}d!")
             elif feature == ".functioncall":
                 calls = ("auto", "none")
                 call = self.dialogs.getValidOptions(options=calls, title="ChatGPT Function Call", default=config.chatGPTApiFunctionCall)
@@ -417,12 +436,6 @@ Otherwise, answer "chat". Here is the request:"""
             elif feature == ".multiLineInput":
                 self.multilineInput = True
                 self.print("Multi-line user input enabled!")
-            elif feature == ".contextInFirstInputOnly":
-                config.chatGPTApiContextInAllInputs = False
-                self.print("Predefined context is now applied in the first input only!")
-            elif feature == ".contextInAllInputs":
-                config.chatGPTApiContextInAllInputs = True
-                self.print("Predefined context is now applied in all inputs!")
             else:
                 userInput = feature
         return userInput
@@ -504,8 +517,6 @@ Otherwise, answer "chat". Here is the request:"""
             except:
                 self.print(f"myHand AI")
             self.showCurrentContext()
-            self.print("(blank entry to change context)")
-            self.print("(enter '...' for options)")
             started = False
         startChat()
         self.multilineInput = False
@@ -514,6 +525,8 @@ Otherwise, answer "chat". Here is the request:"""
             ".new",
             ".singleLineInput",
             ".multiLineInput",
+            ".context",
+            ".contextintensity",
             ".changeapikey",
             ".chatgptmodel",
             ".temperature",
@@ -521,9 +534,8 @@ Otherwise, answer "chat". Here is the request:"""
             ".functioncall",
             ".functionresponse",
             ".latestSearches",
-            ".context",
-            ".contextInFirstInputOnly",
-            ".contextInAllInputs",
+            ".screening",
+            ".developer",
             ".share" if config.terminalEnableTermuxAPI else ".save",
         )
         featuresLower = [i.lower() for i in features] + ["...", ".save", ".share"]
@@ -533,7 +545,7 @@ Otherwise, answer "chat". Here is the request:"""
             self.defaultEntry = ""
             # display options when empty string is entered
             if not userInput.strip():
-                userInput = ".context"
+                userInput = config.blankEntryAction
             if userInput.lower().strip() == "...":
                 userInput = self.runOptions(features, userInput)
             if userInput.strip().lower() == config.terminal_cancel_action:

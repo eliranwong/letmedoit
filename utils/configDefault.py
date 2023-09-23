@@ -33,6 +33,10 @@ def setConfig():
         ('developer', False),
         ('enhancedScreening', True),
         ('autoUpdate', True),
+        ('terminalEditorScrollLineCount', 10),
+        ('terminalEditorTabText', "    "),
+        ('blankEntryAction', "..."),
+        ('defaultBlankEntryAction', ".context"),
     )
     for key, value in defaultSettings:
         if not hasattr(config, key):

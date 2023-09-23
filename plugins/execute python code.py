@@ -29,6 +29,7 @@ def execute_python_code(function_args):
 
     # show pyton code for developer
     if config.developer:
+        print("--------------------")
         print("running python code ...\n")
         print("```")
         print(function_args)
@@ -37,7 +38,7 @@ def execute_python_code(function_args):
     insert_string = "import config\nconfig.pythonFunctionResponse = "
     if "\n" in function_args:
         substrings = function_args.rsplit("\n", 1)
-        lastLine = re.sub("print\((.*?)\)", r"\1", substrings[-1])
+        lastLine = re.sub("print\((.*)\)", r"\1", substrings[-1])
         new_function_args = f"{substrings[0]}\n{insert_string}{lastLine}"
     else:
         new_function_args = f"{insert_string}{function_args}"
@@ -75,4 +76,4 @@ config.chatGPTApiAvailableFunctions["execute_python_code"] = execute_python_code
 current_platform = platform.system()
 if current_platform == "Darwin":
     current_platform = "macOS"
-config.predefinedContexts["Execute Python Code"] = f"""I running {current_platform} on this device. Execute python codes directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request."""
+config.predefinedContexts["Execute Python Code"] = f"""I am running {current_platform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""

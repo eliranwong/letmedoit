@@ -29,6 +29,7 @@ if __name__ == '__main__':
         with open("config.py", "w", encoding="utf-8") as fileObj:
             for name in dir(config):
                 excludeFromSavingList = (
+                    "terminalColors",
                     "myHandFile",
                     "cwd",
                     "open",
@@ -69,11 +70,8 @@ if __name__ == '__main__':
     aboutToQuit()
 
     # TODO
-    # add keyboard shortcuts
     # format text output
     # improve wiki pages
     # documentation on how to create plugins
     # add help link
-    # add dialog to enable / disable enhanced screening
     # add dialog to enable / disable individual plugins
-    # add dialog to enable / disable developer option
