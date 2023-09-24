@@ -18,7 +18,7 @@ class MyHandAI:
 
     def setup(self):
         self.divider = "--------------------"
-        self.defaultEntry = ""
+        config.defaultEntry = ""
 
         # The following config values can be modified with plugins, to extend functionalities
         config.predefinedContexts = {
@@ -86,7 +86,6 @@ class MyHandAI:
         if internetSeraches in config.chatGPTPluginExcludeList:
             del config.chatGPTApiFunctionSignatures[0]
 
-
     def changeAPIkey(self):
         if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
             self.print("Enter your OpenAI API Key [required]:")
@@ -99,7 +98,6 @@ class MyHandAI:
                 config.openaiApiOrganization = oid
             self.checkCompletion()
             self.print("Updated!")
-                
 
     def cancelAction(self):
         message = "closing ..."
@@ -355,9 +353,9 @@ Otherwise, answer "chat". Here is the request:"""
     def runOptions(self, features, userInput):
         descriptions = (
             "start a new chat [ctrl+n]",
-            "single-line user input",
-            "multi-line user input",
-            "change chat context",
+            "share content [ctrl+s]" if config.terminalEnableTermuxAPI else "save content [ctrl+s]",
+            "change multi-line input [ctrl+l]",
+            "change chat context [ctrl+o]",
             "change chat context intensity",
             "change API key",
             "change ChatGPT model",
@@ -368,7 +366,6 @@ Otherwise, answer "chat". Here is the request:"""
             "change online searches option",
             "change enhanced screening",
             "change developer mode",
-            "share content [ctrl+s]" if config.terminalEnableTermuxAPI else "save content [ctrl+s]",
         )
         feature = self.dialogs.getValidOptions(options=features, descriptions=descriptions, title="myHand AI", default=config.defaultBlankEntryAction)
         if feature:
@@ -446,15 +443,13 @@ Otherwise, answer "chat". Here is the request:"""
                     self.print(f"ChatGPT Temperature entered: {temperature}")
             elif feature == ".changeapikey":
                 self.changeAPIkey()
-            elif feature == ".singleLineInput":
-                self.multilineInput = False
-                self.print("Multi-line user input disabled!")
-            elif feature == ".multiLineInput":
-                self.multilineInput = True
-                self.print("Multi-line user input enabled!")
             else:
                 userInput = feature
         return userInput
+
+    def swapmultiline(self):
+        self.multilineInput = not self.multilineInput
+        self.print(f"Multi-line input {'enabled' if self.multilineInput else 'disabled'}!")
 
     def getCurrentDateTime(self):
         current_datetime = datetime.datetime.now()
@@ -539,8 +534,8 @@ Otherwise, answer "chat". Here is the request:"""
         completer = WordCompleter(config.inputSuggestions, ignore_case=True) if config.inputSuggestions else None
         features = (
             ".new",
-            ".singleLineInput",
-            ".multiLineInput",
+            ".share" if config.terminalEnableTermuxAPI else ".save",
+            ".swapmultiline",
             ".context",
             ".contextintensity",
             ".changeapikey",
@@ -552,13 +547,12 @@ Otherwise, answer "chat". Here is the request:"""
             ".latestSearches",
             ".screening",
             ".developer",
-            ".share" if config.terminalEnableTermuxAPI else ".save",
         )
         featuresLower = [i.lower() for i in features] + ["...", ".save", ".share"]
         while True:
-            defaultEntry = self.defaultEntry
+            defaultEntry = config.defaultEntry
+            config.defaultEntry = ""
             userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=self.multilineInput, completer=completer, default=defaultEntry)
-            self.defaultEntry = ""
             # display options when empty string is entered
             if not userInput.strip():
                 userInput = config.blankEntryAction
@@ -567,6 +561,8 @@ Otherwise, answer "chat". Here is the request:"""
             if userInput.strip().lower() == config.terminal_cancel_action:
                 self.saveChat(messages)
                 return self.cancelAction()
+            elif userInput.strip().lower() == ".swapmultiline":
+                self.swapmultiline()
             elif userInput.strip().lower() == ".context":
                 self.changeContext()
             elif userInput.strip().lower() == ".new" and started:
@@ -665,7 +661,7 @@ Otherwise, answer "chat". Here is the request:"""
                     else:
                         self.print("Errors!")
                     
-                    self.defaultEntry = userInput
+                    config.defaultEntry = userInput
                     self.print("starting a new chat!")
                     self.saveChat(messages)
                     messages = self.resetMessages()

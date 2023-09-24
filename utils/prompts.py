@@ -62,7 +62,12 @@ class Prompts:
             event.app.current_buffer.validate_and_handle()
         @this_key_bindings.add("c-l")
         def _(event):
-            event.app.current_buffer.text = ".multiLineInput"
+            config.defaultEntry = event.app.current_buffer.text
+            event.app.current_buffer.text = ".swapmultiline"
+            event.app.current_buffer.validate_and_handle()
+        @this_key_bindings.add("c-o")
+        def _(event):
+            event.app.current_buffer.text = ".context"
             event.app.current_buffer.validate_and_handle()
 
         self.prompt_shared_key_bindings = merge_key_bindings([
