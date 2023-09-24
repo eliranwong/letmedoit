@@ -8,7 +8,7 @@ from utils.configDefault import *
 config.myHandFile = os.path.realpath(__file__)
 from utils.shortcuts import *
 # import other libraries
-import platform, sys, subprocess
+import platform
 from utils.shortcuts import *
 from utils.chats import MyHandAI
 
@@ -29,6 +29,7 @@ if __name__ == '__main__':
         with open("config.py", "w", encoding="utf-8") as fileObj:
             for name in dir(config):
                 excludeFromSavingList = (
+                    "myHandAI",
                     "terminalColors",
                     "myHandFile",
                     "cwd",

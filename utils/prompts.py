@@ -52,6 +52,18 @@ class Prompts:
         def _(event):
             event.app.current_buffer.text = config.terminal_cancel_action
             event.app.current_buffer.validate_and_handle()
+        @this_key_bindings.add("c-n")
+        def _(event):
+            event.app.current_buffer.text = ".new"
+            event.app.current_buffer.validate_and_handle()
+        @this_key_bindings.add("c-s")
+        def _(event):
+            event.app.current_buffer.text = ".save"
+            event.app.current_buffer.validate_and_handle()
+        @this_key_bindings.add("c-l")
+        def _(event):
+            event.app.current_buffer.text = ".multiLineInput"
+            event.app.current_buffer.validate_and_handle()
 
         self.prompt_shared_key_bindings = merge_key_bindings([
             prompt_shared_key_bindings,

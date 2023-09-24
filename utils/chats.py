@@ -10,6 +10,7 @@ from utils.promptValidator import FloatValidator
 class MyHandAI:
 
     def __init__(self):
+        #config.myHandAI = self
         self.prompts = Prompts()
         self.dialogs = TerminalModeDialogs(self)
         self.setup()
@@ -28,6 +29,15 @@ class MyHandAI:
         config.chatGPTTransformers = []
         config.chatGPTApiFunctionSignatures = []
         config.chatGPTApiAvailableFunctions = {}
+
+        # token limit
+        self.tokenLimits = {
+            "gpt-3.5-turbo-instruct": 4097,
+            "gpt-3.5-turbo": 4097,
+            "gpt-3.5-turbo-16k": 16385,
+            "gpt-4": 8192,
+            "gpt-4-32k": 32768,
+        }
 
         if not config.openaiApiKey:
             self.changeAPIkey()
@@ -344,7 +354,7 @@ Otherwise, answer "chat". Here is the request:"""
 
     def runOptions(self, features, userInput):
         descriptions = (
-            "start a new chat",
+            "start a new chat [ctrl+n]",
             "single-line user input",
             "multi-line user input",
             "change chat context",
@@ -358,7 +368,7 @@ Otherwise, answer "chat". Here is the request:"""
             "change online searches option",
             "change enhanced screening",
             "change developer mode",
-            "share content" if config.terminalEnableTermuxAPI else "save content",
+            "share content [ctrl+s]" if config.terminalEnableTermuxAPI else "save content [ctrl+s]",
         )
         feature = self.dialogs.getValidOptions(options=features, descriptions=descriptions, title="myHand AI", default=config.defaultBlankEntryAction)
         if feature:
@@ -367,6 +377,9 @@ Otherwise, answer "chat". Here is the request:"""
                 model = self.dialogs.getValidOptions(options=models, title="ChatGPT model", default=config.chatGPTApiModel)
                 if model:
                     config.chatGPTApiModel = model
+                    tokenLimit = self.tokenLimits[model]
+                    if config.chatGPTApiMaxTokens > tokenLimit:
+                        config.chatGPTApiMaxTokens = tokenLimit
                     self.print(f"ChatGPT model selected: {model}")
             elif feature == ".latestSearches":
                 options = ("always", "auto", "none")
@@ -417,7 +430,10 @@ Otherwise, answer "chat". Here is the request:"""
                 maxtokens = self.prompts.simplePrompt(numberOnly=True, default=str(config.chatGPTApiMaxTokens))
                 if maxtokens and not maxtokens.strip().lower() == config.terminal_cancel_action and int(maxtokens) > 0:
                     config.chatGPTApiMaxTokens = int(maxtokens)
-                    self.print(f"Maximum tokens entered: {maxtokens}")
+                    tokenLimit = self.tokenLimits[config.chatGPTApiModel]
+                    if config.chatGPTApiMaxTokens > tokenLimit:
+                        config.chatGPTApiMaxTokens = tokenLimit
+                    self.print(f"Maximum tokens entered: {config.chatGPTApiMaxTokens}")
             elif feature == ".temperature":
                 temperature = self.prompts.simplePrompt(validator=FloatValidator(), default=str(config.chatGPTApiTemperature))
                 if temperature and not temperature.strip().lower() == config.terminal_cancel_action:
