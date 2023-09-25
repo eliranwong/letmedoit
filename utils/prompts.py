@@ -11,7 +11,13 @@ from utils.promptValidator import NumberValidator
 class Prompts:
 
     def __init__(self):
-        self.promptStyle = Style.from_dict({
+        self.promptStyle1 = Style.from_dict({
+            # User input (default text).
+            "": config.terminalCommandEntryColor1,
+            # Prompt.
+            "indicator": config.terminalPromptIndicatorColor1,
+        })
+        self.promptStyle2 = Style.from_dict({
             # User input (default text).
             "": config.terminalCommandEntryColor2,
             # Prompt.
@@ -80,7 +86,7 @@ class Prompts:
             this_key_bindings,
         ])
 
-    def simplePrompt(self, numberOnly=False, validator=None, multiline=False, inputIndicator="", default="", accept_default=False, completer=None, promptSession=None):
+    def simplePrompt(self, numberOnly=False, validator=None, multiline=False, inputIndicator="", default="", accept_default=False, completer=None, promptSession=None, style=None):
         inputPrompt = promptSession.prompt if promptSession is not None else prompt
         if not inputIndicator:
             inputIndicator = self.inputIndicator
@@ -92,7 +98,7 @@ class Prompts:
             bottom_toolbar=self.getToolBar(multiline),
             enable_system_prompt=True,
             swap_light_and_dark_colors=Condition(lambda: not config.terminalResourceLinkColor.startswith("ansibright")),
-            style=self.promptStyle,
+            style=self.promptStyle1 if style is None else style,
             validator=validator,
             multiline=multiline,
             default=default,

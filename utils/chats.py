@@ -1,5 +1,4 @@
-import config, openai, glob, threading, os, time, traceback, re, subprocess
-import datetime
+import config, openai, glob, threading, os, time, traceback, re, subprocess, json, datetime
 from utils.prompts import Prompts
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -14,6 +13,7 @@ class MyHandAI:
         self.prompts = Prompts()
         self.dialogs = TerminalModeDialogs(self)
         self.setup()
+        self.setupPythonExecution()
         self.runPlugins()
 
     def setup(self):
@@ -130,7 +130,8 @@ class MyHandAI:
             insert_string = "import config\nconfig.pythonFunctionResponse = "
             if "\n" in function_args:
                 substrings = function_args.rsplit("\n", 1)
-                new_function_args = f"{substrings[0]}\n{insert_string}{substrings[-1]}"
+                lastLine = re.sub("print\((.*)\)", r"\1", substrings[-1])
+                new_function_args = f"{substrings[0]}\n{insert_string}{lastLine}"
             else:
                 new_function_args = f"{insert_string}{function_args}"
             try:
@@ -161,7 +162,73 @@ class MyHandAI:
             }
         }
 
-    def enhancedScreening(self, messages, userInput):
+    def setupPythonExecution(self):
+        def execute_python_code(function_args):
+            errorMessage = "Failed to run the python code!"
+
+            # retrieve argument values from a dictionary
+            #print(function_args)
+            function_args = function_args.get("code") # required
+
+            # show pyton code for developer
+            print("--------------------")
+            print("trying to run python code ...\n")
+            if config.developer or config.pythonExecutionDisplay:
+                print("```")
+                print(function_args)
+                print("```")
+            print("--------------------")
+            
+            if config.pythonExecutionConfirmation:
+                print("Do you want to continue? [y]es / [N]o")
+                confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
+                if not confirmation.lower() in ("y", "yes"):
+                    return errorMessage
+
+            insert_string = "import config\nconfig.pythonFunctionResponse = "
+            if "\n" in function_args:
+                substrings = function_args.rsplit("\n", 1)
+                lastLine = re.sub("print\((.*)\)", r"\1", substrings[-1])
+                new_function_args = f"{substrings[0]}\n{insert_string}{lastLine}"
+            else:
+                new_function_args = f"{insert_string}{function_args}"
+            try:
+                exec(new_function_args, globals())
+                function_response = str(config.pythonFunctionResponse)
+            except:
+                print(errorMessage)
+                print("--------------------")
+                return errorMessage
+            info = {"information": function_response}
+            function_response = json.dumps(info)
+            return json.dumps(info)
+
+        functionSignature = {
+            "name": "execute_python_code",
+            "description": "Execute python code",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "description": "python code, e.g. print('Hello world')",
+                    },
+                },
+                "required": ["code"],
+            },
+        }
+
+        config.execute_python_code_signature = [functionSignature]
+        #config.chatGPTApiFunctionSignatures.append(functionSignature)
+        config.chatGPTApiAvailableFunctions["execute_python_code"] = execute_python_code
+        #current_platform = platform.system()
+        #if current_platform == "Darwin":
+        #    current_platform = "macOS"
+        #config.predefinedContexts["Execute Python Code"] = f"""I am running {current_platform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
+
+    def pythonExecution(self, messages, userInput):
+        self.print("screening ...")
+
         messagesCopy = messages[:]
 
         context = """In response to the following request, answer me either "python" or "chat" without extra comments.
@@ -180,8 +247,10 @@ Otherwise, answer "chat". Here is the request:"""
         answer = completion.choices[0].message.content
         self.screenAction = answer = re.sub("[^A-Za-z]", "", answer).lower()
 
+        self.print("screening done!")
+
         if answer == "python":
-            context = config.predefinedContexts["Execute Python Code"]
+            context = f"""I am running {config.thisPlatform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
@@ -363,8 +432,10 @@ Otherwise, answer "chat". Here is the request:"""
             "change maximum tokens",
             "change function call",
             "change function response",
-            "change online searches option",
-            "change enhanced screening",
+            "change online searches",
+            "change python execution",
+            "change python code display",
+            "change python execution confirmation",
             "change developer mode",
         )
         feature = self.dialogs.getValidOptions(options=features, descriptions=descriptions, title="myHand AI", default=config.defaultBlankEntryAction)
@@ -399,17 +470,29 @@ Otherwise, answer "chat". Here is the request:"""
                 if option:
                     config.chatGPTApiContextInAllInputs = True if option == "all inputs" else False
                     self.print(f"Predefined context intensity: {option}!")
+            elif feature == ".pythoncodedisplay":
+                options = ("enable", "disable")
+                option = self.dialogs.getValidOptions(options=options, title="Confirm Python Code Display", default="enable" if config.pythonExecutionDisplay else "disable")
+                if option:
+                    config.pythonExecutionDisplay = (option == "enable")
+                    self.print(f"Python code display: {option}d!")
+            elif feature == ".confirmpythonexecution":
+                options = ("enable", "disable")
+                option = self.dialogs.getValidOptions(options=options, title="Confirm Task Execution with Python", default="enable" if config.pythonExecutionConfirmation else "disable")
+                if option:
+                    config.pythonExecutionConfirmation = (option == "enable")
+                    self.print(f"Python execution confirmation: {option}d!")
             elif feature == ".developer":
                 options = ("enable", "disable")
                 option = self.dialogs.getValidOptions(options=options, title="Developer Mode", default="enable" if config.developer else "disable")
                 if option:
                     config.developer = (option == "enable")
                     self.print(f"Developer Mode: {option}d!")
-            elif feature == ".screening":
+            elif feature == ".pythonexecution":
                 options = ("enable", "disable")
-                option = self.dialogs.getValidOptions(options=options, title="Enhanced Screening", default="enable" if config.enhancedScreening else "disable")
+                option = self.dialogs.getValidOptions(options=options, title="Python Execution", default="enable" if config.pythonExecution else "disable")
                 if option:
-                    config.enhancedScreening = (option == "enable")
+                    config.pythonExecution = (option == "enable")
                     self.print(f"Enhanced Screening: {option}d!")
             elif feature == ".functioncall":
                 calls = ("auto", "none")
@@ -545,7 +628,9 @@ Otherwise, answer "chat". Here is the request:"""
             ".functioncall",
             ".functionresponse",
             ".latestSearches",
-            ".screening",
+            ".pythonexecution",
+            ".pythoncodedisplay",
+            ".confirmpythonexecution",
             ".developer",
         )
         featuresLower = [i.lower() for i in features] + ["...", ".save", ".share"]
@@ -573,20 +658,21 @@ Otherwise, answer "chat". Here is the request:"""
                 self.saveChat(messages, openFile=True)
             elif userInput.strip() and not userInput.strip().lower() in featuresLower:
                 try:
-                    # start spinning
-                    stop_event = threading.Event()
-                    spinner_thread = threading.Thread(target=self.spinning_animation, args=(stop_event,))
-                    spinner_thread.start()
 
                     # refine messages before running completion
                     fineTunedUserInput = self.fineTuneUserInput(userInput, started)
 
-                    # enhancedScreening
+                    # python execution
                     self.screenAction = ""
-                    if config.enhancedScreening:
-                        messages = self.enhancedScreening(messages, fineTunedUserInput)
+                    if config.pythonExecution:
+                        messages = self.pythonExecution(messages, fineTunedUserInput)
                     else:
                         messages.append({"role": "user", "content": fineTunedUserInput})
+
+                    # start spinning
+                    stop_event = threading.Event()
+                    spinner_thread = threading.Thread(target=self.spinning_animation, args=(stop_event,))
+                    spinner_thread.start()
 
                     # force loading internet searches
                     if config.loadingInternetSearches == "always" and not self.screenAction in ("python", "web"):

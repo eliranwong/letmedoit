@@ -15,7 +15,7 @@ from utils.chats import MyHandAI
 if __name__ == '__main__':
 
     def setOsOpenCmd():
-        thisPlatform = platform.system()
+        config.thisPlatform = thisPlatform = platform.system()
         if config.terminalEnableTermuxAPI:
             config.open = "termux-share"
         elif thisPlatform == "Linux":
@@ -24,11 +24,15 @@ if __name__ == '__main__':
             config.open = "open"
         elif thisPlatform == "Windows":
             config.open = "start"
+        # name macOS
+        if config.thisPlatform == "Darwin":
+            config.thisPlatform = "macOS"
 
     def aboutToQuit():
         with open("config.py", "w", encoding="utf-8") as fileObj:
             for name in dir(config):
                 excludeFromSavingList = (
+                    "thisPlatform",
                     "myHandAI",
                     "terminalColors",
                     "myHandFile",
