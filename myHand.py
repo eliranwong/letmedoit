@@ -36,7 +36,7 @@ if __name__ == '__main__':
                     "myHandAI",
                     "terminalColors",
                     "myHandFile",
-                    "cwd",
+                    "myHandAIFolder",
                     "open",
                     "chatGPTTransformers", # used with plugins; transform ChatGPT response message
                     "predefinedContexts", # used with plugins; pre-defined contexts
@@ -65,10 +65,3 @@ if __name__ == '__main__':
     myHand = MyHandAI()
     myHand.startChats()
     aboutToQuit()
-
-    # TODO
-    # format text output
-    # improve wiki pages
-    # documentation on how to create plugins
-    # add help link
-    # add dialog to enable / disable individual plugins

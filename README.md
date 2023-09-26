@@ -64,16 +64,6 @@ Read https://github.com/eliranwong/myHand.ai/wiki
 
 ## macOS or Linux Users
 
-> chmod +x setup.sh
-
-> ./setup.sh
-
-## Windows Users
-
-Double-click the file "setup.bat"
-
-## Others
-
 > python3 -m venv venv
 
 > source venv/bin/activate
@@ -81,6 +71,10 @@ Double-click the file "setup.bat"
 > pip3 install -r requirements.txt
 
 > python3 myHand.py
+
+## Windows Users
+
+Double-click the file "setup.bat"
 
 # Quick Start
 
@@ -104,22 +98,6 @@ Alternately, run in terminal:
 
 # Update
 
+myHand.ai updates to the latest code on startup, by running:
+
 > git pull
-
-# TODO
-
-* add keyboard shortcuts
-
-* format text output
-
-* improve wiki pages
-
-* documentation on how to create plugins
-
-* add help link
-
-* add dialog to enable / disable enhanced screening
-
-* add interface to customise temperature
-
-* add dialog to enable / disable individual plugins

@@ -3,7 +3,7 @@ from shutil import copyfile
 cwd = os.path.dirname(config.myHandFile)
 if os.getcwd() != cwd:
     os.chdir(cwd)
-config.cwd = cwd
+config.myHandAIFolder = cwd
 
 def createShortcuts():
     thisOS = platform.system()

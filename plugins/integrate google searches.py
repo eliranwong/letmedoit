@@ -38,5 +38,5 @@ functionSignature = {
 }
 
 config.integrate_google_searches_signature = [functionSignature]
-config.chatGPTApiFunctionSignatures.append(functionSignature)
+config.chatGPTApiFunctionSignatures.insert(0, functionSignature)
 config.chatGPTApiAvailableFunctions["integrate_google_searches"] = integrate_google_searches

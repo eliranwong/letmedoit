@@ -111,3 +111,16 @@ class TerminalModeDialogs:
         else:
             return self.parent.cancelAction()
             #return ""
+
+    def getMultipleSelection(self, title="Multiple Selection", text="Select item(s):", options=["ALL"], descriptions=[], default_values=["ALL"]):
+        if descriptions:
+            values = [(option, descriptions[index]) for index, option in enumerate(options)]
+        else:
+            values = [(option, option) for option in options]
+        return checkboxlist_dialog(
+            title=title,
+            text=text,
+            values=values,
+            default_values=default_values,
+            style=self.style,
+        ).run()

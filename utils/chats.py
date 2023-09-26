@@ -1,4 +1,4 @@
-import config, openai, glob, threading, os, time, traceback, re, subprocess, json, datetime
+import config, openai, glob, threading, os, time, traceback, re, subprocess, json, datetime, webbrowser
 from utils.prompts import Prompts
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -13,22 +13,12 @@ class MyHandAI:
         self.prompts = Prompts()
         self.dialogs = TerminalModeDialogs(self)
         self.setup()
-        self.setupPythonExecution()
         self.runPlugins()
+        self.setupPythonExecution()
 
     def setup(self):
         self.divider = "--------------------"
         config.defaultEntry = ""
-
-        # The following config values can be modified with plugins, to extend functionalities
-        config.predefinedContexts = {
-            "[none]": "",
-            "[custom]": "",
-        }
-        config.inputSuggestions = []
-        config.chatGPTTransformers = []
-        config.chatGPTApiFunctionSignatures = []
-        config.chatGPTApiAvailableFunctions = {}
 
         # token limit
         self.tokenLimits = {
@@ -74,7 +64,17 @@ class MyHandAI:
                 print("Failed to run '{0}'!".format(os.path.basename(script)))
 
     def runPlugins(self):
-        pluginFolder = os.path.join(config.cwd, "plugins")
+        # The following config values can be modified with plugins, to extend functionalities
+        config.predefinedContexts = {
+            "[none]": "",
+            "[custom]": "",
+        }
+        config.inputSuggestions = []
+        config.chatGPTTransformers = []
+        config.chatGPTApiFunctionSignatures = []
+        config.chatGPTApiAvailableFunctions = {}
+
+        pluginFolder = os.path.join(config.myHandAIFolder, "plugins")
         # always run 'integrate google searches'
         internetSeraches = "integrate google searches"
         script = os.path.join(pluginFolder, "{0}.py".format(internetSeraches))
@@ -85,6 +85,23 @@ class MyHandAI:
                 self.execPythonFile(script)
         if internetSeraches in config.chatGPTPluginExcludeList:
             del config.chatGPTApiFunctionSignatures[0]
+
+    def selectPlugins(self):
+        plugins = []
+        enabledPlugins = []
+        pluginFolder = os.path.join(config.myHandAIFolder, "plugins")
+        for plugin in self.fileNamesWithoutExtension(pluginFolder, "py"):
+            plugins.append(plugin)
+            if not plugin in config.chatGPTPluginExcludeList:
+                enabledPlugins.append(plugin)
+        enabledPlugins = self.dialogs.getMultipleSelection(title="Enable / Disable Plugins", text="Select plugin(s)", options=plugins, default_values=enabledPlugins)
+        for p in plugins:
+            if p in enabledPlugins and p in config.chatGPTPluginExcludeList:
+                config.chatGPTPluginExcludeList.remove(p)
+            elif not p in enabledPlugins and not p in config.chatGPTPluginExcludeList:
+                config.chatGPTPluginExcludeList.append(p)
+        self.runPlugins()
+        self.print("Plugin selection updated!")
 
     def changeAPIkey(self):
         if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
@@ -219,12 +236,7 @@ class MyHandAI:
         }
 
         config.execute_python_code_signature = [functionSignature]
-        #config.chatGPTApiFunctionSignatures.append(functionSignature)
         config.chatGPTApiAvailableFunctions["execute_python_code"] = execute_python_code
-        #current_platform = platform.system()
-        #if current_platform == "Darwin":
-        #    current_platform = "macOS"
-        #config.predefinedContexts["Execute Python Code"] = f"""I am running {current_platform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
 
     def pythonExecution(self, messages, userInput):
         self.print("screening ...")
@@ -233,7 +245,7 @@ class MyHandAI:
 
         context = """In response to the following request, answer me either "python" or "chat" without extra comments.
 Answer "python" only if you can execute python code to get the requested information or carry out the requested task, e.g. open a web browser.
-Answer "chat" if I explicitly ask you "do not execute" or if the request starts with "how".
+Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
 Otherwise, answer "chat". Here is the request:"""
 
         messagesCopy.append({"role": "user", "content": f"{context} {userInput}"})
@@ -430,13 +442,15 @@ Otherwise, answer "chat". Here is the request:"""
             "change ChatGPT model",
             "change ChatGPT temperature",
             "change maximum tokens",
+            "change plugins",
             "change function call",
             "change function response",
             "change online searches",
-            "change python execution",
+            "change task execution",
             "change python code display",
-            "change python execution confirmation",
+            "change execution confirmation",
             "change developer mode",
+            "open myHand.ai wiki",
         )
         feature = self.dialogs.getValidOptions(options=features, descriptions=descriptions, title="myHand AI", default=config.defaultBlankEntryAction)
         if feature:
@@ -472,16 +486,20 @@ Otherwise, answer "chat". Here is the request:"""
                     self.print(f"Predefined context intensity: {option}!")
             elif feature == ".pythoncodedisplay":
                 options = ("enable", "disable")
-                option = self.dialogs.getValidOptions(options=options, title="Confirm Python Code Display", default="enable" if config.pythonExecutionDisplay else "disable")
+                option = self.dialogs.getValidOptions(options=options, title="Python Code Display", default="enable" if config.pythonExecutionDisplay else "disable")
                 if option:
                     config.pythonExecutionDisplay = (option == "enable")
                     self.print(f"Python code display: {option}d!")
             elif feature == ".confirmpythonexecution":
                 options = ("enable", "disable")
-                option = self.dialogs.getValidOptions(options=options, title="Confirm Task Execution with Python", default="enable" if config.pythonExecutionConfirmation else "disable")
+                option = self.dialogs.getValidOptions(options=options, title="Confirm Python Code Execution", default="enable" if config.pythonExecutionConfirmation else "disable")
                 if option:
                     config.pythonExecutionConfirmation = (option == "enable")
-                    self.print(f"Python execution confirmation: {option}d!")
+                    self.print(f"Task execution confirmation: {option}d!")
+            elif feature == ".plugins":
+                self.selectPlugins()
+            elif feature == ".help":
+                webbrowser.open('https://github.com/eliranwong/myHand.ai/wiki')
             elif feature == ".developer":
                 options = ("enable", "disable")
                 option = self.dialogs.getValidOptions(options=options, title="Developer Mode", default="enable" if config.developer else "disable")
@@ -565,7 +583,7 @@ Otherwise, answer "chat". Here is the request:"""
                 #filename = re.sub('[\\\/\:\*\?\"\<\>\|]', "", messages[2 if config.chatGPTApiCustomContext.strip() else 1]["content"])[:40].strip()
                 filename = self.getCurrentDateTime()
                 if filename:
-                    chatFile = os.path.join(config.cwd, "chats", f"{filename}.txt")
+                    chatFile = os.path.join(config.myHandAIFolder, "chats", f"{filename}.txt")
                     with open(chatFile, "w", encoding="utf-8") as fileObj:
                         fileObj.write(plainText)
                     if openFile and os.path.isfile(chatFile):
@@ -599,11 +617,23 @@ Otherwise, answer "chat". Here is the request:"""
         self.print(f"context: {context}")
         self.print(self.divider)
 
+    def getDirectoryList(self):
+        directoryList = []
+        for f in os.listdir('.'):
+            if os.path.isdir(f):
+                separator = "\\" if config.thisPlatform == "Windows" else "/"
+                directoryList.append(f"{f}{separator}")
+            elif os.path.isfile(f):
+                directoryList.append(f)
+        return directoryList
+
     def startChats(self):
         messages = self.resetMessages()
 
         started = False
         def startChat():
+            # change to myHand.ai folder
+            os.chdir(config.myHandAIFolder)
             self.print(self.divider)
             try:
                 from art import text2art
@@ -614,7 +644,6 @@ Otherwise, answer "chat". Here is the request:"""
             started = False
         startChat()
         self.multilineInput = False
-        completer = WordCompleter(config.inputSuggestions, ignore_case=True) if config.inputSuggestions else None
         features = (
             ".new",
             ".share" if config.terminalEnableTermuxAPI else ".save",
@@ -625,6 +654,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".chatgptmodel",
             ".temperature",
             ".maxtokens",
+            ".plugins",
             ".functioncall",
             ".functionresponse",
             ".latestSearches",
@@ -632,11 +662,16 @@ Otherwise, answer "chat". Here is the request:"""
             ".pythoncodedisplay",
             ".confirmpythonexecution",
             ".developer",
+            ".help",
         )
         featuresLower = [i.lower() for i in features] + ["...", ".save", ".share"]
         while True:
+            # default input entry
             defaultEntry = config.defaultEntry
             config.defaultEntry = ""
+            # input suggestions
+            inputSuggestions = config.inputSuggestions[:] + self.getDirectoryList() if config.developer else config.inputSuggestions
+            completer = WordCompleter(inputSuggestions, ignore_case=True) if inputSuggestions else None
             userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=self.multilineInput, completer=completer, default=defaultEntry)
             # display options when empty string is entered
             if not userInput.strip():
