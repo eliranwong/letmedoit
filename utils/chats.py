@@ -185,11 +185,12 @@ class MyHandAI:
 
             # retrieve argument values from a dictionary
             #print(function_args)
+            title = function_args.get("title") # required
             function_args = function_args.get("code") # required
 
             # show pyton code for developer
             print("--------------------")
-            print("trying to run python code ...\n")
+            print(f"Python: {title}")
             if config.developer or config.pythonExecutionDisplay:
                 print("```")
                 print(function_args)
@@ -197,7 +198,7 @@ class MyHandAI:
             print("--------------------")
             
             if config.pythonExecutionConfirmation:
-                print("Do you want to continue? [y]es / [N]o")
+                print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
                     return errorMessage
@@ -230,8 +231,12 @@ class MyHandAI:
                         "type": "string",
                         "description": "python code, e.g. print('Hello world')",
                     },
+                    "title": {
+                        "type": "string",
+                        "description": "title for the python code",
+                    },
                 },
-                "required": ["code"],
+                "required": ["code", "title"],
             },
         }
 
