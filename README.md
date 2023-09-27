@@ -46,11 +46,29 @@ myHand offers advanced features beyond standard ChatGPT, including task executio
 
 Read https://github.com/eliranwong/myHand.ai/wiki/Compare-with-ChatGPT
 
+# Comparison with ShellGPT
+
+[ShellGPT](https://github.com/TheR1D/shell_gpt) only supports platform that run shell command-prompt.  Therefore, ShellGPT does not support Windows.
+
+In most cases, myHand.ai run Python codes for task execution. This makes myHand.ai terms of platforms, myHand.ai was developed and tested on Windows, macOS, Linux, ChromeOS and Termux (Android).
+
 # Comparison with Siri and Others
 
 Unlike popular options such as Siri (macOS, iOS), Cortana (Windows), and Google Assistant (Android), myHand offers enhanced power, customization, flexibility, and compatibility.
 
 Read https://github.com/eliranwong/myHand.ai/wiki/Features
+
+# Mobile Support
+
+myHand.ai is also tested on [Termux](https://termux.dev/en/). myHand.ai also integrates [Termux:API](https://wiki.termux.com/wiki/Termux:API) for task execution.
+
+For examples, users can run on Android:
+
+> open Google Chrome and perform a search for "ChatGPT"
+
+> share text "Hello World!" on Android
+
+Read more at: https://github.com/eliranwong/myHand.ai/wiki/Android-Support
 
 # Documentation
 

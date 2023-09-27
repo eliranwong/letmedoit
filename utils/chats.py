@@ -231,11 +231,11 @@ class MyHandAI:
             # retrieve argument values from a dictionary
             #print(function_args)
             title = function_args.get("title") # required
-            sharedText = function_args.get("message", "") # optional
+            #sharedText = function_args.get("message", "") # optional
             function_args = function_args.get("code").strip() # required
             sharedText = re.sub("^termux-share .*?'([^']+?)'$", r"\1", function_args)
             sharedText = re.sub('^termux-share .*?"([^"]+?)"$', r"\1", sharedText)
-            function_args = f'''termux-share -a send "{sharedText}"''' if sharedText else function_args
+            function_args = function_args if sharedText == function_args else f'''termux-share -a send "{sharedText}"'''
 
             # show Termux command for developer
             print("--------------------")
@@ -288,10 +288,10 @@ class MyHandAI:
                         "type": "string",
                         "description": "title for the termux command",
                     },
-                    "message": {
-                        "type": "string",
-                        "description": """the text message shared or sent with Termux on Android.""",
-                    },
+                    #"message": {
+                    #    "type": "string",
+                    #    "description": """the text message shared or sent with Termux on Android.""",
+                    #},
                 },
                 "required": ["code", "title"],
             },
@@ -408,7 +408,7 @@ class MyHandAI:
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
-            if messages[-1]["content"] == "Failed to run the python code!":
+            if messages[-1]["content"] in ("Failed to run the python code!", "Failed to run the Termux command!"):
                 messages = messages[:-3]
             else:
                 return messages
