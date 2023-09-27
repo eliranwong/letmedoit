@@ -132,6 +132,21 @@ class MyHandAI:
             self.runPlugins()
             self.print("Plugin selection updated!")
 
+    def getCliOutput(self, cli):
+        try:
+            process = subprocess.Popen(cli, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, *_ = process.communicate()
+            return stdout.decode("utf-8")
+        except:
+            return ""
+
+    def fingerprint(self):
+        try:
+            output = json.loads(self.getCliOutput("termux-fingerprint"))
+            return True if output["auth_result"] == "AUTH_RESULT_SUCCESS" else False
+        except:
+            return False
+
     def changeAPIkey(self):
         if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
             self.print("Enter your OpenAI API Key [required]:")
@@ -296,7 +311,7 @@ Otherwise, answer "chat". Here is the request:"""
         self.print("screening done!")
 
         if answer == "python":
-            context = f"""I am running {config.thisPlatform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
+            context = f"""I am running {"Termux on Android" if config.terminalEnableTermuxAPI else config.thisPlatform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
