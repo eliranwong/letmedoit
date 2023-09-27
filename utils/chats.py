@@ -231,7 +231,7 @@ class MyHandAI:
             # retrieve argument values from a dictionary
             #print(function_args)
             title = function_args.get("title") # required
-            sharedText = function_args.get("text", "") # optional
+            sharedText = function_args.get("sharedText", "") # optional
             function_args = f"termux-share -a send {sharedText}" if sharedText else function_args.get("code") # required
 
             # show Termux command for developer
@@ -285,9 +285,9 @@ class MyHandAI:
                         "type": "string",
                         "description": "title for the termux command",
                     },
-                    "text": {
+                    "sharedText": {
                         "type": "string",
-                        "description": "text that user want to share or send with Termux",
+                        "description": "text to be sent or shared",
                     },
                 },
                 "required": ["code", "title"],
