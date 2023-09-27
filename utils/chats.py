@@ -5,6 +5,7 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter
 from utils.terminal_mode_dialogs import TerminalModeDialogs
 from utils.promptValidator import FloatValidator
+from utils.get_path_prompt import GetPath
 
 class MyHandAI:
 
@@ -42,9 +43,31 @@ class MyHandAI:
         # optional
         if config.openaiApiOrganization:
             openai.organization = config.openaiApiOrganization
-        
+        # chat records
         chat_history = os.path.join(os.getcwd(), "history", "chats")
         self.terminal_chat_session = PromptSession(history=FileHistory(chat_history))
+
+    def getFolderPath(self):
+        # get path
+        getPath = GetPath(
+            cancel_entry=".cancel",
+            promptIndicatorColor=config.terminalPromptIndicatorColor2,
+            promptEntryColor=config.terminalCommandEntryColor2,
+            subHeadingColor=config.terminalHeadingTextColor,
+            itemColor=config.terminalResourceLinkColor,
+            workingDirectory=config.myHandAIFolder,
+        )
+        return getPath.getFolderPath(
+            check_isdir=True, 
+            display_dir_only=True, 
+            create_dirs_if_not_exist=True, 
+            empty_to_cancel=True, 
+            list_content_on_directory_change=True, 
+            keep_startup_directory=True, 
+            message=f"{self.divider}\nSetting a startup directory ...\nEnter a folder name or path below:", 
+            bottom_toolbar="", 
+            promptIndicator = ""
+        )
 
     def fileNamesWithoutExtension(self, dir, ext):
         files = glob.glob(os.path.join(dir, "*.{0}".format(ext)))
@@ -94,14 +117,20 @@ class MyHandAI:
             plugins.append(plugin)
             if not plugin in config.chatGPTPluginExcludeList:
                 enabledPlugins.append(plugin)
-        enabledPlugins = self.dialogs.getMultipleSelection(title="Enable / Disable Plugins", text="Select plugin(s)", options=plugins, default_values=enabledPlugins)
-        for p in plugins:
-            if p in enabledPlugins and p in config.chatGPTPluginExcludeList:
-                config.chatGPTPluginExcludeList.remove(p)
-            elif not p in enabledPlugins and not p in config.chatGPTPluginExcludeList:
-                config.chatGPTPluginExcludeList.append(p)
-        self.runPlugins()
-        self.print("Plugin selection updated!")
+        enabledPlugins = self.dialogs.getMultipleSelection(
+            title="Enable / Disable Plugins", 
+            text="Select to enable plugin(s):", 
+            options=plugins, 
+            default_values=enabledPlugins,
+        )
+        if enabledPlugins is not None:
+            for p in plugins:
+                if p in enabledPlugins and p in config.chatGPTPluginExcludeList:
+                    config.chatGPTPluginExcludeList.remove(p)
+                elif not p in enabledPlugins and not p in config.chatGPTPluginExcludeList:
+                    config.chatGPTPluginExcludeList.append(p)
+            self.runPlugins()
+            self.print("Plugin selection updated!")
 
     def changeAPIkey(self):
         if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
@@ -440,9 +469,9 @@ Otherwise, answer "chat". Here is the request:"""
         descriptions = (
             "start a new chat [ctrl+n]",
             "share content [ctrl+s]" if config.terminalEnableTermuxAPI else "save content [ctrl+s]",
-            "change multi-line input [ctrl+l]",
+            "swap multi-line input [ctrl+l]",
             "change chat context [ctrl+o]",
-            "change chat context intensity",
+            "change chat context inclusion",
             "change API key",
             "change ChatGPT model",
             "change ChatGPT temperature",
@@ -454,14 +483,26 @@ Otherwise, answer "chat". Here is the request:"""
             "change task execution",
             "change python code display",
             "change execution confirmation",
+            "change startup directory",
             "change developer mode",
             "open myHand.ai wiki",
         )
-        feature = self.dialogs.getValidOptions(options=features, descriptions=descriptions, title="myHand AI", default=config.defaultBlankEntryAction)
+        feature = self.dialogs.getValidOptions(
+            options=features, 
+            descriptions=descriptions, 
+            title="myHand AI", 
+            default=config.defaultBlankEntryAction,
+            text="Select an action or make changes:",
+        )
         if feature:
             if feature == ".chatgptmodel":
                 models = ("gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k")
-                model = self.dialogs.getValidOptions(options=models, title="ChatGPT model", default=config.chatGPTApiModel)
+                model = self.dialogs.getValidOptions(
+                    options=models, 
+                    title="ChatGPT model", 
+                    default=config.chatGPTApiModel,
+                    text="Select a ChatGPT model:",
+                )
                 if model:
                     config.chatGPTApiModel = model
                     tokenLimit = self.tokenLimits[model]
@@ -470,7 +511,18 @@ Otherwise, answer "chat". Here is the request:"""
                     self.print(f"ChatGPT model selected: {model}")
             elif feature == ".latestSearches":
                 options = ("always", "auto", "none")
-                option = self.dialogs.getValidOptions(options=options, title="Latest Online Searches", default=config.loadingInternetSearches)
+                descriptions = (
+                    "always search for latest information",
+                    "search only when ChatGPT lacks information",
+                    "do not perform online searches",
+                )
+                option = self.dialogs.getValidOptions(
+                    options=options, 
+                    descriptions=descriptions, 
+                    title="Latest Online Searches", 
+                    default=config.loadingInternetSearches, 
+                    text="myHand can perform online searches.\nHow do you want this feature?",
+                )
                 if option:
                     config.loadingInternetSearches = option
                     # fine tune
@@ -483,21 +535,40 @@ Otherwise, answer "chat". Here is the request:"""
                             config.chatGPTPluginExcludeList.append("integrate google searches")
                     # notify
                     self.print(f"Latest Online Searches: {option}")
+            elif feature == ".startupDirectory":
+                folder = self.getFolderPath()
+                if folder and os.path.isdir(folder):
+                    config.startupdirectory = folder
+                    self.print(f"Startup directory changed to:\n{folder}")
             elif feature == ".contextintensity":
                 options = ("the first input only", "all inputs")
-                option = self.dialogs.getValidOptions(options=options, title="Apply Predefined Context in ...", default=config.chatGPTApiContextInAllInputs)
+                option = self.dialogs.getValidOptions(
+                    options=options, 
+                    title="Predefined Context Inclusion", 
+                    default=config.chatGPTApiContextInAllInputs,
+                    text="Define below how you want to include predefined context\nwith your inputs.\nApply predefined context in ...",
+                )
                 if option:
                     config.chatGPTApiContextInAllInputs = True if option == "all inputs" else False
-                    self.print(f"Predefined context intensity: {option}!")
+                    self.print(f"Predefined Context Inclusion: {option}!")
             elif feature == ".pythoncodedisplay":
                 options = ("enable", "disable")
-                option = self.dialogs.getValidOptions(options=options, title="Python Code Display", default="enable" if config.pythonExecutionDisplay else "disable")
+                option = self.dialogs.getValidOptions(
+                    options=options, 
+                    title="Python Code Display", 
+                    default="enable" if config.pythonExecutionDisplay else "disable",
+                    text="Options to display Python codes before execution:"
+                )
                 if option:
                     config.pythonExecutionDisplay = (option == "enable")
                     self.print(f"Python code display: {option}d!")
             elif feature == ".confirmpythonexecution":
                 options = ("enable", "disable")
-                option = self.dialogs.getValidOptions(options=options, title="Confirm Python Code Execution", default="enable" if config.pythonExecutionConfirmation else "disable")
+                option = self.dialogs.getValidOptions(
+                    options=options, 
+                    title="Confirm Execution before running Python Codes", 
+                    default="enable" if config.pythonExecutionConfirmation else "disable",
+                )
                 if option:
                     config.pythonExecutionConfirmation = (option == "enable")
                     self.print(f"Task execution confirmation: {option}d!")
@@ -507,37 +578,61 @@ Otherwise, answer "chat". Here is the request:"""
                 webbrowser.open('https://github.com/eliranwong/myHand.ai/wiki')
             elif feature == ".developer":
                 options = ("enable", "disable")
-                option = self.dialogs.getValidOptions(options=options, title="Developer Mode", default="enable" if config.developer else "disable")
+                option = self.dialogs.getValidOptions(
+                    options=options, 
+                    title="Developer Mode", 
+                    default="enable" if config.developer else "disable",
+                    text="Read myHand.ai wiki for more information.\nSelect an option below:"
+                )
                 if option:
                     config.developer = (option == "enable")
                     self.print(f"Developer Mode: {option}d!")
             elif feature == ".pythonexecution":
                 options = ("enable", "disable")
-                option = self.dialogs.getValidOptions(options=options, title="Python Execution", default="enable" if config.pythonExecution else "disable")
+                option = self.dialogs.getValidOptions(
+                    options=options, 
+                    title="Python Execution", 
+                    default="enable" if config.pythonExecution else "disable",
+                    text="myHand can execute python codes\nto get information for a response\nor perform a task for users.\nEnable / Disable this feature below:",
+                )
                 if option:
                     config.pythonExecution = (option == "enable")
-                    self.print(f"Enhanced Screening: {option}d!")
+                    self.print(f"Python Execution: {option}d!")
             elif feature == ".functioncall":
                 calls = ("auto", "none")
-                call = self.dialogs.getValidOptions(options=calls, title="ChatGPT Function Call", default=config.chatGPTApiFunctionCall)
+                call = self.dialogs.getValidOptions(
+                    options=calls, 
+                    title="ChatGPT Function Call", 
+                    default=config.chatGPTApiFunctionCall,
+                    text="Enabling function call\nallows online searches\nor other third-party features\nto extend ChatGPT capabilities.\nEnable / Disable this feature below:",
+                )
                 if call:
                     config.chatGPTApiFunctionCall = call
                     self.print(f"ChaptGPT function call: {'enabled' if config.chatGPTApiFunctionCall == 'auto' else 'disabled'}!")
             elif feature == ".functionresponse":
                 calls = ("enable", "disable")
-                call = self.dialogs.getValidOptions(options=calls, title="Automatic Chat Generation with Function Response", default="enable" if config.chatAfterFunctionCalled else "disable")
+                call = self.dialogs.getValidOptions(
+                    options=calls, 
+                    title="Automatic Chat Generation with Function Response", 
+                    default="enable" if config.chatAfterFunctionCalled else "disable",
+                    text="Enable this feature\nto generate further responses\naccording to function call results.\nDisable this feature allows\nperforming function calls\nwihtout generating further responses."
+                )
                 if call:
                     config.chatAfterFunctionCalled = (call == "enable")
                     self.print(f"Automatic Chat Generation with Function Response: {'enabled' if config.chatAfterFunctionCalled else 'disabled'}!")
             elif feature == ".maxtokens":
+                tokenLimit = self.tokenLimits[config.chatGPTApiModel]
+                self.print(f"You are using ChatGPT model '{config.chatGPTApiModel}', which allows no more than {tokenLimit} tokens.")
+                self.print("(GPT and embeddings models process text in chunks called tokens. As a rough rule of thumb, 1 token is approximately 4 characters or 0.75 words for English text. One limitation to keep in mind is that for a GPT model the prompt and the generated output combined must be no more than the model's maximum context length.)")
                 maxtokens = self.prompts.simplePrompt(numberOnly=True, default=str(config.chatGPTApiMaxTokens))
                 if maxtokens and not maxtokens.strip().lower() == config.terminal_cancel_action and int(maxtokens) > 0:
                     config.chatGPTApiMaxTokens = int(maxtokens)
-                    tokenLimit = self.tokenLimits[config.chatGPTApiModel]
                     if config.chatGPTApiMaxTokens > tokenLimit:
                         config.chatGPTApiMaxTokens = tokenLimit
                     self.print(f"Maximum tokens entered: {config.chatGPTApiMaxTokens}")
             elif feature == ".temperature":
+                self.print("Enter a value between 0.0 and 2.0:")
+                self.print("(Lower values for temperature result in more consistent outputs, while higher values generate more diverse and creative results. Select a temperature value based on the desired trade-off between coherence and creativity for your specific application.)")
                 temperature = self.prompts.simplePrompt(validator=FloatValidator(), default=str(config.chatGPTApiTemperature))
                 if temperature and not temperature.strip().lower() == config.terminal_cancel_action:
                     temperature = float(temperature)
@@ -599,7 +694,12 @@ Otherwise, answer "chat". Here is the request:"""
 
     def changeContext(self):
         contexts = list(config.predefinedContexts.keys())
-        predefinedContext = self.dialogs.getValidOptions(options=contexts, title="Predefined Contexts", default=config.chatGPTApiPredefinedContext)
+        predefinedContext = self.dialogs.getValidOptions(
+            options=contexts, 
+            title="Predefined Contexts", 
+            default=config.chatGPTApiPredefinedContext,
+            text="Select a context:",
+        )
         if predefinedContext:
             config.chatGPTApiPredefinedContext = predefinedContext
             if config.chatGPTApiPredefinedContext == "[custom]":
@@ -636,9 +736,8 @@ Otherwise, answer "chat". Here is the request:"""
         messages = self.resetMessages()
 
         started = False
+
         def startChat():
-            # change to myHand.ai folder
-            os.chdir(config.myHandAIFolder)
             self.print(self.divider)
             try:
                 from art import text2art
@@ -646,6 +745,12 @@ Otherwise, answer "chat". Here is the request:"""
             except:
                 self.print(f"myHand AI")
             self.showCurrentContext()
+            # go to startup directory
+            startupdirectory = config.startupdirectory if config.startupdirectory and os.path.isdir(config.startupdirectory) else config.myHandAIFolder
+            os.chdir(startupdirectory)
+            self.print(f"startup directory:\n{startupdirectory}")
+            self.print(self.divider)
+
             started = False
         startChat()
         self.multilineInput = False
@@ -666,6 +771,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".pythonexecution",
             ".pythoncodedisplay",
             ".confirmpythonexecution",
+            ".startupDirectory",
             ".developer",
             ".help",
         )

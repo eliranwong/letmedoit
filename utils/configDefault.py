@@ -29,6 +29,7 @@ def setConfig():
         ('terminalPromptIndicatorColor1', 'ansimagenta'),
         ('terminalCommandEntryColor2', 'ansigreen'),
         ('terminalPromptIndicatorColor2', 'ansicyan'),
+        ('terminalHeadingTextColor', 'ansigreen'),
         ('terminal_cancel_action', '.quit'),
         ('developer', False),
         ('pythonExecution', True),
@@ -39,6 +40,7 @@ def setConfig():
         ('terminalEditorTabText', "    "),
         ('blankEntryAction', "..."),
         ('defaultBlankEntryAction', ".context"),
+        ('startupdirectory', ""),
     )
     for key, value in defaultSettings:
         if not hasattr(config, key):

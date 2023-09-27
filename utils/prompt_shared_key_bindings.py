@@ -71,8 +71,8 @@ def swapTerminalColors():
         config.terminalPromptIndicatorColor2 = config.terminalColors[config.terminalPromptIndicatorColor2]
     if config.terminalCommandEntryColor2 in config.terminalColors:
         config.terminalCommandEntryColor2 = config.terminalColors[config.terminalCommandEntryColor2]
-#    if config.terminalHeadingTextColor in config.terminalColors:
-#        config.terminalHeadingTextColor = config.terminalColors[config.terminalHeadingTextColor]
+    if config.terminalHeadingTextColor in config.terminalColors:
+        config.terminalHeadingTextColor = config.terminalColors[config.terminalHeadingTextColor]
 #    if config.terminalVerseNumberColor in config.terminalColors:
 #        config.terminalVerseNumberColor = config.terminalColors[config.terminalVerseNumberColor]
 #    if config.terminalVerseSelectionBackground in config.terminalColors:

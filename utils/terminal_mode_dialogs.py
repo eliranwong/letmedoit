@@ -70,7 +70,7 @@ class TerminalModeDialogs:
             else:
                 return ""
 
-    def getValidOptions(self, options=[], descriptions=[], bold_descriptions=False, filter="", default="", title="Available Options", text="Select an item:"):
+    def getValidOptions(self, options=[], descriptions=[], bold_descriptions=False, filter="", default="", title="Available Options", text="Select an option:"):
         if not options:
             return ""
         filter = filter.strip().lower()

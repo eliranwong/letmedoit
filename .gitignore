@@ -1,6 +1,7 @@
 config.py
 /venv*
 /chat*
+/Documents*
 /history*
 /plugins*
 *__pycache__*
