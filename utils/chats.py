@@ -235,6 +235,8 @@ class MyHandAI:
             function_args = function_args.get("code").strip() # required
             sharedText = re.sub("^termux-share .*?'([^']+?)'$", r"\1", function_args)
             sharedText = re.sub('^termux-share .*?"([^"]+?)"$', r"\1", sharedText)
+            sharedText = re.sub("""^[\d\D]*?subprocess.run\(\['termux-share'[^\[\]]*?'([^']+?)'\]\)[\d\D]*?$""", r"\1", sharedText)
+            sharedText = re.sub('''^[\d\D]*?subprocess.run\(\["termux-share"[^\[\]]*?"([^']+?)"\]\)[\d\D]*?$''', r"\1", sharedText)
             function_args = function_args if sharedText == function_args else f'''termux-share -a send "{sharedText}"'''
 
             # show Termux command for developer
