@@ -1,4 +1,4 @@
-import config, openai, glob, threading, os, time, traceback, re, subprocess, json, datetime, webbrowser
+import config, openai, glob, threading, os, time, traceback, re, subprocess, json, datetime, webbrowser, pydoc
 from utils.prompts import Prompts
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -230,8 +230,7 @@ class MyHandAI:
             # retrieve argument values from a dictionary
             #print(function_args)
             title = function_args.get("title") # required
-            termuxCommand = function_args.get("termux", "")
-            function_args = termuxCommand if termuxCommand else function_args.get("code") # required
+            function_args = function_args.get("code") # required
 
             # show pyton code for developer
             print("--------------------")
@@ -247,12 +246,6 @@ class MyHandAI:
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
                     return errorMessage
-
-            if termuxCommand:
-                os.system(termuxCommand)
-                info = {"information": "done"}
-                function_response = json.dumps(info)
-                return json.dumps(info)
 
             insert_string = "import config\nconfig.pythonFunctionResponse = "
             if "\n" in function_args:
@@ -281,10 +274,6 @@ class MyHandAI:
                     "code": {
                         "type": "string",
                         "description": "python code, e.g. print('Hello world')",
-                    },
-                    "termux": {
-                        "type": "string",
-                        "description": "equivalent Android Termux terminal commands, if any",
                     },
                     "title": {
                         "type": "string",
