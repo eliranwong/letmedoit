@@ -231,8 +231,8 @@ class MyHandAI:
             # retrieve argument values from a dictionary
             #print(function_args)
             title = function_args.get("title") # required
-            function_args = function_args.get("code") # required
-            print(function_args)
+            sharedText = function_args.get("text", "") # optional
+            function_args = f"termux-share -a send {sharedText}" if sharedText else function_args.get("code") # required
 
             # show Termux command for developer
             print("--------------------")
@@ -250,14 +250,18 @@ class MyHandAI:
                     return errorMessage
 
             try:
-                # display both output and error
-                result = subprocess.run(function_args, shell=True, capture_output=True, text=True)
-                output = result.stdout  # Captured standard output
-                error = result.stderr  # Captured standard error
-                function_response = ""
-                function_response += f"# Output:\n{output}"
-                if error.strip():
-                    function_response += f"\n# Error:\n{error}"
+                if sharedText:
+                    pydoc.pipepager(sharedText, cmd="termux-share -a send")
+                    function_response = "Done!"
+                else:
+                    # display both output and error
+                    result = subprocess.run(function_args, shell=True, capture_output=True, text=True)
+                    output = result.stdout  # Captured standard output
+                    error = result.stderr  # Captured standard error
+                    function_response = ""
+                    function_response += f"# Output:\n{output}"
+                    if error.strip():
+                        function_response += f"\n# Error:\n{error}"
                 self.print(function_response)
             except:
                 print(errorMessage)
@@ -280,6 +284,10 @@ class MyHandAI:
                     "title": {
                         "type": "string",
                         "description": "title for the termux command",
+                    },
+                    "text": {
+                        "type": "string",
+                        "description": "text that user want to share or send with Termux",
                     },
                 },
                 "required": ["code", "title"],
