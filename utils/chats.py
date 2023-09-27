@@ -276,7 +276,7 @@ class MyHandAI:
 
         functionSignature = {
             "name": "execute_termux_command",
-            "description": "Execute Termux command",
+            "description": "Execute Termux command on Android",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -290,7 +290,7 @@ class MyHandAI:
                     },
                     "message": {
                         "type": "string",
-                        "description": """the text message shared or sent with Termux.""",
+                        "description": """the text message shared or sent with Termux on Android.""",
                     },
                 },
                 "required": ["code", "title"],
