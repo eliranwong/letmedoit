@@ -232,7 +232,10 @@ class MyHandAI:
             #print(function_args)
             title = function_args.get("title") # required
             sharedText = function_args.get("message", "") # optional
-            function_args = f'''termux-share -a send "{sharedText}"''' if sharedText else function_args.get("code") # required
+            function_args = function_args.get("code").strip() # required
+            sharedText = re.sub("^termux-share .*?'([^']+?)'$", r"\1", function_args)
+            sharedText = re.sub('^termux-share .*?"([^"]+?)"$', r"\1", sharedText)
+            function_args = f'''termux-share -a send "{sharedText}"''' if sharedText else function_args
 
             # show Termux command for developer
             print("--------------------")
@@ -287,7 +290,7 @@ class MyHandAI:
                     },
                     "message": {
                         "type": "string",
-                        "description": """the text message that is to be sent or shared. For example, 'hello world' is the text message if user input is 'share "hello world"'.""",
+                        "description": """the text message shared or sent with Termux.""",
                     },
                 },
                 "required": ["code", "title"],
