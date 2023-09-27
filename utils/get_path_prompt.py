@@ -208,11 +208,11 @@ class GetPath:
                 return returnPath(".quit")
             elif userInput == ".system":
                 return returnPath(".system")"""
-            if userInput.strip() == "cd":
+            if userInput.lower().strip() == "cd":
                 changeDirectory(os.path.expanduser("~"), list_content_on_directory_change)
                 userInput = ""
                 promptEntry = True
-            elif userInput.startswith("cd ") and os.path.isdir(userInput[3:]):
+            elif userInput.lower().startswith("cd ") and os.path.isdir(userInput[3:]):
                 changeDirectory(userInput[3:], list_content_on_directory_change)
                 userInput = ""
                 promptEntry = True

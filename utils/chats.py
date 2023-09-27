@@ -16,6 +16,7 @@ class MyHandAI:
         self.setup()
         self.runPlugins()
         self.setupPythonExecution()
+        self.setupTermuxExecution()
 
     def setup(self):
         self.divider = "--------------------"
@@ -223,6 +224,70 @@ class MyHandAI:
             }
         }
 
+    def setupTermuxExecution(self):
+        def execute_termux_command(function_args):
+            errorMessage = "Failed to run the python code!"
+
+            # retrieve argument values from a dictionary
+            #print(function_args)
+            title = function_args.get("title") # required
+            function_args = function_args.get("code") # required
+
+            # show pyton code for developer
+            print("--------------------")
+            print(f"Termux: {title}")
+            if config.developer or config.pythonExecutionDisplay:
+                print("```")
+                print(function_args)
+                print("```")
+            print("--------------------")
+            
+            if config.pythonExecutionConfirmation:
+                print("Do you want to execute it? [y]es / [N]o")
+                confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
+                if not confirmation.lower() in ("y", "yes"):
+                    return errorMessage
+
+            try:
+                # display both output and error
+                result = subprocess.run(command, shell=True, capture_output=True, text=True)
+                output = result.stdout  # Captured standard output
+                error = result.stderr  # Captured standard error
+                function_response = ""
+                function_response += f"# Output:\n{output}"
+                if error.strip():
+                    function_response += f"\n# Error:\n{error}"
+                self.print(function_response)
+            except:
+                print(errorMessage)
+                print("--------------------")
+                return errorMessage
+            info = {"information": function_response}
+            function_response = json.dumps(info)
+            return json.dumps(info)
+
+        functionSignature = {
+            "name": "execute_termux_command",
+            "description": "Execute Termux command",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "description": "Termux command, e.g. am start -n com.android.chrome/com.google.android.apps.chrome.Main",
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "title for the termux command",
+                    },
+                },
+                "required": ["code", "title"],
+            },
+        }
+
+        config.execute_termux_command_signature = [functionSignature]
+        config.chatGPTApiAvailableFunctions["execute_termux_command"] = execute_termux_command
+
     def setupPythonExecution(self):
         def execute_python_code(function_args):
             errorMessage = "Failed to run the python code!"
@@ -292,11 +357,17 @@ class MyHandAI:
 
         messagesCopy = messages[:]
 
-        context = """In response to the following request, answer me either "termux" or "python" or "chat" without extra comments.
-Answer "python" only if you can execute python code to get the requested information or carry out the requested task, e.g. open a web browser.
-Answer "termux" only if you can write a termux commands to get the requested information or carry out the requested task on Android, e.g. open Google Chrome.
-Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
-Otherwise, answer "chat". Here is the request:"""
+        if config.terminalEnableTermuxAPI:
+            context = """In response to the following request, answer me either "termux" or "python" or "chat" without extra comments.
+    Answer "python" only if you can execute python code to get the requested information or carry out the requested task, e.g. open a web browser.
+    Answer "termux" only if you can write a Termux commands to get the requested information or carry out the requested task on Android, e.g. open Google Chrome.
+    Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
+    Otherwise, answer "chat". Here is the request:"""
+        else:
+            context = """In response to the following request, answer me either "python" or "chat" without extra comments.
+    Answer "python" only if you can execute python code to get the requested information or carry out the requested task, e.g. open a web browser.
+    Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
+    Otherwise, answer "chat". Here is the request:"""
 
         messagesCopy.append({"role": "user", "content": f"{context} {userInput}"})
         completion = openai.ChatCompletion.create(
@@ -310,10 +381,18 @@ Otherwise, answer "chat". Here is the request:"""
         self.screenAction = answer = re.sub("[^A-Za-z]", "", answer).lower()
 
         self.print("screening done!")
-        # test
-        print(answer)
-        if answer == "python":
-            context = f"""I am running {config.thisPlatform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
+
+        if answer == "termux":
+            context = f"""I am running Turmux on this Android device. Execute Termux command directly on my behalf to achieve the following tasks. Do not show me the command unless I explicitly request it."""
+            userInputWithcontext = f"{context}\n{userInput}"
+            messages.append({"role": "user", "content" : userInputWithcontext})
+            messages = self.runFunction(messages, config.execute_termux_command_signature, "execute_termux_command")
+            if messages[-1]["content"] == "Failed to run the Termux command!":
+                messages = messages[:-3]
+            else:
+                return messages
+        elif answer == "python":
+            context = f"""I am running {config.thisPlatform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the code unless I explicitly request it."""
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
@@ -447,7 +526,7 @@ Otherwise, answer "chat". Here is the request:"""
 
     # reset message when a new chart is started or context is changed
     def resetMessages(self):
-        systemMessage = "You’re a kind helpful assistant."
+        systemMessage = f"You’re a kind helpful assistant. You have all my rights to execute {'Termux' if config.terminalEnableTermuxAPI else 'system'} commands and python code on my behalf."
         if config.chatGPTApiFunctionCall == "auto" and config.chatGPTApiFunctionSignatures:
             systemMessage += " Only use the functions you have been provided with."
         messages = [
