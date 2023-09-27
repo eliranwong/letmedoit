@@ -311,7 +311,7 @@ Otherwise, answer "chat". Here is the request:"""
         self.print("screening done!")
 
         if answer == "python":
-            context = f"""I am running {"Termux on Android" if config.terminalEnableTermuxAPI else config.thisPlatform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
+            context = f"""I am running {"Termux on Android" if config.terminalEnableTermuxAPI else config.thisPlatform} on this device. Execute python codes{" and Termux commands" if config.terminalEnableTermuxAPI else ""} directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
