@@ -292,8 +292,9 @@ class MyHandAI:
 
         messagesCopy = messages[:]
 
-        context = """In response to the following request, answer me either "python" or "chat" without extra comments.
+        context = """In response to the following request, answer me either "termux" or "python" or "chat" without extra comments.
 Answer "python" only if you can execute python code to get the requested information or carry out the requested task, e.g. open a web browser.
+Answer "termux" only if you can write a termux commands to get the requested information or carry out the requested task on Android, e.g. open Google Chrome.
 Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
 Otherwise, answer "chat". Here is the request:"""
 
@@ -309,7 +310,8 @@ Otherwise, answer "chat". Here is the request:"""
         self.screenAction = answer = re.sub("[^A-Za-z]", "", answer).lower()
 
         self.print("screening done!")
-
+        # test
+        print(answer)
         if answer == "python":
             context = f"""I am running {config.thisPlatform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
             userInputWithcontext = f"{context}\n{userInput}"
