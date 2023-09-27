@@ -746,7 +746,7 @@ Otherwise, answer "chat". Here is the request:"""
                 self.print(f"myHand AI")
             self.showCurrentContext()
             # go to startup directory
-            startupdirectory = config.startupdirectory if config.startupdirectory and os.path.isdir(config.startupdirectory) else config.myHandAIFolder
+            self.currentDirectory = startupdirectory = config.startupdirectory if config.startupdirectory and os.path.isdir(config.startupdirectory) else config.myHandAIFolder
             os.chdir(startupdirectory)
             self.print(f"startup directory:\n{startupdirectory}")
             self.print(self.divider)
@@ -777,6 +777,12 @@ Otherwise, answer "chat". Here is the request:"""
         )
         featuresLower = [i.lower() for i in features] + ["...", ".save", ".share"]
         while True:
+            # display current directory if changed
+            currentDirectory = os.getcwd()
+            if not currentDirectory == self.currentDirectory:
+                self.print(self.divider)
+                self.print(f"current directory:\n{currentDirectory}")
+                self.print(self.divider)
             # default input entry
             defaultEntry = config.defaultEntry
             config.defaultEntry = ""
