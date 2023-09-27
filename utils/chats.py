@@ -231,19 +231,19 @@ class MyHandAI:
             # retrieve argument values from a dictionary
             #print(function_args)
             title = function_args.get("title") # required
-            sharedText = function_args.get("sharedText", "") # optional
+            sharedText = function_args.get("message", "") # optional
             function_args = f"termux-share -a send {sharedText}" if sharedText else function_args.get("code") # required
 
             # show Termux command for developer
             print("--------------------")
             print(f"Termux: {title}")
-            if config.developer or config.pythonExecutionDisplay:
+            if config.developer or config.codeDisplay:
                 print("```")
                 print(function_args)
                 print("```")
             print("--------------------")
             
-            if config.pythonExecutionConfirmation:
+            if config.executionConfirmation:
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
@@ -285,9 +285,9 @@ class MyHandAI:
                         "type": "string",
                         "description": "title for the termux command",
                     },
-                    "sharedText": {
+                    "message": {
                         "type": "string",
-                        "description": "text to be sent or shared",
+                        "description": "the text message that is to be sent or shared",
                     },
                 },
                 "required": ["code", "title"],
@@ -309,13 +309,13 @@ class MyHandAI:
             # show pyton code for developer
             print("--------------------")
             print(f"Python: {title}")
-            if config.developer or config.pythonExecutionDisplay:
+            if config.developer or config.codeDisplay:
                 print("```")
                 print(function_args)
                 print("```")
             print("--------------------")
             
-            if config.pythonExecutionConfirmation:
+            if config.executionConfirmation:
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
@@ -361,7 +361,7 @@ class MyHandAI:
         config.execute_python_code_signature = [functionSignature]
         config.chatGPTApiAvailableFunctions["execute_python_code"] = execute_python_code
 
-    def pythonExecution(self, messages, userInput):
+    def screening(self, messages, userInput):
         self.print("screening ...")
 
         messagesCopy = messages[:]
@@ -392,7 +392,7 @@ class MyHandAI:
         self.print("screening done!")
 
         if answer == "termux":
-            context = """I am running Turmux on this Android device. Execute Termux command directly on my behalf to achieve the following tasks. Do not show me the command unless I explicitly request it."""
+            context = """I am running Turmux terminal on this Android device. Execute Termux command directly on my behalf to achieve the following tasks. Do not show me the command unless I explicitly request it."""
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_termux_command_signature, "execute_termux_command")
@@ -454,10 +454,10 @@ class MyHandAI:
                     model=config.chatGPTApiModel,
                     messages=thisThisMessage,
                     n=1,
-                    temperature=0.0 if config.chatGPTApiPredefinedContext == "Execute Python Code" else config.chatGPTApiTemperature,
+                    temperature=config.chatGPTApiTemperature,
                     max_tokens=config.chatGPTApiMaxTokens,
                     functions=config.chatGPTApiFunctionSignatures,
-                    function_call={"name": "execute_python_code"} if config.chatGPTApiPredefinedContext == "Execute Python Code" else config.chatGPTApiFunctionCall,
+                    function_call=config.chatGPTApiFunctionCall,
                     stream=True,
                 )
             return openai.ChatCompletion.create(
@@ -498,10 +498,10 @@ class MyHandAI:
                         model=config.chatGPTApiModel,
                         messages=thisMessage,
                         n=1,
-                        temperature=0.0 if config.chatGPTApiPredefinedContext == "Execute Python Code" else config.chatGPTApiTemperature,
+                        temperature=config.chatGPTApiTemperature,
                         max_tokens=config.chatGPTApiMaxTokens,
                         functions=config.chatGPTApiFunctionSignatures,
-                        function_call={"name": "run_python"} if config.chatGPTApiPredefinedContext == "Execute Python Code" else config.chatGPTApiFunctionCall,
+                        function_call=config.chatGPTApiFunctionCall,
                     )
                     response_message = completion["choices"][0]["message"]
                     if response_message.get("function_call"):
@@ -555,18 +555,12 @@ class MyHandAI:
         else:
             # users can modify config.predefinedContexts via plugins
             context = config.predefinedContexts[config.chatGPTApiPredefinedContext]
-            # change configs for particular contexts
-            if config.chatGPTApiPredefinedContext == "Execute Python Code":
-                if config.chatGPTApiFunctionCall == "none":
-                    config.chatGPTApiFunctionCall = "auto"
-                if config.loadingInternetSearches == "always":
-                    config.loadingInternetSearches = "auto"
         return context
 
     def fineTuneUserInput(self, userInput, conversationStarted):
         # customise chat context
         context = self.getCurrentContext()
-        if context and (config.chatGPTApiPredefinedContext == "Execute Python Code" or conversationStarted or (not conversationStarted and config.chatGPTApiContextInAllInputs)):
+        if context and (conversationStarted or (not conversationStarted and config.chatGPTApiContextInAllInputs)):
             userInput = f"{context}\n{userInput}"
         return userInput
 
@@ -585,10 +579,11 @@ class MyHandAI:
             "change function call",
             "change function response",
             "change online searches",
-            "change task execution",
-            "change python code display",
+            "change screening for task execution",
+            "change command / code display",
             "change execution confirmation",
             "change startup directory",
+            "change Termux API integration",
             "change developer mode",
             "open myHand.ai wiki",
         )
@@ -645,7 +640,7 @@ class MyHandAI:
                 if folder and os.path.isdir(folder):
                     config.startupdirectory = folder
                     self.print(f"Startup directory changed to:\n{folder}")
-            elif feature == ".contextintensity":
+            elif feature == ".contextinclusion":
                 options = ("the first input only", "all inputs")
                 option = self.dialogs.getValidOptions(
                     options=options, 
@@ -656,26 +651,26 @@ class MyHandAI:
                 if option:
                     config.chatGPTApiContextInAllInputs = True if option == "all inputs" else False
                     self.print(f"Predefined Context Inclusion: {option}!")
-            elif feature == ".pythoncodedisplay":
+            elif feature == ".codedisplay":
                 options = ("enable", "disable")
                 option = self.dialogs.getValidOptions(
                     options=options, 
-                    title="Python Code Display", 
-                    default="enable" if config.pythonExecutionDisplay else "disable",
-                    text="Options to display Python codes before execution:"
+                    title="Command / Code Display", 
+                    default="enable" if config.codeDisplay else "disable",
+                    text="Options to display commands / codes before execution:"
                 )
                 if option:
-                    config.pythonExecutionDisplay = (option == "enable")
-                    self.print(f"Python code display: {option}d!")
-            elif feature == ".confirmpythonexecution":
+                    config.codeDisplay = (option == "enable")
+                    self.print(f"Command / Code display: {option}d!")
+            elif feature == ".confirmexecution":
                 options = ("enable", "disable")
                 option = self.dialogs.getValidOptions(
                     options=options, 
-                    title="Confirm Execution before running Python Codes", 
-                    default="enable" if config.pythonExecutionConfirmation else "disable",
+                    title="Confirm before Executing Commands / Codes", 
+                    default="enable" if config.executionConfirmation else "disable",
                 )
                 if option:
-                    config.pythonExecutionConfirmation = (option == "enable")
+                    config.executionConfirmation = (option == "enable")
                     self.print(f"Task execution confirmation: {option}d!")
             elif feature == ".plugins":
                 self.selectPlugins()
@@ -692,17 +687,37 @@ class MyHandAI:
                 if option:
                     config.developer = (option == "enable")
                     self.print(f"Developer Mode: {option}d!")
-            elif feature == ".pythonexecution":
+            elif feature == ".termuxapi":
                 options = ("enable", "disable")
                 option = self.dialogs.getValidOptions(
                     options=options, 
-                    title="Python Execution", 
-                    default="enable" if config.pythonExecution else "disable",
-                    text="myHand can execute python codes\nto get information for a response\nor perform a task for users.\nEnable / Disable this feature below:",
+                    title="Termux API Integration", 
+                    default="enable" if config.terminalEnableTermuxAPI else "disable",
+                    text="To learn about Termux API, read:\nhttps://wiki.termux.com/wiki/Termux:API\nSelect an option below:"
                 )
                 if option:
-                    config.pythonExecution = (option == "enable")
-                    self.print(f"Python Execution: {option}d!")
+                    config.terminalEnableTermuxAPI = (option == "enable")
+                    if config.terminalEnableTermuxAPI and not os.path.isdir("/data/data/com.termux/files/home/"):
+                        config.terminalEnableTermuxAPI = False
+                        self.print("Termux is not installed!")
+                    if config.terminalEnableTermuxAPI:
+                        # Check if Termux API package is installed
+                        result = subprocess.run(['pkg', 'list-installed', 'termux-api'], capture_output=True, text=True)
+                        # Check if the package is installed
+                        if not "termux-api" in result.stdout:
+                            self.print("Termux:API is not installed!")
+                    self.print(f"""Termux API Integration: {"enable" if config.terminalEnableTermuxAPI else "disable"}d!""")
+            elif feature == ".screening":
+                options = ("enable", "disable")
+                option = self.dialogs.getValidOptions(
+                    options=options, 
+                    title="Screening for Task Execution", 
+                    default="enable" if config.screening else "disable",
+                    text="myHand can execute system commands / programming codes\nto get information for a response\nor perform a task for users.\nEnable / Disable this feature below:",
+                )
+                if option:
+                    config.screening = (option == "enable")
+                    self.print(f"Screening for Task Execution: {option}d!")
             elif feature == ".functioncall":
                 calls = ("auto", "none")
                 call = self.dialogs.getValidOptions(
@@ -864,7 +879,7 @@ class MyHandAI:
             ".share" if config.terminalEnableTermuxAPI else ".save",
             ".swapmultiline",
             ".context",
-            ".contextintensity",
+            ".contextinclusion",
             ".changeapikey",
             ".chatgptmodel",
             ".temperature",
@@ -873,10 +888,11 @@ class MyHandAI:
             ".functioncall",
             ".functionresponse",
             ".latestSearches",
-            ".pythonexecution",
-            ".pythoncodedisplay",
-            ".confirmpythonexecution",
+            ".screening",
+            ".codedisplay",
+            ".confirmexecution",
             ".startupDirectory",
+            ".termuxapi",
             ".developer",
             ".help",
         )
@@ -921,8 +937,8 @@ class MyHandAI:
 
                     # python execution
                     self.screenAction = ""
-                    if config.pythonExecution:
-                        messages = self.pythonExecution(messages, fineTunedUserInput)
+                    if config.screening:
+                        messages = self.screening(messages, fineTunedUserInput)
                     else:
                         messages.append({"role": "user", "content": fineTunedUserInput})
 
@@ -932,7 +948,7 @@ class MyHandAI:
                     spinner_thread.start()
 
                     # force loading internet searches
-                    if config.loadingInternetSearches == "always" and not self.screenAction in ("python", "web"):
+                    if config.loadingInternetSearches == "always" and not self.screenAction in ("termux", "python", "web"):
                         try:
                             messages = self.runFunction(messages, config.integrate_google_searches_signature, "integrate_google_searches")
                         except:
@@ -1017,7 +1033,6 @@ class MyHandAI:
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content" : "hello"}],
                 n=1,
-                temperature=0.0,
                 max_tokens=10,
             )
         except openai.error.APIError as e:
