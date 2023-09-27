@@ -226,7 +226,7 @@ class MyHandAI:
 
     def setupTermuxExecution(self):
         def execute_termux_command(function_args):
-            errorMessage = "Failed to run the python code!"
+            errorMessage = "Failed to run the Termux command!"
 
             # retrieve argument values from a dictionary
             #print(function_args)
@@ -251,9 +251,13 @@ class MyHandAI:
 
             try:
                 # display both output and error
+                print(1)
                 result = subprocess.run(command, shell=True, capture_output=True, text=True)
+                print(2)
                 output = result.stdout  # Captured standard output
+                print(output)
                 error = result.stderr  # Captured standard error
+                print(error)
                 function_response = ""
                 function_response += f"# Output:\n{output}"
                 if error.strip():
@@ -388,7 +392,6 @@ class MyHandAI:
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_termux_command_signature, "execute_termux_command")
-            print(messages)
             if messages[-1]["content"] == "Failed to run the Termux command!":
                 messages = messages[:-3]
             else:
