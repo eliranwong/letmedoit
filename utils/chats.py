@@ -230,7 +230,8 @@ class MyHandAI:
             # retrieve argument values from a dictionary
             #print(function_args)
             title = function_args.get("title") # required
-            function_args = function_args.get("code") # required
+            termuxCommand = function_args.get("termux", "")
+            function_args = termuxCommand if termuxCommand else function_args.get("code") # required
 
             # show pyton code for developer
             print("--------------------")
@@ -275,6 +276,10 @@ class MyHandAI:
                         "type": "string",
                         "description": "python code, e.g. print('Hello world')",
                     },
+                    "termux": {
+                        "type": "string",
+                        "description": "equivalent Android Termux terminal commands, if any",
+                    }
                     "title": {
                         "type": "string",
                         "description": "title for the python code",
@@ -311,7 +316,7 @@ Otherwise, answer "chat". Here is the request:"""
         self.print("screening done!")
 
         if answer == "python":
-            context = f"""I am running {"Termux on Android" if config.terminalEnableTermuxAPI else config.thisPlatform} on this device. Execute python codes{" and Termux commands" if config.terminalEnableTermuxAPI else ""} directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
+            context = f"""I am running {"Termux on Android" if config.terminalEnableTermuxAPI else config.thisPlatform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
