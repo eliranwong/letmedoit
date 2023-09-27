@@ -253,7 +253,7 @@ class MyHandAI:
                     return errorMessage
 
             try:
-                if sharedText:
+                if not sharedText == function_args:
                     pydoc.pipepager(sharedText, cmd="termux-share -a send")
                     function_response = "Done!"
                 else:
