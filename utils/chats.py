@@ -234,7 +234,7 @@ class MyHandAI:
             function_args = function_args.get("code") # required
             print(function_args)
 
-            # show pyton code for developer
+            # show Termux command for developer
             print("--------------------")
             print(f"Termux: {title}")
             if config.developer or config.pythonExecutionDisplay:
@@ -251,13 +251,9 @@ class MyHandAI:
 
             try:
                 # display both output and error
-                print(1)
-                result = subprocess.run(command, shell=True, capture_output=True, text=True)
-                print(2)
+                result = subprocess.run(function_args, shell=True, capture_output=True, text=True)
                 output = result.stdout  # Captured standard output
-                print(output)
                 error = result.stderr  # Captured standard error
-                print(error)
                 function_response = ""
                 function_response += f"# Output:\n{output}"
                 if error.strip():
