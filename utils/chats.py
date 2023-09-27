@@ -248,6 +248,12 @@ class MyHandAI:
                 if not confirmation.lower() in ("y", "yes"):
                     return errorMessage
 
+            if termuxCommand:
+                os.system(termuxCommand)
+                info = {"information": "done"}
+                function_response = json.dumps(info)
+                return json.dumps(info)
+
             insert_string = "import config\nconfig.pythonFunctionResponse = "
             if "\n" in function_args:
                 substrings = function_args.rsplit("\n", 1)
@@ -279,7 +285,7 @@ class MyHandAI:
                     "termux": {
                         "type": "string",
                         "description": "equivalent Android Termux terminal commands, if any",
-                    }
+                    },
                     "title": {
                         "type": "string",
                         "description": "title for the python code",
@@ -316,7 +322,7 @@ Otherwise, answer "chat". Here is the request:"""
         self.print("screening done!")
 
         if answer == "python":
-            context = f"""I am running {"Termux on Android" if config.terminalEnableTermuxAPI else config.thisPlatform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
+            context = f"""I am running {config.thisPlatform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the codes unless I explicitly request it."""
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
