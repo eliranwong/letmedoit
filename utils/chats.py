@@ -232,6 +232,7 @@ class MyHandAI:
             #print(function_args)
             title = function_args.get("title") # required
             function_args = function_args.get("code") # required
+            print(function_args)
 
             # show pyton code for developer
             print("--------------------")
@@ -383,10 +384,11 @@ class MyHandAI:
         self.print("screening done!")
 
         if answer == "termux":
-            context = f"""I am running Turmux on this Android device. Execute Termux command directly on my behalf to achieve the following tasks. Do not show me the command unless I explicitly request it."""
+            context = """I am running Turmux on this Android device. Execute Termux command directly on my behalf to achieve the following tasks. Do not show me the command unless I explicitly request it."""
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_termux_command_signature, "execute_termux_command")
+            print(messages)
             if messages[-1]["content"] == "Failed to run the Termux command!":
                 messages = messages[:-3]
             else:
