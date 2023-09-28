@@ -201,6 +201,14 @@ class MyHandAI:
             config.pythonFunctionResponse = ""
             python_code = textwrap.dedent(response_message["function_call"]["arguments"])
             refinedCode = self.fineTunePythonCode(python_code)
+
+            if self.confirmExecution("yes"):
+                print("Do you want to execute it? [y]es / [N]o")
+                confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
+                if not confirmation.lower() in ("y", "yes"):
+                    function_response = python_code
+                    info = {"information": function_response}
+                    return json.dumps(info)
             try:
                 exec(refinedCode, globals())
                 function_response = str(config.pythonFunctionResponse)
@@ -216,7 +224,7 @@ class MyHandAI:
 
     def getStreamFunctionResponseMessage(self, completion, function_name):
         function_arguments = ""
-        for index, event in enumerate(completion):
+        for event in completion:
             delta = event["choices"][0]["delta"]
             if delta and delta.get("function_call"):
                 function_arguments += delta["function_call"]["arguments"]
