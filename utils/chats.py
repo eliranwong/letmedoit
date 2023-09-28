@@ -202,6 +202,14 @@ class MyHandAI:
             python_code = textwrap.dedent(response_message["function_call"]["arguments"])
             refinedCode = self.fineTunePythonCode(python_code)
 
+            print("--------------------")
+            print(f"running python code ...")
+            if config.developer or config.codeDisplay:
+                print("```")
+                print(python_code)
+                print("```")
+            print("--------------------")
+
             if self.confirmExecution("yes"):
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
