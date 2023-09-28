@@ -33,7 +33,7 @@ def setConfig():
         ('terminal_cancel_action', '.quit'),
         ('developer', False),
         ('screening', True),
-        ('executionConfirmation', True),
+        ('confirmExecution', "always"), # 'always', 'risk_only', 'none'
         ('codeDisplay', False),
         ('autoUpdate', True),
         ('terminalEditorScrollLineCount', 10),

@@ -1,4 +1,4 @@
-import config, openai, glob, threading, os, time, traceback, re, subprocess, json, datetime, webbrowser, pydoc
+import config, openai, glob, threading, os, time, traceback, re, subprocess, json, datetime, webbrowser, pydoc, textwrap
 from utils.prompts import Prompts
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -185,22 +185,26 @@ class MyHandAI:
                 chat_response = t(chat_response)
         return chat_response
 
+    def fineTunePythonCode(self, code):
+        insert_string = "import config\nconfig.pythonFunctionResponse = "
+        if "\n" in code:
+            substrings = code.rsplit("\n", 1)
+            lastLine = re.sub("print\((.*)\)", r"\1", substrings[-1])
+            refinedCode = code if lastLine.startswith(" ") else f"{substrings[0]}\n{insert_string}{lastLine}"
+        else:
+            refinedCode = f"{insert_string}{code}"
+        return refinedCode
+
     def getFunctionResponse(self, response_message, function_name):
         if function_name == "python":
             config.pythonFunctionResponse = ""
-            function_args = response_message["function_call"]["arguments"]
-            insert_string = "import config\nconfig.pythonFunctionResponse = "
-            if "\n" in function_args:
-                substrings = function_args.rsplit("\n", 1)
-                lastLine = re.sub("print\((.*)\)", r"\1", substrings[-1])
-                new_function_args = f"{substrings[0]}\n{insert_string}{lastLine}"
-            else:
-                new_function_args = f"{insert_string}{function_args}"
+            python_code = textwrap.dedent(response_message["function_call"]["arguments"])
+            refinedCode = self.fineTunePythonCode(python_code)
             try:
-                exec(new_function_args, globals())
+                exec(refinedCode, globals())
                 function_response = str(config.pythonFunctionResponse)
             except:
-                function_response = function_args
+                function_response = python_code
             info = {"information": function_response}
             function_response = json.dumps(info)
         else:
@@ -224,15 +228,21 @@ class MyHandAI:
             }
         }
 
+    def confirmExecution(self, risk):
+        if config.confirmExecution == "always" or (risk == "yes" and config.confirmExecution == "risk_only"):
+            return True
+        else:
+            return False
+
     def setupTermuxExecution(self):
         def execute_termux_command(function_args):
             errorMessage = "Failed to run the Termux command!"
 
             # retrieve argument values from a dictionary
-            #print(function_args)
+            risk = function_args.get("risk") # required
             title = function_args.get("title") # required
             #sharedText = function_args.get("message", "") # optional
-            function_args = function_args.get("code").strip() # required
+            function_args = textwrap.dedent(function_args.get("code")).strip() # required
             sharedText = re.sub("^termux-share .*?'([^']+?)'$", r"\1", function_args)
             sharedText = re.sub('^termux-share .*?"([^"]+?)"$', r"\1", sharedText)
             sharedText = re.sub("""^[\d\D]*?subprocess.run\(\['termux-share'[^\[\]]*?'([^']+?)'\]\)[\d\D]*?$""", r"\1", sharedText)
@@ -248,7 +258,7 @@ class MyHandAI:
                 print("```")
             print("--------------------")
             
-            if config.executionConfirmation:
+            if self.confirmExecution(risk):
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
@@ -290,12 +300,13 @@ class MyHandAI:
                         "type": "string",
                         "description": "title for the termux command",
                     },
-                    #"message": {
-                    #    "type": "string",
-                    #    "description": """the text message shared or sent with Termux on Android.""",
-                    #},
+                    "risk": {
+                        "type": "string",
+                        "description": "risk of damaging my device, e.g. file deletion or other significant impacts",
+                        "enum": ["yes", "no"],
+                    },
                 },
-                "required": ["code", "title"],
+                "required": ["code", "title", "risk"],
             },
         }
 
@@ -307,34 +318,28 @@ class MyHandAI:
             errorMessage = "Failed to run the python code!"
 
             # retrieve argument values from a dictionary
-            #print(function_args)
+            risk = function_args.get("risk") # required
             title = function_args.get("title") # required
-            function_args = function_args.get("code") # required
+            python_code = textwrap.dedent(function_args.get("code")) # required
+            refinedCode = self.fineTunePythonCode(python_code)
 
             # show pyton code for developer
             print("--------------------")
             print(f"Python: {title}")
             if config.developer or config.codeDisplay:
                 print("```")
-                print(function_args)
+                print(python_code)
                 print("```")
             print("--------------------")
             
-            if config.executionConfirmation:
+            if self.confirmExecution(risk):
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
                     return errorMessage
 
-            insert_string = "import config\nconfig.pythonFunctionResponse = "
-            if "\n" in function_args:
-                substrings = function_args.rsplit("\n", 1)
-                lastLine = re.sub("print\((.*)\)", r"\1", substrings[-1])
-                new_function_args = f"{substrings[0]}\n{insert_string}{lastLine}"
-            else:
-                new_function_args = f"{insert_string}{function_args}"
             try:
-                exec(new_function_args, globals())
+                exec(refinedCode, globals())
                 function_response = str(config.pythonFunctionResponse)
             except:
                 print(errorMessage)
@@ -358,8 +363,13 @@ class MyHandAI:
                         "type": "string",
                         "description": "title for the python code",
                     },
+                    "risk": {
+                        "type": "string",
+                        "description": "risk of damaging my device, e.g. file deletion or other negative impacts",
+                        "enum": ["yes", "no"],
+                    },
                 },
-                "required": ["code", "title"],
+                "required": ["code", "title", "risk"],
             },
         }
 
@@ -540,7 +550,7 @@ class MyHandAI:
 
     # reset message when a new chart is started or context is changed
     def resetMessages(self):
-        systemMessage = f"You’re a kind helpful assistant. You have all my rights to execute {'Termux' if config.terminalEnableTermuxAPI else 'system'} commands and python code on my behalf."
+        systemMessage = f"You’re a kind helpful assistant. You have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python code on my behalf."
         if config.chatGPTApiFunctionCall == "auto" and config.chatGPTApiFunctionSignatures:
             systemMessage += " Only use the functions you have been provided with."
         messages = [
@@ -585,7 +595,7 @@ class MyHandAI:
             "change function response",
             "change online searches",
             "change screening for task execution",
-            "change command / code display",
+            "change command display",
             "change execution confirmation",
             "change startup directory",
             "change Termux API integration",
@@ -668,15 +678,22 @@ class MyHandAI:
                     config.codeDisplay = (option == "enable")
                     self.print(f"Command / Code display: {option}d!")
             elif feature == ".confirmexecution":
-                options = ("enable", "disable")
+                options = ("always", "risk_only", "none")
+                descriptions = (
+                    "always",
+                    "only at risk of negative impact, e.g. file deletion",
+                    "none"
+                )
                 option = self.dialogs.getValidOptions(
                     options=options, 
-                    title="Confirm before Executing Commands / Codes", 
-                    default="enable" if config.executionConfirmation else "disable",
+                    descriptions=descriptions, 
+                    title="Command Execution Confirmation",
+                    text="myHand.ai can execute commands on your behalf.\nDefine here how you want confirmation\nbefore commands are executed:\n(caution: execute commands at your own risk)",  
+                    default=config.confirmExecution, 
                 )
                 if option:
-                    config.executionConfirmation = (option == "enable")
-                    self.print(f"Task execution confirmation: {option}d!")
+                    config.confirmExecution = option
+                    self.print(f"Command execution confirmation: {option}")
             elif feature == ".plugins":
                 self.selectPlugins()
             elif feature == ".help":
@@ -953,7 +970,7 @@ class MyHandAI:
                     spinner_thread.start()
 
                     # force loading internet searches
-                    if config.loadingInternetSearches == "always" and not self.screenAction in ("termux", "python", "web"):
+                    if config.loadingInternetSearches == "always" and not self.screenAction in ("termux", "python", "web", "system"):
                         try:
                             messages = self.runFunction(messages, config.integrate_google_searches_signature, "integrate_google_searches")
                         except:

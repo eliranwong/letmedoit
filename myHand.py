@@ -42,6 +42,7 @@ if __name__ == '__main__':
                     "predefinedContexts", # used with plugins; pre-defined contexts
                     "inputSuggestions", # used with plugins; user input suggestions
                     "execute_python_code_signature",
+                    "execute_termux_command_signature",
                     "integrate_google_searches_signature",
                     "chatGPTApiFunctionSignatures", # used with plugins; function calling
                     "chatGPTApiAvailableFunctions", # used with plugins; function calling
