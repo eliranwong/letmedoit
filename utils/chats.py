@@ -187,13 +187,14 @@ class MyHandAI:
 
     def fineTunePythonCode(self, code):
         insert_string = "import config\nconfig.pythonFunctionResponse = "
+        code = re.sub("^!(.*?)$", r"import os\nos.system(\1)", code, flags=re.M)
         if "\n" in code:
             substrings = code.rsplit("\n", 1)
             lastLine = re.sub("print\((.*)\)", r"\1", substrings[-1])
-            refinedCode = code if lastLine.startswith(" ") else f"{substrings[0]}\n{insert_string}{lastLine}"
+            code = code if lastLine.startswith(" ") else f"{substrings[0]}\n{insert_string}{lastLine}"
         else:
-            refinedCode = f"{insert_string}{code}"
-        return refinedCode
+            code = f"{insert_string}{code}"
+        return code
 
     def getFunctionResponse(self, response_message, function_name):
         if function_name == "python":
