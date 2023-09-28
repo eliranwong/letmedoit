@@ -40,6 +40,16 @@ Read more at https://github.com/eliranwong/myHand.ai/wiki/Features
 
 3. ChatGPT API key (read https://github.com/eliranwong/myHand.ai/wiki/ChatGPT-API-Key)
 
+# Highlight - Command Execution
+
+myHand.ai goes beyond just being a chatbot by offering a unique and powerful capability - the ability to execute commands and perform computing tasks on your behalf. Unlike a mere chatbot, myHand.ai can interact with your computer system and carry out specific commands to accomplish various computing tasks. This feature allows you to leverage the expertise and efficiency of myHand.ai to automate processes, streamline workflows, and perform complex tasks with ease. However, it is essential to remember that with great power comes great responsibility, and users should exercise caution and use this feature at their own risk.
+
+[Disclaimer](https://github.com/eliranwong/myHand.ai/wiki/Command-Execution#disclaimer)
+
+[Confirmation Prompt Options for Command Execution](https://github.com/eliranwong/myHand.ai/wiki/Command-Execution#confirmation-prompt-options-for-command-execution)
+
+Read more at https://github.com/eliranwong/myHand.ai/wiki/Command-Execution
+
 # Comparison with ChatGPT
 
 myHand offers advanced features beyond standard ChatGPT, including task execution on local devices and real-time access to the internet.
