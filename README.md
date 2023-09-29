@@ -10,6 +10,14 @@ Repository: https://github.com/eliranwong/myHand.ai
 
 Developed by: [Eliran Wong](https://github.com/eliranwong)
 
+# Requirements
+
+1. Internet access
+
+2. Windows / macOS / Linux / ChromeOS / Android / iOS / any devices that supports [Python](https://www.python.org)
+
+3. ChatGPT API key (read https://github.com/eliranwong/myHand.ai/wiki/ChatGPT-API-Key)
+
 # Features
 
 myHand is an advanced AI assistant that brings a wide range of powerful features to enhance your virtual assistance experience. Here are some key features of myHand:
@@ -32,17 +40,35 @@ myHand is an advanced AI assistant that brings a wide range of powerful features
 
 Read more at https://github.com/eliranwong/myHand.ai/wiki/Features
 
-# Requirements
-
-1. Internet access
-
-2. Windows / macOS / Linux / ChromeOS / Android / iOS / any devices that supports [Python](https://www.python.org)
-
-3. ChatGPT API key (read https://github.com/eliranwong/myHand.ai/wiki/ChatGPT-API-Key)
-
 # Highlight - Command Execution
 
 myHand.ai goes beyond just being a chatbot by offering a unique and powerful capability - the ability to execute commands and perform computing tasks on your behalf. Unlike a mere chatbot, myHand.ai can interact with your computer system and carry out specific commands to accomplish various computing tasks. This feature allows you to leverage the expertise and efficiency of myHand.ai to automate processes, streamline workflows, and perform complex tasks with ease. However, it is essential to remember that with great power comes great responsibility, and users should exercise caution and use this feature at their own risk.
+
+Command execution helps:
+
+1. to get the requested information, e.g.
+
+> tell me the current time
+
+2. to execute computing tasks on local device, e.g.
+
+> go to my Desktop
+
+> list all files with names started with "Screenshot"
+
+> delete them
+
+3. to interact with third-party applications, e.g.
+
+> open "my_music.mp3" with VLC player
+
+> open Safari and search for "ChatGPT"
+
+4. to interact with os assistant, e.g.
+
+> open Siri
+
+[Enhanced Mode](https://github.com/eliranwong/myHand.ai/wiki/Command-Execution#two-command-execution-mode)
 
 [Disclaimer](https://github.com/eliranwong/myHand.ai/wiki/Command-Execution#disclaimer)
 
