@@ -611,7 +611,7 @@ class MyHandAI:
             "change function call",
             "change function response",
             "change online searches",
-            "change screening for task execution",
+            "change command execution mode",
             "change command display",
             "change execution confirmation",
             "change startup directory",
@@ -746,17 +746,17 @@ class MyHandAI:
                         if not "termux-api" in result.stdout:
                             self.print("Termux:API is not installed!")
                     self.print(f"""Termux API Integration: {"enable" if config.terminalEnableTermuxAPI else "disable"}d!""")
-            elif feature == ".screening":
-                options = ("enable", "disable")
+            elif feature == ".enhanceexecution":
+                options = ("enhanced", "auto")
                 option = self.dialogs.getValidOptions(
                     options=options, 
-                    title="Screening for Task Execution", 
-                    default="enable" if config.screening else "disable",
-                    text="myHand can execute system commands / programming codes\nto get information for a response\nor perform a task for users.\nEnable / Disable this feature below:",
+                    title="Command Execution Mode", 
+                    default="enhanced" if config.enhanceCommandExecution else "auto",
+                    text="myHand can execute commands\nto get information for a response\nor perform a task for users.\n(read https://github.com/eliranwong/myHand.ai/wiki/Command-Execution)\nSelect a mode below:",
                 )
                 if option:
-                    config.screening = (option == "enable")
-                    self.print(f"Screening for Task Execution: {option}d!")
+                    config.enhanceCommandExecution = (option == "enhanced")
+                    self.print(f"Command Execution Mode: {option}")
             elif feature == ".functioncall":
                 calls = ("auto", "none")
                 call = self.dialogs.getValidOptions(
@@ -927,7 +927,7 @@ class MyHandAI:
             ".functioncall",
             ".functionresponse",
             ".latestSearches",
-            ".screening",
+            ".enhanceexecution",
             ".codedisplay",
             ".confirmexecution",
             ".startupDirectory",
@@ -976,7 +976,7 @@ class MyHandAI:
 
                     # python execution
                     self.screenAction = ""
-                    if config.screening:
+                    if config.enhanceCommandExecution:
                         messages = self.screening(messages, fineTunedUserInput)
                     else:
                         messages.append({"role": "user", "content": fineTunedUserInput})

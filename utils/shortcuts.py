@@ -30,7 +30,8 @@ def createShortcuts():
             except:
                 pass
     # on macOS
-    elif thisOS == "Darwin":
+    # on iOS a-Shell app, ~/Desktop/ is invalid
+    elif thisOS == "Darwin" and os.path.isdir("~/Desktop/"):
         shortcut_file = os.path.expanduser(f"~/Desktop/{appName}.command")
         if not os.path.isfile(shortcut_file):
             with open(shortcut_file, "w") as f:
@@ -76,5 +77,3 @@ Name=myHand AI
                     copyfile(linuxDesktopFile, desktopPathShortcut)
             except:
                 pass
-
-createShortcuts()
