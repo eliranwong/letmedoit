@@ -400,13 +400,13 @@ class MyHandAI:
 
         if config.terminalEnableTermuxAPI:
             context = """In response to the following request, answer me either "termux" or "python" or "chat" without extra comments.
-    Answer "python" only if you can execute python code to get the requested information or carry out the requested task, e.g. open a web browser.
+    Answer "python" only if you can write python code to get the requested information or carry out the requested task, e.g. open a web browser.
     Answer "termux" only if you can write a Termux commands to get the requested information or carry out the requested task on Android, e.g. open Google Chrome.
     Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
     Otherwise, answer "chat". Here is the request:"""
         else:
             context = """In response to the following request, answer me either "python" or "chat" without extra comments.
-    Answer "python" only if you can execute python code to get the requested information or carry out the requested task, e.g. open a web browser.
+    Answer "python" only if you can write python code to get the requested information or carry out the requested task, e.g. open a web browser.
     Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
     Otherwise, answer "chat". Here is the request:"""
 
