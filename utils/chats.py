@@ -327,8 +327,11 @@ class MyHandAI:
             },
         }
 
-        config.execute_termux_command_signature = [functionSignature]
-        config.chatGPTApiAvailableFunctions["execute_termux_command"] = execute_termux_command
+        if config.terminalEnableTermuxAPI:
+            config.execute_termux_command_signature = [functionSignature]
+            # useful when enhanced mode is disabled
+            config.chatGPTApiFunctionSignatures.append(functionSignature)
+            config.chatGPTApiAvailableFunctions["execute_termux_command"] = execute_termux_command
 
     def setupPythonExecution(self):
         def execute_python_code(function_args):
@@ -391,6 +394,8 @@ class MyHandAI:
         }
 
         config.execute_python_code_signature = [functionSignature]
+        # useful when enhanced mode is disabled
+        config.chatGPTApiFunctionSignatures.append(functionSignature)
         config.chatGPTApiAvailableFunctions["execute_python_code"] = execute_python_code
 
     def screening(self, messages, userInput):
