@@ -15,11 +15,10 @@ class MyHandAI:
         self.dialogs = TerminalModeDialogs(self)
         self.setup()
         self.runPlugins()
-        self.setupPythonExecution()
-        self.setupTermuxExecution()
 
     def setup(self):
         self.divider = "--------------------"
+        self.runPython = True
         config.defaultEntry = ""
 
         # token limit
@@ -109,6 +108,9 @@ class MyHandAI:
                 self.execPythonFile(script)
         if internetSeraches in config.chatGPTPluginExcludeList:
             del config.chatGPTApiFunctionSignatures[0]
+        self.setupPythonExecution()
+        if config.terminalEnableTermuxAPI:
+            self.setupTermuxExecution()
 
     def selectPlugins(self):
         plugins = []
@@ -210,12 +212,14 @@ class MyHandAI:
                 print("```")
             print("--------------------")
 
-            if self.confirmExecution("yes"):
+            if not self.runPython:
+                info = {"information": python_code}
+                return json.dumps(info)
+            elif self.confirmExecution("yes"):
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
-                    function_response = python_code
-                    info = {"information": function_response}
+                    info = {"information": python_code}
                     return json.dumps(info)
             try:
                 exec(refinedCode, globals())
@@ -327,11 +331,10 @@ class MyHandAI:
             },
         }
 
-        if config.terminalEnableTermuxAPI:
-            config.execute_termux_command_signature = [functionSignature]
-            # useful when enhanced mode is disabled
-            config.chatGPTApiFunctionSignatures.append(functionSignature)
-            config.chatGPTApiAvailableFunctions["execute_termux_command"] = execute_termux_command
+        config.execute_termux_command_signature = [functionSignature]
+        # useful when enhanced mode is disabled
+        config.chatGPTApiFunctionSignatures.append(functionSignature)
+        config.chatGPTApiAvailableFunctions["execute_termux_command"] = execute_termux_command
 
     def setupPythonExecution(self):
         def execute_python_code(function_args):
@@ -352,10 +355,13 @@ class MyHandAI:
                 print("```")
             print("--------------------")
             
-            if self.confirmExecution(risk):
+            if not self.runPython:
+                return errorMessage
+            elif self.confirmExecution(risk):
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
+                    self.runPython = False
                     return errorMessage
 
             try:
@@ -670,6 +676,8 @@ class MyHandAI:
                     elif config.loadingInternetSearches == "none":
                         if not "integrate google searches" in config.chatGPTPluginExcludeList:
                             config.chatGPTPluginExcludeList.append("integrate google searches")
+                    # reset plugins
+                    self.runPlugins()
                     # notify
                     self.print(f"Latest Online Searches: {option}")
             elif feature == ".startupDirectory":
@@ -750,6 +758,8 @@ class MyHandAI:
                         # Check if the package is installed
                         if not "termux-api" in result.stdout:
                             self.print("Termux:API is not installed!")
+                    # reset plugins
+                    self.runPlugins()
                     self.print(f"""Termux API Integration: {"enable" if config.terminalEnableTermuxAPI else "disable"}d!""")
             elif feature == ".enhanceexecution":
                 options = ("enhanced", "auto")
@@ -1001,6 +1011,7 @@ class MyHandAI:
 
                     completion = self.runCompletion(messages)
                     # stop spinning
+                    self.runPython = True
                     stop_event.set()
                     spinner_thread.join()
 

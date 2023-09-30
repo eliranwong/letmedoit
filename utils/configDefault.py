@@ -32,7 +32,7 @@ def setConfig():
         ('terminalHeadingTextColor', 'ansigreen'),
         ('terminal_cancel_action', '.quit'),
         ('developer', False),
-        ('enhanceCommandExecution', False),
+        ('enhanceCommandExecution', True),
         ('confirmExecution', "always"), # 'always', 'risk_only', 'none'
         ('codeDisplay', False),
         ('autoUpdate', True),
