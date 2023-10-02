@@ -624,7 +624,7 @@ class MyHandAI:
             "change online searches",
             "change command execution mode",
             "change command display",
-            "change execution confirmation",
+            "change user confirmation",
             "change startup directory",
             "change Termux API integration",
             "change developer mode",
