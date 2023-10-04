@@ -885,9 +885,9 @@ class MyHandAI:
                 if customContext and not customContext.strip().lower() == config.exit_entry:
                     config.chatGPTApiCustomContext = customContext.strip()
             self.showCurrentContext()
-            if config.chatGPTApiPredefinedContext.startswith("Counselling - ") and config.enhanceCommandExecution:
+            if (config.chatGPTApiPredefinedContext.startswith("Counselling - ") or config.chatGPTApiPredefinedContext.endswith("Counselling")) and config.enhanceCommandExecution:
                 config.enhanceCommandExecution = False
-                self.print("(To facilitate counselling, command execution mode is now changed from 'enhanced' to 'auto'.)")
+                self.print("(Command execution mode is now changed from 'enhanced' to 'auto'.)")
 
     def showCurrentContext(self):
         if config.chatGPTApiPredefinedContext == "[none]":
