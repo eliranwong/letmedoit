@@ -1,6 +1,7 @@
 import config
 
 from prompt_toolkit import prompt
+from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.styles import Style
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
@@ -49,14 +50,14 @@ class Prompts:
 
     def getToolBar(self, multiline=False):
         if multiline:
-            return f" [ctrl+q] {config.terminal_cancel_action}; [blank] actions; [escape+enter] send "
-        return f" [ctrl+q] {config.terminal_cancel_action}; [blank] actions; [enter] send "
+            return f" [ctrl+q] {config.exit_entry}; [blank] actions; [escape+enter] send "
+        return f" [ctrl+q] {config.exit_entry}; [blank] actions; [enter] send "
 
     def shareKeyBindings(self):
         this_key_bindings = KeyBindings()
         @this_key_bindings.add("c-q")
         def _(event):
-            event.app.current_buffer.text = config.terminal_cancel_action
+            event.app.current_buffer.text = config.exit_entry
             event.app.current_buffer.validate_and_handle()
         @this_key_bindings.add("c-n")
         def _(event):
@@ -66,6 +67,18 @@ class Prompts:
         def _(event):
             event.app.current_buffer.text = ".save"
             event.app.current_buffer.validate_and_handle()
+        @this_key_bindings.add("c-c")
+        def _(event):
+            event.app.current_buffer.text = config.cancel_entry
+            event.app.current_buffer.validate_and_handle()
+        @this_key_bindings.add("c-d")
+        def _(_):
+            config.developer = not config.developer
+            run_in_terminal(lambda: print(f"Developer mode {'enabled' if config.developer else 'disabled'}!"))
+        @this_key_bindings.add("c-e")
+        def _(_):
+            config.enhanceCommandExecution = not config.enhanceCommandExecution
+            run_in_terminal(lambda: print(f"Command execution mode changed to {'enhanced' if config.enhanceCommandExecution else 'auto'}!"))
         @this_key_bindings.add("c-l")
         def _(event):
             config.defaultEntry = event.app.current_buffer.text

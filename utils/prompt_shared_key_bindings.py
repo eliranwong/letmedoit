@@ -1,4 +1,4 @@
-import config, pydoc, traceback
+import config
 from prompt_toolkit.key_binding import KeyBindings
 
 

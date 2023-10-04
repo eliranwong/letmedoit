@@ -6,7 +6,7 @@ class NumberValidator(Validator):
     def validate(self, document):
         text = document.text
 
-        if text.lower() == config.terminal_cancel_action:
+        if text.lower() in (config.exit_entry, config.cancel_entry):
             pass
         elif text and not text.isdigit():
             i = 0
@@ -24,7 +24,7 @@ class FloatValidator(Validator):
     def validate(self, document):
         text = document.text
 
-        if text.lower() == config.terminal_cancel_action:
+        if text.lower() in (config.exit_entry, config.cancel_entry):
             pass
         try:
             float(text)
@@ -36,7 +36,7 @@ class NoAlphaValidator(Validator):
     def validate(self, document):
         text = document.text
 
-        if text.lower() == config.terminal_cancel_action:
+        if text.lower() in (config.exit_entry, config.cancel_entry):
             pass
         elif text and text.isalpha():
             i = 0

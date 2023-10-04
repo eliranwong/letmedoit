@@ -6,6 +6,7 @@ from prompt_toolkit.completion import WordCompleter
 from utils.terminal_mode_dialogs import TerminalModeDialogs
 from utils.promptValidator import FloatValidator
 from utils.get_path_prompt import GetPath
+from utils.prompt_shared_key_bindings import swapTerminalColors
 
 class MyHandAI:
 
@@ -50,13 +51,14 @@ class MyHandAI:
     def getFolderPath(self):
         # get path
         getPath = GetPath(
-            cancel_entry=".cancel",
+            cancel_entry="",
             promptIndicatorColor=config.terminalPromptIndicatorColor2,
             promptEntryColor=config.terminalCommandEntryColor2,
             subHeadingColor=config.terminalHeadingTextColor,
             itemColor=config.terminalResourceLinkColor,
             workingDirectory=config.myHandAIFolder,
         )
+        cancel_entry = cancel_entry if cancel_entry else config.cancel_entry
         return getPath.getFolderPath(
             check_isdir=True, 
             display_dir_only=True, 
@@ -154,16 +156,16 @@ class MyHandAI:
         if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
             self.print("Enter your OpenAI API Key [required]:")
             apikey = self.prompts.simplePrompt(default=config.openaiApiKey)
-            if apikey and not apikey.strip().lower() == config.terminal_cancel_action:
+            if apikey and not apikey.strip().lower() == config.exit_entry:
                 config.openaiApiKey = apikey
             self.print("Enter your Organization ID [optional]:")
             oid = self.prompts.simplePrompt(default=config.openaiApiOrganization)
-            if oid and not oid.strip().lower() == config.terminal_cancel_action:
+            if oid and not oid.strip().lower() == config.exit_entry:
                 config.openaiApiOrganization = oid
             self.checkCompletion()
             self.print("Updated!")
 
-    def cancelAction(self):
+    def exitAction(self):
         message = "closing ..."
         self.print(message)
         self.print(self.divider)
@@ -612,6 +614,7 @@ class MyHandAI:
             "start a new chat [ctrl+n]",
             "share content [ctrl+s]" if config.terminalEnableTermuxAPI else "save content [ctrl+s]",
             "swap multi-line input [ctrl+l]",
+            "swap text brightness [esc+s]",
             "change chat context [ctrl+o]",
             "change chat context inclusion",
             "change API key",
@@ -622,12 +625,12 @@ class MyHandAI:
             "change function call",
             "change function response",
             "change online searches",
-            "change command execution mode",
+            "change execution mode [ctrl+e]",
             "change command display",
             "change user confirmation",
             "change startup directory",
             "change Termux API integration",
-            "change developer mode",
+            "change developer mode [ctrl+d]",
             "open myHand.ai wiki",
         )
         feature = self.dialogs.getValidOptions(
@@ -799,7 +802,7 @@ class MyHandAI:
                 self.print(f"You are using ChatGPT model '{config.chatGPTApiModel}', which allows no more than {tokenLimit} tokens.")
                 self.print("(GPT and embeddings models process text in chunks called tokens. As a rough rule of thumb, 1 token is approximately 4 characters or 0.75 words for English text. One limitation to keep in mind is that for a GPT model the prompt and the generated output combined must be no more than the model's maximum context length.)")
                 maxtokens = self.prompts.simplePrompt(numberOnly=True, default=str(config.chatGPTApiMaxTokens))
-                if maxtokens and not maxtokens.strip().lower() == config.terminal_cancel_action and int(maxtokens) > 0:
+                if maxtokens and not maxtokens.strip().lower() == config.exit_entry and int(maxtokens) > 0:
                     config.chatGPTApiMaxTokens = int(maxtokens)
                     if config.chatGPTApiMaxTokens > tokenLimit:
                         config.chatGPTApiMaxTokens = tokenLimit
@@ -808,7 +811,7 @@ class MyHandAI:
                 self.print("Enter a value between 0.0 and 2.0:")
                 self.print("(Lower values for temperature result in more consistent outputs, while higher values generate more diverse and creative results. Select a temperature value based on the desired trade-off between coherence and creativity for your specific application.)")
                 temperature = self.prompts.simplePrompt(validator=FloatValidator(), default=str(config.chatGPTApiTemperature))
-                if temperature and not temperature.strip().lower() == config.terminal_cancel_action:
+                if temperature and not temperature.strip().lower() == config.exit_entry:
                     temperature = float(temperature)
                     if temperature < 0:
                         temperature = 0
@@ -822,7 +825,7 @@ class MyHandAI:
                 userInput = feature
         return userInput
 
-    def swapmultiline(self):
+    def swapMultiline(self):
         self.multilineInput = not self.multilineInput
         self.print(f"Multi-line input {'enabled' if self.multilineInput else 'disabled'}!")
 
@@ -879,10 +882,12 @@ class MyHandAI:
             if config.chatGPTApiPredefinedContext == "[custom]":
                 self.print("Edit custom context below:")
                 customContext = self.prompts.simplePrompt(default=config.chatGPTApiCustomContext)
-                if customContext and not customContext.strip().lower() == config.terminal_cancel_action:
+                if customContext and not customContext.strip().lower() == config.exit_entry:
                     config.chatGPTApiCustomContext = customContext.strip()
-            #print(f"Context selected: {config.chatGPTApiPredefinedContext}")
             self.showCurrentContext()
+            if config.chatGPTApiPredefinedContext.startswith("Counselling - ") and config.enhanceCommandExecution:
+                config.enhanceCommandExecution = False
+                self.print("(To facilitate counselling, command execution mode is now changed from 'enhanced' to 'auto'.)")
 
     def showCurrentContext(self):
         if config.chatGPTApiPredefinedContext == "[none]":
@@ -932,6 +937,7 @@ class MyHandAI:
             ".new",
             ".share" if config.terminalEnableTermuxAPI else ".save",
             ".swapmultiline",
+            ".swaptextbrightness",
             ".context",
             ".contextinclusion",
             ".changeapikey",
@@ -970,11 +976,15 @@ class MyHandAI:
                 userInput = config.blankEntryAction
             if userInput.lower().strip() == "...":
                 userInput = self.runOptions(features, userInput)
-            if userInput.strip().lower() == config.terminal_cancel_action:
+            if userInput.strip().lower() == config.exit_entry:
                 self.saveChat(messages)
-                return self.cancelAction()
+                return self.exitAction()
+            elif userInput.strip().lower() == config.cancel_entry:
+                pass
             elif userInput.strip().lower() == ".swapmultiline":
-                self.swapmultiline()
+                self.swapMultiline()
+            elif userInput.strip().lower() == ".swaptextbrightness":
+                swapTerminalColors()
             elif userInput.strip().lower() == ".context":
                 self.changeContext()
             elif userInput.strip().lower() == ".new" and started:

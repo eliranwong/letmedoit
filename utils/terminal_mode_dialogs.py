@@ -57,7 +57,7 @@ class TerminalModeDialogs:
             cancel_text=cancel_text,
             style=self.style,
         ).run().strip()
-        if result.lower() == config.terminal_cancel_action:
+        if result.lower() == config.cancel_entry:
             return result
         if options:
             if result and result in options:
@@ -109,7 +109,7 @@ class TerminalModeDialogs:
             self.parent.printRunningCommand(result)
             return self.parent.getContent(result)
         else:
-            return self.parent.cancelAction()
+            return self.parent.exitAction()
             #return ""
 
     def getMultipleSelection(self, title="Multiple Selection", text="Select item(s):", options=["ALL"], descriptions=[], default_values=["ALL"]):

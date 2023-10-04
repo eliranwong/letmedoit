@@ -29,12 +29,12 @@ For example, we integrate this utility into a text editor we developed:
 https://github.com/eliranwong/UniqueBible/blob/main/util/terminal_text_editor.py
 """
 
-import platform, os, subprocess
+import platform, os, subprocess, config
 
 class GetPath:
 
-    def __init__(self, cancel_entry=".cancel", promptIndicatorColor="ansicyan", promptEntryColor="ansigreen", subHeadingColor="ansigreen", itemColor="ansiyellow", workingDirectory="", ctrl_q_to_exit=False, ctrl_s_to_system=False):
-        self.cancel_entry = cancel_entry
+    def __init__(self, cancel_entry="", promptIndicatorColor="ansicyan", promptEntryColor="ansigreen", subHeadingColor="ansigreen", itemColor="ansiyellow", workingDirectory="", ctrl_q_to_exit=False, ctrl_s_to_system=False):
+        self.cancel_entry = cancel_entry if cancel_entry else config.cancel_entry
         self.promptIndicatorColor = promptIndicatorColor
         self.promptEntryColor = promptEntryColor
         self.subHeadingColor = subHeadingColor
