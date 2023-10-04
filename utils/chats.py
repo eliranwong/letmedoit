@@ -1,9 +1,10 @@
 import config, openai, glob, threading, os, time, traceback, re, subprocess, json, datetime, webbrowser, pydoc, textwrap
-from utils.prompts import Prompts
+from pathlib import Path
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter
 from utils.terminal_mode_dialogs import TerminalModeDialogs
+from utils.prompts import Prompts
 from utils.promptValidator import FloatValidator
 from utils.get_path_prompt import GetPath
 from utils.prompt_shared_key_bindings import swapTerminalColors
@@ -859,8 +860,10 @@ class MyHandAI:
             try:
                 #filename = re.sub('[\\\/\:\*\?\"\<\>\|]', "", messages[2 if config.chatGPTApiCustomContext.strip() else 1]["content"])[:40].strip()
                 filename = self.getCurrentDateTime()
+                foldername = os.path.join(config.myHandAIFolder, "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", filename))
+                Path(foldername).mkdir(parents=True, exist_ok=True)
                 if filename:
-                    chatFile = os.path.join(config.myHandAIFolder, "chats", f"{filename}.txt")
+                    chatFile = os.path.join(foldername, f"{filename}.txt")
                     with open(chatFile, "w", encoding="utf-8") as fileObj:
                         fileObj.write(plainText)
                     if openFile and os.path.isfile(chatFile):
