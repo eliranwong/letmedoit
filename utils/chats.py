@@ -603,10 +603,10 @@ class MyHandAI:
             context = config.predefinedContexts[config.chatGPTApiPredefinedContext]
         return context
 
-    def fineTuneUserInput(self, userInput, conversationStarted):
+    def fineTuneUserInput(self, userInput):
         # customise chat context
         context = self.getCurrentContext()
-        if context and (conversationStarted or (not conversationStarted and config.chatGPTApiContextInAllInputs)):
+        if context and (not self.conversationStarted or (self.conversationStarted and config.chatGPTApiContextInAllInputs)):
             userInput = f"{context}\n{userInput}"
         return userInput
 
@@ -694,7 +694,7 @@ class MyHandAI:
                 option = self.dialogs.getValidOptions(
                     options=options, 
                     title="Predefined Context Inclusion", 
-                    default=config.chatGPTApiContextInAllInputs,
+                    default="all inputs" if config.chatGPTApiContextInAllInputs else "the first input only",
                     text="Define below how you want to include predefined context\nwith your inputs.\nApply predefined context in ...",
                 )
                 if option:
@@ -893,6 +893,8 @@ class MyHandAI:
                 self.print("(Command execution mode is now changed from 'enhanced' to 'auto'.)")
 
     def showCurrentContext(self):
+        if not config.chatGPTApiPredefinedContext in config.predefinedContexts:
+            config.chatGPTApiPredefinedContext = "[none]"
         if config.chatGPTApiPredefinedContext == "[none]":
             context = "[none]"
         elif config.chatGPTApiPredefinedContext == "[custom]":
@@ -917,7 +919,7 @@ class MyHandAI:
     def startChats(self):
         messages = self.resetMessages()
 
-        started = False
+        self.conversationStarted = False
 
         def startChat():
             self.print(self.divider)
@@ -933,7 +935,7 @@ class MyHandAI:
             self.print(f"startup directory:\n{startupdirectory}")
             self.print(self.divider)
 
-            started = False
+            self.conversationStarted = False
         startChat()
         self.multilineInput = False
         features = (
@@ -990,17 +992,17 @@ class MyHandAI:
                 swapTerminalColors()
             elif userInput.strip().lower() == ".context":
                 self.changeContext()
-            elif userInput.strip().lower() == ".new" and started:
+            elif userInput.strip().lower() == ".new" and self.conversationStarted:
                 self.saveChat(messages)
                 messages = self.resetMessages()
                 startChat()
-            elif userInput.strip().lower() in (".share", ".save") and started:
+            elif userInput.strip().lower() in (".share", ".save") and self.conversationStarted:
                 self.saveChat(messages, openFile=True)
             elif userInput.strip() and not userInput.strip().lower() in featuresLower:
                 try:
 
                     # refine messages before running completion
-                    fineTunedUserInput = self.fineTuneUserInput(userInput, started)
+                    fineTunedUserInput = self.fineTuneUserInput(userInput)
 
                     # python execution
                     self.screenAction = ""
@@ -1045,7 +1047,7 @@ class MyHandAI:
                     
                     messages.append({"role": "assistant", "content": chat_response})
 
-                    started = True
+                    self.conversationStarted = True
 
                 # error codes: https://platform.openai.com/docs/guides/error-codes/python-library-error-types
                 except openai.error.APIError as e:
