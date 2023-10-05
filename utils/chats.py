@@ -890,7 +890,7 @@ class MyHandAI:
             self.showCurrentContext()
             if (config.chatGPTApiPredefinedContext.startswith("Counselling - ") or config.chatGPTApiPredefinedContext.endswith("Counselling")) and config.enhanceCommandExecution:
                 config.enhanceCommandExecution = False
-                self.print("(Command execution mode is now changed from 'enhanced' to 'auto'.)")
+                self.print("(To facilitate conselling, command execution mode is now changed from 'enhanced' to 'auto'.)")
 
     def showCurrentContext(self):
         if not config.chatGPTApiPredefinedContext in config.predefinedContexts:
@@ -992,6 +992,10 @@ class MyHandAI:
                 swapTerminalColors()
             elif userInput.strip().lower() == ".context":
                 self.changeContext()
+                if not config.chatGPTApiContextInAllInputs and self.conversationStarted:
+                    self.saveChat(messages)
+                    messages = self.resetMessages()
+                    startChat()
             elif userInput.strip().lower() == ".new" and self.conversationStarted:
                 self.saveChat(messages)
                 messages = self.resetMessages()
