@@ -21,6 +21,7 @@ class MyHandAI:
     def setup(self):
         self.divider = "--------------------"
         self.runPython = True
+        config.runMode = "terminal"
         config.defaultEntry = ""
         config.tempContent = ""
 
@@ -88,7 +89,10 @@ class MyHandAI:
                     code = compile(f.read(), script, 'exec')
                     exec(code, globals())
             except:
-                print("Failed to run '{0}'!".format(os.path.basename(script)))
+                if config.developer:
+                    self.showErrors()
+                else:
+                    print("Failed to run '{0}'!".format(os.path.basename(script)))
 
     def runPlugins(self):
         # The following config values can be modified with plugins, to extend functionalities

@@ -31,6 +31,8 @@ def setConfig():
         ('terminalPromptIndicatorColor1', 'ansimagenta'),
         ('terminalCommandEntryColor2', 'ansigreen'),
         ('terminalPromptIndicatorColor2', 'ansicyan'),
+        ('terminalSearchHighlightBackground', 'ansiblue'),
+        ('terminalSearchHighlightForeground', 'ansidefault'),
         ('developer', False),
         ('enhanceCommandExecution', True),
         ('confirmExecution', "always"), # 'always', 'risk_only', 'none'
@@ -41,7 +43,8 @@ def setConfig():
         ('blankEntryAction', "..."),
         ('defaultBlankEntryAction', ".context"),
         ('startupdirectory', ""),
-        ('biblelData', "")
+        ('biblelData', ""),
+        ('enableCaseSensitiveSearch', False),
     )
     for key, value in defaultSettings:
         if not hasattr(config, key):
