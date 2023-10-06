@@ -32,6 +32,7 @@ if __name__ == '__main__':
         with open("config.py", "w", encoding="utf-8") as fileObj:
             for name in dir(config):
                 excludeFromSavingList = (
+                    "tempContent",
                     "thisPlatform",
                     "myHandAI",
                     "terminalColors",

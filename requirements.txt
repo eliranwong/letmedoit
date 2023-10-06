@@ -2,3 +2,4 @@ openai
 prompt_toolkit
 googlesearch-python
 art
+apsw

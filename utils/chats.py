@@ -22,6 +22,7 @@ class MyHandAI:
         self.divider = "--------------------"
         self.runPython = True
         config.defaultEntry = ""
+        config.tempContent = ""
 
         # token limit
         self.tokenLimits = {
@@ -480,9 +481,10 @@ class MyHandAI:
                 {
                     "role": "function",
                     "name": function_name,
-                    "content": function_response,
+                    "content": function_response if function_response else config.tempContent,
                 }
             )
+            config.tempContent = ""
         except:
             self.showErrors()
             return messagesCopy
@@ -570,8 +572,9 @@ class MyHandAI:
 
                 self.functionJustCalled = True
 
-                if not config.chatAfterFunctionCalled:
-                    self.print(function_response)
+                if not config.chatAfterFunctionCalled or not function_response:
+                    if function_response:
+                        self.print(function_response)
                     break
             except:
                 self.showErrors()

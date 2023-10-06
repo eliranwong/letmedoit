@@ -25,12 +25,12 @@ def setConfig():
         ('terminalEnableTermuxAPIToast', False),
         ('cancel_entry', '.cancel'),
         ('exit_entry', '.quit'),
+        ('terminalHeadingTextColor', 'ansigreen'),
         ('terminalResourceLinkColor', 'ansiyellow'),
         ('terminalCommandEntryColor1', 'ansiyellow'),
         ('terminalPromptIndicatorColor1', 'ansimagenta'),
         ('terminalCommandEntryColor2', 'ansigreen'),
         ('terminalPromptIndicatorColor2', 'ansicyan'),
-        ('terminalHeadingTextColor', 'ansigreen'),
         ('developer', False),
         ('enhanceCommandExecution', True),
         ('confirmExecution', "always"), # 'always', 'risk_only', 'none'
@@ -41,6 +41,7 @@ def setConfig():
         ('blankEntryAction', "..."),
         ('defaultBlankEntryAction', ".context"),
         ('startupdirectory', ""),
+        ('biblelData', "")
     )
     for key, value in defaultSettings:
         if not hasattr(config, key):
