@@ -56,14 +56,16 @@ def search_bible(function_args):
                         subTotal = 0
                     book = b
                     bookName = abbrev[str(b)][-1]
+                    config.tempContent += f"{bookName}\n"
                     bookName = f"<u><b><{config.terminalHeadingTextColor}>{bookName}</{config.terminalHeadingTextColor}></b></u>"
                     print_formatted_text(HTML(bookName))
                 if searchWords:
                     verseText = highlightSearchResults(verseText)
                 thisVerse = f"<{config.terminalResourceLinkColor}>{c}:{v}</{config.terminalResourceLinkColor}> {verseText.strip()}"
                 print_formatted_text(HTML(thisVerse))
-                config.tempContent += thisVerse
+                config.tempContent += f"{thisVerse}\n"
                 subTotal += 1
+            config.tempContent = re.sub("<[^<>]*?>", "", config.tempContent)
             print("--------------------")
             for key, value in subTotals.items():
                 print_formatted_text(HTML(f"{key} x {value}"))

@@ -613,7 +613,9 @@ class MyHandAI:
         # customise chat context
         context = self.getCurrentContext()
         if context and (not self.conversationStarted or (self.conversationStarted and config.chatGPTApiContextInAllInputs)):
-            userInput = f"{context}\n{userInput}"
+            # context may start with "You will be provided with my input delimited with a pair of XML tags, <input> and </input>. ...
+            userInput = re.sub("<input>|<input [^<>]*?>|</input>", "", userInput)
+            userInput = f"{context}\n<input>{userInput}</input>"
         return userInput
 
     def runOptions(self, features, userInput):
