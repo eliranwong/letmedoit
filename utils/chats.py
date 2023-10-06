@@ -21,7 +21,6 @@ class MyHandAI:
     def setup(self):
         self.divider = "--------------------"
         self.runPython = True
-        config.runMode = "terminal"
         config.defaultEntry = ""
         config.tempContent = ""
 
@@ -48,7 +47,7 @@ class MyHandAI:
         if config.openaiApiOrganization:
             openai.organization = config.openaiApiOrganization
         # chat records
-        chat_history = os.path.join(os.getcwd(), "history", "chats")
+        chat_history = os.path.join(config.myHandAIFolder, "history", "chats")
         self.terminal_chat_session = PromptSession(history=FileHistory(chat_history))
 
     def getFolderPath(self):

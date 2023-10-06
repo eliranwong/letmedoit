@@ -29,10 +29,11 @@ if __name__ == '__main__':
             config.thisPlatform = "macOS"
 
     def aboutToQuit():
-        with open("config.py", "w", encoding="utf-8") as fileObj:
+        with open(os.path.join(config.myHandAIFolder, "config.py"), "w", encoding="utf-8") as fileObj:
             for name in dir(config):
-                excludeFromSavingList = (
-                    "runMode",
+                excludeConfigList = [
+                    "setConfig",
+                    "excludeConfigList",
                     "tempContent",
                     "thisPlatform",
                     "myHandAI",
@@ -49,8 +50,9 @@ if __name__ == '__main__':
                     "chatGPTApiFunctionSignatures", # used with plugins; function calling
                     "chatGPTApiAvailableFunctions", # used with plugins; function calling
                     "pythonFunctionResponse", # used with plugins; function calling when function name is 'python'
-                )
-                if not name.startswith("__") and not name in excludeFromSavingList:
+                ]
+                excludeConfigList = excludeConfigList + config.excludeConfigList
+                if not name.startswith("__") and not name in excludeConfigList:
                     try:
                         value = eval(f"config.{name}")
                         fileObj.write("{0} = {1}\n".format(name, pprint.pformat(value)))
@@ -65,6 +67,7 @@ if __name__ == '__main__':
 
     getLatestUpdate()
     setOsOpenCmd()
+    config.excludeConfigList = []
     myHand = MyHandAI()
     myHand.startChats()
     aboutToQuit()
