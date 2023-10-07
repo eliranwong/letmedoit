@@ -907,9 +907,6 @@ Otherwise, answer "chat". Here is the request:"""
                 if customContext and not customContext.strip().lower() == config.exit_entry:
                     config.chatGPTApiCustomContext = customContext.strip()
             self.showCurrentContext()
-            if (config.chatGPTApiPredefinedContext.startswith("Counselling - ") or config.chatGPTApiPredefinedContext.endswith("Counselling")) and config.enhanceCommandExecution:
-                config.enhanceCommandExecution = False
-                self.print("(To facilitate conselling, command execution mode is now changed from 'enhanced' to 'auto'.)")
 
     def showCurrentContext(self):
         if not config.chatGPTApiPredefinedContext in config.predefinedContexts:
@@ -1031,7 +1028,7 @@ Otherwise, answer "chat". Here is the request:"""
 
                     # refine messages before running completion
                     fineTunedUserInput = self.fineTuneUserInput(userInput)
-                    noFunctionCall = ("[NO_FUNCTION_CALL]" in fineTunedUserInput)
+                    noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.chatGPTApiPredefinedContext.startswith("Counselling - ") or config.chatGPTApiPredefinedContext.endswith("Counselling"))
                     noScreening = ("[NO_SCREENING]" in fineTunedUserInput)
                     fineTunedUserInput = re.sub("\[NO_FUNCTION_CALL\]|\[NO_SCREENING\]", "", fineTunedUserInput)
 
