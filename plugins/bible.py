@@ -49,11 +49,19 @@ def search_bible(function_args):
     else:
         compareVersions = allVersions
     # formulate a list of search words
-    searchWordsRegex = [m for m in re.findall("Scripture REGEXP ['\"](.*?)['\"]", query, flags=0 if config.enableCaseSensitiveSearch else re.IGNORECASE)]
-    searchWordsPlain = [m for m in re.findall("Scripture LIKE ['\"]%(.*?)%['\"]", query, flags=0 if config.enableCaseSensitiveSearch else re.IGNORECASE)]
+    searchWordsRegex = [m for m in re.findall("Scripture REGEXP ['\"](.*?)['\"]", query)]
+    searchWordsPlain = [m for m in re.findall("Scripture LIKE ['\"]%(.*?)%['\"]", query)]
     searchWords = searchWordsRegex + searchWordsPlain
 
+    def highlightSearchResults(textContent):
+        for eachString in searchWords:
+            textContent = TextUtil.highlightSearchString(textContent, eachString)
+        # fix highlighting
+        textContent = TextUtil.fixTextHighlighting(textContent)
+        return TextUtil.htmlToPlainText(textContent)
     def displaySingleVerse(bible, c, v, verseText):
+        if searchWords:
+            verseText = highlightSearchResults(verseText)
         verseText = verseText.strip()
         if bible == config.mainText and compareMode and compareVersions:
             bible = f"<{config.terminalPromptIndicatorColor2}>{bible}</{config.terminalPromptIndicatorColor2}>"
@@ -75,12 +83,6 @@ def search_bible(function_args):
                 else:
                     return ()
         return ()
-    def highlightSearchResults(textContent):
-        for eachString in searchWords:
-            textContent = TextUtil.highlightSearchString(textContent, eachString)
-        # fix highlighting
-        textContent = TextUtil.fixTextHighlighting(textContent)
-        return TextUtil.htmlToPlainText(textContent)
 
     print(f"loading bible {config.mainText} ...")
     # display sql query statement for developer
@@ -119,8 +121,6 @@ def search_bible(function_args):
                     config.tempContent += f"{bookName}\n"
                     bookName = f"<u><b><{config.terminalHeadingTextColor}>{bookName}</{config.terminalHeadingTextColor}></b></u>"
                     print_formatted_text(HTML(bookName))
-                if searchWords:
-                    verseText = highlightSearchResults(verseText)
                 thisVerse = displaySingleVerse(config.mainText, c, v, verseText)
                 config.tempContent += f"{thisVerse}\n"
                 subTotal += 1
@@ -146,10 +146,14 @@ def search_bible(function_args):
 
 # add bible books to input suggestions
 config.inputSuggestions += [
+    "open bible chapter ",
+    "open bible verses ",
     "next chapter",
     "previous chapter",
     "go to chapter ",
     "search for verses that ",
+    "enable comparison",
+    "disable comparison",
 ]
 abbrev = BibleBooks.abbrev["eng"]
 for i in abbrev:
