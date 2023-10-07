@@ -55,7 +55,7 @@ def search_bible(function_args):
 
     def displaySingleVerse(bible, c, v, verseText):
         verseText = verseText.strip()
-        if bible == config.mainText:
+        if bible == config.mainText and compareMode and compareVersions:
             bible = f"<{config.terminalPromptIndicatorColor2}>{bible}</{config.terminalPromptIndicatorColor2}>"
             verseText = f"<{config.terminalPromptIndicatorColor2}>{verseText}</{config.terminalPromptIndicatorColor2}>"
         bible = f"[{bible}] " if compareMode and compareVersions else ""
