@@ -10,7 +10,7 @@ except:
     except:
         print("Install package 'apsw' first! Run:\n> source venv/bin/activate\n> 'pip3 install apsw'")
 
-import config, os, re
+import config, os, re, json
 from prompt_toolkit import print_formatted_text, HTML
 from utils.file_utils import FileUtil
 from plugins.bibleTools.utils.TextUtil import TextUtil
@@ -28,13 +28,53 @@ def getBibleList(version=""):
 def search_bible(function_args):
     # get the sql query statement
     query = function_args.get("query") # required
-    version = function_args.get("version")
-    getBibleList(version)
+    version = function_args.get("version") # required
+    allVersions = getBibleList(version)
+    # exclude mainText from allVersions
+    if config.mainText in allVersions:
+        allVersions.remove(config.mainText)
+    compare = function_args.get("compare") # required
+    compareMode = (compare == "yes")
+    versions = function_args.get("versions", "")
+    if versions:
+        try:
+            compareVersions = eval(versions)
+            compareVersions = [i for i in compareVersions if i in allVersions]
+            if config.mainText in compareVersions:
+                compareVersions.remove(config.mainText)
+            if not compareVersions:
+                compareVersions = allVersions
+        except:
+            compareVersions = allVersions
+    else:
+        compareVersions = allVersions
     # formulate a list of search words
     searchWordsRegex = [m for m in re.findall("Scripture REGEXP ['\"](.*?)['\"]", query, flags=0 if config.enableCaseSensitiveSearch else re.IGNORECASE)]
     searchWordsPlain = [m for m in re.findall("Scripture LIKE ['\"]%(.*?)%['\"]", query, flags=0 if config.enableCaseSensitiveSearch else re.IGNORECASE)]
     searchWords = searchWordsRegex + searchWordsPlain
 
+    def displaySingleVerse(bible, c, v, verseText):
+        verseText = verseText.strip()
+        if bible == config.mainText:
+            bible = f"<{config.terminalPromptIndicatorColor2}>{bible}</{config.terminalPromptIndicatorColor2}>"
+            verseText = f"<{config.terminalPromptIndicatorColor2}>{verseText}</{config.terminalPromptIndicatorColor2}>"
+        bible = f"[{bible}] " if compareMode and compareVersions else ""
+        thisVerse = f"<{config.terminalResourceLinkColor}>{c}:{v}</{config.terminalResourceLinkColor}> {verseText}"
+        print_formatted_text(HTML(f"{bible}{thisVerse}"))
+        return thisVerse
+    def getSingleVerse(bible, b, c, v):
+        database = os.path.join(config.bibleDataCurrent, "bibles", f"{bible}.bible")
+        if os.path.isfile(database):
+            with apsw.Connection(database) as connection:
+                cursor = connection.cursor()
+                query = "SELECT * FROM Verses WHERE Book=? AND Chapter=? AND Verse=?"
+                cursor.execute(query, (b, c, v))
+                result = cursor.fetchone()
+                if result:
+                    return result if result[-1] else ()
+                else:
+                    return ()
+        return ()
     def highlightSearchResults(textContent):
         for eachString in searchWords:
             textContent = TextUtil.highlightSearchString(textContent, eachString)
@@ -81,10 +121,16 @@ def search_bible(function_args):
                     print_formatted_text(HTML(bookName))
                 if searchWords:
                     verseText = highlightSearchResults(verseText)
-                thisVerse = f"<{config.terminalResourceLinkColor}>{c}:{v}</{config.terminalResourceLinkColor}> {verseText.strip()}"
-                print_formatted_text(HTML(thisVerse))
+                thisVerse = displaySingleVerse(config.mainText, c, v, verseText)
                 config.tempContent += f"{thisVerse}\n"
                 subTotal += 1
+                # bible comparison
+                if compareMode and compareVersions:
+                    for bible in compareVersions:
+                        singleVerse = getSingleVerse(bible, b, c, v)
+                        if singleVerse:
+                            _, c, v, verseText = getSingleVerse(bible, b, c, v)
+                            displaySingleVerse(bible, c, v, verseText)
             # include statistics of the last book
             if bookName:
                 total += subTotal
@@ -102,7 +148,8 @@ def search_bible(function_args):
 config.inputSuggestions += [
     "next chapter",
     "previous chapter",
-    "go to chapter "
+    "go to chapter ",
+    "search for verses that ",
 ]
 abbrev = BibleBooks.abbrev["eng"]
 for i in abbrev:
@@ -127,9 +174,10 @@ temporaryConfigs = (
 )
 config.setConfig(temporaryConfigs, temporary=True)
 
+bibleList = getBibleList()
 functionSignature = {
     "name": "search_bible",
-    "description": "read or search the bible",
+    "description": "read, compare or search the bible",
     "parameters": {
         "type": "object",
         "properties": {
@@ -137,17 +185,26 @@ functionSignature = {
                 "type": "string",
                 "description": """Formulate a sql query over a table created with statement "CREATE TABLE Verses (Book INT, Chapter INT, Verse INT, Scripture TEXT)".
 The book numbers range from 1 to 66, corresponding to the canonical order from Genesis to Revevlation in the bible.
-Remember, when you are provided with bible references, e.g. John 3:16; Rm 5:8, parse them to get corresponding Book, Chapter and Verse numbers.
+Remember, parse any bible references, e.g. John 3:16; Rm 5:8, to get corresponding Book, Chapter and Verse numbers.
 Also, in case regular expression is specified, it is expressed as (Scripture REGEXP ?).
 Give me only the sql query statement, starting with "SELECT * FROM Verses WHERE " without any extra explanation or comment.""",
             },
             "version": {
                 "type": "string",
                 "description": "Specify a bible version to read.  Answer 'XXX' if none is specified.",
-                "enum": ['XXX'] + getBibleList(),
+                "enum": ['XXX'] + bibleList,
+            },
+            "compare": {
+                "type": "string",
+                "description": "Tell if comparison is intended. Answer 'no' if none is indicated.",
+                "enum": ['yes', 'no'],
+            },
+            "versions": {
+                "type": "string",
+                "description": f"List of bible versions for comparison, e.g. {bibleList}",
             },
         },
-        "required": ["query", "version"],
+        "required": ["query", "version", "compare"],
     },
 }
 
