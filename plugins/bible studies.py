@@ -66,7 +66,7 @@ When you explain, quote specific words or phases from relevant bible verses, if 
 Answer all these relevant questions mentioned above, in the introduction, pertaining to the following bible book.
 [NO_FUNCTION_CALL]
 Bible book name:""")
-config.inputSuggestions.append("""Bible Book Outline.
+config.inputSuggestions.append("""Bible Outline.
 I am currently studying the following bible book and chapters and would appreciate it if you could provide me with a detailed outline for it.
 I want an outline for all chapters of the bible book and chapters I am giving you.
 Please divide it into several main sections and under each section, divide it into different passages.
