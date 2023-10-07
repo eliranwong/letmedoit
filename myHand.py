@@ -32,6 +32,9 @@ if __name__ == '__main__':
         with open(os.path.join(config.myHandAIFolder, "config.py"), "w", encoding="utf-8") as fileObj:
             for name in dir(config):
                 excludeConfigList = [
+                    "accept_default",
+                    "defaultEntry",
+                    "pipIsUpdated",
                     "setConfig",
                     "excludeConfigList",
                     "tempContent",
@@ -42,6 +45,7 @@ if __name__ == '__main__':
                     "myHandAIFolder",
                     "open",
                     "chatGPTTransformers", # used with plugins; transform ChatGPT response message
+                    "predefinedInstructions", # used with plugins; pre-defined instructions
                     "predefinedContexts", # used with plugins; pre-defined contexts
                     "inputSuggestions", # used with plugins; user input suggestions
                     "execute_python_code_signature",
@@ -67,6 +71,7 @@ if __name__ == '__main__':
 
     getLatestUpdate()
     setOsOpenCmd()
+    config.pipIsUpdated = False
     config.excludeConfigList = []
     myHand = MyHandAI()
     myHand.startChats()

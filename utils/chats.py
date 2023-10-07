@@ -8,6 +8,7 @@ from utils.prompts import Prompts
 from utils.promptValidator import FloatValidator
 from utils.get_path_prompt import GetPath
 from utils.prompt_shared_key_bindings import swapTerminalColors
+from utils.file_utils import FileUtil
 
 class MyHandAI:
 
@@ -21,6 +22,7 @@ class MyHandAI:
     def setup(self):
         self.divider = "--------------------"
         self.runPython = True
+        config.accept_default = False
         config.defaultEntry = ""
         config.tempContent = ""
 
@@ -73,10 +75,6 @@ class MyHandAI:
             promptIndicator = ""
         )
 
-    def fileNamesWithoutExtension(self, dir, ext):
-        files = glob.glob(os.path.join(dir, "*.{0}".format(ext)))
-        return sorted([file[len(dir)+1:-(len(ext)+1)] for file in files if os.path.isfile(file)])
-
     def execPythonFile(self, script):
         if config.developer:
             with open(script, 'r', encoding='utf8') as f:
@@ -99,6 +97,7 @@ class MyHandAI:
             "[none]": "",
             "[custom]": "",
         }
+        config.predefinedInstructions = {}
         config.inputSuggestions = []
         config.chatGPTTransformers = []
         config.chatGPTApiFunctionSignatures = []
@@ -109,7 +108,7 @@ class MyHandAI:
         internetSeraches = "integrate google searches"
         script = os.path.join(pluginFolder, "{0}.py".format(internetSeraches))
         self.execPythonFile(script)
-        for plugin in self.fileNamesWithoutExtension(pluginFolder, "py"):
+        for plugin in FileUtil.fileNamesWithoutExtension(pluginFolder, "py"):
             if not plugin in config.chatGPTPluginExcludeList:
                 script = os.path.join(pluginFolder, "{0}.py".format(plugin))
                 self.execPythonFile(script)
@@ -123,7 +122,7 @@ class MyHandAI:
         plugins = []
         enabledPlugins = []
         pluginFolder = os.path.join(config.myHandAIFolder, "plugins")
-        for plugin in self.fileNamesWithoutExtension(pluginFolder, "py"):
+        for plugin in FileUtil.fileNamesWithoutExtension(pluginFolder, "py"):
             plugins.append(plugin)
             if not plugin in config.chatGPTPluginExcludeList:
                 enabledPlugins.append(plugin)
@@ -418,15 +417,15 @@ class MyHandAI:
 
         if config.terminalEnableTermuxAPI:
             context = """In response to the following request, answer me either "termux" or "python" or "chat" without extra comments.
-    Answer "python" only if you can write python code to get the requested information or carry out the requested task, e.g. open a web browser.
-    Answer "termux" only if you can write a Termux commands to get the requested information or carry out the requested task on Android, e.g. open Google Chrome.
-    Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
-    Otherwise, answer "chat". Here is the request:"""
+Answer "python" only if you can write python code to get the requested information or carry out the requested task, e.g. open a web browser.
+Answer "termux" only if you can write a Termux commands to get the requested information or carry out the requested task on Android, e.g. open Google Chrome.
+Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
+Otherwise, answer "chat". Here is the request:"""
         else:
             context = """In response to the following request, answer me either "python" or "chat" without extra comments.
-    Answer "python" only if you can write python code to get the requested information or carry out the requested task, e.g. open a web browser.
-    Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
-    Otherwise, answer "chat". Here is the request:"""
+Answer "python" only if you can write python code to get the requested information or carry out the requested task, e.g. open a web browser.
+Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
+Otherwise, answer "chat". Here is the request:"""
 
         messagesCopy.append({"role": "user", "content": f"{context} {userInput}"})
         completion = openai.ChatCompletion.create(
@@ -497,10 +496,10 @@ class MyHandAI:
         if config.developer:
             print(traceback.format_exc())
 
-    def runCompletion(self, thisMessage):
+    def runCompletion(self, thisMessage, noFunctionCall=False):
         self.functionJustCalled = False
         def runThisCompletion(thisThisMessage):
-            if config.chatGPTApiFunctionSignatures and not self.functionJustCalled:
+            if config.chatGPTApiFunctionSignatures and not self.functionJustCalled and not noFunctionCall:
                 return openai.ChatCompletion.create(
                     model=config.chatGPTApiModel,
                     messages=thisThisMessage,
@@ -624,6 +623,7 @@ class MyHandAI:
             "share content [ctrl+s]" if config.terminalEnableTermuxAPI else "save content [ctrl+s]",
             "swap multi-line input [ctrl+l]",
             "swap text brightness [esc+s]",
+            "run an instruction",
             "change chat context [ctrl+o]",
             "change chat context inclusion",
             "change API key",
@@ -880,6 +880,17 @@ class MyHandAI:
                 self.print("Failed to save chat!\n")
                 self.showErrors()
 
+    def runInstruction(self):
+        instructions = list(config.predefinedInstructions.keys())
+        instruction = self.dialogs.getValidOptions(
+            options=instructions, 
+            title="Predefined Instructions",
+            text="Select an instruction:",
+        )
+        if instruction:
+            config.defaultEntry = config.predefinedInstructions[instruction]
+            config.accept_default = True
+
     def changeContext(self):
         contexts = list(config.predefinedContexts.keys())
         predefinedContext = self.dialogs.getValidOptions(
@@ -951,6 +962,7 @@ class MyHandAI:
             ".share" if config.terminalEnableTermuxAPI else ".save",
             ".swapmultiline",
             ".swaptextbrightness",
+            ".instruction",
             ".context",
             ".contextinclusion",
             ".changeapikey",
@@ -978,12 +990,14 @@ class MyHandAI:
                 self.print(f"current directory:\n{currentDirectory}")
                 self.print(self.divider)
             # default input entry
+            accept_default = config.accept_default
+            config.accept_default = False
             defaultEntry = config.defaultEntry
             config.defaultEntry = ""
             # input suggestions
             inputSuggestions = config.inputSuggestions[:] + self.getDirectoryList() if config.developer else config.inputSuggestions
             completer = WordCompleter(inputSuggestions, ignore_case=True) if inputSuggestions else None
-            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=self.multilineInput, completer=completer, default=defaultEntry)
+            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=self.multilineInput, completer=completer, default=defaultEntry, accept_default=accept_default)
             # display options when empty string is entered
             if not userInput.strip():
                 userInput = config.blankEntryAction
@@ -998,6 +1012,8 @@ class MyHandAI:
                 self.swapMultiline()
             elif userInput.strip().lower() == ".swaptextbrightness":
                 swapTerminalColors()
+            elif userInput.strip().lower() == ".instruction":
+                self.runInstruction()
             elif userInput.strip().lower() == ".context":
                 self.changeContext()
                 if not config.chatGPTApiContextInAllInputs and self.conversationStarted:
@@ -1015,10 +1031,13 @@ class MyHandAI:
 
                     # refine messages before running completion
                     fineTunedUserInput = self.fineTuneUserInput(userInput)
+                    noFunctionCall = ("[NO_FUNCTION_CALL]" in fineTunedUserInput)
+                    noScreening = ("[NO_SCREENING]" in fineTunedUserInput)
+                    fineTunedUserInput = re.sub("\[NO_FUNCTION_CALL\]|\[NO_SCREENING\]", "", fineTunedUserInput)
 
                     # python execution
                     self.screenAction = ""
-                    if config.enhanceCommandExecution:
+                    if config.enhanceCommandExecution and not noScreening and not noFunctionCall:
                         messages = self.screening(messages, fineTunedUserInput)
                     else:
                         messages.append({"role": "user", "content": fineTunedUserInput})
@@ -1036,7 +1055,7 @@ class MyHandAI:
                             self.showErrors()
                             print("Unable to load internet resources.")
 
-                    completion = self.runCompletion(messages)
+                    completion = self.runCompletion(messages, noFunctionCall)
                     # stop spinning
                     self.runPython = True
                     stop_event.set()
@@ -1054,7 +1073,7 @@ class MyHandAI:
                     print("\n")
                     
                     # optional
-                    # remove predefined context to reduce cost
+                    # remove predefined context to reduce token size and cost
                     #messages[-1] = {"role": "user", "content": userInput}
                     
                     messages.append({"role": "assistant", "content": chat_response})
