@@ -112,26 +112,26 @@ Bible verse: """)
 
 # Instructions accoring to the given content
 
-config.predefinedInstructions["Bible - Put in Perspective"] = """Tell me how we should understand it or response, according to biblical perspectives and principles.[NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Explain its Meaning"] = """Explain the meaning of the given content in reference to the Bible.[NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Write a Summary"] = """Write a summary in reference to the Bible.[NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Write a Sermon"] = """Write a sermon in reference to the Bible.[NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Write a Prayer"] = """Write a prayer in reference to the Bible.[NO_FUNCTION_CALL]"""
+config.predefinedInstructions["Bible - Put in Perspective"] = """Tell me how we should understand it or response, according to biblical perspectives and principles. [NO_FUNCTION_CALL]"""
+config.predefinedInstructions["Bible - Explain its Meaning"] = """Explain the meaning of the given content in reference to the Bible. [NO_FUNCTION_CALL]"""
+config.predefinedInstructions["Bible - Write a Summary"] = """Write a summary in reference to the Bible. [NO_FUNCTION_CALL]"""
+config.predefinedInstructions["Bible - Write a Sermon"] = """Write a sermon in reference to the Bible. [NO_FUNCTION_CALL]"""
+config.predefinedInstructions["Bible - Write a Prayer"] = """Write a prayer in reference to the Bible. [NO_FUNCTION_CALL]"""
 config.predefinedInstructions["Bible - Write a Short Prayer"] = """Write a short prayer in reference to the Bible.
-Keep the prayer short and do not make it longer than a paragraph.[NO_FUNCTION_CALL]"""
+Keep the prayer short and do not make it longer than a paragraph. [NO_FUNCTION_CALL]"""
 config.predefinedInstructions["Bible - Explain Key Words"] = """Identify key words in the content.
 Elaborate on their importance in comprehending the context and the bible as a whole.
 I want your elaboration to be comprehensive and informative.
-Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing.[NO_FUNCTION_CALL]"""
+Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing. [NO_FUNCTION_CALL]"""
 config.predefinedInstructions["Bible - Explain Key Themes"] = """Identify key themes or key messages in the content.
 Elaborate on their importance in comprehending the content and the bible as a whole.
 I want your elaboration to be comprehensive and informative.
-Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing.[NO_FUNCTION_CALL]"""
+Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing. [NO_FUNCTION_CALL]"""
 config.predefinedInstructions["Bible - Explain Theology"] = """Please write the theological messages conveyed in the content, in reference to the Bible.
 In addition, explain the significance of the theological messages in the bible.
 I want your writing to be comprehensive and informative.
-Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing.[NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Quote Promises"] = """Quote relevant Bible promises in relation to the content.[NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Quote Promises & Explain"] = """Quote relevant Bible promises in relation to the content. Explain how these promises are meant to provide comfort, hope, and guidance in my life.[NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Quote Passages"] = """Quote relevant Bible passages in relation to the content.[NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Quote Passages & Explain"] = """Quote relevant Bible passages in relation to the content. Explain how these passages are related to the given content.[NO_FUNCTION_CALL]"""
+Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing. [NO_FUNCTION_CALL]"""
+config.predefinedInstructions["Bible - Quote Promises"] = """Quote relevant Bible promises in relation to the content. [NO_FUNCTION_CALL]"""
+config.predefinedInstructions["Bible - Quote Promises & Explain"] = """Quote relevant Bible promises in relation to the content. Explain how these promises are meant to provide comfort, hope, and guidance in my life. [NO_FUNCTION_CALL]"""
+config.predefinedInstructions["Bible - Quote Passages"] = """Quote relevant Bible passages in relation to the content. [NO_FUNCTION_CALL]"""
+config.predefinedInstructions["Bible - Quote Passages & Explain"] = """Quote relevant Bible passages in relation to the content. Explain how these passages are related to the given content. [NO_FUNCTION_CALL]"""
