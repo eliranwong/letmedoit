@@ -51,6 +51,7 @@ defaultSettings = (
     ('blankEntryAction', "..."),
     ('defaultBlankEntryAction', ".context"),
     ('startupdirectory', ""),
+    ('suggestSystemCommand', True),
 )
 
 setConfig(defaultSettings)

@@ -9,6 +9,7 @@ from utils.promptValidator import FloatValidator
 from utils.get_path_prompt import GetPath
 from utils.prompt_shared_key_bindings import swapTerminalColors
 from utils.file_utils import FileUtil
+from utils.terminal_system_command_prompt import SystemCommandPrompt
 
 class MyHandAI:
 
@@ -640,6 +641,7 @@ Otherwise, answer "chat". Here is the request:"""
             "change startup directory",
             "change Termux API integration",
             "change developer mode [ctrl+d]",
+            "open system command prompt",
             "open myHand.ai wiki",
         )
         feature = self.dialogs.getValidOptions(
@@ -976,6 +978,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".startupDirectory",
             ".termuxapi",
             ".developer",
+            ".system",
             ".help",
         )
         featuresLower = [i.lower() for i in features] + ["...", ".save", ".share"]
@@ -1005,6 +1008,8 @@ Otherwise, answer "chat". Here is the request:"""
                 return self.exitAction()
             elif userInput.strip().lower() == config.cancel_entry:
                 pass
+            elif userInput.strip().lower() == ".system":
+                SystemCommandPrompt().run(allowPathChanges=True)
             elif userInput.strip().lower() == ".swapmultiline":
                 self.swapMultiline()
             elif userInput.strip().lower() == ".swaptextbrightness":
