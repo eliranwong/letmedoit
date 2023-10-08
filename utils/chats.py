@@ -1,4 +1,4 @@
-import config, openai, glob, threading, os, time, traceback, re, subprocess, json, datetime, webbrowser, pydoc, textwrap
+import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, webbrowser, pydoc, textwrap
 from pathlib import Path
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory

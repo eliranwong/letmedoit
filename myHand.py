@@ -11,6 +11,7 @@ from utils.shortcuts import *
 import platform
 from utils.shortcuts import *
 from utils.chats import MyHandAI
+from prompt_toolkit.shortcuts import set_title, clear_title
 
 if __name__ == '__main__':
 
@@ -69,6 +70,7 @@ if __name__ == '__main__':
         except:
             print("Failed to automatically update!")
 
+    set_title("myHand.AI")
     getLatestUpdate()
     setOsOpenCmd()
     config.pipIsUpdated = False
@@ -76,3 +78,4 @@ if __name__ == '__main__':
     myHand = MyHandAI()
     myHand.startChats()
     aboutToQuit()
+    clear_title()
