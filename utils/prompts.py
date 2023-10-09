@@ -78,7 +78,7 @@ class Prompts:
         @this_key_bindings.add("c-e")
         def _(_):
             config.enhanceCommandExecution = not config.enhanceCommandExecution
-            run_in_terminal(lambda: print(f"Command execution mode changed to {'enhanced' if config.enhanceCommandExecution else 'auto'}!"))
+            run_in_terminal(lambda: print(f"Command execution mode changed to '{'enhanced' if config.enhanceCommandExecution else 'auto'}'!"))
         @this_key_bindings.add("c-l")
         def _(event):
             config.defaultEntry = event.app.current_buffer.text

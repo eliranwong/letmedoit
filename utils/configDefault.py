@@ -43,7 +43,7 @@ defaultSettings = (
     ('terminalSearchHighlightForeground', 'ansidefault'),
     ('developer', False),
     ('enhanceCommandExecution', True),
-    ('confirmExecution', "always"), # 'always', 'risk_only', 'none'
+    ('confirmExecution', "always"), # 'always', 'high_risk_only', 'medium_risk_or_above', 'none'
     ('codeDisplay', False),
     ('autoUpdate', True),
     ('terminalEditorScrollLineCount', 10),

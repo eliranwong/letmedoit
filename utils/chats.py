@@ -205,6 +205,31 @@ class MyHandAI:
             code = f"{insert_string}{code}"
         return code
 
+    def riskAssessment(self, code):
+        content = f"""I want you to act as a Python expert.
+Assess the risk level of damaging my device upon executing the python code that I will provide for you. 
+Answer me either 'high', 'medium' or 'low', without giving me any extra information.
+e.g. file deletions or similar significant impacts are regarded as 'high' level.
+Acess the risk level of this Python code:
+```
+{code}
+```
+"""
+        try:
+            completion = openai.ChatCompletion.create(
+                model=config.chatGPTApiModel,
+                messages=[{"role": "user", "content" : content}],
+                n=1,
+                max_tokens=config.chatGPTApiMaxTokens,
+            )
+            answer = completion.choices[0].message.content
+            answer = re.sub("[^A-Za-z]", "", answer).lower()
+            if not answer in ("high", "medium", "low"):
+                answer = "high"
+            return answer
+        except:
+            return "high"
+
     def getFunctionResponse(self, response_message, function_name):
         if function_name == "python":
             config.pythonFunctionResponse = ""
@@ -213,6 +238,8 @@ class MyHandAI:
 
             print("--------------------")
             print(f"running python code ...")
+            risk = self.riskAssessment(python_code)
+            print(f"[risk level: {risk}]")
             if config.developer or config.codeDisplay:
                 print("```")
                 print(python_code)
@@ -222,7 +249,7 @@ class MyHandAI:
             if not self.runPython:
                 info = {"information": python_code}
                 return json.dumps(info)
-            elif self.confirmExecution("yes"):
+            elif self.confirmExecution(risk):
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
@@ -257,7 +284,7 @@ class MyHandAI:
         }
 
     def confirmExecution(self, risk):
-        if config.confirmExecution == "always" or (risk == "yes" and config.confirmExecution == "risk_only"):
+        if config.confirmExecution == "always" or (risk == "high" and config.confirmExecution == "high_risk_only") or (not risk == "low" and config.confirmExecution == "medium_risk_or_above"):
             return True
         else:
             return False
@@ -280,6 +307,7 @@ class MyHandAI:
             # show Termux command for developer
             print("--------------------")
             print(f"Termux: {title}")
+            print(f"[risk level: {risk}]")
             if config.developer or config.codeDisplay:
                 print("```")
                 print(function_args)
@@ -330,8 +358,8 @@ class MyHandAI:
                     },
                     "risk": {
                         "type": "string",
-                        "description": "risk of damaging my device, e.g. file deletion or other significant impacts",
-                        "enum": ["yes", "no"],
+                        "description": "Assess the risk level of damaging my device upon executing the task. e.g. file deletions or similar significant impacts are regarded as 'high' level.",
+                        "enum": ["high", "medium", "low"],
                     },
                 },
                 "required": ["code", "title", "risk"],
@@ -356,6 +384,7 @@ class MyHandAI:
             # show pyton code for developer
             print("--------------------")
             print(f"Python: {title}")
+            print(f"[risk level: {risk}]")
             if config.developer or config.codeDisplay:
                 print("```")
                 print(python_code)
@@ -398,8 +427,8 @@ class MyHandAI:
                     },
                     "risk": {
                         "type": "string",
-                        "description": "risk of damaging my device, e.g. file deletion or other negative impacts",
-                        "enum": ["yes", "no"],
+                        "description": "Assess the risk level of damaging my device upon executing the task. e.g. file deletions or similar significant impacts are regarded as 'high' level.",
+                        "enum": ["high", "medium", "low"],
                     },
                 },
                 "required": ["code", "title", "risk"],
@@ -722,17 +751,20 @@ Otherwise, answer "chat". Here is the request:"""
                     config.codeDisplay = (option == "enable")
                     self.print(f"Command / Code display: {option}d!")
             elif feature == ".confirmexecution":
-                options = ("always", "risk_only", "none")
+                options = ("always", "medium_risk_or_above", "high_risk_only", "none")
+                if not config.confirmExecution in options:
+                    config.confirmExecution = "always"
                 descriptions = (
                     "always",
-                    "only at risk of negative impact, e.g. file deletion",
-                    "none"
+                    "medium risk or above",
+                    "high risk only, e.g. file deletion",
+                    "none",
                 )
                 option = self.dialogs.getValidOptions(
                     options=options, 
                     descriptions=descriptions, 
                     title="Command Execution Confirmation",
-                    text="myHand.ai can execute commands on your behalf.\nDefine here how you want confirmation\nbefore commands are executed:\n(caution: execute commands at your own risk)",  
+                    text="myHand.ai can execute commands on your behalf.\nWhen do you want confirmation\nbefore commands are executed:\n(caution: execute commands at your own risk)",  
                     default=config.confirmExecution, 
                 )
                 if option:
