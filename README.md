@@ -88,6 +88,10 @@ Read https://github.com/eliranwong/myHand.ai/wiki/Compare-with-ChatGPT
 
 In most cases, myHand.ai run Python codes for task execution. This makes myHand.ai terms of platforms, myHand.ai was developed and tested on Windows, macOS, Linux, ChromeOS and Termux (Android).
 
+In addition, myHand.ai offers more options for risk managements:
+
+https://github.com/eliranwong/myHand.ai/wiki/Command-Execution#confirmation-prompt-options-for-command-execution
+
 # Comparison with Siri and Others
 
 Unlike popular options such as Siri (macOS, iOS), Cortana (Windows), and Google Assistant (Android), myHand offers enhanced power, customization, flexibility, and compatibility.

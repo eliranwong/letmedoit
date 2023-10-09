@@ -818,7 +818,7 @@ Otherwise, answer "chat". Here is the request:"""
                     options=options, 
                     title="Command Execution Mode", 
                     default="enhanced" if config.enhanceCommandExecution else "auto",
-                    text="myHand can execute commands\nto get information for a response\nor perform a task for users.\n(read https://github.com/eliranwong/myHand.ai/wiki/Command-Execution)\nSelect a mode below:",
+                    text="myHand can execute commands\nto retrieve the requested information\nor perform tasks for users.\n(read https://github.com/eliranwong/myHand.ai/wiki/Command-Execution)\nSelect a mode below:",
                 )
                 if option:
                     config.enhanceCommandExecution = (option == "enhanced")
