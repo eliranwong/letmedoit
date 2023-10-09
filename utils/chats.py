@@ -239,7 +239,7 @@ Acess the risk level of this Python code:
             print("--------------------")
             print(f"running python code ...")
             risk = self.riskAssessment(python_code)
-            self.showRisk()
+            self.showRisk(risk)
             if config.developer or config.codeDisplay:
                 print("```")
                 print(python_code)
@@ -307,7 +307,7 @@ Acess the risk level of this Python code:
             # show Termux command for developer
             print("--------------------")
             print(f"Termux: {title}")
-            self.showRisk()
+            self.showRisk(risk)
             if config.developer or config.codeDisplay:
                 print("```")
                 print(function_args)
@@ -371,7 +371,7 @@ Acess the risk level of this Python code:
         config.chatGPTApiFunctionSignatures.append(functionSignature)
         config.chatGPTApiAvailableFunctions["execute_termux_command"] = execute_termux_command
 
-    def showRisk(self):
+    def showRisk(self, risk):
         print(f"[risk level: {risk}]")
 
     def setupPythonExecution(self):
@@ -387,7 +387,7 @@ Acess the risk level of this Python code:
             # show pyton code for developer
             print("--------------------")
             print(f"Python: {title}")
-            self.showRisk()
+            self.showRisk(risk)
             if config.developer or config.codeDisplay:
                 print("```")
                 print(python_code)
