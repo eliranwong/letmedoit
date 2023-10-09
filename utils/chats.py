@@ -372,6 +372,8 @@ Acess the risk level of this Python code:
         config.chatGPTApiAvailableFunctions["execute_termux_command"] = execute_termux_command
 
     def showRisk(self, risk):
+        if not config.confirmExecution in ("always", "medium_risk_or_above", "high_risk_only", "none"):
+            config.confirmExecution = "always"
         print(f"[risk level: {risk}]")
 
     def setupPythonExecution(self):
@@ -668,8 +670,8 @@ Otherwise, answer "chat". Here is the request:"""
             "change function response",
             "change online searches",
             "change execution mode [ctrl+e]",
-            "change command display",
             "change user confirmation",
+            "change command display",
             "change startup directory",
             "change Termux API integration",
             "change developer mode [ctrl+d]",
@@ -1008,8 +1010,8 @@ Otherwise, answer "chat". Here is the request:"""
             ".functionresponse",
             ".latestSearches",
             ".enhanceexecution",
-            ".codedisplay",
             ".confirmexecution",
+            ".codedisplay",
             ".startupDirectory",
             ".termuxapi",
             ".developer",
