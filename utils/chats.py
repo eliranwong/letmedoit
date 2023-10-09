@@ -250,7 +250,7 @@ Acess the risk level of this Python code:
                 info = {"information": python_code}
                 return json.dumps(info)
             elif self.confirmExecution(risk):
-                print("Do you want to execute it? [y]es / [N]o")
+                print("Do you want to continue? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
                     info = {"information": python_code}
