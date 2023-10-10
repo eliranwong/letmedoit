@@ -69,7 +69,7 @@ def search_bible(function_args):
         bible = f"[{bible}] " if compareMode and compareVersions else ""
         thisVerse = f"<{config.terminalResourceLinkColor}>{c}:{v}</{config.terminalResourceLinkColor}> {verseText}"
         print_formatted_text(HTML(f"{bible}{thisVerse}"))
-        return thisVerse
+        #return thisVerse
     def getSingleVerse(bible, b, c, v):
         database = os.path.join(config.bibleDataCurrent, "bibles", f"{bible}.bible")
         if os.path.isfile(database):
@@ -121,8 +121,8 @@ def search_bible(function_args):
                     config.tempContent += f"{bookName}\n"
                     bookName = f"<u><b><{config.terminalHeadingTextColor}>{bookName}</{config.terminalHeadingTextColor}></b></u>"
                     print_formatted_text(HTML(bookName))
-                thisVerse = displaySingleVerse(config.mainText, c, v, verseText)
-                config.tempContent += f"{thisVerse}\n"
+                displaySingleVerse(config.mainText, c, v, verseText)
+                config.tempContent += f"{c}:{v} \n"
                 subTotal += 1
                 # bible comparison
                 if compareMode and compareVersions:
@@ -189,7 +189,6 @@ functionSignature = {
                 "type": "string",
                 "description": """Formulate a sql query over a table created with statement "CREATE TABLE Verses (Book INT, Chapter INT, Verse INT, Scripture TEXT)".
 The book numbers range from 1 to 66, corresponding to the canonical order from Genesis to Revevlation in the bible.
-Remember, parse any bible references, e.g. John 3:16; Rm 5:8, to get corresponding Book, Chapter and Verse numbers.
 Give me only the sql query statement, starting with "SELECT * FROM Verses WHERE " without any extra explanation or comment.""",
             },
             "version": {
