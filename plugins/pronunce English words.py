@@ -5,12 +5,7 @@ import config, os, subprocess
 try:
     from gtts import gTTS
 
-    # pip3 install googlesearch-python
-    # Use google https://pypi.org/project/googlesearch-python/ to search internet for information, about which ChatGPT doesn't know.
-
     def pronunce_english_words(function_args):
-        # retrieve argument values from a dictionary
-        #print(function_args)
         words = function_args.get("words") # required
 
         print("Loading text-to-speech feature ...")
@@ -20,10 +15,11 @@ try:
         tts.save(audioFile)
 
         try:
+            # play it with cvlc if it is installed
             command = f'''cvlc --play-and-exit "{audioFile}" &> /dev/null'''
             subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         except:
-            command = f"{config.open} audioFile"
+            command = f"{config.open} {audioFile}"
             subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         return "Done!"
 
