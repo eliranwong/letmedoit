@@ -68,6 +68,8 @@ Command execution helps:
 
 > delete them
 
+> convert music.wav into music.mp3
+
 3. to interact with third-party applications, e.g.
 
 > open "my_music.mp3" with VLC player
