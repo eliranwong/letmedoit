@@ -110,8 +110,64 @@ However, remember, I want you not to quote the whole verse word by word, especia
 [NO_FUNCTION_CALL]
 Bible verse: """)
 
-# Instructions accoring to the given content
+# Studies
+config.inputSuggestions.append("""Bible Perspective.
+Tell me how we should understand the content, according to biblical perspectives and principles:
+[NO_FUNCTION_CALL]
+""")
+config.inputSuggestions.append("""Bible Meaning.
+Explain the meaning of the content in reference to the Bible:
+[NO_FUNCTION_CALL]
+""")
+config.inputSuggestions.append("""Bible Summary.
+Write a summary on the content in reference to the Bible:
+[NO_FUNCTION_CALL]
+""")
+config.inputSuggestions.append("""Bible Sermon.
+Write a sermon on the content in reference to the Bible:
+[NO_FUNCTION_CALL]
+""")
+config.inputSuggestions.append("""Bible Prayer.
+Write a prayer on the content in reference to the Bible:
+[NO_FUNCTION_CALL]
+""")
+config.inputSuggestions.append("""Bible Short Prayer.
+Write a short prayer on the content in reference to the Bible:
+(Keep the prayer short and do not make it longer than a paragraph.)
+[NO_FUNCTION_CALL]
+""")
+config.inputSuggestions.append("""Bible Key Words.
+Identify key words in the content.
+Elaborate on their importance in comprehending the context and the bible as a whole.
+I want your elaboration to be comprehensive and informative.
+Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing.
+[NO_FUNCTION_CALL]
+""")
+config.inputSuggestions.append("""Bible Key Themes.
+Identify key themes or key messages in the content.
+Elaborate on their importance in comprehending the content and the bible as a whole.
+I want your elaboration to be comprehensive and informative.
+Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing.
+[NO_FUNCTION_CALL]
+""")
+config.inputSuggestions.append("""Bible Theology.
+Please write the theological messages conveyed in the content, in reference to the Bible.
+In addition, explain the significance of the theological messages in the bible.
+I want your writing to be comprehensive and informative.
+Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing.
+[NO_FUNCTION_CALL]
+""")
+config.inputSuggestions.append("""Bible Promises.
+Quote relevant Bible promises in relation to the content.
+Explain how these promises are meant to provide comfort, hope, and guidance in my life.
+[NO_FUNCTION_CALL]
+""")
+config.inputSuggestions.append("""Bible Passages.
+Quote relevant Bible passages in relation to the content. Explain how these passages are related to the given content.
+[NO_FUNCTION_CALL]
+""")
 
+# Instructions accoring to the given content
 config.predefinedInstructions["Bible - Put in Perspective"] = """Tell me how we should understand it or response, according to biblical perspectives and principles. [NO_FUNCTION_CALL]"""
 config.predefinedInstructions["Bible - Explain its Meaning"] = """Explain the meaning of the given content in reference to the Bible. [NO_FUNCTION_CALL]"""
 config.predefinedInstructions["Bible - Write a Summary"] = """Write a summary in reference to the Bible. [NO_FUNCTION_CALL]"""

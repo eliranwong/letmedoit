@@ -69,7 +69,7 @@ def search_bible(function_args):
         bible = f"[{bible}] " if compareMode and compareVersions else ""
         thisVerse = f"<{config.terminalResourceLinkColor}>{c}:{v}</{config.terminalResourceLinkColor}> {verseText}"
         print_formatted_text(HTML(f"{bible}{thisVerse}"))
-        #return thisVerse
+        return thisVerse
     def getSingleVerse(bible, b, c, v):
         database = os.path.join(config.bibleDataCurrent, "bibles", f"{bible}.bible")
         if os.path.isfile(database):
@@ -122,7 +122,9 @@ def search_bible(function_args):
                     bookName = f"<u><b><{config.terminalHeadingTextColor}>{bookName}</{config.terminalHeadingTextColor}></b></u>"
                     print_formatted_text(HTML(bookName))
                 displaySingleVerse(config.mainText, c, v, verseText)
-                config.tempContent += f"{c}:{v} \n"
+                config.tempContent += f"{c}:{v}\n"
+                # thisVerse = displaySingleVerse(config.mainText, c, v, verseText)
+                # config.tempContent += f"{thisVerse}\n"
                 subTotal += 1
                 # bible comparison
                 if compareMode and compareVersions:
@@ -146,11 +148,10 @@ def search_bible(function_args):
 
 # add bible books to input suggestions
 config.inputSuggestions += [
-    "open bible chapter ",
-    "open bible verses ",
+    "go to ",
+    "go to chapter ",
     "next chapter",
     "previous chapter",
-    "go to chapter ",
     "search for verses that ",
     "enable comparison",
     "disable comparison",
