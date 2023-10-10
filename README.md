@@ -2,8 +2,6 @@
 
 "myHand" is AI assistant, powered by ChatGPT, that can both chat and run tasks on local devices.
 
-[![Watch the video](https://img.youtube.com/vi/9ELhdPqPRAM/maxresdefault.jpg)](https://youtu.be/9ELhdPqPRAM)
-
 <img width="1204" alt="myHand_screenshot" src="https://github.com/eliranwong/myHand.ai/assets/25262722/ccfcfa11-b13d-4870-9c4c-8167526342b2">
 
 Though myHand is built on ChatGPT, myHand goes beyond being a mere ChatGPT assistant by embodying the essence of "Actions speak louder than words." Unlike standard ChatGPT, myHand not only engages in conversational interactions but also actively performs tasks on behalf of users, demonstrating its commitment to practical action and tangible results.
@@ -11,6 +9,16 @@ Though myHand is built on ChatGPT, myHand goes beyond being a mere ChatGPT assis
 Repository: https://github.com/eliranwong/myHand.ai
 
 Developed by: [Eliran Wong](https://github.com/eliranwong)
+
+# Video Tutorials
+
+> Actions Speak Louder than Words
+
+[![Watch the video](https://img.youtube.com/vi/4iVM6vM325Y/maxresdefault.jpg)](https://youtu.be/4iVM6vM325Y)
+
+> Plugin showcase: Study the Bible Easily
+
+[![Watch the video](https://img.youtube.com/vi/CfhmceKvKi8/maxresdefault.jpg)](https://youtu.be/CfhmceKvKi8)
 
 # Requirements
 
