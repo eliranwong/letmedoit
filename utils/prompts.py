@@ -88,6 +88,10 @@ class Prompts:
         def _(event):
             event.app.current_buffer.text = ".context"
             event.app.current_buffer.validate_and_handle()
+        @this_key_bindings.add("c-g")
+        def _(_):
+            config.displayImprovedWriting = not config.displayImprovedWriting
+            run_in_terminal(lambda: print(f"Improved Writing Display '{'enabled' if config.displayImprovedWriting else 'disabled'}'!"))
 
         self.prompt_shared_key_bindings = merge_key_bindings([
             prompt_shared_key_bindings,

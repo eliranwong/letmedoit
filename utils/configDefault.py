@@ -15,6 +15,7 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
 defaultSettings = (
     ('chatGPTApiModel', 'gpt-3.5-turbo'),
     ('chatGPTApiPredefinedContext', '[none]'),
+    ('chatGPTApiPredefinedContextLast', '[none]'),
     ('chatGPTApiCustomContext', ''),
     ('chatGPTApiMaxTokens', 4097),
     #('chatGPTApiNoOfChoices', 1),
@@ -52,6 +53,8 @@ defaultSettings = (
     ('defaultBlankEntryAction', ".context"),
     ('startupdirectory', ""),
     ('suggestSystemCommand', True),
+    ('displayImprovedWriting', False),
+    ('improvedWritingSytle', 'standard English'), # e.g. British spoken English
 )
 
 setConfig(defaultSettings)

@@ -93,10 +93,10 @@ if __name__ == '__main__':
     setOsOpenCmd()
     config.pipIsUpdated = False
     config.excludeConfigList = []
-    # check log files; remove old lines if more than 2000 lines is found in a log file
+    # check log files; remove old lines if more than 3000 lines is found in a log file
     for i in ("chats", "paths", "commands"):
         filepath = os.path.join(config.myHandAIFolder, "history", i)
-        set_log_file_max_lines(filepath, 2000)
+        set_log_file_max_lines(filepath, 3000)
     myHand = MyHandAI()
     myHand.startChats()
     aboutToQuit()

@@ -1,6 +1,7 @@
 # install package gTTS to work with this plugin
 
 import config, os, subprocess
+from utils.vlc_utils import VlcUtil
 
 try:
     from gtts import gTTS
@@ -15,9 +16,7 @@ try:
         tts.save(audioFile)
 
         try:
-            # play it with cvlc if it is installed
-            command = f'''cvlc --play-and-exit "{audioFile}" &> /dev/null'''
-            subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+            VlcUtil.playMediaFile(audioFile)
         except:
             command = f"{config.open} {audioFile}"
             subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()

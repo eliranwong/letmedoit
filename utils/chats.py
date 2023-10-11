@@ -10,6 +10,7 @@ from utils.get_path_prompt import GetPath
 from utils.prompt_shared_key_bindings import swapTerminalColors
 from utils.file_utils import FileUtil
 from utils.terminal_system_command_prompt import SystemCommandPrompt
+from utils.shared_utils import SharedUtil
 
 class MyHandAI:
 
@@ -216,13 +217,9 @@ Acess the risk level of this Python code:
 ```
 """
         try:
-            completion = openai.ChatCompletion.create(
-                model=config.chatGPTApiModel,
-                messages=[{"role": "user", "content" : content}],
-                n=1,
-                max_tokens=config.chatGPTApiMaxTokens,
-            )
-            answer = completion.choices[0].message.content
+            answer = SharedUtil.getSingleResponse(content, temperature=0.0)
+            if not answer:
+                answer = "high"
             answer = re.sub("[^A-Za-z]", "", answer).lower()
             if not answer in ("high", "medium", "low"):
                 answer = "high"
@@ -658,6 +655,7 @@ Otherwise, answer "chat". Here is the request:"""
             "share content [ctrl+s]" if config.terminalEnableTermuxAPI else "save content [ctrl+s]",
             "swap multi-line input [ctrl+l]",
             "swap text brightness [esc+s]",
+            "toggle improved writing [esc+g]",
             "run an instruction",
             "change chat context [ctrl+o]",
             "change chat context inclusion",
@@ -877,6 +875,15 @@ Otherwise, answer "chat". Here is the request:"""
         self.multilineInput = not self.multilineInput
         self.print(f"Multi-line input {'enabled' if self.multilineInput else 'disabled'}!")
 
+    def toggleImprovedWriting(self):
+        config.displayImprovedWriting = not config.displayImprovedWriting
+        if config.displayImprovedWriting:
+            self.print("Please specify the writing style below:")
+            style = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.improvedWritingSytle)
+            if style and not style in (config.exit_entry, config.cancel_entry):
+                config.improvedWritingSytle = style
+        self.print(f"Improved Writing Display '{'enabled' if config.displayImprovedWriting else 'disabled'}'!")
+
     def getCurrentDateTime(self):
         current_datetime = datetime.datetime.now()
         return current_datetime.strftime("%Y-%m-%d_%H_%M_%S")
@@ -998,6 +1005,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".share" if config.terminalEnableTermuxAPI else ".save",
             ".swapmultiline",
             ".swaptextbrightness",
+            ".toggleimprovedwriting",
             ".instruction",
             ".context",
             ".contextinclusion",
@@ -1051,6 +1059,8 @@ Otherwise, answer "chat". Here is the request:"""
                 self.swapMultiline()
             elif userInput.strip().lower() == ".swaptextbrightness":
                 swapTerminalColors()
+            elif userInput.strip().lower() == ".toggleimprovedwriting":
+                self.toggleImprovedWriting()
             elif userInput.strip().lower() == ".instruction":
                 self.runInstruction()
             elif userInput.strip().lower() == ".context":
@@ -1067,7 +1077,13 @@ Otherwise, answer "chat". Here is the request:"""
                 self.saveChat(messages, openFile=True)
             elif userInput.strip() and not userInput.strip().lower() in featuresLower:
                 try:
-
+                    userInput = userInput.strip()
+                    # Feature: improve writing:
+                    if userInput and config.displayImprovedWriting:
+                        improvedVersion = SharedUtil.getSingleResponse(f"Improve the following writing, according to {config.improvedWritingSytle}\nRemember, provide me with the improved writing only, enclosed in triple quotes ``` and without any additional information or comments.\nMy writing\n:{userInput}")
+                        if improvedVersion and improvedVersion.startswith("```") and improvedVersion.endswith("```"):
+                            print(improvedVersion)
+                            userInput = improvedVersion[3:-3]
                     # refine messages before running completion
                     fineTunedUserInput = self.fineTuneUserInput(userInput)
                     noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.chatGPTApiPredefinedContext.startswith("Counselling - ") or config.chatGPTApiPredefinedContext.endswith("Counselling"))

@@ -8,6 +8,8 @@ config.inputSuggestions += [
         "Search ", 
         "Read ",
         "Tell me about ",
+        "Write a prompt so that I may instruct you to:\n",
+        f"Improve my writing according to {config.improvedWritingSytle}:\n",
     ]
 
 config.inputSuggestions.append("""Translate Content. I want you to assist me as a translator.
