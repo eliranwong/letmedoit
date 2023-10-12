@@ -1,11 +1,21 @@
 # set up config
-import os, traceback
-if not os.path.isfile("config.py"):
-    open("config.py", "a", encoding="utf-8").close()
+import os
+# go the project home directory
+myHandFile = os.path.realpath(__file__)
+myHandAIFolder = os.path.dirname(myHandFile)
+if os.getcwd() != myHandAIFolder:
+    os.chdir(myHandAIFolder)
+# create config.py if it does not exist
+configFile = os.path.join(myHandAIFolder, "config.py")
+if not os.path.isfile(configFile):
+    open(configFile, "a", encoding="utf-8").close()
+# import config and setup default 
 import config
 from utils.configDefault import *
+config.myHandFile = myHandFile
+config.myHandAIFolder = myHandAIFolder
+
 # set up shortcuts
-config.myHandFile = os.path.realpath(__file__)
 from utils.shortcuts import *
 # import other libraries
 import platform
@@ -39,7 +49,7 @@ if __name__ == '__main__':
             config.thisPlatform = "macOS"
 
     def aboutToQuit():
-        with open(os.path.join(config.myHandAIFolder, "config.py"), "w", encoding="utf-8") as fileObj:
+        with open(configFile, "w", encoding="utf-8") as fileObj:
             for name in dir(config):
                 excludeConfigList = [
                     "tts",

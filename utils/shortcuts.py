@@ -1,9 +1,5 @@
 import platform, os, config, sys, ctypes
 from shutil import copyfile
-cwd = os.path.dirname(config.myHandFile)
-if os.getcwd() != cwd:
-    os.chdir(cwd)
-config.myHandAIFolder = cwd
 
 def createShortcuts():
     thisOS = platform.system()
@@ -19,7 +15,7 @@ def createShortcuts():
     # on Windows
     if thisOS == "Windows":
         desktopPath = os.path.join(os.path.expanduser('~'), 'Desktop')
-        shortcutDir = desktopPath if os.path.isdir(desktopPath) else cwd
+        shortcutDir = desktopPath if os.path.isdir(desktopPath) else config.myHandAIFolder
         shortcutBat1 = os.path.join(shortcutDir, f"{appName}.bat")
         shortcutCommand1 = f'''powershell.exe -NoExit -Command "python '{config.myHandFile}'"'''
         # Create .bat for application shortcuts
@@ -36,13 +32,13 @@ def createShortcuts():
         if not os.path.isfile(shortcut_file):
             with open(shortcut_file, "w") as f:
                 f.write("#!/bin/bash\n")
-                f.write(f"cd {cwd}\n")
+                f.write(f"cd {config.myHandAIFolder}\n")
                 f.write(f"{sys.executable} {config.myHandFile}\n")
             os.chmod(shortcut_file, 0o755)
     # additional shortcuts on Linux
     elif thisOS == "Linux":
         def desktopFileContent():
-            iconPath = os.path.join(cwd, "icons", "myHandAI.png")
+            iconPath = os.path.join(config.myHandAIFolder, "icons", "myHandAI.png")
             return """#!/usr/bin/env xdg-open
 
 [Desktop Entry]
@@ -53,9 +49,9 @@ Path={0}
 Exec={1} {2}
 Icon={3}
 Name=myHand AI
-""".format(cwd, sys.executable, config.myHandFile, iconPath)
+""".format(config.myHandAIFolder, sys.executable, config.myHandFile, iconPath)
 
-        linuxDesktopFile = os.path.join(cwd, f"{appName}.desktop")
+        linuxDesktopFile = os.path.join(config.myHandAIFolder, f"{appName}.desktop")
         if not os.path.exists(linuxDesktopFile):
             # Create .desktop shortcut
             with open(linuxDesktopFile, "w") as fileObj:
