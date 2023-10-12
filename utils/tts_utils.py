@@ -1,6 +1,10 @@
-import config, os, traceback, subprocess, re, pygame
+import config, os, traceback, subprocess, re
 from gtts import gTTS
 from utils.vlc_utils import VlcUtil
+try:
+    import pygame
+except:
+    pass
 
 class ttsUtil:
 
