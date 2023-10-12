@@ -3,6 +3,7 @@ from pathlib import Path
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.shortcuts import clear
 from utils.terminal_mode_dialogs import TerminalModeDialogs
 from utils.prompts import Prompts
 from utils.promptValidator import FloatValidator
@@ -684,6 +685,7 @@ Otherwise, answer "chat". Here is the request:"""
             "toggle improved writing [esc+g]",
             "toggle input audio",
             "toggle response audio",
+            "configure text-to-speech command",
             "open system command prompt",
             "open myHand.ai wiki",
         )
@@ -903,6 +905,22 @@ Otherwise, answer "chat". Here is the request:"""
             config.ttsOutput = not config.ttsOutput
             self.print(f"Response Audio '{'enabled' if config.ttsOutput else 'disabled'}'!")
 
+    def defineTtsCommand(self):
+        self.print("Define text-to-speech command below:")
+        self.print("""* on macOS ['say -v "?"' to check voices], e.g.:\n'say' or 'say -v Daniel -r 200'""")
+        self.print("* on Ubuntu ['espeak --voices' to check voices], e.g.:\n'espeak' or 'espeak -v en-gb -s 175'")
+        ttsCommand = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.ttsCommand)
+        self.print("Specify command suffix below, if any [leave it blank if N/A]:")
+        self.print("""[may be applicable on Windows only, e.g. on Windows, users may set text-to-speech command as ```Add-Type -TypeDefinition 'using System.Speech.Synthesis; class TTS { static void Main(string[] args) { using (SpeechSynthesizer synth = new SpeechSynthesizer()) { synth.Speak(args[0]); } } }'; [TTS]::Main(``` and command suffix as ```)```.]""")
+        ttsCommandSuffix = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.ttsCommandSuffix)
+        if ttsCommand:
+            command = f'''{ttsCommand} "testing"{ttsCommandSuffix}'''
+            _, stdErr = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+            if stdErr:
+                self.showErrors() if config.developer else print("Entered command invalid!")
+            else:
+                config.ttsCommand, config.ttsCommandSuffix = ttsCommand, ttsCommandSuffix
+
     def toggleImprovedWriting(self):
         config.displayImprovedWriting = not config.displayImprovedWriting
         if config.displayImprovedWriting:
@@ -1026,6 +1044,7 @@ Otherwise, answer "chat". Here is the request:"""
         self.conversationStarted = False
 
         def startChat():
+            clear()
             self.print(self.divider)
             try:
                 from art import text2art
@@ -1067,6 +1086,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".toggleimprovedwriting",
             ".toggleinputaudio",
             ".toggleresponseaudio",
+            ".ttscommand",
             ".system",
             ".help",
         )
@@ -1109,6 +1129,8 @@ Otherwise, answer "chat". Here is the request:"""
                 self.toggleinputaudio()
             elif userInput.strip().lower() == ".toggleresponseaudio":
                 self.toggleresponseaudio()
+            elif userInput.strip().lower() == ".ttscommand":
+                self.defineTtsCommand()
             elif userInput.strip().lower() == ".instruction":
                 self.runInstruction()
             elif userInput.strip().lower() == ".context":
