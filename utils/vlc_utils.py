@@ -3,17 +3,17 @@ from utils.shared_utils import SharedUtil
 
 class VlcUtil:
 
+    macVlc = windowsVlc = ""
+
     @staticmethod
     def isVlcPlayerInstalled():
         # on macOS
-        if not hasattr(config, "macVlc"):
-            macVlc = "/Applications/VLC.app/Contents/MacOS/VLC"
-            config.macVlc = macVlc if platform.system() == "Darwin" and os.path.isfile(macVlc) else ""
+        macVlc = "/Applications/VLC.app/Contents/MacOS/VLC"
+        VlcUtil.macVlc = macVlc if platform.system() == "Darwin" and os.path.isfile(macVlc) else ""
         # on Windows
-        if not hasattr(config, "windowsVlc"):
-            windowsVlc = r'C:\Program Files\VideoLAN\VLC\vlc.exe'
-            config.windowsVlc = windowsVlc if platform.system() == "Windows" and os.path.isfile(windowsVlc) else ""
-        if (config.macVlc or config.windowsVlc or SharedUtil.isPackageInstalled("vlc")):
+        windowsVlc = r'C:\Program Files\VideoLAN\VLC\vlc.exe'
+        VlcUtil.windowsVlc = windowsVlc if platform.system() == "Windows" and os.path.isfile(windowsVlc) else ""
+        if (VlcUtil.macVlc or VlcUtil.windowsVlc or SharedUtil.isPackageInstalled("vlc")):
             return True
         else:
             return False
@@ -24,10 +24,10 @@ class VlcUtil:
             os.system("{0}{1} > /dev/null 2>&1 &".format("nohup " if SharedUtil.isPackageInstalled("nohup") else "", command))
         VlcUtil.closeVlcPlayer()
         try:
-            if config.windowsVlc:
-                os.system(config.windowsVlc)
-            elif config.macVlc:
-                run(config.macVlc)
+            if VlcUtil.windowsVlc:
+                os.system(VlcUtil.windowsVlc)
+            elif VlcUtil.macVlc:
+                run(VlcUtil.macVlc)
             elif SharedUtil.isPackageInstalled("vlc"):
                 run("vlc")
         except:
@@ -63,11 +63,11 @@ class VlcUtil:
         if vlcSpeed is None:
             vlcSpeed = config.vlcSpeed
         # vlc on macOS
-        if config.macVlc:
-            command = f'''{config.macVlc} --intf rc --play-and-exit --rate {vlcSpeed} "{filePath}" &> /dev/null'''
+        if VlcUtil.macVlc:
+            command = f'''{VlcUtil.macVlc} --intf rc --play-and-exit --rate {vlcSpeed} "{filePath}" &> /dev/null'''
         # vlc on windows
-        elif config.windowsVlc:
-            command = f'''"{config.windowsVlc}" --play-and-exit --rate {vlcSpeed} "{filePath}"'''
+        elif VlcUtil.windowsVlc:
+            command = f'''"{VlcUtil.windowsVlc}" --play-and-exit --rate {vlcSpeed} "{filePath}"'''
         # vlc on other platforms
         elif SharedUtil.isPackageInstalled("cvlc"):
             command = f'''cvlc --play-and-exit --rate {vlcSpeed} "{filePath}" &> /dev/null'''
@@ -79,11 +79,11 @@ class VlcUtil:
     @staticmethod
     def playMediaFileVlcGui(filePath, vlcSpeed):
         # vlc on macOS
-        if config.macVlc:
-            command = f'''{config.macVlc} --play-and-exit --rate {vlcSpeed} "{filePath}" &> /dev/null'''
+        if VlcUtil.macVlc:
+            command = f'''{VlcUtil.macVlc} --play-and-exit --rate {vlcSpeed} "{filePath}" &> /dev/null'''
         # vlc on windows
-        elif config.windowsVlc:
-            command = f'''"{config.windowsVlc}" --play-and-exit --rate {vlcSpeed} "{filePath}"'''
+        elif VlcUtil.windowsVlc:
+            command = f'''"{VlcUtil.windowsVlc}" --play-and-exit --rate {vlcSpeed} "{filePath}"'''
         # vlc on other platforms
         elif SharedUtil.isPackageInstalled("vlc"):
             command = f'''vlc --play-and-exit --rate {vlcSpeed} "{filePath}" &> /dev/null'''

@@ -12,9 +12,15 @@ import platform
 from utils.shortcuts import *
 from utils.chats import MyHandAI
 from utils.vlc_utils import VlcUtil
-from prompt_toolkit.shortcuts import set_title, clear_title
-import pygame
-pygame.mixer.init()
+from prompt_toolkit.shortcuts import set_title, clear_title, clear
+try:
+    # hide pygame welcome message
+    os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
+    import pygame
+    pygame.mixer.init()
+    config.isPygameInstalled = True
+except:
+    config.isPygameInstalled = False
 
 if __name__ == '__main__':
 
@@ -36,6 +42,9 @@ if __name__ == '__main__':
         with open(os.path.join(config.myHandAIFolder, "config.py"), "w", encoding="utf-8") as fileObj:
             for name in dir(config):
                 excludeConfigList = [
+                    "tts",
+                    "isPygameInstalled",
+                    "isVlcPlayerInstalled",
                     "accept_default",
                     "defaultEntry",
                     "pipIsUpdated",
@@ -71,8 +80,10 @@ if __name__ == '__main__':
     def getLatestUpdate():
         try:
             os.system("git pull")
+            clear()
+            print("You are running the latest version.")
         except:
-            print("Failed to automatically update!")
+            print("Automatic update failed!")
 
     def set_log_file_max_lines(log_file, max_lines):
         if os.path.isfile(log_file):

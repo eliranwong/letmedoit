@@ -56,6 +56,13 @@ class MyHandAI:
         chat_history = os.path.join(config.myHandAIFolder, "history", "chats")
         self.terminal_chat_session = PromptSession(history=FileHistory(chat_history))
 
+        # check if tts is ready
+        if not config.isVlcPlayerInstalled and not config.isPygameInstalled and not config.ttsCommand:
+            config.tts = False
+        else:
+            config.tts = True
+        self.isTtsAvailable()
+
     def getFolderPath(self):
         # get path
         getPath = GetPath(
@@ -879,13 +886,22 @@ Otherwise, answer "chat". Here is the request:"""
         self.multilineInput = not self.multilineInput
         self.print(f"Multi-line input {'enabled' if self.multilineInput else 'disabled'}!")
 
+    def isTtsAvailable(self):
+        if config.tts:
+            return True
+        print("Text-to-speech feature not ready!\nTo, set up, either:\n* install 'VLC player'\n* install 'pygame'\n* define 'ttsCommand' in config.py")
+        print("Read more at:\nhttps://github.com/eliranwong/myHand.ai/wiki/myHand-Speaks")
+        return False
+
     def toggleinputaudio(self):
-        config.ttsInput = not config.ttsInput
-        self.print(f"Input Audio '{'enabled' if config.ttsInput else 'disabled'}'!")
+        if self.isTtsAvailable:
+            config.ttsInput = not config.ttsInput
+            self.print(f"Input Audio '{'enabled' if config.ttsInput else 'disabled'}'!")
 
     def toggleresponseaudio(self):
-        config.ttsOutput = not config.ttsOutput
-        self.print(f"Response Audio '{'enabled' if config.ttsOutput else 'disabled'}'!")
+        if self.isTtsAvailable:
+            config.ttsOutput = not config.ttsOutput
+            self.print(f"Response Audio '{'enabled' if config.ttsOutput else 'disabled'}'!")
 
     def toggleImprovedWriting(self):
         config.displayImprovedWriting = not config.displayImprovedWriting

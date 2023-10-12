@@ -14,29 +14,30 @@ class ttsUtil:
 
     @staticmethod
     def play(content):
-        try:
-            if config.ttsCommand:
-                # remove '"' from the content
-                content = re.sub('"', "", content)
-                #os.system(f'''{config.ttsCommand} "{content}"''')
-                command = f'''{config.ttsCommand} "{content}"{config.ttsCommandSuffix}'''
-                subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-            else:
-                # use gTTS as default as config.ttsCommand is empty by default
-                audioFile = os.path.join(config.myHandAIFolder, "temp", "gtts.mp3")
-                tts = gTTS(content, lang=config.gttsLang, tld=config.gttsTld) if config.gttsTld else gTTS(content, lang=config.gttsLang)
-                tts.save(audioFile)
-                try:
-                    if config.isVlcPlayerInstalled:
-                        # vlc is preferred as it allows speed control with config.vlcSpeed
-                        VlcUtil.playMediaFile(audioFile)
-                    else:
-                        ttsUtil.playAudioFile(audioFile)
-                except:
-                    command = f"{config.open} {audioFile}"
+        if config.tts:
+            try:
+                if config.ttsCommand:
+                    # remove '"' from the content
+                    content = re.sub('"', "", content)
+                    #os.system(f'''{config.ttsCommand} "{content}"''')
+                    command = f'''{config.ttsCommand} "{content}"{config.ttsCommandSuffix}'''
                     subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        except:
-            if config.developer:
-                print(traceback.format_exc())
-            else:
-                pass
+                else:
+                    # use gTTS as default as config.ttsCommand is empty by default
+                    audioFile = os.path.join(config.myHandAIFolder, "temp", "gtts.mp3")
+                    tts = gTTS(content, lang=config.gttsLang, tld=config.gttsTld) if config.gttsTld else gTTS(content, lang=config.gttsLang)
+                    tts.save(audioFile)
+                    try:
+                        if config.isVlcPlayerInstalled:
+                            # vlc is preferred as it allows speed control with config.vlcSpeed
+                            VlcUtil.playMediaFile(audioFile)
+                        else:
+                            ttsUtil.playAudioFile(audioFile)
+                    except:
+                        command = f"{config.open} {audioFile}"
+                        subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+            except:
+                if config.developer:
+                    print(traceback.format_exc())
+                else:
+                    pass
