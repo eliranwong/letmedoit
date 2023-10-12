@@ -11,7 +11,10 @@ from utils.shortcuts import *
 import platform
 from utils.shortcuts import *
 from utils.chats import MyHandAI
+from utils.vlc_utils import VlcUtil
 from prompt_toolkit.shortcuts import set_title, clear_title
+import pygame
+pygame.mixer.init()
 
 if __name__ == '__main__':
 
@@ -39,6 +42,7 @@ if __name__ == '__main__':
                     "setConfig",
                     "excludeConfigList",
                     "tempContent",
+                    "tempChunk",
                     "thisPlatform",
                     "myHandAI",
                     "terminalColors",
@@ -93,6 +97,7 @@ if __name__ == '__main__':
     setOsOpenCmd()
     config.pipIsUpdated = False
     config.excludeConfigList = []
+    config.isVlcPlayerInstalled = VlcUtil.isVlcPlayerInstalled()
     # check log files; remove old lines if more than 3000 lines is found in a log file
     for i in ("chats", "paths", "commands"):
         filepath = os.path.join(config.myHandAIFolder, "history", i)

@@ -4,6 +4,21 @@ from utils.shared_utils import SharedUtil
 class VlcUtil:
 
     @staticmethod
+    def isVlcPlayerInstalled():
+        # on macOS
+        if not hasattr(config, "macVlc"):
+            macVlc = "/Applications/VLC.app/Contents/MacOS/VLC"
+            config.macVlc = macVlc if platform.system() == "Darwin" and os.path.isfile(macVlc) else ""
+        # on Windows
+        if not hasattr(config, "windowsVlc"):
+            windowsVlc = r'C:\Program Files\VideoLAN\VLC\vlc.exe'
+            config.windowsVlc = windowsVlc if platform.system() == "Windows" and os.path.isfile(windowsVlc) else ""
+        if (config.macVlc or config.windowsVlc or SharedUtil.isPackageInstalled("vlc")):
+            return True
+        else:
+            return False
+
+    @staticmethod
     def openVlcPlayer():
         def run(command):
             os.system("{0}{1} > /dev/null 2>&1 &".format("nohup " if SharedUtil.isPackageInstalled("nohup") else "", command))
@@ -32,15 +47,7 @@ class VlcUtil:
     @staticmethod
     def playMediaFile(filePath, vlcSpeed=None, audioGui=False):
         if vlcSpeed is None:
-            vlcSpeed = 0.0
-        # on macOS
-        if not hasattr(config, "macVlc"):
-            macVlc = "/Applications/VLC.app/Contents/MacOS/VLC"
-            config.macVlc = macVlc if platform.system() == "Darwin" and os.path.isfile(macVlc) else ""
-        # on Windows
-        if not hasattr(config, "windowsVlc"):
-            windowsVlc = r'C:\Program Files\VideoLAN\VLC\vlc.exe'
-            config.windowsVlc = windowsVlc if platform.system() == "Windows" and os.path.isfile(windowsVlc) else ""
+            vlcSpeed = config.vlcSpeed
         # get full path and escape double quote
         if isinstance(filePath, str):
             filePath = os.path.abspath(filePath).replace('"', '\\"')
@@ -54,7 +61,7 @@ class VlcUtil:
     @staticmethod
     def playMediaFileVlcNoGui(filePath, vlcSpeed=None):
         if vlcSpeed is None:
-            vlcSpeed = 0.0
+            vlcSpeed = config.vlcSpeed
         # vlc on macOS
         if config.macVlc:
             command = f'''{config.macVlc} --intf rc --play-and-exit --rate {vlcSpeed} "{filePath}" &> /dev/null'''

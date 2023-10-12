@@ -1,25 +1,15 @@
 # install package gTTS to work with this plugin
 
 import config, os, subprocess
-from utils.vlc_utils import VlcUtil
+from utils.tts_utils import ttsUtil
 
 try:
     from gtts import gTTS
 
     def pronunce_english_words(function_args):
         words = function_args.get("words") # required
-
         print("Loading text-to-speech feature ...")
-
-        audioFile = os.path.join(config.myHandAIFolder, "temp", "gtts.mp3")
-        tts = gTTS(words)
-        tts.save(audioFile)
-
-        try:
-            VlcUtil.playMediaFile(audioFile)
-        except:
-            command = f"{config.open} {audioFile}"
-            subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        ttsUtil.play(words)
         return "Done!"
 
     functionSignature = {
@@ -37,7 +27,6 @@ try:
         },
     }
 
-    config.pronunce_english_words_signature = [functionSignature]
     config.chatGPTApiFunctionSignatures.insert(0, functionSignature)
     config.chatGPTApiAvailableFunctions["pronunce_english_words"] = pronunce_english_words
 except:

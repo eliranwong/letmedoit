@@ -1,4 +1,4 @@
-import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, webbrowser, pydoc, textwrap
+import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, webbrowser, pydoc, textwrap, string
 from pathlib import Path
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -11,6 +11,7 @@ from utils.prompt_shared_key_bindings import swapTerminalColors
 from utils.file_utils import FileUtil
 from utils.terminal_system_command_prompt import SystemCommandPrompt
 from utils.shared_utils import SharedUtil
+from utils.tts_utils import ttsUtil
 
 class MyHandAI:
 
@@ -27,6 +28,7 @@ class MyHandAI:
         config.accept_default = False
         config.defaultEntry = ""
         config.tempContent = ""
+        config.tempChunk = ""
 
         # token limit
         self.tokenLimits = {
@@ -655,7 +657,6 @@ Otherwise, answer "chat". Here is the request:"""
             "share content [ctrl+s]" if config.terminalEnableTermuxAPI else "save content [ctrl+s]",
             "swap multi-line input [ctrl+l]",
             "swap text brightness [esc+s]",
-            "toggle improved writing [esc+g]",
             "run an instruction",
             "change chat context [ctrl+o]",
             "change chat context inclusion",
@@ -673,6 +674,9 @@ Otherwise, answer "chat". Here is the request:"""
             "change startup directory",
             "change Termux API integration",
             "change developer mode [ctrl+d]",
+            "toggle improved writing [esc+g]",
+            "toggle input audio",
+            "toggle response audio",
             "open system command prompt",
             "open myHand.ai wiki",
         )
@@ -875,6 +879,14 @@ Otherwise, answer "chat". Here is the request:"""
         self.multilineInput = not self.multilineInput
         self.print(f"Multi-line input {'enabled' if self.multilineInput else 'disabled'}!")
 
+    def toggleinputaudio(self):
+        config.ttsInput = not config.ttsInput
+        self.print(f"Input Audio '{'enabled' if config.ttsInput else 'disabled'}'!")
+
+    def toggleresponseaudio(self):
+        config.ttsOutput = not config.ttsOutput
+        self.print(f"Response Audio '{'enabled' if config.ttsOutput else 'disabled'}'!")
+
     def toggleImprovedWriting(self):
         config.displayImprovedWriting = not config.displayImprovedWriting
         if config.displayImprovedWriting:
@@ -978,6 +990,20 @@ Otherwise, answer "chat". Here is the request:"""
                 directoryList.append(f)
         return directoryList
 
+    def readAnswer(self, answer):
+        # read the chunk
+        if answer in string.punctuation and config.tempChunk:
+            # read words when there a punctuation
+            chunk = config.tempChunk + answer
+            # reset config.tempChunk
+            config.tempChunk = ""
+            # play with tts
+            if config.ttsOutput:
+                ttsUtil.play(chunk)
+        else:
+            # append to a chunk for reading
+            config.tempChunk += answer
+
     def startChats(self):
         messages = self.resetMessages()
 
@@ -1005,7 +1031,6 @@ Otherwise, answer "chat". Here is the request:"""
             ".share" if config.terminalEnableTermuxAPI else ".save",
             ".swapmultiline",
             ".swaptextbrightness",
-            ".toggleimprovedwriting",
             ".instruction",
             ".context",
             ".contextinclusion",
@@ -1023,6 +1048,9 @@ Otherwise, answer "chat". Here is the request:"""
             ".startupDirectory",
             ".termuxapi",
             ".developer",
+            ".toggleimprovedwriting",
+            ".toggleinputaudio",
+            ".toggleresponseaudio",
             ".system",
             ".help",
         )
@@ -1061,6 +1089,10 @@ Otherwise, answer "chat". Here is the request:"""
                 swapTerminalColors()
             elif userInput.strip().lower() == ".toggleimprovedwriting":
                 self.toggleImprovedWriting()
+            elif userInput.strip().lower() == ".toggleinputaudio":
+                self.toggleinputaudio()
+            elif userInput.strip().lower() == ".toggleresponseaudio":
+                self.toggleresponseaudio()
             elif userInput.strip().lower() == ".instruction":
                 self.runInstruction()
             elif userInput.strip().lower() == ".context":
@@ -1078,12 +1110,16 @@ Otherwise, answer "chat". Here is the request:"""
             elif userInput.strip() and not userInput.strip().lower() in featuresLower:
                 try:
                     userInput = userInput.strip()
+                    if userInput and config.ttsInput:
+                        ttsUtil.play(userInput)
                     # Feature: improve writing:
                     if userInput and config.displayImprovedWriting:
                         improvedVersion = SharedUtil.getSingleResponse(f"Improve the following writing, according to {config.improvedWritingSytle}\nRemember, provide me with the improved writing only, enclosed in triple quotes ``` and without any additional information or comments.\nMy writing\n:{userInput}")
                         if improvedVersion and improvedVersion.startswith("```") and improvedVersion.endswith("```"):
                             print(improvedVersion)
                             userInput = improvedVersion[3:-3]
+                            if config.ttsOutput:
+                                ttsUtil.play(userInput)
                     # refine messages before running completion
                     fineTunedUserInput = self.fineTuneUserInput(userInput)
                     noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.chatGPTApiPredefinedContext.startswith("Counselling - ") or config.chatGPTApiPredefinedContext.endswith("Counselling"))
@@ -1123,8 +1159,12 @@ Otherwise, answer "chat". Here is the request:"""
                         answer = event_text.get("content", "") # RETRIEVE CONTENT
                         # STREAM THE ANSWER
                         if answer is not None:
+                            # display the chunk
                             chat_response += answer
                             print(answer, end='', flush=True) # Print the response
+                            self.readAnswer(answer)
+                    # reset config.tempChunk
+                    config.tempChunk = ""
                     print("\n")
                     
                     # optional

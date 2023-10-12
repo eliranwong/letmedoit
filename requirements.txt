@@ -4,3 +4,4 @@ googlesearch-python
 art
 apsw
 gTTS
+pygame
