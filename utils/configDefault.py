@@ -17,7 +17,7 @@ defaultSettings = (
     ('chatGPTApiPredefinedContext', '[none]'),
     ('chatGPTApiPredefinedContextLast', '[none]'),
     ('chatGPTApiCustomContext', ''),
-    ('chatGPTApiMaxTokens', 4097),
+    ('chatGPTApiMaxTokens', 2000),
     #('chatGPTApiNoOfChoices', 1),
     ('chatGPTApiTemperature', 0.8),
     ('chatGPTApiFunctionCall', "auto"),

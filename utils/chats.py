@@ -910,16 +910,18 @@ Otherwise, answer "chat". Here is the request:"""
         self.print("""* on macOS ['say -v "?"' to check voices], e.g.:\n'say' or 'say -v Daniel -r 200'""")
         self.print("* on Ubuntu ['espeak --voices' to check voices], e.g.:\n'espeak' or 'espeak -v en-gb -s 175'")
         ttsCommand = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.ttsCommand)
-        self.print("Specify command suffix below, if any [leave it blank if N/A]:")
-        self.print("""[may be applicable on Windows only, e.g. on Windows, users may set text-to-speech command as ```Add-Type -TypeDefinition 'using System.Speech.Synthesis; class TTS { static void Main(string[] args) { using (SpeechSynthesizer synth = new SpeechSynthesizer()) { synth.Speak(args[0]); } } }'; [TTS]::Main(``` and command suffix as ```)```.]""")
-        ttsCommandSuffix = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.ttsCommandSuffix)
         if ttsCommand:
+            self.print("Specify command suffix below, if any [leave it blank if N/A]:")
+            self.print("""[may be applicable on Windows only, e.g. on Windows, users may set text-to-speech command as ```Add-Type -TypeDefinition 'using System.Speech.Synthesis; class TTS { static void Main(string[] args) { using (SpeechSynthesizer synth = new SpeechSynthesizer()) { synth.Speak(args[0]); } } }'; [TTS]::Main(``` and command suffix as ```)```.]""")
+            ttsCommandSuffix = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.ttsCommandSuffix)
             command = f'''{ttsCommand} "testing"{ttsCommandSuffix}'''
             _, stdErr = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
             if stdErr:
                 self.showErrors() if config.developer else print("Entered command invalid!")
             else:
                 config.ttsCommand, config.ttsCommandSuffix = ttsCommand, ttsCommandSuffix
+        else:
+            config.ttsCommand, config.ttsCommandSuffix = "", ""
 
     def toggleImprovedWriting(self):
         config.displayImprovedWriting = not config.displayImprovedWriting
