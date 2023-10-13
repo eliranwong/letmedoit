@@ -110,7 +110,7 @@ class Prompts:
             this_key_bindings,
         ])
 
-    def simplePrompt(self, numberOnly=False, validator=None, multiline=False, inputIndicator="", default="", accept_default=False, completer=None, promptSession=None, style=None):
+    def simplePrompt(self, numberOnly=False, validator=None, multiline=False, inputIndicator="", default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False):
         inputPrompt = promptSession.prompt if promptSession is not None else prompt
         if not inputIndicator:
             inputIndicator = self.inputIndicator
@@ -128,5 +128,6 @@ class Prompts:
             default=default,
             accept_default=accept_default,
             completer=completer,
+            is_password=is_password,
         ).strip()
         return userInput

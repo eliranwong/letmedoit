@@ -1,4 +1,4 @@
-import config, openai, platform, subprocess
+import config, openai, platform, subprocess, os, pydoc
 
 class SharedUtil:
 
@@ -24,3 +24,21 @@ class SharedUtil:
             return True if isInstalled else False
         except:
             return False
+
+    @staticmethod
+    def getCliOutput(cli):
+        try:
+            process = subprocess.Popen(cli, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, *_ = process.communicate()
+            return stdout.decode("utf-8")
+        except:
+            return ""
+
+    @staticmethod
+    def textTool(tool="", content=""):
+        if tool and SharedUtil.isPackageInstalled(tool):
+            pydoc.pipepager(content, cmd=tool)
+            if SharedUtil.isPackageInstalled("pkill"):
+                tool = tool.strip().split(" ")[0]
+                os.system(f"pkill {tool}")
+        return ""

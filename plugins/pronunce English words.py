@@ -10,7 +10,7 @@ try:
         words = function_args.get("words") # required
         print("Loading text-to-speech feature ...")
         ttsUtil.play(words)
-        return "Done!"
+        return "Finished! Text-to-speech engine closed!"
 
     functionSignature = {
         "name": "pronunce_english_words",
@@ -27,7 +27,7 @@ try:
         },
     }
 
-    config.chatGPTApiFunctionSignatures.insert(0, functionSignature)
+    config.chatGPTApiFunctionSignatures.append(functionSignature)
     config.chatGPTApiAvailableFunctions["pronunce_english_words"] = pronunce_english_words
 except:
     print("You need to install package 'gTTS' to work with plugin 'pronunce English words'! Run:\n> source venv/bin/activate\n> 'pip3 install gTTS'")

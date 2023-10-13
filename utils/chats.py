@@ -172,12 +172,12 @@ class MyHandAI:
     def changeAPIkey(self):
         if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
             self.print("Enter your OpenAI API Key [required]:")
-            apikey = self.prompts.simplePrompt(default=config.openaiApiKey)
-            if apikey and not apikey.strip().lower() == config.exit_entry:
+            apikey = self.prompts.simplePrompt(default=config.openaiApiKey, is_password=True)
+            if apikey and not apikey.strip().lower() in (config.cancel_entry, config.exit_entry):
                 config.openaiApiKey = apikey
             self.print("Enter your Organization ID [optional]:")
-            oid = self.prompts.simplePrompt(default=config.openaiApiOrganization)
-            if oid and not oid.strip().lower() == config.exit_entry:
+            oid = self.prompts.simplePrompt(default=config.openaiApiOrganization, is_password=True)
+            if oid and not oid.strip().lower() in (config.cancel_entry, config.exit_entry):
                 config.openaiApiOrganization = oid
             self.checkCompletion()
             self.print("Updated!")
@@ -258,6 +258,8 @@ Acess the risk level of this Python code:
                 info = {"information": python_code}
                 return json.dumps(info)
             elif self.confirmExecution(risk):
+                config.stop_event.set()
+                config.spinner_thread.join()
                 print("Do you want to continue? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
@@ -323,6 +325,8 @@ Acess the risk level of this Python code:
             print("--------------------")
             
             if self.confirmExecution(risk):
+                config.stop_event.set()
+                config.spinner_thread.join()
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
@@ -407,6 +411,8 @@ Acess the risk level of this Python code:
             if not self.runPython:
                 return errorMessage
             elif self.confirmExecution(risk):
+                config.stop_event.set()
+                config.spinner_thread.join()
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
@@ -629,9 +635,9 @@ Otherwise, answer "chat". Here is the request:"""
 
     # reset message when a new chart is started or context is changed
     def resetMessages(self):
-        systemMessage = f"You’re a kind helpful assistant. You have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python code on my behalf."
+        systemMessage = f"You’re myHand.ai, an advanced AI assistant, capable of engaging in conversations and executing tasks on local devices. You have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python code on my behalf."
         if config.chatGPTApiFunctionCall == "auto" and config.chatGPTApiFunctionSignatures:
-            systemMessage += " Only use the functions you have been provided with."
+            systemMessage += "Your functionality expands as I add more plugins to you. Only use the functions you have been provided with."
         messages = [
             {"role": "system", "content" : systemMessage}
         ]
@@ -1178,9 +1184,9 @@ Otherwise, answer "chat". Here is the request:"""
                         messages.append({"role": "user", "content": fineTunedUserInput})
 
                     # start spinning
-                    stop_event = threading.Event()
-                    spinner_thread = threading.Thread(target=self.spinning_animation, args=(stop_event,))
-                    spinner_thread.start()
+                    config.stop_event = threading.Event()
+                    config.spinner_thread = threading.Thread(target=self.spinning_animation, args=(config.stop_event,))
+                    config.spinner_thread.start()
 
                     # force loading internet searches
                     if config.loadingInternetSearches == "always" and not self.screenAction in ("termux", "python", "web", "system"):
@@ -1193,8 +1199,8 @@ Otherwise, answer "chat". Here is the request:"""
                     completion = self.runCompletion(messages, noFunctionCall)
                     # stop spinning
                     self.runPython = True
-                    stop_event.set()
-                    spinner_thread.join()
+                    config.stop_event.set()
+                    config.spinner_thread.join()
 
                     chat_response = ""
                     for event in completion:                                 

@@ -2,7 +2,7 @@
 
 "myHand" is AI assistant, powered by ChatGPT, that can both chat and run tasks on local devices.
 
-<img width="1204" alt="myHand_screenshot" src="https://github.com/eliranwong/myHand.ai/assets/25262722/ccfcfa11-b13d-4870-9c4c-8167526342b2">
+![who_are_you](https://github.com/eliranwong/myHand.ai/assets/25262722/4e0fa7c6-8b01-407d-a1f0-c5485e2fa6b8)
 
 Though myHand is built on ChatGPT, myHand goes beyond being a mere ChatGPT assistant by embodying the essence of "Actions speak louder than words." Unlike standard ChatGPT, myHand not only engages in conversational interactions but also actively performs tasks on behalf of users, demonstrating its commitment to practical action and tangible results.
 
