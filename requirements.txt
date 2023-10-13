@@ -5,3 +5,4 @@ art
 apsw
 gTTS
 pygame
+google-cloud-texttospeech

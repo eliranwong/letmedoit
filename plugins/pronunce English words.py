@@ -1,6 +1,6 @@
 # install package gTTS to work with this plugin
 
-import config, os, subprocess
+import config
 from utils.tts_utils import ttsUtil
 
 try:

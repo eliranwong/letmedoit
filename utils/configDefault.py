@@ -15,7 +15,6 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
 defaultSettings = (
     ('chatGPTApiModel', 'gpt-3.5-turbo'),
     ('chatGPTApiPredefinedContext', '[none]'),
-    ('chatGPTApiPredefinedContextLast', '[none]'),
     ('chatGPTApiCustomContext', ''),
     ('chatGPTApiMaxTokens', 2000),
     #('chatGPTApiNoOfChoices', 1),
@@ -58,6 +57,8 @@ defaultSettings = (
     ('ttsInput', False),
     ('ttsOutput', False),
     ('vlcSpeed', 1.0),
+    ('gcttsLang', "en-GB"),
+    ('gcttsSpeed', 1.0),
     ('gttsLang', "en"), # gTTS is used by default if ttsCommand is not given
     ('gttsTld', ""), # https://gtts.readthedocs.io/en/latest/module.html#languages-gtts-lang
     ('ttsCommand', ""), # ttsCommand is used if it is given; offline tts engine runs faster; on macOS [suggested speak rate: 100-300], e.g. "say -r 200 -v Daniel"; on Ubuntu [espeak; speed in approximate words per minute; 175 by default], e.g. "espeak -s 175 -v {1}"

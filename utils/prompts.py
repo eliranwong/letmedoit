@@ -63,6 +63,13 @@ class Prompts:
         def _(event):
             event.app.current_buffer.text = ".new"
             event.app.current_buffer.validate_and_handle()
+        @this_key_bindings.add("c-y")
+        def _(event):
+            config.chatGPTApiPredefinedContextTemp = config.chatGPTApiPredefinedContext
+            config.chatGPTApiPredefinedContext = "[none]"
+            event.app.current_buffer.text = ".new"
+            event.app.current_buffer.validate_and_handle()
+            run_in_terminal(lambda: print("Predefined context is now temporarily changed to '[none]'."))
         @this_key_bindings.add("c-s")
         def _(event):
             event.app.current_buffer.text = ".save"

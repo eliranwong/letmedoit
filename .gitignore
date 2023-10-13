@@ -8,3 +8,5 @@ config.py
 *__pycache__*
 *.DS_Store*
 myHand.desktop
+credentials_GoogleCloudTextToSpeech.json
+credentials_GoogleCloudTextToSpeech_backup.json

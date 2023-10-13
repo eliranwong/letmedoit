@@ -30,6 +30,7 @@ class MyHandAI:
         config.defaultEntry = ""
         config.tempContent = ""
         config.tempChunk = ""
+        config.chatGPTApiPredefinedContextTemp = ""
 
         # token limit
         self.tokenLimits = {
@@ -657,6 +658,9 @@ Otherwise, answer "chat". Here is the request:"""
             # context may start with "You will be provided with my input delimited with a pair of XML tags, <input> and </input>. ...
             userInput = re.sub("<content>|<content [^<>]*?>|</content>", "", userInput)
             userInput = f"{context}\n<content>{userInput}</content>" if userInput.strip() else context
+        if config.chatGPTApiPredefinedContextTemp:
+            config.chatGPTApiPredefinedContext = config.chatGPTApiPredefinedContextTemp
+            config.chatGPTApiPredefinedContextTemp = ""
         return userInput
 
     def runOptions(self, features, userInput):
