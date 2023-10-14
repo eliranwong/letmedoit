@@ -338,13 +338,7 @@ Acess the risk level of this Python code:
                     function_response = "Done!"
                 else:
                     # display both output and error
-                    result = subprocess.run(function_args, shell=True, capture_output=True, text=True)
-                    output = result.stdout  # Captured standard output
-                    error = result.stderr  # Captured standard error
-                    function_response = ""
-                    function_response += f"# Output:\n{output}"
-                    if error.strip():
-                        function_response += f"\n# Error:\n{error}"
+                    function_response = SharedUtil.runSystemCommand(function_args)
                 self.print(function_response)
             except:
                 print(errorMessage)
@@ -799,7 +793,7 @@ Otherwise, answer "chat". Here is the request:"""
             elif feature == ".plugins":
                 self.selectPlugins()
             elif feature == ".help":
-                webbrowser.open('https://github.com/eliranwong/myHand.ai/wiki')
+                SharedUtil.openURL('https://github.com/eliranwong/myHand.ai/wiki')
             elif feature == ".developer":
                 options = ("enable", "disable")
                 option = self.dialogs.getValidOptions(

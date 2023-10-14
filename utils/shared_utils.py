@@ -1,4 +1,5 @@
-import config, openai, platform, subprocess, os, pydoc
+import config, openai, platform, subprocess, os, pydoc, webbrowser
+import urllib.parse
 
 class SharedUtil:
 
@@ -42,3 +43,23 @@ class SharedUtil:
                 tool = tool.strip().split(" ")[0]
                 os.system(f"pkill {tool}")
         return ""
+
+    @staticmethod
+    def runSystemCommand(command):
+        result = subprocess.run(function_args, shell=True, capture_output=True, text=True)
+        output = result.stdout  # Captured standard output
+        error = result.stderr  # Captured standard error
+        response = ""
+        response += f"# Output:\n{output}"
+        if error.strip():
+            response += f"\n# Error:\n{error}"
+        return response
+
+    @staticmethod
+    def openURL(url):
+        url = urllib.parse.quote(url)
+        if config.terminalEnableTermuxAPI:
+            command = f"""am start -n com.android.chrome/com.google.android.apps.chrome.Main -d {url}"""
+            print(SharedUtil.runSystemCommand(command))
+        else:
+            SharedUtil.openURL(url)

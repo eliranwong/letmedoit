@@ -1,4 +1,5 @@
 import config, webbrowser
+from utils.shared_utils import SharedUtil
 
 """
 To send an email using a single URL via Google Mail, you can use the following format:

@@ -1,4 +1,5 @@
 import config, webbrowser, datetime
+from utils.shared_utils import SharedUtil
 
 """
 Example: Google Calendar URL
@@ -99,7 +100,7 @@ def add_calendar_event(function_args):
             link += f"&location={location}"
         return link
 
-    webbrowser.open(getOutlookLink() if calendar == "outlook" else getGoogleLink())
+    SharedUtil.openURL(getOutlookLink() if calendar == "outlook" else getGoogleLink())
 
     return "Done!"
 
@@ -116,11 +117,11 @@ functionSignature = {
             },
             "title": {
                 "type": "string",
-                "description": "The title of the event. If the title contains spaces, replace the spaces with `%20`.",
+                "description": "The title of the event.",
             },
             "description": {
                 "type": "string",
-                "description": "The description of the event. If the title contains spaces, replace the spaces with `%20`.",
+                "description": "The description of the event.",
             },
             "url": {
                 "type": "string",
@@ -136,7 +137,7 @@ functionSignature = {
             },
             "location": {
                 "type": "string",
-                "description": "The location or venue of the event. If the location contains spaces, replace the spaces with `%20`.",
+                "description": "The location or venue of the event.",
             },
         },
         "required": ["calendar", "title", "description", "start_time", "end_time"],
