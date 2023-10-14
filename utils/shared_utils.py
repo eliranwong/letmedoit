@@ -60,7 +60,8 @@ class SharedUtil:
         url = urllib.parse.quote(url)
         if config.terminalEnableTermuxAPI:
             #command = f"""am start -n com.android.chrome/com.google.android.apps.chrome.Main -d {url}"""
-            #command = f"""termux-open-url {url}"""
-            pydoc.pipepager("", cmd=f"""termux-open-url {url}""")
+            #pydoc.pipepager("", cmd=f"""termux-open-url {url}""")
+            command = f'''am start -a android.intent.action.VIEW -n com.android.chrome/.Main -d {url}'''
+            SharedUtil.runSystemCommand(command)
         else:
             SharedUtil.openURL(url)
