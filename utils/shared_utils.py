@@ -46,7 +46,7 @@ class SharedUtil:
 
     @staticmethod
     def runSystemCommand(command):
-        result = subprocess.run(function_args, shell=True, capture_output=True, text=True)
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
         output = result.stdout  # Captured standard output
         error = result.stderr  # Captured standard error
         response = ""
