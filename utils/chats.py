@@ -630,7 +630,7 @@ Otherwise, answer "chat". Here is the request:"""
 
     # reset message when a new chart is started or context is changed
     def resetMessages(self):
-        systemMessage = f"You’re myHand.ai, an advanced AI assistant, capable of engaging in conversations and executing tasks on local devices. You have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python code on my behalf."
+        systemMessage = f"You’re myHand AI, an advanced AI assistant, capable of engaging in conversations and executing tasks on local devices. You have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python code on my behalf."
         if config.chatGPTApiFunctionCall == "auto" and config.chatGPTApiFunctionSignatures:
             systemMessage += "Your functionality expands as I add more plugins to you. Only use the functions you have been provided with."
         messages = [
