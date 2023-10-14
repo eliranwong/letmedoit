@@ -84,6 +84,10 @@ Command execution helps:
 
 [Enhanced Mode](https://github.com/eliranwong/myHand.ai/wiki/Command-Execution#two-command-execution-mode)
 
+## Tips! Quick Swap between "Enhanced" and "Auto" Modes
+
+You can use keyboard shortcuts, "ctrl + e", to quickly swap between the "enhanced" and the "auto modes.
+
 [Disclaimer](https://github.com/eliranwong/myHand.ai/wiki/Command-Execution#disclaimer)
 
 [Confirmation Prompt Options for Command Execution](https://github.com/eliranwong/myHand.ai/wiki/Command-Execution#confirmation-prompt-options-for-command-execution)
