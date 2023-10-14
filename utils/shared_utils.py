@@ -62,8 +62,8 @@ class SharedUtil:
         if config.terminalEnableTermuxAPI:
             #config.systemCommandPromptEntry = f'''termux-open-url "{url}"'''
             #SystemCommandPrompt().run(allowPathChanges=True)
-            command = f'''am start -a android.intent.action.VIEW -n com.android.chrome/com.google.android.apps.chrome.Main -d {url}'''
+            #command = f'''am start -a android.intent.action.VIEW -n com.android.chrome/com.google.android.apps.chrome.Main -d "{url}"'''
+            command = f'''termux-open-url "{url}"'''
             SharedUtil.runSystemCommand(command)
-            #pydoc.pipepager("", cmd=command)
         else:
             webbrowser.open(url)
