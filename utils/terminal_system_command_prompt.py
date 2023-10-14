@@ -1,4 +1,4 @@
-import config, os, platform, subprocess
+import config, os, platform, subprocess, traceback
 from utils.get_path_prompt import GetPath
 from utils.prompt_shared_key_bindings import prompt_shared_key_bindings
 from prompt_toolkit.application import run_in_terminal
@@ -82,7 +82,7 @@ class SystemCommandPrompt:
 
         userInput = ""
         self.addPath = False
-        self.systemCommandPromptEntry = ""
+        self.systemCommandPromptEntry = config.systemCommandPromptEntry if config.systemCommandPromptEntry else ""
         self.systemCommandPromptPosition = 0
         if config.suggestSystemCommand:
             systemCommands = self.getSystemCommands()

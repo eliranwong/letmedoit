@@ -1,4 +1,4 @@
-import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, webbrowser, pydoc, textwrap, string
+import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, pydoc, textwrap, string
 from pathlib import Path
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -31,6 +31,7 @@ class MyHandAI:
         config.tempContent = ""
         config.tempChunk = ""
         config.chatGPTApiPredefinedContextTemp = ""
+        config.systemCommandPromptEntry = ""
 
         # token limit
         self.tokenLimits = {

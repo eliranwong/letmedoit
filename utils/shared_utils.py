@@ -1,5 +1,5 @@
-import config, openai, platform, subprocess, os, pydoc, webbrowser
-import urllib.parse
+import config, openai, platform, subprocess, os, pydoc, webbrowser, re
+from utils.terminal_system_command_prompt import SystemCommandPrompt
 
 class SharedUtil:
 
@@ -57,12 +57,13 @@ class SharedUtil:
 
     @staticmethod
     def openURL(url):
-        url = urllib.parse.quote(url)
+        config.stop_event.set()
+        config.spinner_thread.join()
         if config.terminalEnableTermuxAPI:
-            #command = f"""am start -n com.android.chrome/com.google.android.apps.chrome.Main -d {url}"""
-            #pydoc.pipepager("", cmd=f"""termux-open-url {url}""")
+            #config.systemCommandPromptEntry = f'''termux-open-url "{url}"'''
+            #SystemCommandPrompt().run(allowPathChanges=True)
             command = f'''am start -a android.intent.action.VIEW -n com.android.chrome/com.google.android.apps.chrome.Main -d {url}'''
-            #SharedUtil.runSystemCommand(command)
-            pydoc.pipepager("", cmd=command)
+            SharedUtil.runSystemCommand(command)
+            #pydoc.pipepager("", cmd=command)
         else:
-            SharedUtil.openURL(url)
+            webbrowser.open(url)

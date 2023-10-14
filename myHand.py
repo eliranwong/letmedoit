@@ -52,6 +52,7 @@ if __name__ == '__main__':
         with open(configFile, "w", encoding="utf-8") as fileObj:
             for name in dir(config):
                 excludeConfigList = [
+                    "systemCommandPromptEntry",
                     "stop_event",
                     "spinner_thread",
                     "tts",

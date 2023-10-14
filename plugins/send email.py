@@ -1,5 +1,6 @@
-import config, webbrowser
+import config
 from utils.shared_utils import SharedUtil
+import urllib.parse
 
 """
 To send an email using a single URL via Google Mail, you can use the following format:
@@ -54,6 +55,9 @@ def send_email(function_args):
     subject = function_args.get("subject") # required
     body = function_args.get("body", "") # optional
 
+    subject = urllib.parse.quote(subject)
+    body = urllib.parse.quote(body)
+
     def getGoogleLink():
         link = "https://mail.google.com/mail/?view=cm&fs=1"
         if recipient:
@@ -74,7 +78,7 @@ def send_email(function_args):
             link += f"&body={body}"
         return link
 
-    webbrowser.open(getOutlookLink() if email == "outlook" else getGoogleLink())
+    SharedUtil.openURL(getOutlookLink() if email == "outlook" else getGoogleLink())
 
     return "Done!"
 

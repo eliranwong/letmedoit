@@ -1,5 +1,6 @@
-import config, webbrowser, datetime
+import config, datetime
 from utils.shared_utils import SharedUtil
+import urllib.parse
 
 """
 Example: Google Calendar URL
@@ -60,8 +61,12 @@ def add_calendar_event(function_args):
     end_time = function_args.get("end_time", "") # optional
     location = function_args.get("location", "") # optional
 
+    title = urllib.parse.quote(title)
+    description = urllib.parse.quote(description)
+    location = urllib.parse.quote(location)
+
     def getGoogleLink():
-        link = "https://calendar.google.com/calendar/render?action=TEMPLATE&"
+        link = "https://calendar.google.com/calendar/render?action=TEMPLATE"
         if title:
             link += f"&text={title}"
         if start_time:
