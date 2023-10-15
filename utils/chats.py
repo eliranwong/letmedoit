@@ -1043,8 +1043,11 @@ Otherwise, answer "chat". Here is the request:"""
             config.tempChunk += answer
 
     def stopSpinning(self):
-        config.stop_event.set()
-        config.spinner_thread.join()
+        try:
+            config.stop_event.set()
+            config.spinner_thread.join()
+        except:
+            pass
 
     def startChats(self):
         messages = self.resetMessages()
