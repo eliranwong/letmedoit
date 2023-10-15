@@ -1045,6 +1045,10 @@ Otherwise, answer "chat". Here is the request:"""
             # append to a chunk for reading
             config.tempChunk += answer
 
+    def stopSpinning(self):
+        config.stop_event.set()
+        config.spinner_thread.join()
+
     def startChats(self):
         messages = self.resetMessages()
 
@@ -1194,8 +1198,7 @@ Otherwise, answer "chat". Here is the request:"""
                     completion = self.runCompletion(messages, noFunctionCall)
                     # stop spinning
                     self.runPython = True
-                    config.stop_event.set()
-                    config.spinner_thread.join()
+                    self.stopSpinning()
 
                     chat_response = ""
                     for event in completion:                                 
@@ -1222,35 +1225,19 @@ Otherwise, answer "chat". Here is the request:"""
 
                 # error codes: https://platform.openai.com/docs/guides/error-codes/python-library-error-types
                 except openai.error.APIError as e:
-                    try:
-                        stop_event.set()
-                        spinner_thread.join()
-                    except:
-                        pass
+                    self.stopSpinning()
                     #Handle API error here, e.g. retry or log
                     print(f"OpenAI API returned an API Error: {e}")
                 except openai.error.APIConnectionError as e:
-                    try:
-                        stop_event.set()
-                        spinner_thread.join()
-                    except:
-                        pass
+                    self.stopSpinning()
                     #Handle connection error here
                     print(f"Failed to connect to OpenAI API: {e}")
                 except openai.error.RateLimitError as e:
-                    try:
-                        stop_event.set()
-                        spinner_thread.join()
-                    except:
-                        pass
+                    self.stopSpinning()
                     #Handle rate limit error (we recommend using exponential backoff)
                     print(f"OpenAI API request exceeded rate limit: {e}")
                 except:
-                    try:
-                        stop_event.set()
-                        spinner_thread.join()
-                    except:
-                        pass
+                    self.stopSpinning()
                     trace = traceback.format_exc()
                     if "Please reduce the length of the messages or completion" in trace:
                         self.print("Maximum tokens reached!")
