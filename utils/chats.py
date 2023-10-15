@@ -255,12 +255,11 @@ Acess the risk level of this Python code:
                 print("```")
             print("--------------------")
 
+            self.stopSpinning()
             if not self.runPython:
                 info = {"information": python_code}
                 return json.dumps(info)
             elif self.confirmExecution(risk):
-                config.stop_event.set()
-                config.spinner_thread.join()
                 print("Do you want to continue? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
@@ -325,9 +324,8 @@ Acess the risk level of this Python code:
                 print("```")
             print("--------------------")
             
+            self.stopSpinning()
             if self.confirmExecution(risk):
-                config.stop_event.set()
-                config.spinner_thread.join()
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
@@ -403,11 +401,10 @@ Acess the risk level of this Python code:
                 print("```")
             print("--------------------")
             
+            self.stopSpinning()
             if not self.runPython:
                 return errorMessage
             elif self.confirmExecution(risk):
-                config.stop_event.set()
-                config.spinner_thread.join()
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
