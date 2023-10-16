@@ -4,5 +4,6 @@ googlesearch-python
 art
 apsw
 gTTS
-pygame
 google-cloud-texttospeech
+yt-dlp
+pygame

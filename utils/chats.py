@@ -602,16 +602,17 @@ Otherwise, answer "chat". Here is the request:"""
                 # get function response
                 function_response = self.getFunctionResponse(response_message, function_name)
 
-                # process function response
-                # send the info on the function call and function response to GPT
-                thisMessage.append(response_message) # extend conversation with assistant's reply
-                thisMessage.append(
-                    {
-                        "role": "function",
-                        "name": function_name,
-                        "content": function_response,
-                    }
-                )  # extend conversation with function response
+                if not function_response == "[INVALID]":
+                    # process function response
+                    # send the info on the function call and function response to GPT
+                    thisMessage.append(response_message) # extend conversation with assistant's reply
+                    thisMessage.append(
+                        {
+                            "role": "function",
+                            "name": function_name,
+                            "content": function_response,
+                        }
+                    )  # extend conversation with function response
 
                 self.functionJustCalled = True
 

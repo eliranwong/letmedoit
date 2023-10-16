@@ -9,9 +9,9 @@ try:
     def pronunce_words(function_args):
         words = function_args.get("words") # required
         language = function_args.get("language") # required
-        print("Loading text-to-speech feature ...")
+        print("Loading speech feature ...")
         ttsUtil.play(words, language)
-        return "Finished! Text-to-speech engine closed!"
+        return "Finished! Speech engine closed!"
 
     functionSignature = {
         "name": "pronunce_words",
