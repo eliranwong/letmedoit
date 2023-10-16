@@ -21,7 +21,7 @@ class ttsUtil:
         pygame.mixer.music.stop()
 
     @staticmethod
-    def play(content):
+    def play(content, language=""):
         if config.tts:
             try:
                 credentials_GoogleCloudTextToSpeech = os.path.join(config.myHandAIFolder, "credentials_GoogleCloudTextToSpeech.json")
@@ -29,18 +29,35 @@ class ttsUtil:
                 if os.path.isfile(credentials_GoogleCloudTextToSpeech):
                     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = credentials_GoogleCloudTextToSpeech
                     audioFile = os.path.join(config.myHandAIFolder, "temp", "gctts.mp3")
-                    ttsUtil.saveCloudTTSAudio(content, config.gcttsLang, filename=audioFile)
+                    if not language:
+                        language = config.gcttsLang
+                    elif language == "yue":
+                        language = "yue-HK"
+                    elif "-" in language:
+                        language, accent = language.split("-", 1)
+                        language = f"{language}-{accent.upper()}"
+                    ttsUtil.saveCloudTTSAudio(content, language, filename=audioFile)
                     ttsUtil.playAudioFile(audioFile)
                 elif config.ttsCommand:
                     # remove '"' from the content
                     content = re.sub('"', "", content)
                     #os.system(f'''{config.ttsCommand} "{content}"''')
-                    command = f'''{config.ttsCommand} "{content}"{config.ttsCommandSuffix}'''
+                    if language and language in config.ttsLanguagesCommandMap and config.ttsLanguagesCommandMap[language]:
+                        ttsCommand = re.sub("^(.*?) [^ ]+?$", r"\1", config.ttsCommand.strip()) + " " + config.ttsLanguagesCommandMap[language]
+                        command = f'''{ttsCommand} "{content}"{config.ttsCommandSuffix}'''
+                    else:
+                        command = f'''{config.ttsCommand} "{content}"{config.ttsCommandSuffix}'''
                     subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
                 else:
                     # use gTTS as default as config.ttsCommand is empty by default
+                    if not language:
+                        language = config.gttsLang
+                    elif language == "yue":
+                        language = "zh"
+                    elif "-" in language:
+                        language = re.sub("^(.*?)\-.*?$", r"\1", language)
                     audioFile = os.path.join(config.myHandAIFolder, "temp", "gtts.mp3")
-                    tts = gTTS(content, lang=config.gttsLang, tld=config.gttsTld) if config.gttsTld else gTTS(content, lang=config.gttsLang)
+                    tts = gTTS(content, lang=language, tld=config.gttsTld) if config.gttsTld else gTTS(content, lang=language)
                     tts.save(audioFile)
                     ttsUtil.playAudioFile(audioFile)
             except:

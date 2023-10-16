@@ -909,8 +909,9 @@ Otherwise, answer "chat". Here is the request:"""
 
     def defineTtsCommand(self):
         self.print("Define text-to-speech command below:")
-        self.print("""* on macOS ['say -v "?"' to check voices], e.g.:\n'say' or 'say -v Daniel -r 200'""")
-        self.print("* on Ubuntu ['espeak --voices' to check voices], e.g.:\n'espeak' or 'espeak -v en-gb -s 175'")
+        self.print("""* on macOS ['say -v "?"' to check voices], e.g.:\n'say' or 'say -r 200 -v Daniel'""")
+        self.print("* on Ubuntu ['espeak --voices' to check voices], e.g.:\n'espeak' or 'espeak -s 175 -v en-gb'")
+        self.print("remarks: always place the voice option, if any, at the end")
         ttsCommand = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.ttsCommand)
         if ttsCommand:
             self.print("Specify command suffix below, if any [leave it blank if N/A]:")
