@@ -58,7 +58,7 @@ if SharedUtil.isPackageInstalled("yt-dlp"):
             "properties": {
                 "url": {
                     "type": "string",
-                    "description": "Youtube url",
+                    "description": "Youtube url given by user",
                 },
                 "format": {
                     "type": "string",

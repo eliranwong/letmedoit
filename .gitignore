@@ -1,6 +1,8 @@
 config.py
 /venv*
 /chat*
+/audio*
+/video*
 /temp*
 /Documents*
 /history*
