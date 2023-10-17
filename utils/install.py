@@ -27,13 +27,16 @@ def installmodule(module, update=True):
                     print(pipFailedUpdated)
                 config.pipIsUpdated = True
         try:
-            print("Installing '{0}' ...".format(module))
+            upgrade = (module.startswith("-U ") or module.startswith("--upgrade "))
+            print(f"{'Upgrading' if upgrade else 'Installing'} '{module}' ...")
             installNewModule = subprocess.Popen(f"pip3 install {module}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             *_, stderr = installNewModule.communicate()
             if not stderr:
-                print("Module '{0}' is installed!".format(module))
+                print(f"Package '{module}' {'upgraded' if upgrade else 'installed'}!")
             else:
-                print(stderr)
+                print(f"Failed {'upgrading' if upgrade else 'installing'} package '{module}'!")
+                if config.developer:
+                    print(stderr)
             return True
         except:
             return False

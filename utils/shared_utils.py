@@ -57,8 +57,7 @@ class SharedUtil:
 
     @staticmethod
     def openURL(url):
-        config.stop_event.set()
-        config.spinner_thread.join()
+        config.stopSpinning()
         if config.terminalEnableTermuxAPI:
             #config.systemCommandPromptEntry = f'''termux-open-url "{url}"'''
             #SystemCommandPrompt().run(allowPathChanges=True)

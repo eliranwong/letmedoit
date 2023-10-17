@@ -13,6 +13,7 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
                 config.thisTranslation[i] = thisTranslation[i]
 
 defaultSettings = (
+    ('autoUpdate', True),
     ('chatGPTApiModel', 'gpt-3.5-turbo'),
     ('chatGPTApiPredefinedContext', '[none]'),
     ('chatGPTApiCustomContext', ''),
@@ -42,7 +43,7 @@ defaultSettings = (
     ('terminalSearchHighlightBackground', 'ansiblue'),
     ('terminalSearchHighlightForeground', 'ansidefault'),
     ('developer', False),
-    ('enhanceCommandExecution', True),
+    ('enhanceCommandExecution', False),
     ('confirmExecution', "always"), # 'always', 'high_risk_only', 'medium_risk_or_above', 'none'
     ('codeDisplay', False),
     ('autoUpdate', True),

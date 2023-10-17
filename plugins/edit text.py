@@ -13,8 +13,7 @@ if SharedUtil.isPackageInstalled("micro"):
             return "Finished! Directory opened!"
         else:
             tool = f"micro {filename}" if filename else "micro"
-            config.stop_event.set()
-            config.spinner_thread.join()
+            config.stopSpinning()
             SharedUtil.textTool(tool, "")
             return "Finished! Text editor closed!"
 

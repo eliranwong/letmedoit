@@ -84,8 +84,7 @@ try:
         database = os.path.join(config.bibleDataCurrent, "bibles", f"{config.mainText}.bible")
         if os.path.isfile(database):
             config.tempContent = ""
-            config.stop_event.set()
-            config.spinner_thread.join()
+            config.stopSpinning()
             with apsw.Connection(database) as connection:
                 # support regular expression
                 connection.createscalarfunction("REGEXP", TextUtil.regexp)

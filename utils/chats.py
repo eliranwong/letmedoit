@@ -24,7 +24,9 @@ class MyHandAI:
         self.runPlugins()
 
     def setup(self):
-        self.divider = "--------------------"
+        config.divider = self.divider = "--------------------"
+        config.showErrors = self.showErrors
+        config.stopSpinning = self.stopSpinning
         self.runPython = True
         config.accept_default = False
         config.defaultEntry = ""
@@ -100,10 +102,8 @@ class MyHandAI:
                     code = compile(f.read(), script, 'exec')
                     exec(code, globals())
             except:
-                if config.developer:
-                    self.showErrors()
-                else:
-                    print("Failed to run '{0}'!".format(os.path.basename(script)))
+                print("Failed to run '{0}'!".format(os.path.basename(script)))
+                self.showErrors()
 
     def runPlugins(self):
         # The following config values can be modified with plugins, to extend functionalities
@@ -240,12 +240,13 @@ Acess the risk level of this Python code:
             return "high"
 
     def getFunctionResponse(self, response_message, function_name):
+        # ChatGPT's built-in function named "python"
         if function_name == "python":
             config.pythonFunctionResponse = ""
             python_code = textwrap.dedent(response_message["function_call"]["arguments"])
             refinedCode = self.fineTunePythonCode(python_code)
 
-            print("--------------------")
+            print(self.divider)
             print(f"running python code ...")
             risk = self.riskAssessment(python_code)
             self.showRisk(risk)
@@ -253,7 +254,7 @@ Acess the risk level of this Python code:
                 print("```")
                 print(python_code)
                 print("```")
-            print("--------------------")
+            print(self.divider)
 
             self.stopSpinning()
             if not self.runPython:
@@ -267,9 +268,11 @@ Acess the risk level of this Python code:
                     return json.dumps(info)
             try:
                 exec(refinedCode, globals())
-                function_response = str(config.pythonFunctionResponse)
+                function_response = config.pythonFunctionResponse if isinstance(config.pythonFunctionResponse, str) else "Done!"
             except:
-                function_response = python_code
+                self.showErrors()
+                print(self.divider)
+                function_response = "[INVALID]"
             info = {"information": function_response}
             function_response = json.dumps(info)
         else:
@@ -299,10 +302,13 @@ Acess the risk level of this Python code:
         else:
             return False
 
+    def showRisk(self, risk):
+        if not config.confirmExecution in ("always", "medium_risk_or_above", "high_risk_only", "none"):
+            config.confirmExecution = "always"
+        print(f"[risk level: {risk}]")
+
     def setupTermuxExecution(self):
         def execute_termux_command(function_args):
-            errorMessage = "Failed to run the Termux command!"
-
             # retrieve argument values from a dictionary
             risk = function_args.get("risk") # required
             title = function_args.get("title") # required
@@ -315,21 +321,21 @@ Acess the risk level of this Python code:
             function_args = function_args if sharedText == function_args else f'''termux-share -a send "{sharedText}"'''
 
             # show Termux command for developer
-            print("--------------------")
+            print(self.divider)
             print(f"Termux: {title}")
             self.showRisk(risk)
             if config.developer or config.codeDisplay:
                 print("```")
                 print(function_args)
                 print("```")
-            print("--------------------")
+            print(self.divider)
             
             self.stopSpinning()
             if self.confirmExecution(risk):
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
-                    return errorMessage
+                    return "[INVALID]"
 
             try:
                 if not sharedText == function_args:
@@ -340,9 +346,9 @@ Acess the risk level of this Python code:
                     function_response = SharedUtil.runSystemCommand(function_args)
                 self.print(function_response)
             except:
-                print(errorMessage)
-                print("--------------------")
-                return errorMessage
+                self.showErrors()
+                print(self.divider)
+                return "[INVALID]"
             info = {"information": function_response}
             function_response = json.dumps(info)
             return json.dumps(info)
@@ -376,15 +382,8 @@ Acess the risk level of this Python code:
         config.chatGPTApiFunctionSignatures.append(functionSignature)
         config.chatGPTApiAvailableFunctions["execute_termux_command"] = execute_termux_command
 
-    def showRisk(self, risk):
-        if not config.confirmExecution in ("always", "medium_risk_or_above", "high_risk_only", "none"):
-            config.confirmExecution = "always"
-        print(f"[risk level: {risk}]")
-
     def setupPythonExecution(self):
         def execute_python_code(function_args):
-            errorMessage = "Failed to run the python code!"
-
             # retrieve argument values from a dictionary
             risk = function_args.get("risk") # required
             title = function_args.get("title") # required
@@ -392,32 +391,32 @@ Acess the risk level of this Python code:
             refinedCode = self.fineTunePythonCode(python_code)
 
             # show pyton code for developer
-            print("--------------------")
+            print(self.divider)
             print(f"Python: {title}")
             self.showRisk(risk)
             if config.developer or config.codeDisplay:
                 print("```")
                 print(python_code)
                 print("```")
-            print("--------------------")
+            print(self.divider)
             
             self.stopSpinning()
             if not self.runPython:
-                return errorMessage
+                return "[INVALID]"
             elif self.confirmExecution(risk):
                 print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
                     self.runPython = False
-                    return errorMessage
+                    return "[INVALID]"
 
             try:
                 exec(refinedCode, globals())
-                function_response = str(config.pythonFunctionResponse)
+                function_response = config.pythonFunctionResponse if isinstance(config.pythonFunctionResponse, str) else "Done!"
             except:
-                print(errorMessage)
-                print("--------------------")
-                return errorMessage
+                self.showErrors()
+                print(self.divider)
+                return "[INVALID]"
             info = {"information": function_response}
             function_response = json.dumps(info)
             return json.dumps(info)
@@ -486,7 +485,8 @@ Otherwise, answer "chat". Here is the request:"""
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_termux_command_signature, "execute_termux_command")
-            if messages[-1]["content"] == "Failed to run the Termux command!":
+            if messages[-1]["content"] == "[INVALID]":
+                # remove messages for command execution
                 messages = messages[:-3]
             else:
                 return messages
@@ -495,7 +495,8 @@ Otherwise, answer "chat". Here is the request:"""
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
-            if messages[-1]["content"] in ("Failed to run the python code!", "Failed to run the Termux command!"):
+            if messages[-1]["content"] == "[INVALID]":
+                # remove messages for command execution
                 messages = messages[:-3]
             else:
                 return messages
@@ -505,6 +506,7 @@ Otherwise, answer "chat". Here is the request:"""
         messages.append({"role": "user", "content" : userInput})
         return messages
 
+    # call a specific function and return messages
     def runFunction(self, messages, functionSignatures, function_name):
         messagesCopy = messages[:]
         try:
@@ -534,8 +536,7 @@ Otherwise, answer "chat". Here is the request:"""
         return messages
 
     def showErrors(self):
-        if config.developer:
-            print(traceback.format_exc())
+        print(traceback.format_exc() if config.developer else "Error encountered!")
 
     def runCompletion(self, thisMessage, noFunctionCall=False):
         self.functionJustCalled = False
@@ -569,6 +570,7 @@ Otherwise, answer "chat". Here is the request:"""
                     delta = event["choices"][0]["delta"]
                     # Check if a function is called
                     if not delta.get("function_call"):
+                        # a function is not called; same handling as a function is just called
                         self.functionJustCalled = True
                     # When streaming is enabled, in some rare cases, ChatGPT does not return function name
                     # check here
@@ -630,7 +632,7 @@ Otherwise, answer "chat". Here is the request:"""
     def resetMessages(self):
         systemMessage = f"You’re myHand AI, an advanced AI assistant, capable of engaging in conversations and executing tasks on local devices. You have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python code on my behalf."
         if config.chatGPTApiFunctionCall == "auto" and config.chatGPTApiFunctionSignatures:
-            systemMessage += "Your functionality expands as I add more plugins to you. Only use the functions you have been provided with."
+            systemMessage += " Your functionality expands as I add more plugins to you. Only use the functions you have been provided with."
         messages = [
             {"role": "system", "content" : systemMessage}
         ]
@@ -689,6 +691,7 @@ Otherwise, answer "chat". Here is the request:"""
             "toggle input audio",
             "toggle response audio",
             "configure text-to-speech command",
+            "configure automatic update",
             "open system command prompt",
             "open myHand.ai wiki",
         )
@@ -804,6 +807,17 @@ Otherwise, answer "chat". Here is the request:"""
                 if option:
                     config.developer = (option == "enable")
                     self.print(f"Developer Mode: {option}d!")
+            elif feature == ".autoupdate":
+                options = ("enable", "disable")
+                option = self.dialogs.getValidOptions(
+                    options=options, 
+                    title="Automatic Update on Startup", 
+                    default="enable" if config.autoUpdate else "disable",
+                    text="Select an option below:"
+                )
+                if option:
+                    config.autoUpdate = (option == "enable")
+                    self.print(f"Automatic Update: {option}d!")
             elif feature == ".termuxapi":
                 options = ("enable", "disable")
                 option = self.dialogs.getValidOptions(
@@ -912,11 +926,11 @@ Otherwise, answer "chat". Here is the request:"""
         self.print("Define text-to-speech command below:")
         self.print("""* on macOS ['say -v "?"' to check voices], e.g.:\n'say' or 'say -r 200 -v Daniel'""")
         self.print("* on Ubuntu ['espeak --voices' to check voices], e.g.:\n'espeak' or 'espeak -s 175 -v en-gb'")
+        self.print("* on Windows, to use Windows built-in speech engine, simply enter 'windows' here") # myHand.ai will handle the command for Windows users
         self.print("remarks: always place the voice option, if any, at the end")
         ttsCommand = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.ttsCommand)
         if ttsCommand:
             self.print("Specify command suffix below, if any [leave it blank if N/A]:")
-            self.print("""[may be applicable on Windows only, e.g. on Windows, users may set text-to-speech command as ```Add-Type -TypeDefinition 'using System.Speech.Synthesis; class TTS { static void Main(string[] args) { using (SpeechSynthesizer synth = new SpeechSynthesizer()) { synth.Speak(args[0]); } } }'; [TTS]::Main(``` and command suffix as ```)```.]""")
             ttsCommandSuffix = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.ttsCommandSuffix)
             command = f'''{ttsCommand} "testing"{ttsCommandSuffix}'''
             _, stdErr = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
@@ -1100,6 +1114,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".toggleinputaudio",
             ".toggleresponseaudio",
             ".ttscommand",
+            ".autoupdate",
             ".system",
             ".help",
         )
@@ -1194,8 +1209,8 @@ Otherwise, answer "chat". Here is the request:"""
                         try:
                             messages = self.runFunction(messages, config.integrate_google_searches_signature, "integrate_google_searches")
                         except:
-                            self.showErrors()
                             print("Unable to load internet resources.")
+                            self.showErrors()
 
                     completion = self.runCompletion(messages, noFunctionCall)
                     # stop spinning

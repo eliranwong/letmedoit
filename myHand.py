@@ -9,11 +9,22 @@ if os.getcwd() != myHandAIFolder:
 configFile = os.path.join(myHandAIFolder, "config.py")
 if not os.path.isfile(configFile):
     open(configFile, "a", encoding="utf-8").close()
+
 # import config and setup default 
 import config
 from utils.configDefault import *
 config.myHandFile = myHandFile
 config.myHandAIFolder = myHandAIFolder
+
+# automatic module upgrade
+if config.autoUpdate:
+    from utils.install import *
+    config.pipIsUpdated = False
+    with open("requirements.txt", "r") as fileObj:
+        for line in fileObj.readlines():
+            mod = line.strip()
+            if mod:
+                installmodule(f"--upgrade {mod}")
 
 # set up shortcuts
 from utils.shortcuts import *
@@ -52,6 +63,9 @@ if __name__ == '__main__':
         with open(configFile, "w", encoding="utf-8") as fileObj:
             for name in dir(config):
                 excludeConfigList = [
+                    "divider",
+                    "showErrors",
+                    "stopSpinning",
                     "systemCommandPromptEntry",
                     "stop_event",
                     "spinner_thread",
@@ -92,12 +106,13 @@ if __name__ == '__main__':
                         pass
 
     def getLatestUpdate():
-        try:
-            os.system("git pull")
-            clear()
-            print("You are running the latest version.")
-        except:
-            print("Automatic update failed!")
+        if config.autoUpdate:
+            try:
+                os.system("git pull")
+                clear()
+                print("You are running the latest version.")
+            except:
+                print("Automatic update failed!")
 
     def set_log_file_max_lines(log_file, max_lines):
         if os.path.isfile(log_file):
@@ -120,7 +135,6 @@ if __name__ == '__main__':
     set_title("myHand.AI")
     getLatestUpdate()
     setOsOpenCmd()
-    config.pipIsUpdated = False
     config.excludeConfigList = []
     config.isVlcPlayerInstalled = VlcUtil.isVlcPlayerInstalled()
     # check log files; remove old lines if more than 3000 lines is found in a log file
