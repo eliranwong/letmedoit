@@ -1,4 +1,4 @@
-import config, json, openai, os, traceback
+import config, json, openai, os
 from base64 import b64decode
 
 def generate_image(function_args):
@@ -50,7 +50,7 @@ def generate_image(function_args):
         print("Error: Issue on OpenAI servers. ")
         print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
     except:
-        print(traceback.format_exc())
+        config.showErrors()
 
 
 functionSignature = {

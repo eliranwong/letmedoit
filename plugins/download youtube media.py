@@ -1,6 +1,6 @@
 # install binary ffmpeg and python package yt-dlp to work with this plugin
 
-import config, re, subprocess, os, traceback
+import config, re, subprocess, os
 from utils.shared_utils import SharedUtil
 
 if SharedUtil.isPackageInstalled("yt-dlp"):
@@ -25,12 +25,12 @@ if SharedUtil.isPackageInstalled("yt-dlp"):
                     if SharedUtil.isPackageInstalled("pkill"):
                         os.system("pkill yt-dlp")
                     print(f"Downloaded in directory '{outputFolder}'!")
+                    try:
+                        os.system(f'''{config.open} {outputFolder}''')
+                    except:
+                        pass
                 except:
-                    if config.developer:
-                        print(traceback.format_exc())
-                    else:
-                        print("Errors!")
-                    
+                    config.showErrors() 
             else:
                 print("Tool 'ffmpeg' is not found on your system!")
                 print("Read https://github.com/eliranwong/myHand.ai/wiki/Install-ffmpeg")
