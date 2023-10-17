@@ -30,6 +30,40 @@ Developed by: [Eliran Wong](https://github.com/eliranwong)
 
 3. ChatGPT API key (read https://github.com/eliranwong/myHand.ai/wiki/ChatGPT-API-Key)
 
+# Documentation
+
+Read https://github.com/eliranwong/myHand.ai/wiki
+
+# Download
+
+> git clone https://github.com/eliranwong/myHand.ai.git
+
+# Quick Start
+
+> cd myHand.ai
+
+> python3 myHand.py
+
+# Quick Operations
+
+* Enter "" (blank entry) to change open action menu
+
+* Enter ".cancel" or press "ctrl+c" to cancel
+
+* Enter ".quit" or press "ctrl+q" to quit
+
+# Automatic Update
+
+myHand.ai automatically upgrade dependencies and update to the latest codes on startup.
+
+You may enable / disable this feature:
+
+1. Enter blank entry to open the action menu
+
+2. Select 'configure automatic update'
+
+3. Select 'enable' or 'disable'
+
 # Features
 
 myHand is an advanced AI assistant that brings a wide range of powerful features to enhance your virtual assistance experience. Here are some key features of myHand:
@@ -127,53 +161,3 @@ For examples, users can run on Android:
 > share text "Hello World!" on Android
 
 Read more at: https://github.com/eliranwong/myHand.ai/wiki/Android-Support
-
-# Documentation
-
-Read https://github.com/eliranwong/myHand.ai/wiki
-
-# Setup or Installation
-
-> git clone https://github.com/eliranwong/myHand.ai.git
-
-> cd myHand.ai
-
-## macOS or Linux Users
-
-> python3 -m venv venv
-
-> source venv/bin/activate
-
-> pip3 install -r requirements.txt
-
-> python3 myHand.py
-
-## Windows Users
-
-Double-click the file "setup.bat"
-
-# Quick Start
-
-Double-click desktop shortcut, which is created on first run.
-
-Alternately, run in terminal:
-
-> cd myHand.ai
-
-> source venv/bin/activate
-
-> python3 myHand.py
-
-# Quick Operations
-
-* Enter "..." for options
-
-* Enter "" (blank entry) to change context quickly
-
-* Enter ".quit" to quit
-
-# Update
-
-myHand.ai updates to the latest code on startup, by running:
-
-> git pull
