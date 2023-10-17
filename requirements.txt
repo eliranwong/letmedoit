@@ -1,3 +1,4 @@
+--pre aiohttp
 openai
 prompt_toolkit
 googlesearch-python
