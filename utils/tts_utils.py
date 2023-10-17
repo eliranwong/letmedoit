@@ -41,16 +41,25 @@ class ttsUtil:
                 elif config.ttsCommand:
                     # remove '"' from the content
                     content = re.sub('"', "", content)
-                    #os.system(f'''{config.ttsCommand} "{content}"''')
-                    if config.ttsCommand.lower() == "windows":
-                        # https://stackoverflow.com/questions/1040655/ms-speech-from-command-lines
-                        # https://www.powerofpowershell.com/post/powershell-can-speak-too#:~:text=The%20Add%2DType%20cmdlet%20is,want%20to%20convert%20into%20speech.
-                        command = f"""PowerShell -Command 'Add-Type –AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak("{content}");'"""
-                    elif language and language in config.ttsLanguagesCommandMap and config.ttsLanguagesCommandMap[language]:
-                        ttsCommand = re.sub("^(.*?) [^ ]+?$", r"\1", config.ttsCommand.strip()) + " " + config.ttsLanguagesCommandMap[language]
-                        command = f'''{ttsCommand} "{content}"{config.ttsCommandSuffix}'''
+
+                    # Windows users
+                    # https://stackoverflow.com/questions/1040655/ms-speech-from-command-lines
+                    # https://www.powerofpowershell.com/post/powershell-can-speak-too#:~:text=The%20Add%2DType%20cmdlet%20is,want%20to%20convert%20into%20speech.
+                    windows = (config.ttsCommand.lower() == "windows")
+                    if windows:
+                        content = re.sub("'", "", content)
+                    if language and language in config.ttsLanguagesCommandMap and config.ttsLanguagesCommandMap[language]:
+                        voice = config.ttsLanguagesCommandMap[language]
+                        if windows:
+                            command = f'''PowerShell -Command "Add-Type –AssemblyName System.Speech; $ttsEngine = New-Object System.Speech.Synthesis.SpeechSynthesizer; $ttsEngine.SelectVoice('{voice} Desktop'); $ttsEngine.Speak('{content}');"'''
+                        else:
+                            ttsCommand = re.sub("^(.*?) [^ ]+?$", r"\1", config.ttsCommand.strip()) + " " + voice
+                            command = f'''{ttsCommand} "{content}"{config.ttsCommandSuffix}'''
                     else:
-                        command = f'''{config.ttsCommand} "{content}"{config.ttsCommandSuffix}'''
+                        if windows:
+                            command = f'''PowerShell -Command "Add-Type –AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak('{content}');"'''
+                        else:
+                            command = f'''{config.ttsCommand} "{content}"{config.ttsCommandSuffix}'''
                     subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
                 else:
                     # use gTTS as default as config.ttsCommand is empty by default

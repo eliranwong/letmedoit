@@ -926,13 +926,17 @@ Otherwise, answer "chat". Here is the request:"""
         self.print("Define text-to-speech command below:")
         self.print("""* on macOS ['say -v "?"' to check voices], e.g.:\n'say' or 'say -r 200 -v Daniel'""")
         self.print("* on Ubuntu ['espeak --voices' to check voices], e.g.:\n'espeak' or 'espeak -s 175 -v en-gb'")
-        self.print("* on Windows, to use Windows built-in speech engine, simply enter 'windows' here") # myHand.ai will handle the command for Windows users
+        self.print("* on Windows, simply enter 'windows' here to use Windows built-in speech engine") # myHand.ai will handle the command for Windows users
         self.print("remarks: always place the voice option, if any, at the end")
         ttsCommand = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.ttsCommand)
         if ttsCommand:
             self.print("Specify command suffix below, if any [leave it blank if N/A]:")
             ttsCommandSuffix = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.ttsCommandSuffix)
-            command = f'''{ttsCommand} "testing"{ttsCommandSuffix}'''
+            if ttsCommand.lower() == "windows":
+                command = f'''PowerShell -Command "Add-Type –AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak('testing');"'''
+                ttsCommandSuffix = ""
+            else:
+                command = f'''{ttsCommand} "testing"{ttsCommandSuffix}'''
             _, stdErr = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
             if stdErr:
                 self.showErrors() if config.developer else print("Entered command invalid!")
