@@ -18,12 +18,12 @@ def _(event):
 # navigation
 
 # go to current line starting position
-@prompt_shared_key_bindings.add("c-j")
+@prompt_shared_key_bindings.add("escape", "b")
 def _(event):
     buffer = event.app.current_buffer
     buffer.cursor_position = buffer.cursor_position - buffer.document.cursor_position_col
 # go to current line ending position
-@prompt_shared_key_bindings.add("c-e")
+@prompt_shared_key_bindings.add("escape", "e")
 def _(event):
     buffer = event.app.current_buffer
     buffer.cursor_position = buffer.cursor_position + buffer.document.get_end_of_line_position()
@@ -38,18 +38,18 @@ def _(event):
     buffer = event.app.current_buffer
     buffer.cursor_position = buffer.cursor_position + buffer.document.get_end_of_line_position()
 # go to the end of the text
-@prompt_shared_key_bindings.add("escape", "e")
+@prompt_shared_key_bindings.add("escape", "z")
 def _(event):
     buffer = event.app.current_buffer
     buffer.cursor_position = len(buffer.text)
 # go to the beginning of the text
-@prompt_shared_key_bindings.add("escape", "j")
+@prompt_shared_key_bindings.add("escape", "a")
 def _(event):
     buffer = event.app.current_buffer
     buffer.cursor_position = 0
 
 # delete after cusor
-@prompt_shared_key_bindings.add("c-d")
+@prompt_shared_key_bindings.add("escape", "d")
 def _(event):
     buffer = event.app.current_buffer
     data = buffer.delete(1)
@@ -92,6 +92,7 @@ def swapTerminalColors():
 # change text
 
 # delete text, Ctrl+H or Backspace
+"""
 @prompt_shared_key_bindings.add("c-h")
 def _(event):
     buffer = event.app.current_buffer
@@ -101,6 +102,6 @@ def _(event):
         buffer.start_selection()
         buffer.cursor_position = buffer.cursor_position - 1
         buffer.cut_selection()
-
+"""
 # binded in this set
 #a, j, e, c, v, x, h, i

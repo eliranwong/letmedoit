@@ -95,6 +95,13 @@ class Prompts:
         def _(event):
             event.app.current_buffer.text = ".context"
             event.app.current_buffer.validate_and_handle()
+        @this_key_bindings.add("escape", "m")
+        def _(event):
+            event.app.current_buffer.text = ".system"
+            event.app.current_buffer.validate_and_handle()
+        @this_key_bindings.add("c-k")
+        def _(_):
+            run_in_terminal(self.showKeyBindings)
         @this_key_bindings.add("c-g")
         def _(_):
             config.displayImprovedWriting = not config.displayImprovedWriting
@@ -109,6 +116,34 @@ class Prompts:
             prompt_multiline_shared_key_bindings,
             this_key_bindings,
         ])
+
+    def showKeyBindings(self):
+        bindings = {
+            "ctrl+q": "quit",
+            "ctrl+c": "cancel",
+            "ctrl+n": "new chat",
+            "ctrl+y": "new chat without context",
+            "ctrl+s": "save chat",
+            "ctrl+d": "swap developer mode",
+            "ctrl+e": "swap command execution mode",
+            "ctrl+l": "toggle multi-line entry",
+            "ctrl+o": "change predefined context",
+            "ctrl+g": "toggle improved writing feature",
+            "ctrl+k": "show key bindings",
+            "escape+m": "system command prompt",
+            "escape+b": "move cursor to line beginning",
+            "escape+e": "move cursor to line end",
+            "escape+a": "move cursor to entry beginning",
+            "escape+z": "move cursor to entry end",
+            "escape+d": "forward delete",
+            "escape+s": "swap text brightness",
+        }
+        print(config.divider)
+        print("# Key Bindings")
+        for key, value in bindings.items():
+            print(f"{key}: {value}")
+        print(config.divider)
+        
 
     def simplePrompt(self, numberOnly=False, validator=None, multiline=False, inputIndicator="", default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False):
         inputPrompt = promptSession.prompt if promptSession is not None else prompt
