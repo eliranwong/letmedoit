@@ -244,6 +244,7 @@ Acess the risk level of this Python code:
             config.pythonFunctionResponse = ""
             python_code = textwrap.dedent(response_message["function_call"]["arguments"])
             refinedCode = self.fineTunePythonCode(python_code)
+            systemCommand = ("os.system(" in refinedCode)
 
             print(self.divider)
             print(f"running python code ...")
@@ -267,13 +268,14 @@ Acess the risk level of this Python code:
                     return json.dumps(info)
             try:
                 exec(refinedCode, globals())
-                function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) else ""
+                function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) and not systemCommand else ""
             except:
                 self.showErrors()
                 print(self.divider)
                 function_response = "[INVALID]"
-            info = {"information": function_response}
-            function_response = json.dumps(info)
+            if function_response:
+                info = {"information": function_response}
+                function_response = json.dumps(info)
         elif not function_name in config.chatGPTApiAvailableFunctions:
             # handle unexpected function
             print(f"Unexpected function: {function_name}")
@@ -395,6 +397,7 @@ Acess the risk level of this Python code:
             title = function_args.get("title") # required
             python_code = textwrap.dedent(function_args.get("code")) # required
             refinedCode = self.fineTunePythonCode(python_code)
+            systemCommand = ("os.system(" in refinedCode)
 
             # show pyton code for developer
             print(self.divider)
@@ -418,11 +421,13 @@ Acess the risk level of this Python code:
 
             try:
                 exec(refinedCode, globals())
-                function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) else ""
+                function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) and not systemCommand else ""
             except:
                 self.showErrors()
                 print(self.divider)
                 return "[INVALID]"
+            if not function_response:
+                return ""
             info = {"information": function_response}
             function_response = json.dumps(info)
             return json.dumps(info)
