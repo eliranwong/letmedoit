@@ -78,7 +78,6 @@ class MyHandAI:
             itemColor=config.terminalResourceLinkColor,
             workingDirectory=config.myHandAIFolder,
         )
-        cancel_entry = cancel_entry if cancel_entry else config.cancel_entry
         return getPath.getFolderPath(
             check_isdir=True, 
             display_dir_only=True, 
@@ -984,7 +983,7 @@ Otherwise, answer "chat". Here is the request:"""
             try:
                 #filename = re.sub('[\\\/\:\*\?\"\<\>\|]', "", messages[2 if config.chatGPTApiCustomContext.strip() else 1]["content"])[:40].strip()
                 filename = self.getCurrentDateTime()
-                foldername = os.path.join(config.myHandAIFolder, "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", filename))
+                foldername = os.path.join(config.myHandAIFolder, "files", "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", filename))
                 Path(foldername).mkdir(parents=True, exist_ok=True)
                 if filename:
                     chatFile = os.path.join(foldername, f"{filename}.txt")

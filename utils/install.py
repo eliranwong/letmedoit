@@ -1,4 +1,4 @@
-import subprocess, platform
+import subprocess, platform, re
 
 def installmodule(module, update=True):
     #executablePath = os.path.dirname(sys.executable)
@@ -28,13 +28,17 @@ def installmodule(module, update=True):
                 config.pipIsUpdated = True
         try:
             upgrade = (module.startswith("-U ") or module.startswith("--upgrade "))
-            print(f"{'Upgrading' if upgrade else 'Installing'} '{module}' ...")
+            if upgrade:
+                moduleName = re.sub("^[^ ]+? (.+?)$", r"\1", module)
+            else:
+                moduleName = module
+            print(f"{'Upgrading' if upgrade else 'Installing'} '{moduleName}' ...")
             installNewModule = subprocess.Popen(f"pip3 install {module}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             *_, stderr = installNewModule.communicate()
             if not stderr:
-                print(f"Package '{module}' {'upgraded' if upgrade else 'installed'}!")
+                print(f"Package '{moduleName}' {'upgraded' if upgrade else 'installed'}!")
             else:
-                print(f"Failed {'upgrading' if upgrade else 'installing'} package '{module}'!")
+                print(f"Failed {'upgrading' if upgrade else 'installing'} package '{moduleName}'!")
                 if config.developer:
                     print(stderr)
             return True

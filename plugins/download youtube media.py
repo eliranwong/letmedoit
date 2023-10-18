@@ -42,7 +42,7 @@ if SharedUtil.isPackageInstalled("yt-dlp"):
             format = function_args.get("format") # required
             location = function_args.get("location", "") # optional
             if not (location and os.path.isdir(location)):
-                location = os.path.join(config.myHandAIFolder, "audio") if format == "audio" else os.path.join(config.myHandAIFolder, "video")
+                location = os.path.join(config.myHandAIFolder, "files", "audio" if format == "audio" else "video")
             downloadCommand = "yt-dlp -x --audio-format mp3" if format == "audio" else "yt-dlp -f bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4"
             terminalDownloadYoutubeFile(downloadCommand, url, location)
             return "Finished! Youtube downloader closed!"
