@@ -267,7 +267,7 @@ Acess the risk level of this Python code:
                     return json.dumps(info)
             try:
                 exec(refinedCode, globals())
-                function_response = config.pythonFunctionResponse if isinstance(config.pythonFunctionResponse, str) else "Done!"
+                function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) else ""
             except:
                 self.showErrors()
                 print(self.divider)
@@ -411,7 +411,7 @@ Acess the risk level of this Python code:
 
             try:
                 exec(refinedCode, globals())
-                function_response = config.pythonFunctionResponse if isinstance(config.pythonFunctionResponse, str) else "Done!"
+                function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) else ""
             except:
                 self.showErrors()
                 print(self.divider)
@@ -629,7 +629,7 @@ Otherwise, answer "chat". Here is the request:"""
 
     # reset message when a new chart is started or context is changed
     def resetMessages(self):
-        systemMessage = f"You’re myHand AI, an advanced AI assistant, capable of engaging in conversations and executing tasks on local devices. You have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python code on my behalf."
+        systemMessage = f"You’re myHand AI, an advanced AI assistant, capable of engaging in conversations and executing tasks on local devices. I am running {config.thisPlatform} on this device. You have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python code on my behalf."
         if config.chatGPTApiFunctionCall == "auto" and config.chatGPTApiFunctionSignatures:
             systemMessage += " Your functionality expands as I add more plugins to you. Only use the functions you have been provided with."
         messages = [
@@ -1069,10 +1069,6 @@ Otherwise, answer "chat". Here is the request:"""
             pass
 
     def startChats(self):
-        messages = self.resetMessages()
-
-        self.conversationStarted = False
-
         def startChat():
             clear()
             self.print(self.divider)
@@ -1083,13 +1079,15 @@ Otherwise, answer "chat". Here is the request:"""
                 self.print(f"myHand AI")
             self.showCurrentContext()
             # go to startup directory
-            self.currentDirectory = startupdirectory = config.startupdirectory if config.startupdirectory and os.path.isdir(config.startupdirectory) else config.myHandAIFolder
+            startupdirectory = config.startupdirectory if config.startupdirectory and os.path.isdir(config.startupdirectory) else os.path.join(config.myHandAIFolder, "files")
             os.chdir(startupdirectory)
+            messages = self.resetMessages()
             self.print(f"startup directory:\n{startupdirectory}")
             self.print(self.divider)
 
             self.conversationStarted = False
-        startChat()
+            return (startupdirectory, messages)
+        startupdirectory, messages = startChat()
         self.multilineInput = False
         features = (
             ".new",
@@ -1125,7 +1123,7 @@ Otherwise, answer "chat". Here is the request:"""
         while True:
             # display current directory if changed
             currentDirectory = os.getcwd()
-            if not currentDirectory == self.currentDirectory:
+            if not currentDirectory == startupdirectory:
                 self.print(self.divider)
                 self.print(f"current directory:\n{currentDirectory}")
                 self.print(self.divider)
@@ -1168,12 +1166,10 @@ Otherwise, answer "chat". Here is the request:"""
                 self.changeContext()
                 if not config.chatGPTApiContextInAllInputs and self.conversationStarted:
                     self.saveChat(messages)
-                    messages = self.resetMessages()
-                    startChat()
+                    startupdirectory, messages = startChat()
             elif userInput.strip().lower() == ".new" and self.conversationStarted:
                 self.saveChat(messages)
-                messages = self.resetMessages()
-                startChat()
+                startupdirectory, messages = startChat()
             elif userInput.strip().lower() in (".share", ".save") and self.conversationStarted:
                 self.saveChat(messages, openFile=True)
             elif userInput.strip() and not userInput.strip().lower() in featuresLower:
@@ -1271,8 +1267,7 @@ Otherwise, answer "chat". Here is the request:"""
                     config.defaultEntry = userInput
                     self.print("starting a new chat!")
                     self.saveChat(messages)
-                    messages = self.resetMessages()
-                    startChat()
+                    startupdirectory, messages = startChat()
 
     def checkCompletion(self):
         openai.api_key = os.environ["OPENAI_API_KEY"] = config.openaiApiKey
