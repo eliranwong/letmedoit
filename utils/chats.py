@@ -274,6 +274,13 @@ Acess the risk level of this Python code:
                 function_response = "[INVALID]"
             info = {"information": function_response}
             function_response = json.dumps(info)
+        elif not function_name in config.chatGPTApiAvailableFunctions:
+            # handle unexpected function
+            print(f"Unexpected function: {function_name}")
+            print(self.divider)
+            print(response_message)
+            print(self.divider)
+            function_response = ""
         else:
             fuction_to_call = config.chatGPTApiAvailableFunctions[function_name]
             function_args = json.loads(response_message["function_call"]["arguments"])
