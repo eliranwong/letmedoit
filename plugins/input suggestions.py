@@ -5,6 +5,7 @@ config.inputSuggestions += [
         "[NO_FUNCTION_CALL] ",
         "Write a summary ", 
         "Open ",
+        "Open the current directory",
         "Search ", 
         "Read ",
         "Tell me about ",

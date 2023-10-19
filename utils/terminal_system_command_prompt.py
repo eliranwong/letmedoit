@@ -49,8 +49,8 @@ class SystemCommandPrompt:
     def run(self, allowPathChanges=False):
         self.runSystemCommandPrompt = True
         # initial message
-        print("You are now using system command prompt!")
-        print(f"To go back, either press 'ctrl+q' or run '{config.exit_entry}'.")
+        config.print("You are now using system command prompt!")
+        config.print(f"To exit, either press 'ctrl+q' or run '{config.exit_entry}'.")
         # keep current path in case users change directory
         appPath = os.getcwd()
 
@@ -63,8 +63,8 @@ class SystemCommandPrompt:
 
         @this_key_bindings.add("c-l")
         def _(_):
-            print("")
-            print(self.divider)
+            config.print("")
+            config.print(self.divider)
             run_in_terminal(lambda: self.getPath.displayDirectoryContent())
 
         @this_key_bindings.add("c-p")

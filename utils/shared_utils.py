@@ -1,5 +1,4 @@
-import config, openai, platform, subprocess, os, pydoc, webbrowser, re
-from utils.terminal_system_command_prompt import SystemCommandPrompt
+import config, openai, platform, subprocess, os, pydoc, webbrowser
 
 class SharedUtil:
 
@@ -59,9 +58,6 @@ class SharedUtil:
     def openURL(url):
         config.stopSpinning()
         if config.terminalEnableTermuxAPI:
-            #config.systemCommandPromptEntry = f'''termux-open-url "{url}"'''
-            #SystemCommandPrompt().run(allowPathChanges=True)
-            #command = f'''am start -a android.intent.action.VIEW -n com.android.chrome/com.google.android.apps.chrome.Main -d "{url}"'''
             command = f'''termux-open-url "{url}"'''
             SharedUtil.runSystemCommand(command)
         else:

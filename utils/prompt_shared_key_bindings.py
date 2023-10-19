@@ -1,19 +1,57 @@
-import config
+import config, pydoc
 from prompt_toolkit.key_binding import KeyBindings
-
+from prompt_toolkit.application.current import get_app
+from utils.shared_utils import SharedUtil
 
 prompt_shared_key_bindings = KeyBindings()
 
 # selection
-"""
-# select all
+
+# select / unselect all
 @prompt_shared_key_bindings.add("c-a")
 def _(event):
     buffer = event.app.current_buffer
-    buffer.cursor_position = 0
-    buffer.start_selection()
-    buffer.cursor_position = len(buffer.text)
-"""
+    if config.selectAll:
+        text = buffer.text
+        buffer.reset()
+        buffer.text = text
+        buffer.cursor_position = len(buffer.text)
+    else:
+        buffer.cursor_position = 0
+        buffer.start_selection()
+        buffer.cursor_position = len(buffer.text)
+    config.selectAll = not config.selectAll
+
+# clipboard
+
+# copy text to clipboard
+@prompt_shared_key_bindings.add("c-c")
+def _(event):
+    buffer = event.app.current_buffer
+    data = buffer.copy_selection()
+    copyText = data.text
+    if config.terminalEnableTermuxAPI:
+        pydoc.pipepager(copyText, cmd="termux-clipboard-set")
+    else:
+        # remarks: set_data does not work
+        config.clipboard.set_text(copyText)
+# paste clipboard text
+@prompt_shared_key_bindings.add("c-v")
+def _(event):
+    buffer = event.app.current_buffer
+    buffer.cut_selection()
+    if config.terminalEnableTermuxAPI:
+        clipboardText = SharedUtil.getCliOutput("termux-clipboard-get")
+    else:
+        clipboardText = config.clipboard.get_data().text
+    buffer.insert_text(clipboardText)
+# cut text to clipboard
+@prompt_shared_key_bindings.add("c-x")
+def _(event):
+    buffer = event.app.current_buffer
+    data = buffer.cut_selection()
+    # remarks: set_data does not work
+    config.clipboard.set_text(data.text)
 
 # navigation
 

@@ -8,10 +8,12 @@ from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
 from utils.prompt_shared_key_bindings import prompt_shared_key_bindings
 from utils.prompt_multiline_shared_key_bindings import prompt_multiline_shared_key_bindings
 from utils.promptValidator import NumberValidator
+from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 
 class Prompts:
 
     def __init__(self):
+        config.clipboard = PyperclipClipboard()
         self.promptStyle1 = Style.from_dict({
             # User input (default text).
             "": config.terminalCommandEntryColor1,
@@ -70,23 +72,23 @@ class Prompts:
             config.chatGPTApiPredefinedContext = "[none]"
             event.app.current_buffer.text = ".new"
             event.app.current_buffer.validate_and_handle()
-            run_in_terminal(lambda: print("Predefined context is now temporarily changed to '[none]'."))
+            run_in_terminal(lambda: config.print("Predefined context is now temporarily changed to '[none]'."))
         @this_key_bindings.add("c-s")
         def _(event):
             event.app.current_buffer.text = ".save"
             event.app.current_buffer.validate_and_handle()
-        @this_key_bindings.add("c-c")
+        @this_key_bindings.add("c-z")
         def _(event):
-            event.app.current_buffer.text = config.cancel_entry
-            event.app.current_buffer.validate_and_handle()
+            buffer = event.app.current_buffer
+            buffer.reset()
         @this_key_bindings.add("c-d")
         def _(_):
             config.developer = not config.developer
-            run_in_terminal(lambda: print(f"Developer mode {'enabled' if config.developer else 'disabled'}!"))
+            run_in_terminal(lambda: config.print(f"Developer mode {'enabled' if config.developer else 'disabled'}!"))
         @this_key_bindings.add("c-e")
         def _(_):
             config.enhanceCommandExecution = not config.enhanceCommandExecution
-            run_in_terminal(lambda: print(f"Command execution mode changed to '{'enhanced' if config.enhanceCommandExecution else 'auto'}'!"))
+            run_in_terminal(lambda: config.print(f"Command execution mode changed to '{'enhanced' if config.enhanceCommandExecution else 'auto'}'!"))
         @this_key_bindings.add("c-l")
         def _(event):
             config.defaultEntry = event.app.current_buffer.text
@@ -103,18 +105,28 @@ class Prompts:
         @this_key_bindings.add("c-k")
         def _(_):
             run_in_terminal(self.showKeyBindings)
+        @this_key_bindings.add("c-b")
+        def _(_):
+            if config.tts:
+                config.ttsInput = not config.ttsInput
+                run_in_terminal(lambda: config.print(f"Input Audio '{'enabled' if config.ttsInput else 'disabled'}'!"))
+        @this_key_bindings.add("c-p")
+        def _(_):
+            if config.tts:
+                config.ttsOutput = not config.ttsOutput
+                run_in_terminal(lambda: config.print(f"Response Audio '{'enabled' if config.ttsOutput else 'disabled'}'!"))
         @this_key_bindings.add("c-g")
         def _(_):
             config.displayImprovedWriting = not config.displayImprovedWriting
-            run_in_terminal(lambda: print(f"Improved Writing Display '{'enabled' if config.displayImprovedWriting else 'disabled'}'!"))
+            run_in_terminal(lambda: config.print(f"Improved Writing Display '{'enabled' if config.displayImprovedWriting else 'disabled'}'!"))
         @this_key_bindings.add("c-w")
         def _(_):
             config.wrapWords = not config.wrapWords
-            run_in_terminal(lambda: print(f"Word Wrap '{'enabled' if config.wrapWords else 'disabled'}'!"))
+            run_in_terminal(lambda: config.print(f"Word Wrap '{'enabled' if config.wrapWords else 'disabled'}'!"))
         @this_key_bindings.add("escape", "m")
         def _(_):
             config.mouseSupport = not config.mouseSupport
-            run_in_terminal(lambda: print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))
+            run_in_terminal(lambda: config.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))
 
         self.prompt_shared_key_bindings = merge_key_bindings([
             prompt_shared_key_bindings,
@@ -129,7 +141,11 @@ class Prompts:
     def showKeyBindings(self):
         bindings = {
             "ctrl+q": "quit or exit current feature",
-            "ctrl+c": "cancel",
+            "ctrl+z": "cancel",
+            "ctrl+a": "select / unselect all",
+            "ctrl+c": "copy [w/ mouse support]",
+            "ctrl+v": "paste [w/ mouse support]",
+            "ctrl+x": "cut [w/ mouse support]",
             "ctrl+n": "new chat",
             "ctrl+y": "new chat without context",
             "ctrl+s": "save chat",
@@ -139,6 +155,8 @@ class Prompts:
             "ctrl+k": "show key bindings",
             "ctrl+l": "toggle multi-line entry",
             "ctrl+g": "toggle improved writing feature",
+            "ctrl+b": "toggle input audio",
+            "ctrl+p": "toggle response audio",
             "ctrl+w": "toggle word wrap",
             "escape+m": "toggle mouse support",
             "escape+t": "system command prompt",
@@ -186,6 +204,7 @@ class Prompts:
         
 
     def simplePrompt(self, numberOnly=False, validator=None, multiline=False, inputIndicator="", default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False):
+        config.selectAll = False
         inputPrompt = promptSession.prompt if promptSession is not None else prompt
         if not inputIndicator:
             inputIndicator = self.inputIndicator
@@ -205,5 +224,6 @@ class Prompts:
             completer=completer,
             is_password=is_password,
             mouse_support=Condition(lambda: config.mouseSupport),
+            clipboard=config.clipboard,
         ).strip()
         return userInput
