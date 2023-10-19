@@ -19,12 +19,12 @@ if SharedUtil.isPackageInstalled("yt-dlp"):
         def terminalDownloadYoutubeFile(downloadCommand, url_string, outputFolder):
             if isFfmpegInstalled():
                 try:
-                    print("--------------------")
+                    config.print("--------------------")
                     # use os.system, as it displays download status ...
                     os.system("cd {2}; {0} {1}".format(downloadCommand, url_string, outputFolder))
                     if SharedUtil.isPackageInstalled("pkill"):
                         os.system("pkill yt-dlp")
-                    print(f"Downloaded in directory '{outputFolder}'!")
+                    config.print(f"Downloaded in directory '{outputFolder}'!")
                     try:
                         os.system(f'''{config.open} {outputFolder}''')
                     except:
@@ -32,13 +32,13 @@ if SharedUtil.isPackageInstalled("yt-dlp"):
                 except:
                     config.showErrors() 
             else:
-                print("Tool 'ffmpeg' is not found on your system!")
-                print("Read https://github.com/eliranwong/myHand.ai/wiki/Install-ffmpeg")
+                config.print("Tool 'ffmpeg' is not found on your system!")
+                config.print("Read https://github.com/eliranwong/myHand.ai/wiki/Install-ffmpeg")
 
 
         url = function_args.get("url") # required
         if is_youtube_url(url):
-            print("Loading youtube downloader ...")
+            config.print("Loading youtube downloader ...")
             format = function_args.get("format") # required
             location = function_args.get("location", "") # optional
             if not (location and os.path.isdir(location)):
@@ -47,7 +47,7 @@ if SharedUtil.isPackageInstalled("yt-dlp"):
             terminalDownloadYoutubeFile(downloadCommand, url, location)
             return "Finished! Youtube downloader closed!"
         else:
-            print("invalid link given")
+            config.print("invalid link given")
             return "[INVALID]"
 
     functionSignature = {
@@ -78,4 +78,4 @@ if SharedUtil.isPackageInstalled("yt-dlp"):
     config.chatGPTApiAvailableFunctions["download_youtube_media"] = download_youtube_media
 
 else:
-    print("You need to install package 'yt-dlp' to work with plugin 'download youtube media'! Run:\n> source venv/bin/activate\n> 'pip3 install yt-dlp'")
+    config.print("You need to install package 'yt-dlp' to work with plugin 'download youtube media'! Run:\n> source venv/bin/activate\n> 'pip3 install yt-dlp'")

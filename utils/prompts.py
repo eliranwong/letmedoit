@@ -107,6 +107,14 @@ class Prompts:
         def _(_):
             config.displayImprovedWriting = not config.displayImprovedWriting
             run_in_terminal(lambda: print(f"Improved Writing Display '{'enabled' if config.displayImprovedWriting else 'disabled'}'!"))
+        @this_key_bindings.add("c-w")
+        def _(_):
+            config.wrapWords = not config.wrapWords
+            run_in_terminal(lambda: print(f"Word Wrap '{'enabled' if config.wrapWords else 'disabled'}'!"))
+        @this_key_bindings.add("escape", "m")
+        def _(_):
+            config.mouseSupport = not config.mouseSupport
+            run_in_terminal(lambda: print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))
 
         self.prompt_shared_key_bindings = merge_key_bindings([
             prompt_shared_key_bindings,
@@ -128,9 +136,10 @@ class Prompts:
             "ctrl+o": "change predefined context",
             "ctrl+d": "swap developer mode",
             "ctrl+e": "swap command execution mode",
+            "ctrl+k": "show key bindings",
             "ctrl+l": "toggle multi-line entry",
             "ctrl+g": "toggle improved writing feature",
-            "ctrl+k": "show key bindings",
+            "ctrl+w": "toggle word wrap",
             "escape+m": "toggle mouse support",
             "escape+t": "system command prompt",
             "escape+b": "move cursor to line beginning",

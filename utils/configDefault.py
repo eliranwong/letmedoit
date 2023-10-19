@@ -13,6 +13,7 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
                 config.thisTranslation[i] = thisTranslation[i]
 
 defaultSettings = (
+    ('wrapWords', False),
     ('mouseSupport', False),
     ('autoUpdate', True),
     ('chatGPTApiModel', 'gpt-3.5-turbo'),

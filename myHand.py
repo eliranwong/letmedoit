@@ -72,6 +72,7 @@ def aboutToQuit():
                 "divider",
                 "showErrors",
                 "stopSpinning",
+                "print",
                 "systemCommandPromptEntry",
                 "stop_event",
                 "spinner_thread",

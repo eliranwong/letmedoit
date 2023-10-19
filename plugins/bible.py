@@ -76,10 +76,10 @@ try:
                         return ()
             return ()
 
-        print(f"loading bible {config.mainText} ...")
+        config.print(f"loading bible {config.mainText} ...")
         # display sql query statement for developer
         if config.developer:
-            print(query)
+            config.print(query)
 
         database = os.path.join(config.bibleDataCurrent, "bibles", f"{config.mainText}.bible")
         if os.path.isfile(database):
@@ -100,7 +100,7 @@ try:
                 total = 0
                 subTotal = 0
                 subTotals = {}
-                print("--------------------")
+                config.print("--------------------")
                 for b, c, v, verseText in cursor.fetchall():
                     config.mainB, config.mainC, config.mainV = b, c, v
                     if not book == b:
@@ -132,10 +132,10 @@ try:
                     bookName = re.sub("<u><b>|</b></u>", "", bookName)
                     subTotals[bookName] = subTotal
                 config.tempContent = re.sub("<[^<>]*?>", "", config.tempContent)
-                print("--------------------")
+                config.print("--------------------")
                 for key, value in subTotals.items():
                     print_formatted_text(HTML(f"{key} x {value}"))
-                print("--------------------")
+                config.print("--------------------")
                 print_formatted_text(HTML(f"Total: {total} verse(s)"))
         return ""
 
@@ -209,4 +209,4 @@ try:
     config.chatGPTApiAvailableFunctions["search_bible"] = search_bible
 
 except:
-    print("You need to install package 'apsw' to work with plugin 'bible'! Run:\n> source venv/bin/activate\n> 'pip3 install apsw'")
+    config.print("You need to install package 'apsw' to work with plugin 'bible'! Run:\n> source venv/bin/activate\n> 'pip3 install apsw'")

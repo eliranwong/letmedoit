@@ -35,4 +35,4 @@ if SharedUtil.isPackageInstalled("micro"):
     config.chatGPTApiFunctionSignatures.append(functionSignature)
     config.chatGPTApiAvailableFunctions["edit_text"] = edit_text
 else:
-    print("Install text editor 'micro' to work with plugin 'edit text'.")
+    config.print("Install text editor 'micro' to work with plugin 'edit text'.")

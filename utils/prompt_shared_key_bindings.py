@@ -54,11 +54,6 @@ def _(event):
     buffer = event.app.current_buffer
     data = buffer.delete(1)
 
-# swap mouse support
-@prompt_shared_key_bindings.add("escape", "m")
-def _(_):
-    config.mouseSupport = not config.mouseSupport
-
 # swap color theme
 @prompt_shared_key_bindings.add("escape", "s")
 def _(_):

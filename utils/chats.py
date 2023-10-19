@@ -1,10 +1,9 @@
-import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, pydoc, textwrap, string, shutil
+import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, pydoc, textwrap, string, shutil, wcwidth
 from pathlib import Path
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.shortcuts import clear
-from prompt_toolkit import print_formatted_text
 from prompt_toolkit.formatted_text import FormattedText
 from utils.terminal_mode_dialogs import TerminalModeDialogs
 from utils.prompts import Prompts
@@ -29,6 +28,7 @@ class MyHandAI:
         config.divider = self.divider = "--------------------"
         config.showErrors = self.showErrors
         config.stopSpinning = self.stopSpinning
+        config.print = self.print
         self.runPython = True
         config.accept_default = False
         config.defaultEntry = ""
@@ -50,8 +50,8 @@ class MyHandAI:
             self.changeAPIkey()
 
         if not config.openaiApiKey:
-            print("ChatGPT API key not found!")
-            print("Read https://github.com/eliranwong/myHand.ai/wiki/ChatGPT-API-Key")
+            self.print("ChatGPT API key not found!")
+            self.print("Read https://github.com/eliranwong/myHand.ai/wiki/ChatGPT-API-Key")
             exit(0)
 
         # required
@@ -103,7 +103,7 @@ class MyHandAI:
                     code = compile(f.read(), script, 'exec')
                     exec(code, globals())
             except:
-                print("Failed to run '{0}'!".format(os.path.basename(script)))
+                self.print("Failed to run '{0}'!".format(os.path.basename(script)))
                 self.showErrors()
 
     def runPlugins(self):
@@ -191,16 +191,12 @@ class MyHandAI:
         return ""
 
     def print(self, content):
-        # wrap words to fit terminal width
-        terminal_width = shutil.get_terminal_size().columns
-        if config.thisPlatform == "Windows":
-            print(content)
-            # try the following later:
-            # Write-Output "This is a long sentence that needs to be wrapped to fit within a specified width" | Format-Wide -Column 40
-            #pydoc.pipepager(f"{content}\n", cmd=f"Format-Wide -Column {terminal_width}")
-        elif SharedUtil.isPackageInstalled("fold"):
-            pydoc.pipepager(f"{content}\n", cmd=f"fold -s -w {terminal_width}")
-            # 'fmt' as alternative to 'fold'
+        if config.wrapWords:
+            # wrap words to fit terminal width
+            terminal_width = shutil.get_terminal_size().columns
+            textwrap.fill(content, width=terminal_width)
+            # remarks: 'fold' or 'fmt' does not work on Windows
+            # pydoc.pipepager(f"{content}\n", cmd=f"fold -s -w {terminal_width}")
             # pydoc.pipepager(f"{content}\n", cmd=f"fmt -w {terminal_width}")
         else:
             print(content)
@@ -264,22 +260,22 @@ Acess the risk level of this Python code:
             refinedCode = self.fineTunePythonCode(python_code)
             systemCommand = ("os.system(" in refinedCode)
 
-            print(self.divider)
-            print(f"running python code ...")
+            self.print(self.divider)
+            self.print(f"running python code ...")
             risk = self.riskAssessment(python_code)
             self.showRisk(risk)
             if config.developer or config.codeDisplay:
                 print("```")
                 print(python_code)
                 print("```")
-            print(self.divider)
+            self.print(self.divider)
 
             self.stopSpinning()
             if not self.runPython:
                 info = {"information": python_code}
                 return json.dumps(info)
             elif self.confirmExecution(risk):
-                print("Do you want to continue? [y]es / [N]o")
+                self.print("Do you want to continue? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
                     info = {"information": python_code}
@@ -289,17 +285,17 @@ Acess the risk level of this Python code:
                 function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) and not systemCommand else ""
             except:
                 self.showErrors()
-                print(self.divider)
+                self.print(self.divider)
                 function_response = "[INVALID]"
             if function_response:
                 info = {"information": function_response}
                 function_response = json.dumps(info)
         elif not function_name in config.chatGPTApiAvailableFunctions:
             # handle unexpected function
-            print(f"Unexpected function: {function_name}")
-            print(self.divider)
+            self.print(f"Unexpected function: {function_name}")
+            self.print(self.divider)
             print(response_message)
-            print(self.divider)
+            self.print(self.divider)
             function_response = ""
         else:
             fuction_to_call = config.chatGPTApiAvailableFunctions[function_name]
@@ -331,7 +327,7 @@ Acess the risk level of this Python code:
     def showRisk(self, risk):
         if not config.confirmExecution in ("always", "medium_risk_or_above", "high_risk_only", "none"):
             config.confirmExecution = "always"
-        print(f"[risk level: {risk}]")
+        self.print(f"[risk level: {risk}]")
 
     def setupTermuxExecution(self):
         def execute_termux_command(function_args):
@@ -347,18 +343,18 @@ Acess the risk level of this Python code:
             function_args = function_args if sharedText == function_args else f'''termux-share -a send "{sharedText}"'''
 
             # show Termux command for developer
-            print(self.divider)
-            print(f"Termux: {title}")
+            self.print(self.divider)
+            self.print(f"Termux: {title}")
             self.showRisk(risk)
             if config.developer or config.codeDisplay:
-                print("```")
+                self.print("```")
                 print(function_args)
-                print("```")
-            print(self.divider)
+                self.print("```")
+            self.print(self.divider)
             
             self.stopSpinning()
             if self.confirmExecution(risk):
-                print("Do you want to execute it? [y]es / [N]o")
+                self.print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
                     return "[INVALID]"
@@ -373,7 +369,7 @@ Acess the risk level of this Python code:
                 self.print(function_response)
             except:
                 self.showErrors()
-                print(self.divider)
+                self.print(self.divider)
                 return "[INVALID]"
             info = {"information": function_response}
             function_response = json.dumps(info)
@@ -418,20 +414,20 @@ Acess the risk level of this Python code:
             systemCommand = ("os.system(" in refinedCode)
 
             # show pyton code for developer
-            print(self.divider)
-            print(f"Python: {title}")
+            self.print(self.divider)
+            self.print(f"Python: {title}")
             self.showRisk(risk)
             if config.developer or config.codeDisplay:
-                print("```")
+                self.print("```")
                 print(python_code)
-                print("```")
-            print(self.divider)
+                self.print("```")
+            self.print(self.divider)
             
             self.stopSpinning()
             if not self.runPython:
                 return "[INVALID]"
             elif self.confirmExecution(risk):
-                print("Do you want to execute it? [y]es / [N]o")
+                self.print("Do you want to execute it? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
                     self.runPython = False
@@ -442,7 +438,7 @@ Acess the risk level of this Python code:
                 function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) and not systemCommand else ""
             except:
                 self.showErrors()
-                print(self.divider)
+                self.print(self.divider)
                 return "[INVALID]"
             if not function_response:
                 return ""
@@ -480,7 +476,7 @@ Acess the risk level of this Python code:
         config.chatGPTApiAvailableFunctions["execute_python_code"] = execute_python_code
 
     def screening(self, messages, userInput):
-        self.print("screening ...")
+        self.print("enhanced screening ...")
 
         messagesCopy = messages[:]
 
@@ -716,11 +712,13 @@ Otherwise, answer "chat". Here is the request:"""
             "change startup directory",
             "change Termux API integration",
             "change developer mode [ctrl+d]",
+            "change automatic update",
+            "toogle mouse support [escape+m]",
+            "toggle word wrap [ctrl+w]",
             "toggle improved writing [esc+g]",
             "toggle input audio",
             "toggle response audio",
             "configure text-to-speech command",
-            "configure automatic update",
             "open system command prompt",
             "open myHand.ai wiki",
             "display key bindings",
@@ -953,8 +951,8 @@ Otherwise, answer "chat". Here is the request:"""
     def isTtsAvailable(self):
         if config.tts:
             return True
-        print("Text-to-speech feature not ready!\nTo, set up, either:\n* install 'VLC player'\n* install 'pygame'\n* define 'ttsCommand' in config.py")
-        print("Read more at:\nhttps://github.com/eliranwong/myHand.ai/wiki/myHand-Speaks")
+        self.print("Text-to-speech feature not ready!\nTo, set up, either:\n* install 'VLC player'\n* install 'pygame'\n* define 'ttsCommand' in config.py")
+        self.print("Read more at:\nhttps://github.com/eliranwong/myHand.ai/wiki/myHand-Speaks")
         return False
 
     def toggleinputaudio(self):
@@ -984,11 +982,19 @@ Otherwise, answer "chat". Here is the request:"""
                 command = f'''{ttsCommand} "testing"{ttsCommandSuffix}'''
             _, stdErr = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
             if stdErr:
-                self.showErrors() if config.developer else print("Entered command invalid!")
+                self.showErrors() if config.developer else self.print("Entered command invalid!")
             else:
                 config.ttsCommand, config.ttsCommandSuffix = ttsCommand, ttsCommandSuffix
         else:
             config.ttsCommand, config.ttsCommandSuffix = "", ""
+
+    def toggleWordWrap(self):
+        config.wrapWords = not config.wrapWords
+        self.print(f"Word Wrap '{'enabled' if config.wrapWords else 'disabled'}'!")
+
+    def toggleMouseSupport(self):
+        config.mouseSupport = not config.mouseSupport
+        self.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!")
 
     def toggleImprovedWriting(self):
         config.displayImprovedWriting = not config.displayImprovedWriting
@@ -1157,11 +1163,13 @@ Otherwise, answer "chat". Here is the request:"""
             ".startupDirectory",
             ".termuxapi",
             ".developer",
+            ".autoupdate",
+            ".togglemousesupport",
+            ".togglewordwrap",
             ".toggleimprovedwriting",
             ".toggleinputaudio",
             ".toggleresponseaudio",
             ".ttscommand",
-            ".autoupdate",
             ".system",
             ".help",
             ".keys",
@@ -1188,11 +1196,12 @@ Otherwise, answer "chat". Here is the request:"""
             if not userInputLower:
                 userInput = config.blankEntryAction
             if userInput == "...":
-                userInput = self.runOptions(features, userInput)
-            
+                userInputLower = self.runOptions(features, userInput)
+
             if userInput.startswith("!"):
                 self.runSystemCommand(userInput)
             elif userInput.startswith("```") and userInput.endswith("```") and not userInput == "``````":
+                userInput = re.sub("```python", "```", userInput)
                 self.runPythonScript(userInput)
             elif userInputLower == config.exit_entry:
                 self.saveChat(messages)
@@ -1205,6 +1214,10 @@ Otherwise, answer "chat". Here is the request:"""
                 self.swapMultiline()
             elif userInputLower == ".swaptextbrightness":
                 swapTerminalColors()
+            elif userInputLower == ".togglemousesupport":
+                self.toggleMouseSupport()
+            elif userInputLower == ".togglewordwrap":
+                self.toggleWordWrap()
             elif userInputLower == ".toggleimprovedwriting":
                 self.toggleImprovedWriting()
             elif userInputLower == ".toggleinputaudio":
@@ -1233,7 +1246,7 @@ Otherwise, answer "chat". Here is the request:"""
                     if userInput and config.displayImprovedWriting:
                         improvedVersion = SharedUtil.getSingleResponse(f"Improve the following writing, according to {config.improvedWritingSytle}\nRemember, provide me with the improved writing only, enclosed in triple quotes ``` and without any additional information or comments.\nMy writing\n:{userInput}")
                         if improvedVersion and improvedVersion.startswith("```") and improvedVersion.endswith("```"):
-                            print(improvedVersion)
+                            self.print(improvedVersion)
                             userInput = improvedVersion[3:-3]
                             if config.ttsOutput:
                                 ttsUtil.play(userInput)
@@ -1260,7 +1273,7 @@ Otherwise, answer "chat". Here is the request:"""
                         try:
                             messages = self.runFunction(messages, config.integrate_google_searches_signature, "integrate_google_searches")
                         except:
-                            print("Unable to load internet resources.")
+                            self.print("Unable to load internet resources.")
                             self.showErrors()
 
                     completion = self.runCompletion(messages, noFunctionCall)
@@ -1269,6 +1282,10 @@ Otherwise, answer "chat". Here is the request:"""
                     self.stopSpinning()
 
                     chat_response = ""
+                    terminal_width = shutil.get_terminal_size().columns
+                    lineWidth = 0
+                    blockStart = False
+                    wrapWords = config.wrapWords
                     for event in completion:                                 
                         # RETRIEVE THE TEXT FROM THE RESPONSE
                         event_text = event["choices"][0]["delta"] # EVENT DELTA RESPONSE
@@ -1277,8 +1294,27 @@ Otherwise, answer "chat". Here is the request:"""
                         if answer is not None:
                             # display the chunk
                             chat_response += answer
-                            print(answer, end='', flush=True) # Print the response
+                            # word wrap
+                            if answer in ("```", "``"):
+                                blockStart = not blockStart
+                                if blockStart:
+                                    config.wrapWords = False
+                                else:
+                                    config.wrapWords = wrapWords
+                            if config.wrapWords:
+                                answerWidth = self.getStringWidth(answer)
+                                newLineWidth = lineWidth + answerWidth
+                                if newLineWidth > terminal_width:
+                                    print(f"\n{answer}", end='', flush=True)
+                                    lineWidth = answerWidth
+                                else:
+                                    print(answer, end='', flush=True)
+                                    lineWidth += answerWidth
+                            else:
+                                print(answer, end='', flush=True) # Print the response
+                            # speak streaming words
                             self.readAnswer(answer)
+                    config.wrapWords = wrapWords
                     # reset config.tempChunk
                     config.tempChunk = ""
                     print("\n")
@@ -1295,31 +1331,37 @@ Otherwise, answer "chat". Here is the request:"""
                 except openai.error.APIError as e:
                     self.stopSpinning()
                     #Handle API error here, e.g. retry or log
-                    print(f"OpenAI API returned an API Error: {e}")
+                    self.print(f"OpenAI API returned an API Error: {e}")
                 except openai.error.APIConnectionError as e:
                     self.stopSpinning()
                     #Handle connection error here
-                    print(f"Failed to connect to OpenAI API: {e}")
+                    self.print(f"Failed to connect to OpenAI API: {e}")
                 except openai.error.RateLimitError as e:
                     self.stopSpinning()
                     #Handle rate limit error (we recommend using exponential backoff)
-                    print(f"OpenAI API request exceeded rate limit: {e}")
+                    self.print(f"OpenAI API request exceeded rate limit: {e}")
                 except:
                     self.stopSpinning()
                     trace = traceback.format_exc()
                     if "Please reduce the length of the messages or completion" in trace:
                         self.print("Maximum tokens reached!")
                     elif config.developer:
-                        print(self.divider)
+                        self.print(self.divider)
                         self.print(trace)
-                        print(self.divider)
+                        self.print(self.divider)
                     else:
-                        self.print("Errors!")
+                        self.print("Error encountered!")
                     
                     config.defaultEntry = userInput
                     self.print("starting a new chat!")
                     self.saveChat(messages)
                     startupdirectory, messages = startChat()
+
+    def getStringWidth(self, text): 
+        width = 0 
+        for character in text: 
+            width += wcwidth.wcwidth(character) 
+        return width 
 
     def checkCompletion(self):
         openai.api_key = os.environ["OPENAI_API_KEY"] = config.openaiApiKey
@@ -1353,5 +1395,4 @@ Otherwise, answer "chat". Here is the request:"""
             self.print("Error: Issue on OpenAI servers. ")
             self.print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
         except:
-            self.print("Error!")
             self.showErrors()

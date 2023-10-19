@@ -29,26 +29,26 @@ def generate_image(function_args):
             os.system(f"{config.open} {imageFile}")
 
     except openai.error.APIError as e:
-        print("Error: Issue on OpenAI side.")
-        print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
+        config.print("Error: Issue on OpenAI side.")
+        config.print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
     except openai.error.Timeout as e:
-        print("Error: Request timed out.")
-        print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
+        config.print("Error: Request timed out.")
+        config.print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
     except openai.error.RateLimitError as e:
-        print("Error: You have hit your assigned rate limit.")
-        print("Solution: Pace your requests. Read more in OpenAI [Rate limit guide](https://platform.openai.com/docs/guides/rate-limits).")
+        config.print("Error: You have hit your assigned rate limit.")
+        config.print("Solution: Pace your requests. Read more in OpenAI [Rate limit guide](https://platform.openai.com/docs/guides/rate-limits).")
     except openai.error.APIConnectionError as e:
-        print("Error: Issue connecting to our services.")
-        print("Solution: Check your network settings, proxy configuration, SSL certificates, or firewall rules.")
+        config.print("Error: Issue connecting to our services.")
+        config.print("Solution: Check your network settings, proxy configuration, SSL certificates, or firewall rules.")
     except openai.error.InvalidRequestError as e:
-        print("Error: Your request was malformed or missing some required parameters, such as a token or an input.")
-        print("Solution: The error message should advise you on the specific error made. Check the [documentation](https://platform.openai.com/docs/api-reference/) for the specific API method you are calling and make sure you are sending valid and complete parameters. You may also need to check the encoding, format, or size of your request data.")
+        config.print("Error: Your request was malformed or missing some required parameters, such as a token or an input.")
+        config.print("Solution: The error message should advise you on the specific error made. Check the [documentation](https://platform.openai.com/docs/api-reference/) for the specific API method you are calling and make sure you are sending valid and complete parameters. You may also need to check the encoding, format, or size of your request data.")
     except openai.error.AuthenticationError as e:
-        print("Error: Your API key or token was invalid, expired, or revoked.")
-        print("Solution: Check your API key or token and make sure it is correct and active. You may need to generate a new one from your account dashboard.")
+        config.print("Error: Your API key or token was invalid, expired, or revoked.")
+        config.print("Solution: Check your API key or token and make sure it is correct and active. You may need to generate a new one from your account dashboard.")
     except openai.error.ServiceUnavailableError as e:
-        print("Error: Issue on OpenAI servers. ")
-        print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
+        config.print("Error: Issue on OpenAI servers. ")
+        config.print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
     except:
         config.showErrors()
 
