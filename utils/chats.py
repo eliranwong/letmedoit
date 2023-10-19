@@ -1,9 +1,11 @@
-import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, pydoc, textwrap, string
+import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, pydoc, textwrap, string, shutil
 from pathlib import Path
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.shortcuts import clear
+from prompt_toolkit import print_formatted_text
+from prompt_toolkit.formatted_text import FormattedText
 from utils.terminal_mode_dialogs import TerminalModeDialogs
 from utils.prompts import Prompts
 from utils.promptValidator import FloatValidator
@@ -189,8 +191,19 @@ class MyHandAI:
         return ""
 
     def print(self, content):
-        print(content)
-        # format content output later
+        # wrap words to fit terminal width
+        terminal_width = shutil.get_terminal_size().columns
+        if thisPlatform == "Windows":
+            print(content)
+            # try the following later:
+            # Write-Output "This is a long sentence that needs to be wrapped to fit within a specified width" | Format-Wide -Column 40
+            #pydoc.pipepager(f"{content}\n", cmd=f"Format-Wide -Column {terminal_width}")
+        elif SharedUtil.isPackageInstalled("fold"):
+            pydoc.pipepager(f"{content}\n", cmd=f"fold -s -w {terminal_width}")
+            # 'fmt' as alternative to 'fold'
+            # pydoc.pipepager(f"{content}\n", cmd=f"fmt -w {terminal_width}")
+        else:
+            print(content)
 
     def spinning_animation(self, stop_event):
         while not stop_event.is_set():
@@ -917,6 +930,19 @@ Otherwise, answer "chat". Here is the request:"""
                 userInput = feature
         return userInput
 
+    def runPythonScript(self, script):
+        script = script.strip()[3:-3]
+        try:
+            exec(script, globals())
+        except:
+            print(traceback.format_exc())
+
+    def runSystemCommand(self, command):
+        command = command.strip()[1:]
+        if self.multilineInput:
+            command = ";".join(command.split("\n"))
+        os.system(command)
+
     def swapMultiline(self):
         self.multilineInput = not self.multilineInput
         self.print(f"Multi-line input {'enabled' if self.multilineInput else 'disabled'}!")
@@ -1154,44 +1180,49 @@ Otherwise, answer "chat". Here is the request:"""
             completer = WordCompleter(inputSuggestions, ignore_case=True) if inputSuggestions else None
             userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=self.multilineInput, completer=completer, default=defaultEntry, accept_default=accept_default)
             # display options when empty string is entered
-            if not userInput.strip():
+            userInputLower = userInput.lower()
+            if not userInput:
                 userInput = config.blankEntryAction
-            if userInput.lower().strip() == "...":
+            if userInputLower == "...":
                 userInput = self.runOptions(features, userInput)
-            if userInput.strip().lower() == config.exit_entry:
+            
+            if userInput.startswith("!"):
+                self.runSystemCommand(userInput)
+            elif userInput.startswith("```") and userInput.endswith("```") and not userInput == "``````":
+                self.runPythonScript(userInput)
+            elif userInputLower == config.exit_entry:
                 self.saveChat(messages)
                 return self.exitAction()
-            elif userInput.strip().lower() == config.cancel_entry:
+            elif userInputLower == config.cancel_entry:
                 pass
-            elif userInput.strip().lower() == ".system":
+            elif userInputLower == ".system":
                 SystemCommandPrompt().run(allowPathChanges=True)
-            elif userInput.strip().lower() == ".swapmultiline":
+            elif userInputLower == ".swapmultiline":
                 self.swapMultiline()
-            elif userInput.strip().lower() == ".swaptextbrightness":
+            elif userInputLower == ".swaptextbrightness":
                 swapTerminalColors()
-            elif userInput.strip().lower() == ".toggleimprovedwriting":
+            elif userInputLower == ".toggleimprovedwriting":
                 self.toggleImprovedWriting()
-            elif userInput.strip().lower() == ".toggleinputaudio":
+            elif userInputLower == ".toggleinputaudio":
                 self.toggleinputaudio()
-            elif userInput.strip().lower() == ".toggleresponseaudio":
+            elif userInputLower == ".toggleresponseaudio":
                 self.toggleresponseaudio()
-            elif userInput.strip().lower() == ".ttscommand":
+            elif userInputLower == ".ttscommand":
                 self.defineTtsCommand()
-            elif userInput.strip().lower() == ".instruction":
+            elif userInputLower == ".instruction":
                 self.runInstruction()
-            elif userInput.strip().lower() == ".context":
+            elif userInputLower == ".context":
                 self.changeContext()
                 if not config.chatGPTApiContextInAllInputs and self.conversationStarted:
                     self.saveChat(messages)
                     startupdirectory, messages = startChat()
-            elif userInput.strip().lower() == ".new" and self.conversationStarted:
+            elif userInputLower == ".new" and self.conversationStarted:
                 self.saveChat(messages)
                 startupdirectory, messages = startChat()
-            elif userInput.strip().lower() in (".share", ".save") and self.conversationStarted:
+            elif userInputLower in (".share", ".save") and self.conversationStarted:
                 self.saveChat(messages, openFile=True)
-            elif userInput.strip() and not userInput.strip().lower() in featuresLower:
+            elif userInput and not userInputLower in featuresLower:
                 try:
-                    userInput = userInput.strip()
                     if userInput and config.ttsInput:
                         ttsUtil.play(userInput)
                     # Feature: improve writing:

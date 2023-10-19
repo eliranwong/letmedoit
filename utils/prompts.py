@@ -95,7 +95,7 @@ class Prompts:
         def _(event):
             event.app.current_buffer.text = ".context"
             event.app.current_buffer.validate_and_handle()
-        @this_key_bindings.add("escape", "m")
+        @this_key_bindings.add("escape", "t")
         def _(event):
             event.app.current_buffer.text = ".system"
             event.app.current_buffer.validate_and_handle()
@@ -124,13 +124,14 @@ class Prompts:
             "ctrl+n": "new chat",
             "ctrl+y": "new chat without context",
             "ctrl+s": "save chat",
+            "ctrl+o": "change predefined context",
             "ctrl+d": "swap developer mode",
             "ctrl+e": "swap command execution mode",
             "ctrl+l": "toggle multi-line entry",
-            "ctrl+o": "change predefined context",
             "ctrl+g": "toggle improved writing feature",
             "ctrl+k": "show key bindings",
-            "escape+m": "system command prompt",
+            "escape+m": "toggle mouse support",
+            "escape+t": "system command prompt",
             "escape+b": "move cursor to line beginning",
             "escape+e": "move cursor to line end",
             "escape+a": "move cursor to entry beginning",
@@ -138,9 +139,37 @@ class Prompts:
             "escape+d": "forward delete",
             "escape+s": "swap text brightness",
         }
+        multilineBindings = {
+            "escape+1": "go up 10 lines",
+            "escape+2": "go up 20 lines",
+            "escape+3": "go up 30 lines",
+            "escape+4": "go up 40 lines",
+            "escape+5": "go up 50 lines",
+            "escape+6": "go up 60 lines",
+            "escape+7": "go up 70 lines",
+            "escape+8": "go up 80 lines",
+            "escape+9": "go up 90 lines",
+            "escape+0": "go up 100 lines",
+            "f1": "go down 10 lines",
+            "f2": "go down 20 lines",
+            "f3": "go down 30 lines",
+            "f4": "go down 40 lines",
+            "f5": "go down 50 lines",
+            "f6": "go down 60 lines",
+            "f7": "go down 70 lines",
+            "f8": "go down 80 lines",
+            "f9": "go down 90 lines",
+            "f10": "go down 100 lines",
+            "ctrl+i": f"insert '{config.terminalEditorTabText}' [configurable]",
+            "escape+u": f"go up '{config.terminalEditorScrollLineCount}' lines [configurable]",
+            "escape+j": f"go down '{config.terminalEditorScrollLineCount}' lines [configurable]",
+        }
         print(config.divider)
         print("# Key Bindings")
         for key, value in bindings.items():
+            print(f"{key}: {value}")
+        print("## Key Bindings [multiline entry only]")
+        for key, value in multilineBindings.items():
             print(f"{key}: {value}")
         print(config.divider)
         
@@ -164,5 +193,6 @@ class Prompts:
             accept_default=accept_default,
             completer=completer,
             is_password=is_password,
+            mouse_support=Condition(lambda: config.mouseSupport),
         ).strip()
         return userInput

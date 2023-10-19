@@ -13,6 +13,7 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
                 config.thisTranslation[i] = thisTranslation[i]
 
 defaultSettings = (
+    ('mouseSupport', False),
     ('autoUpdate', True),
     ('chatGPTApiModel', 'gpt-3.5-turbo'),
     ('chatGPTApiPredefinedContext', '[none]'),
@@ -47,7 +48,7 @@ defaultSettings = (
     ('confirmExecution', "always"), # 'always', 'high_risk_only', 'medium_risk_or_above', 'none'
     ('codeDisplay', False),
     ('autoUpdate', True),
-    ('terminalEditorScrollLineCount', 10),
+    ('terminalEditorScrollLineCount', 20),
     ('terminalEditorTabText', "    "),
     ('blankEntryAction', "..."),
     ('defaultBlankEntryAction', ".context"),
