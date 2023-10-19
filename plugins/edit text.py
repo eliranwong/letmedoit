@@ -3,7 +3,15 @@
 import config, os
 from utils.shared_utils import SharedUtil
 
-if SharedUtil.isPackageInstalled("micro"):
+# persistent
+# users can customise 'textEditor' and 'textFileExtensions' in config.py
+persistentConfigs = (
+    ("textEditor", "micro -softwrap true -wordwrap true"), # read options at https://github.com/zyedidia/micro/blob/master/runtime/help/options.md
+    ("textFileExtensions", ['txt', 'md', 'py']), # edit this option to support more or less extensions
+)
+config.setConfig(persistentConfigs)
+
+if SharedUtil.isPackageInstalled(config.textEditor.split(" ", 1)[0]):
 
     def edit_text(function_args):
         filename = function_args.get("filename") # required
@@ -19,7 +27,7 @@ if SharedUtil.isPackageInstalled("micro"):
 
     functionSignature = {
         "name": "edit_text",
-        "description": "edit a text file",
+        "description": f'''Edit text files with extensions: '*.{"', '*.".join(config.textFileExtensions)}'.''',
         "parameters": {
             "type": "object",
             "properties": {
