@@ -1302,14 +1302,43 @@ Otherwise, answer "chat". Here is the request:"""
                                 else:
                                     config.wrapWords = wrapWords
                             if config.wrapWords:
-                                answerWidth = self.getStringWidth(answer)
-                                newLineWidth = lineWidth + answerWidth
-                                if newLineWidth > terminal_width:
-                                    print(f"\n{answer}", end='', flush=True)
-                                    lineWidth = answerWidth
+                                if " " in answer:
+                                    if answer == " ":
+                                        if lineWidth < terminal_width:
+                                            print(" ", end='', flush=True)
+                                            lineWidth + 1
+                                    else:
+                                        answers = answer.split(" ")
+                                        for index, item in enumerate(answers):
+                                            isLastItem = (len(answers) - 1 == index)
+                                            answerWidth = self.getStringWidth(item)
+                                            newLineWidth = (lineWidth + answerWidth) if isLastItem else (lineWidth + answerWidth + 1)
+                                            if isLastItem:
+                                                if newLineWidth > terminal_width:
+                                                    print(f"\n{item}", end='', flush=True)
+                                                    lineWidth = answerWidth
+                                                else:
+                                                    print(item, end='', flush=True)
+                                                    lineWidth += answerWidth
+                                            else:
+                                                if (newLineWidth - terminal_width) == 1:
+                                                    print(f"{item}\n", end='', flush=True)
+                                                    lineWidth = 0
+                                                elif newLineWidth > terminal_width:
+                                                    print(f"\n{item} ", end='', flush=True)
+                                                    lineWidth = answerWidth + 1
+                                                else:
+                                                    print(f"{item} ", end='', flush=True)
+                                                    lineWidth += (answerWidth + 1)
                                 else:
-                                    print(answer, end='', flush=True)
-                                    lineWidth += answerWidth
+                                    answerWidth = self.getStringWidth(answer)
+                                    newLineWidth = lineWidth + answerWidth
+                                    if newLineWidth > terminal_width:
+                                        print(f"\n{answer}", end='', flush=True)
+                                        lineWidth = answerWidth
+                                    else:
+                                        print(answer, end='', flush=True)
+                                        lineWidth += answerWidth
                             else:
                                 print(answer, end='', flush=True) # Print the response
                             # speak streaming words
