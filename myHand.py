@@ -68,6 +68,7 @@ def aboutToQuit():
     with open(configFile, "w", encoding="utf-8") as fileObj:
         for name in dir(config):
             excludeConfigList = [
+                "showKeyBindings",
                 "divider",
                 "showErrors",
                 "stopSpinning",

@@ -28,6 +28,7 @@ class Prompts:
             ("class:indicator", ">>> "),
         ]
         self.shareKeyBindings()
+        config.showKeyBindings = self.showKeyBindings
         config.terminalColors = {
             "ansidefault": "ansidefault",
             "ansiblack": "ansiwhite",
@@ -119,7 +120,7 @@ class Prompts:
 
     def showKeyBindings(self):
         bindings = {
-            "ctrl+q": "quit",
+            "ctrl+q": "quit or exit current feature",
             "ctrl+c": "cancel",
             "ctrl+n": "new chat",
             "ctrl+y": "new chat without context",
@@ -161,11 +162,12 @@ class Prompts:
             "f9": "go down 90 lines",
             "f10": "go down 100 lines",
             "ctrl+i": f"insert '{config.terminalEditorTabText}' [configurable]",
-            "escape+u": f"go up '{config.terminalEditorScrollLineCount}' lines [configurable]",
-            "escape+j": f"go down '{config.terminalEditorScrollLineCount}' lines [configurable]",
+            "ctrl+u": f"go up '{config.terminalEditorScrollLineCount}' lines [configurable]",
+            "ctrl+j": f"go down '{config.terminalEditorScrollLineCount}' lines [configurable]",
         }
         print(config.divider)
         print("# Key Bindings")
+        print("[blank]: launch action menu")
         for key, value in bindings.items():
             print(f"{key}: {value}")
         print("## Key Bindings [multiline entry only]")

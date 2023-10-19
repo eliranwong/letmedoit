@@ -193,7 +193,7 @@ class MyHandAI:
     def print(self, content):
         # wrap words to fit terminal width
         terminal_width = shutil.get_terminal_size().columns
-        if thisPlatform == "Windows":
+        if config.thisPlatform == "Windows":
             print(content)
             # try the following later:
             # Write-Output "This is a long sentence that needs to be wrapped to fit within a specified width" | Format-Wide -Column 40
@@ -723,6 +723,7 @@ Otherwise, answer "chat". Here is the request:"""
             "configure automatic update",
             "open system command prompt",
             "open myHand.ai wiki",
+            "display key bindings",
         )
         feature = self.dialogs.getValidOptions(
             options=features, 
@@ -823,6 +824,8 @@ Otherwise, answer "chat". Here is the request:"""
                     self.print(f"Command execution confirmation: {option}")
             elif feature == ".plugins":
                 self.selectPlugins()
+            elif feature == ".keys":
+                config.showKeyBindings()
             elif feature == ".help":
                 SharedUtil.openURL('https://github.com/eliranwong/myHand.ai/wiki')
             elif feature == ".developer":
@@ -1161,6 +1164,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".autoupdate",
             ".system",
             ".help",
+            ".keys",
         )
         featuresLower = [i.lower() for i in features] + ["...", ".save", ".share"]
         while True:
@@ -1181,9 +1185,9 @@ Otherwise, answer "chat". Here is the request:"""
             userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=self.multilineInput, completer=completer, default=defaultEntry, accept_default=accept_default)
             # display options when empty string is entered
             userInputLower = userInput.lower()
-            if not userInput:
+            if not userInputLower:
                 userInput = config.blankEntryAction
-            if userInputLower == "...":
+            if userInput == "...":
                 userInput = self.runOptions(features, userInput)
             
             if userInput.startswith("!"):
