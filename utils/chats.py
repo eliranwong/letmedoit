@@ -194,7 +194,7 @@ class MyHandAI:
         if config.wrapWords:
             # wrap words to fit terminal width
             terminal_width = shutil.get_terminal_size().columns
-            textwrap.fill(content, width=terminal_width)
+            print(textwrap.fill(content, width=terminal_width))
             # remarks: 'fold' or 'fmt' does not work on Windows
             # pydoc.pipepager(f"{content}\n", cmd=f"fold -s -w {terminal_width}")
             # pydoc.pipepager(f"{content}\n", cmd=f"fmt -w {terminal_width}")
@@ -1126,7 +1126,7 @@ Otherwise, answer "chat". Here is the request:"""
             self.print(self.divider)
             try:
                 from art import text2art
-                self.print(text2art("myHand"))
+                print(text2art("myHand"))
             except:
                 self.print(f"myHand AI")
             self.showCurrentContext()
