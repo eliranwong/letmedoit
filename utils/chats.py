@@ -659,7 +659,7 @@ Otherwise, answer "chat". Here is the request:"""
         if config.chatGPTApiFunctionCall == "auto" and config.chatGPTApiFunctionSignatures:
             systemMessage += " Your functionality expands as I add more plugins to you. Only use the functions you have been provided with."
         messages = [
-            {"role": "system", "content" : systemMessage}
+            {"role": "system", "content": systemMessage}
         ]
         return messages
 
@@ -1283,7 +1283,7 @@ Otherwise, answer "chat". Here is the request:"""
 
                     chat_response = ""
                     terminal_width = shutil.get_terminal_size().columns
-                    lineWidth = 0
+                    self.lineWidth = 0
                     blockStart = False
                     wrapWords = config.wrapWords
                     for event in completion:                                 
@@ -1302,43 +1302,16 @@ Otherwise, answer "chat". Here is the request:"""
                                 else:
                                     config.wrapWords = wrapWords
                             if config.wrapWords:
-                                if " " in answer:
-                                    if answer == " ":
-                                        if lineWidth < terminal_width:
-                                            print(" ", end='', flush=True)
-                                            lineWidth + 1
-                                    else:
-                                        answers = answer.split(" ")
-                                        for index, item in enumerate(answers):
-                                            isLastItem = (len(answers) - 1 == index)
-                                            answerWidth = self.getStringWidth(item)
-                                            newLineWidth = (lineWidth + answerWidth) if isLastItem else (lineWidth + answerWidth + 1)
-                                            if isLastItem:
-                                                if newLineWidth > terminal_width:
-                                                    print(f"\n{item}", end='', flush=True)
-                                                    lineWidth = answerWidth
-                                                else:
-                                                    print(item, end='', flush=True)
-                                                    lineWidth += answerWidth
-                                            else:
-                                                if (newLineWidth - terminal_width) == 1:
-                                                    print(f"{item}\n", end='', flush=True)
-                                                    lineWidth = 0
-                                                elif newLineWidth > terminal_width:
-                                                    print(f"\n{item} ", end='', flush=True)
-                                                    lineWidth = answerWidth + 1
-                                                else:
-                                                    print(f"{item} ", end='', flush=True)
-                                                    lineWidth += (answerWidth + 1)
+                                if "\n" in answer:
+                                    lines = answer.split("\n")
+                                    for index, line in enumerate(lines):
+                                        isLastLine = (len(lines) - index == 1)
+                                        self.wrapStreamWords(line, terminal_width)
+                                        if not isLastLine:
+                                            print("\n", end='', flush=True)
+                                            self.lineWidth = 0
                                 else:
-                                    answerWidth = self.getStringWidth(answer)
-                                    newLineWidth = lineWidth + answerWidth
-                                    if newLineWidth > terminal_width:
-                                        print(f"\n{answer}", end='', flush=True)
-                                        lineWidth = answerWidth
-                                    else:
-                                        print(answer, end='', flush=True)
-                                        lineWidth += answerWidth
+                                    self.wrapStreamWords(answer, terminal_width)
                             else:
                                 print(answer, end='', flush=True) # Print the response
                             # speak streaming words
@@ -1385,6 +1358,45 @@ Otherwise, answer "chat". Here is the request:"""
                     self.print("starting a new chat!")
                     self.saveChat(messages)
                     startupdirectory, messages = startChat()
+
+    def wrapStreamWords(self, answer, terminal_width):
+        if " " in answer:
+            if answer == " ":
+                if self.lineWidth < terminal_width:
+                    print(" ", end='', flush=True)
+                    self.lineWidth += 1
+            else:
+                answers = answer.split(" ")
+                for index, item in enumerate(answers):
+                    isLastItem = (len(answers) - index == 1)
+                    itemWidth = self.getStringWidth(item)
+                    newLineWidth = (self.lineWidth + itemWidth) if isLastItem else (self.lineWidth + itemWidth + 1)
+                    if isLastItem:
+                        if newLineWidth > terminal_width:
+                            print(f"\n{item}", end='', flush=True)
+                            self.lineWidth = itemWidth
+                        else:
+                            print(item, end='', flush=True)
+                            self.lineWidth += itemWidth
+                    else:
+                        if (newLineWidth - terminal_width) == 1:
+                            print(f"{item}\n", end='', flush=True)
+                            self.lineWidth = 0
+                        elif newLineWidth > terminal_width:
+                            print(f"\n{item} ", end='', flush=True)
+                            self.lineWidth = itemWidth + 1
+                        else:
+                            print(f"{item} ", end='', flush=True)
+                            self.lineWidth += (itemWidth + 1)
+        else:
+            answerWidth = self.getStringWidth(answer)
+            newLineWidth = self.lineWidth + answerWidth
+            if newLineWidth > terminal_width:
+                print(f"\n{answer}", end='', flush=True)
+                self.lineWidth = answerWidth
+            else:
+                print(answer, end='', flush=True)
+                self.lineWidth += answerWidth
 
     def getStringWidth(self, text): 
         width = 0 
