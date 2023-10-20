@@ -13,6 +13,7 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
                 config.thisTranslation[i] = thisTranslation[i]
 
 defaultSettings = (
+    ('usePygame', False),
     ('wrapWords', False),
     ('mouseSupport', False),
     ('autoUpdate', True),

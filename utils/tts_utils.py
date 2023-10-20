@@ -8,17 +8,9 @@ except:
 try:
     import pygame
 except:
-    pass
+    config.usePygame = False
 
 class ttsUtil:
-
-    @staticmethod
-    def playAudioFile(audioFile):
-        pygame.mixer.music.load(audioFile)
-        pygame.mixer.music.play()
-        while pygame.mixer.music.get_busy():
-            pygame.time.Clock().tick(10)  # Check every 10 milliseconds
-        pygame.mixer.music.stop()
 
     @staticmethod
     def play(content, language=""):
@@ -82,14 +74,23 @@ class ttsUtil:
     @staticmethod
     def playAudioFile(audioFile):
         try:
-            if config.isVlcPlayerInstalled:
+            if config.isVlcPlayerInstalled and not config.usePygame:
                 # vlc is preferred as it allows speed control with config.vlcSpeed
                 VlcUtil.playMediaFile(audioFile)
             else:
-                ttsUtil.playAudioFile(audioFile)
+                # use pygame if config.usePygame or vlc player is not installed
+                ttsUtil.playAudioFilePygame(audioFile)
         except:
             command = f"{config.open} {audioFile}"
             subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+
+    @staticmethod
+    def playAudioFilePygame(audioFile):
+        pygame.mixer.music.load(audioFile)
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)  # Check every 10 milliseconds
+        pygame.mixer.music.stop()
 
     # Official Google Cloud Text-to-speech Service
     @staticmethod
