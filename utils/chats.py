@@ -29,6 +29,7 @@ class MyHandAI:
         config.showErrors = self.showErrors
         config.stopSpinning = self.stopSpinning
         config.print = self.print
+        config.getWrappedHTMLText = self.getWrappedHTMLText
         self.runPython = True
         config.accept_default = False
         config.defaultEntry = ""
@@ -1398,11 +1399,68 @@ Otherwise, answer "chat". Here is the request:"""
                 print(answer, end='', flush=True)
                 self.lineWidth += answerWidth
 
+    # wrap html text at spaces
+    def getWrappedHTMLText(self, text, terminal_width=None):
+        if not " " in text:
+            return text
+        if terminal_width is None:
+            terminal_width = shutil.get_terminal_size().columns
+        self.wrappedText = ""
+        self.lineWidth = 0
+
+        def addWords(words):
+            words = words.split(" ")
+            length = len(words)
+            for index, item in enumerate(words):
+                isLastItem = (length - index == 1)
+                itemWidth = self.getStringWidth(item)
+                if isLastItem:
+                    newLineWidth = self.lineWidth + itemWidth
+                else:
+                    newLineWidth = self.lineWidth + itemWidth + 1
+                if newLineWidth > terminal_width:
+                    self.wrappedText += f"\n{item}" if isLastItem else f"\n{item} "
+                    self.lineWidth = itemWidth if isLastItem else itemWidth + 1
+                else:
+                    self.wrappedText += item if isLastItem else f"{item} "
+                    self.lineWidth += itemWidth if isLastItem else itemWidth + 1
+        
+        def processLine(lineText):
+            if re.search("<[^<>]+?>", lineText):
+                # handle html/xml tags
+                chunks = lineText.split(">")
+                totalChunks = len(chunks)
+                for index, chunk in enumerate(chunks):
+                    isLastChunk = (totalChunks - index == 1)
+                    if isLastChunk:
+                        addWords(chunk)
+                    else:
+                        tag = True if "<" in chunk else False
+                        if tag:
+                            nonTag, tagContent = chunk.rsplit("<", 1)
+                            addWords(nonTag)
+                            self.wrappedText += f"<{tagContent}>"
+                        else:
+                            addWords(f"{chunk}>")
+            else:
+                addWords(lineText)
+
+        lines = text.split("\n")
+        totalLines = len(lines)
+        for index, line in enumerate(lines):
+            isLastLine = (totalLines - index == 1)
+            processLine(line)
+            if not isLastLine:
+                self.wrappedText += "\n"
+                self.lineWidth = 0
+        
+        return self.wrappedText
+
     def getStringWidth(self, text): 
         width = 0 
         for character in text: 
             width += wcwidth.wcwidth(character) 
-        return width 
+        return width
 
     def checkCompletion(self):
         openai.api_key = os.environ["OPENAI_API_KEY"] = config.openaiApiKey

@@ -14,7 +14,7 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
 
 defaultSettings = (
     ('usePygame', False),
-    ('wrapWords', False),
+    ('wrapWords', True),
     ('mouseSupport', False),
     ('autoUpdate', True),
     ('chatGPTApiModel', 'gpt-3.5-turbo'),

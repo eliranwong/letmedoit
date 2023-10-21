@@ -2,7 +2,7 @@
 from utils.install import *
 try:
     import apsw
-    import config, os, re, json
+    import config, os, re, json, shutil
     from prompt_toolkit import print_formatted_text, HTML
     from utils.file_utils import FileUtil
     from plugins.bibleTools.utils.TextUtil import TextUtil
@@ -18,6 +18,7 @@ try:
         return bibleList
 
     def search_bible(function_args):
+        terminal_width = shutil.get_terminal_size().columns
         # get the sql query statement
         query = function_args.get("query") # required
         version = function_args.get("version") # required
@@ -60,7 +61,10 @@ try:
                 verseText = f"<{config.terminalPromptIndicatorColor2}>{verseText}</{config.terminalPromptIndicatorColor2}>"
             bible = f"[{bible}] " if compareMode and compareVersions else ""
             thisVerse = f"<{config.terminalResourceLinkColor}>{c}:{v}</{config.terminalResourceLinkColor}> {verseText}"
-            print_formatted_text(HTML(f"{bible}{thisVerse}"))
+            verseContent = f"{bible}{thisVerse}"
+            if config.wrapWords:
+                verseContent = config.getWrappedHTMLText(verseContent, terminal_width)
+            print_formatted_text(HTML(verseContent))
             return thisVerse
         def getSingleVerse(bible, b, c, v):
             database = os.path.join(config.bibleDataCurrent, "bibles", f"{bible}.bible")
