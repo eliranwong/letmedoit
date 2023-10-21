@@ -65,6 +65,7 @@ try:
             if config.wrapWords:
                 verseContent = config.getWrappedHTMLText(verseContent, terminal_width)
             print_formatted_text(HTML(verseContent))
+            config.addPagerText(verseContent)
             return thisVerse
         def getSingleVerse(bible, b, c, v):
             database = os.path.join(config.bibleDataCurrent, "bibles", f"{bible}.bible")
@@ -84,6 +85,7 @@ try:
         # display sql query statement for developer
         if config.developer:
             config.print(query)
+            config.addPagerText(query)
 
         database = os.path.join(config.bibleDataCurrent, "bibles", f"{config.mainText}.bible")
         if os.path.isfile(database):
@@ -104,7 +106,8 @@ try:
                 total = 0
                 subTotal = 0
                 subTotals = {}
-                config.print("--------------------")
+                config.print(config.divider)
+                config.addPagerText(config.divider)
                 for b, c, v, verseText in cursor.fetchall():
                     config.mainB, config.mainC, config.mainV = b, c, v
                     if not book == b:
@@ -118,6 +121,7 @@ try:
                         config.tempContent += f"{bookName}\n"
                         bookName = f"<u><b><{config.terminalHeadingTextColor}>{bookName}</{config.terminalHeadingTextColor}></b></u>"
                         print_formatted_text(HTML(bookName))
+                        config.addPagerText(bookName)
                     displaySingleVerse(config.mainText, c, v, verseText)
                     config.tempContent += f"{c}:{v}\n"
                     # thisVerse = displaySingleVerse(config.mainText, c, v, verseText)
@@ -136,11 +140,17 @@ try:
                     bookName = re.sub("<u><b>|</b></u>", "", bookName)
                     subTotals[bookName] = subTotal
                 config.tempContent = re.sub("<[^<>]*?>", "", config.tempContent)
-                config.print("--------------------")
+                config.print(config.divider)
+                config.addPagerText(config.divider)
                 for key, value in subTotals.items():
-                    print_formatted_text(HTML(f"{key} x {value}"))
-                config.print("--------------------")
-                print_formatted_text(HTML(f"Total: {total} verse(s)"))
+                    addText = f"{key} x {value}"
+                    print_formatted_text(HTML(addText))
+                    config.addPagerText(addText)
+                config.print(config.divider)
+                config.addPagerText(config.divider)
+                addText = f"Total: {total} verse(s)"
+                print_formatted_text(HTML(addText))
+                config.addPagerText(addText)
         return ""
 
     # add bible books to input suggestions

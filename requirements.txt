@@ -8,4 +8,5 @@ gTTS
 google-cloud-texttospeech
 yt-dlp
 pyperclip
+colorama
 pygame

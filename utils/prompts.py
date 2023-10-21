@@ -81,6 +81,9 @@ class Prompts:
         def _(event):
             buffer = event.app.current_buffer
             buffer.reset()
+        @this_key_bindings.add("c-g")
+        def _(_):
+            config.launchPager()
         @this_key_bindings.add("c-d")
         def _(_):
             config.developer = not config.developer
@@ -115,7 +118,7 @@ class Prompts:
             if config.tts:
                 config.ttsOutput = not config.ttsOutput
                 run_in_terminal(lambda: config.print(f"Response Audio '{'enabled' if config.ttsOutput else 'disabled'}'!"))
-        @this_key_bindings.add("c-g")
+        @this_key_bindings.add("escape", "g")
         def _(_):
             config.displayImprovedWriting = not config.displayImprovedWriting
             run_in_terminal(lambda: config.print(f"Improved Writing Display '{'enabled' if config.displayImprovedWriting else 'disabled'}'!"))
@@ -137,7 +140,6 @@ class Prompts:
             prompt_multiline_shared_key_bindings,
             this_key_bindings,
         ])
-
     def showKeyBindings(self):
         bindings = {
             "ctrl+q": "quit or exit current feature",
@@ -150,14 +152,15 @@ class Prompts:
             "ctrl+y": "new chat without context",
             "ctrl+s": "save chat",
             "ctrl+o": "change predefined context",
+            "ctrl+g": "pager view",
             "ctrl+d": "swap developer mode",
             "ctrl+e": "swap command execution mode",
             "ctrl+k": "show key bindings",
             "ctrl+l": "toggle multi-line entry",
-            "ctrl+g": "toggle improved writing feature",
             "ctrl+b": "toggle input audio",
             "ctrl+p": "toggle response audio",
             "ctrl+w": "toggle word wrap",
+            "escape+g": "toggle improved writing feature",
             "escape+m": "toggle mouse support",
             "escape+t": "system command prompt",
             "escape+b": "move cursor to line beginning",

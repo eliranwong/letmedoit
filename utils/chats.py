@@ -37,6 +37,10 @@ class MyHandAI:
         config.tempChunk = ""
         config.chatGPTApiPredefinedContextTemp = ""
         config.systemCommandPromptEntry = ""
+        config.pagerContent = ""
+        self.addPagerContent = False
+        config.launchPager = self.launchPager
+        config.addPagerText = self.addPagerText
 
         # token limit
         self.tokenLimits = {
@@ -710,11 +714,12 @@ Otherwise, answer "chat". Here is the request:"""
             "change execution mode [ctrl+e]",
             "change user confirmation",
             "change command display",
+            "change pager view",
             "change startup directory",
             "change Termux API integration",
             "change developer mode [ctrl+d]",
             "change automatic update",
-            "toogle mouse support [escape+m]",
+            "toogle mouse support [esc+m]",
             "toggle word wrap [ctrl+w]",
             "toggle improved writing [esc+g]",
             "toggle input audio [ctrl+b]",
@@ -827,6 +832,16 @@ Otherwise, answer "chat". Here is the request:"""
                 config.showKeyBindings()
             elif feature == ".help":
                 SharedUtil.openURL('https://github.com/eliranwong/myHand.ai/wiki')
+            elif feature == ".pagerview":
+                options = ("auto", "manual [ctrl+g]")
+                option = self.dialogs.getValidOptions(
+                    options=options, 
+                    title="Pager View", 
+                    default="auto" if config.pagerView else "manual [ctrl+g]",
+                )
+                if option:
+                    config.pagerView = (option == "auto")
+                    self.print(f"Pager View: {option}!")
             elif feature == ".developer":
                 options = ("enable", "disable")
                 option = self.dialogs.getValidOptions(
@@ -1161,6 +1176,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".enhanceexecution",
             ".confirmexecution",
             ".codedisplay",
+            ".pagerview",
             ".startupDirectory",
             ".termuxapi",
             ".developer",
@@ -1277,6 +1293,9 @@ Otherwise, answer "chat". Here is the request:"""
                             self.print("Unable to load internet resources.")
                             self.showErrors()
 
+                    config.pagerContent = ""
+                    self.addPagerContent = True
+
                     completion = self.runCompletion(messages, noFunctionCall)
                     # stop spinning
                     self.runPython = True
@@ -1328,6 +1347,12 @@ Otherwise, answer "chat". Here is the request:"""
                     
                     messages.append({"role": "assistant", "content": chat_response})
 
+                    # auto pager feature
+                    config.pagerContent += textwrap.fill(chat_response, width=terminal_width) if config.wrapWords else chat_response
+                    self.addPagerContent = False
+                    if config.pagerView:
+                        self.launchPager(config.pagerContent)
+
                     self.conversationStarted = True
 
                 # error codes: https://platform.openai.com/docs/guides/error-codes/python-library-error-types
@@ -1359,6 +1384,23 @@ Otherwise, answer "chat". Here is the request:"""
                     self.print("starting a new chat!")
                     self.saveChat(messages)
                     startupdirectory, messages = startChat()
+
+    def addPagerText(self, text, wrapWords=False):
+        if wrapWords:
+            text = self.getWrappedHTMLText(text)
+        config.pagerContent += f"{text}\n"
+
+    def launchPager(self, pagerContent=None):
+        if pagerContent is None:
+            pagerContent = config.pagerContent
+        if re.search("<[^<>]+?>", pagerContent):
+            pagerContent = TextUtil.convertHtmlTagToColorama(pagerContent)
+        if pagerContent:
+            try:
+                pydoc.pager(pagerContent) if config.thisPlatform == "Windows" else pydoc.pipepager(pagerContent, cmd='less -R')
+            except:
+                config.pagerView = False
+                self.showErrors()
 
     def wrapStreamWords(self, answer, terminal_width):
         if " " in answer:
