@@ -1,5 +1,5 @@
 --pre aiohttp
-openai
+openai==0.28.1
 prompt_toolkit
 googlesearch-python
 art
