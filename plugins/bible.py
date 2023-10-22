@@ -53,6 +53,7 @@ try:
             textContent = TextUtil.fixTextHighlighting(textContent)
             return TextUtil.htmlToPlainText(textContent)
         def displaySingleVerse(bible, c, v, verseText):
+            selectedBible = bible
             if searchWords:
                 verseText = highlightSearchResults(verseText)
             verseText = verseText.strip()
@@ -62,7 +63,7 @@ try:
             bible = f"[{bible}] " if compareMode and compareVersions else ""
             thisVerse = f"<{config.terminalResourceLinkColor}>{c}:{v}</{config.terminalResourceLinkColor}> {verseText}"
             verseContent = f"{bible}{thisVerse}"
-            if config.wrapWords:
+            if config.wrapWords and not selectedBible in config.noWordWrapBibles:
                 verseContent = config.getWrappedHTMLText(verseContent, terminal_width)
             print_formatted_text(HTML(verseContent))
             config.addPagerText(verseContent)
@@ -81,7 +82,9 @@ try:
                         return ()
             return ()
 
-        config.print(f"loading bible {config.mainText} ...")
+        addText = f"loading bible {config.mainText} ..."
+        config.print(addText)
+        config.addPagerText(addText)
         # display sql query statement for developer
         if config.developer:
             config.print(query)
@@ -177,6 +180,7 @@ try:
         ("mainV", 16),
         ("bibleData", ""),
         ("enableCaseSensitiveSearch", False),
+        ("noWordWrapBibles", []), # some bibles display better, without word wrap feature, e.g. CUV
     )
     config.setConfig(persistentConfigs)
     # temporary
