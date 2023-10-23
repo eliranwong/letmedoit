@@ -1393,11 +1393,18 @@ Otherwise, answer "chat". Here is the request:"""
     def launchPager(self, pagerContent=None):
         if pagerContent is None:
             pagerContent = config.pagerContent
-        if re.search("<[^<>]+?>", pagerContent):
-            pagerContent = TextUtil.convertHtmlTagToColorama(pagerContent)
         if pagerContent:
             try:
-                pydoc.pager(pagerContent) if config.thisPlatform == "Windows" else pydoc.pipepager(pagerContent, cmd='less -R')
+                if SharedUtil.isPackageInstalled("less"):
+                    # Windows users can install vlc command with scoop
+                    # read: https://github.com/ScoopInstaller/Scoop
+                    # > iwr -useb get.scoop.sh | iex
+                    # > scoop install aria2 less
+                    if re.search("<[^<>]+?>", pagerContent):
+                        pagerContent = TextUtil.convertHtmlTagToColorama(pagerContent)
+                    pydoc.pipepager(pagerContent, cmd='less -R')
+                else:
+                    pydoc.pager(pagerContent)
             except:
                 config.pagerView = False
                 self.showErrors()

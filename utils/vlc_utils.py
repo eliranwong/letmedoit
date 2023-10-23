@@ -12,7 +12,21 @@ class VlcUtil:
         VlcUtil.macVlc = macVlc if platform.system() == "Darwin" and os.path.isfile(macVlc) else ""
         # on Windows
         windowsVlc = r'C:\Program Files\VideoLAN\VLC\vlc.exe'
-        VlcUtil.windowsVlc = windowsVlc if platform.system() == "Windows" and os.path.isfile(windowsVlc) else ""
+        if platform.system() == "Windows":
+            if os.path.isfile(windowsVlc):
+                VlcUtil.windowsVlc = windowsVlc
+            elif SharedUtil.isPackageInstalled("vlc"):
+                # Windows users can install vlc command with scoop
+                # read: https://github.com/ScoopInstaller/Scoop
+                # instll scoop
+                # > iwr -useb get.scoop.sh | iex
+                # > scoop install aria2
+                # install vlc
+                # > scoop bucket add extras
+                # > scoop install vlc
+                VlcUtil.windowsVlc = "vlc"
+            else:
+                VlcUtil.windowsVlc = ""
         if (VlcUtil.macVlc or VlcUtil.windowsVlc or SharedUtil.isPackageInstalled("vlc")):
             return True
         else:
@@ -67,7 +81,7 @@ class VlcUtil:
             command = f'''{VlcUtil.macVlc} --intf rc --play-and-exit --rate {vlcSpeed} "{filePath}" &> /dev/null'''
         # vlc on windows
         elif VlcUtil.windowsVlc:
-            command = f'''"{VlcUtil.windowsVlc}" --play-and-exit --rate {vlcSpeed} "{filePath}"'''
+            command = f'''"{VlcUtil.windowsVlc}" --intf dummy --play-and-exit --rate {vlcSpeed} "{filePath}"'''
         # vlc on other platforms
         elif SharedUtil.isPackageInstalled("cvlc"):
             command = f'''cvlc --play-and-exit --rate {vlcSpeed} "{filePath}" &> /dev/null'''
