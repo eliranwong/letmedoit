@@ -1,10 +1,15 @@
 import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, pydoc, textwrap, string, shutil, wcwidth
+try:
+    import tiktoken
+    tiktokenImported = True
+except:
+    tiktokenImported = False
 from pathlib import Path
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.shortcuts import clear
-from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit import print_formatted_text, HTML
 from utils.terminal_mode_dialogs import TerminalModeDialogs
 from utils.prompts import Prompts
 from utils.promptValidator import FloatValidator
@@ -30,6 +35,9 @@ class MyHandAI:
         config.stopSpinning = self.stopSpinning
         config.print = self.print
         config.getWrappedHTMLText = self.getWrappedHTMLText
+        config.count_tokens_from_messages = self.count_tokens_from_messages
+        config.count_tokens_from_functions = self.count_tokens_from_functions
+        config.fineTuneUserInput = self.fineTuneUserInput
         self.runPython = True
         config.accept_default = False
         config.defaultEntry = ""
@@ -43,7 +51,7 @@ class MyHandAI:
         config.addPagerText = self.addPagerText
 
         # token limit
-        self.tokenLimits = {
+        config.tokenLimits = self.tokenLimits = {
             "gpt-3.5-turbo-instruct": 4097,
             "gpt-3.5-turbo": 4097,
             "gpt-3.5-turbo-16k": 16385,
@@ -195,11 +203,14 @@ class MyHandAI:
         self.print(self.divider)
         return ""
 
+    def wrapText(self, content, terminal_width):
+        return "\n".join([textwrap.fill(line, width=terminal_width) for line in content.split("\n")])
+
     def print(self, content):
         if config.wrapWords:
             # wrap words to fit terminal width
             terminal_width = shutil.get_terminal_size().columns
-            print(textwrap.fill(content, width=terminal_width))
+            print(self.wrapText(content, terminal_width))
             # remarks: 'fold' or 'fmt' does not work on Windows
             # pydoc.pipepager(f"{content}\n", cmd=f"fold -s -w {terminal_width}")
             # pydoc.pipepager(f"{content}\n", cmd=f"fmt -w {terminal_width}")
@@ -503,7 +514,7 @@ Otherwise, answer "chat". Here is the request:"""
             messages=messagesCopy,
             n=1,
             temperature=0.0,
-            max_tokens=config.chatGPTApiMaxTokens,
+            max_tokens=self.getDynamicTokens(messagesCopy),
         )
         answer = completion.choices[0].message.content
         self.screenAction = answer = re.sub("[^A-Za-z]", "", answer).lower()
@@ -543,7 +554,7 @@ Otherwise, answer "chat". Here is the request:"""
             completion = openai.ChatCompletion.create(
                 model=config.chatGPTApiModel,
                 messages=messages,
-                max_tokens=config.chatGPTApiMaxTokens,
+                max_tokens=self.getDynamicTokens(messages, functionSignatures),
                 temperature=config.chatGPTApiTemperature,
                 n=1,
                 functions=functionSignatures,
@@ -577,7 +588,7 @@ Otherwise, answer "chat". Here is the request:"""
                     messages=thisThisMessage,
                     n=1,
                     temperature=config.chatGPTApiTemperature,
-                    max_tokens=config.chatGPTApiMaxTokens,
+                    max_tokens=self.getDynamicTokens(thisThisMessage, config.chatGPTApiFunctionSignatures),
                     functions=config.chatGPTApiFunctionSignatures,
                     function_call=config.chatGPTApiFunctionCall,
                     stream=True,
@@ -587,7 +598,7 @@ Otherwise, answer "chat". Here is the request:"""
                 messages=thisThisMessage,
                 n=1,
                 temperature=config.chatGPTApiTemperature,
-                max_tokens=config.chatGPTApiMaxTokens,
+                max_tokens=self.getDynamicTokens(thisThisMessage),
                 stream=True,
             )
 
@@ -622,7 +633,7 @@ Otherwise, answer "chat". Here is the request:"""
                         messages=thisMessage,
                         n=1,
                         temperature=config.chatGPTApiTemperature,
-                        max_tokens=config.chatGPTApiMaxTokens,
+                        max_tokens=self.getDynamicTokens(thisMessage, config.chatGPTApiFunctionSignatures),
                         functions=config.chatGPTApiFunctionSignatures,
                         function_call=config.chatGPTApiFunctionCall,
                     )
@@ -706,7 +717,8 @@ Otherwise, answer "chat". Here is the request:"""
             "change API key",
             "change ChatGPT model",
             "change ChatGPT temperature",
-            "change maximum tokens",
+            "change maximum response tokens",
+            "change minimum response tokens",
             "change plugins",
             "change function call",
             "change function response",
@@ -721,7 +733,7 @@ Otherwise, answer "chat". Here is the request:"""
             "change automatic update",
             "toogle mouse support [esc+m]",
             "toggle word wrap [ctrl+w]",
-            "toggle improved writing [esc+g]",
+            "toggle improved writing [esc+i]",
             "toggle input audio [ctrl+b]",
             "toggle response audio [ctrl+p]",
             "configure text-to-speech command",
@@ -738,19 +750,7 @@ Otherwise, answer "chat". Here is the request:"""
         )
         if feature:
             if feature == ".chatgptmodel":
-                models = ("gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k")
-                model = self.dialogs.getValidOptions(
-                    options=models, 
-                    title="ChatGPT model", 
-                    default=config.chatGPTApiModel,
-                    text="Select a ChatGPT model:",
-                )
-                if model:
-                    config.chatGPTApiModel = model
-                    tokenLimit = self.tokenLimits[model]
-                    if config.chatGPTApiMaxTokens > tokenLimit:
-                        config.chatGPTApiMaxTokens = tokenLimit
-                    self.print(f"ChatGPT model selected: {model}")
+                self.setModel()
             elif feature == ".latestSearches":
                 options = ("always", "auto", "none")
                 descriptions = (
@@ -919,16 +919,10 @@ Otherwise, answer "chat". Here is the request:"""
                 if call:
                     config.chatAfterFunctionCalled = (call == "enable")
                     self.print(f"Automatic Chat Generation with Function Response: {'enabled' if config.chatAfterFunctionCalled else 'disabled'}!")
+            elif feature == ".mintokens":
+                self.setMinTokens()
             elif feature == ".maxtokens":
-                tokenLimit = self.tokenLimits[config.chatGPTApiModel]
-                self.print(f"You are using ChatGPT model '{config.chatGPTApiModel}', which allows no more than {tokenLimit} tokens.")
-                self.print("(GPT and embeddings models process text in chunks called tokens. As a rough rule of thumb, 1 token is approximately 4 characters or 0.75 words for English text. One limitation to keep in mind is that for a GPT model the prompt and the generated output combined must be no more than the model's maximum context length.)")
-                maxtokens = self.prompts.simplePrompt(numberOnly=True, default=str(config.chatGPTApiMaxTokens))
-                if maxtokens and not maxtokens.strip().lower() == config.exit_entry and int(maxtokens) > 0:
-                    config.chatGPTApiMaxTokens = int(maxtokens)
-                    if config.chatGPTApiMaxTokens > tokenLimit:
-                        config.chatGPTApiMaxTokens = tokenLimit
-                    self.print(f"Maximum tokens entered: {config.chatGPTApiMaxTokens}")
+                self.setMaxTokens()
             elif feature == ".temperature":
                 self.print("Enter a value between 0.0 and 2.0:")
                 self.print("(Lower values for temperature result in more consistent outputs, while higher values generate more diverse and creative results. Select a temperature value based on the desired trade-off between coherence and creativity for your specific application.)")
@@ -946,6 +940,58 @@ Otherwise, answer "chat". Here is the request:"""
             else:
                 userInput = feature
         return userInput
+
+    def setModel(self):
+        models = ("gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k")
+        model = self.dialogs.getValidOptions(
+            options=models, 
+            title="ChatGPT model", 
+            default=config.chatGPTApiModel,
+            text="Select a ChatGPT model:",
+        )
+        if model:
+            config.chatGPTApiModel = model
+            self.print(f"ChatGPT model selected: {model}")
+            # handle max tokens
+            if tiktokenImported:
+                tokenLimit = self.tokenLimits[config.chatGPTApiModel] - functionTokens
+            else:
+                tokenLimit = self.tokenLimits[config.chatGPTApiModel]
+            suggestedMaxToken = int(tokenLimit / 2)
+            #if config.chatGPTApiMaxTokens > suggestedMaxToken:
+            config.chatGPTApiMaxTokens = suggestedMaxToken
+            self.print(f"Maximum tokens set to {config.chatGPTApiMaxTokens}.")
+
+    def setMinTokens(self):
+        self.print("Please specify minimum response tokens below:")
+        mintokens = self.prompts.simplePrompt(numberOnly=True, default=str(config.chatGPTApiMinTokens))
+        if mintokens and not mintokens.strip().lower() == config.exit_entry and int(mintokens) > 0:
+            if config.chatGPTApiMinTokens > config.chatGPTApiMaxTokens:
+                config.chatGPTApiMinTokens = config.chatGPTApiMaxTokens
+            self.print(f"Minimum tokens entered: {config.chatGPTApiMinTokens}")
+
+    def setMaxTokens(self):
+        if tiktokenImported:
+            functionTokens = self.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
+            tokenLimit = self.tokenLimits[config.chatGPTApiModel] - functionTokens - config.chatGPTApiMinTokens
+        else:
+            tokenLimit = self.tokenLimits[config.chatGPTApiModel]
+        if tiktokenImported and tokenLimit < config.chatGPTApiMinTokens:
+            self.print(f"Availble functions have already taken up too many tokens [{functionTokens}] to work with selected model '{config.chatGPTApiModel}'. You may either changing to a model that supports more tokens or deactivating some of the plugins that you don't need to reduce the number of tokens in total.")
+        else:
+            self.print(self.divider)
+            self.print(f"You are using ChatGPT model '{config.chatGPTApiModel}', which allows no more than {tokenLimit} tokens, including both prompt and response")
+            self.print("(GPT and embeddings models process text in chunks called tokens. As a rough rule of thumb, 1 token is approximately 4 characters or 0.75 words for English text. One limitation to keep in mind is that for a GPT model the prompt and the generated output combined must be no more than the model's maximum context length.)")
+            if tiktokenImported:
+                self.print(f"Remarks: The current available functions have already taken up {functionTokens} tokens.")
+            self.print(self.divider)
+            self.print("Please specify maximum response tokens below:")
+            maxtokens = self.prompts.simplePrompt(numberOnly=True, default=str(config.chatGPTApiMaxTokens))
+            if maxtokens and not maxtokens.strip().lower() == config.exit_entry and int(maxtokens) > 0:
+                config.chatGPTApiMaxTokens = int(maxtokens)
+                if config.chatGPTApiMaxTokens > tokenLimit:
+                    config.chatGPTApiMaxTokens = tokenLimit
+                self.print(f"Maximum tokens entered: {config.chatGPTApiMaxTokens}")
 
     def runPythonScript(self, script):
         script = script.strip()[3:-3]
@@ -1136,20 +1182,34 @@ Otherwise, answer "chat". Here is the request:"""
         except:
             pass
 
+    def showLogo(self):
+        terminal_width = shutil.get_terminal_size().columns
+        try:
+            from art import text2art
+            if terminal_width >= 61:
+                logo = text2art("myHand AI")
+            elif terminal_width >= 46:
+                logo = text2art("myHand")
+            elif terminal_width >= 30:
+                logo = text2art("HAND")
+            elif terminal_width >= 17:
+                logo = text2art("mH")
+            else:
+                logo = f"myHand AI"
+        except:
+            logo = f"myHand AI"
+        print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>{logo}</{config.terminalPromptIndicatorColor2}>"))
+
     def startChats(self):
         def startChat():
             clear()
             self.print(self.divider)
-            try:
-                from art import text2art
-                print(text2art("myHand"))
-            except:
-                self.print(f"myHand AI")
+            self.showLogo()
             self.showCurrentContext()
             # go to startup directory
             startupdirectory = config.startupdirectory if config.startupdirectory and os.path.isdir(config.startupdirectory) else os.path.join(config.myHandAIFolder, "files")
             os.chdir(startupdirectory)
-            messages = self.resetMessages()
+            config.currentMessages = messages = self.resetMessages()
             self.print(f"startup directory:\n{startupdirectory}")
             self.print(self.divider)
 
@@ -1169,6 +1229,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".chatgptmodel",
             ".temperature",
             ".maxtokens",
+            ".mintokens",
             ".plugins",
             ".functioncall",
             ".functionresponse",
@@ -1346,9 +1407,10 @@ Otherwise, answer "chat". Here is the request:"""
                     #messages[-1] = {"role": "user", "content": userInput}
                     
                     messages.append({"role": "assistant", "content": chat_response})
+                    config.currentMessages = messages
 
                     # auto pager feature
-                    config.pagerContent += textwrap.fill(chat_response, width=terminal_width) if config.wrapWords else chat_response
+                    config.pagerContent += self.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
                     self.addPagerContent = False
                     if config.pagerView:
                         self.launchPager(config.pagerContent)
@@ -1510,6 +1572,87 @@ Otherwise, answer "chat". Here is the request:"""
         for character in text: 
             width += wcwidth.wcwidth(character) 
         return width
+
+    def getDynamicTokens(self, messages, functionSignatures=None):
+        if not tiktokenImported:
+            return config.chatGPTApiMaxTokens
+        if functionSignatures is None:
+            functionTokens = 0
+        else:
+            functionTokens = self.count_tokens_from_functions(functionSignatures)
+        tokenLimit = self.tokenLimits[config.chatGPTApiModel]
+        currentMessagesTokens = self.count_tokens_from_messages(messages) + functionTokens
+        availableTokens = tokenLimit - currentMessagesTokens
+        if availableTokens >= config.chatGPTApiMaxTokens:
+            return config.chatGPTApiMaxTokens
+        elif (config.chatGPTApiMaxTokens > availableTokens > config.chatGPTApiMinTokens):
+            return availableTokens
+        return config.chatGPTApiMinTokens
+
+    def count_tokens_from_functions(self, functionSignatures, model=""):
+        count = 0
+        if not model:
+            model = config.chatGPTApiModel
+        try:
+            encoding = tiktoken.encoding_for_model(model)
+        except KeyError:
+            print("Warning: model not found. Using cl100k_base encoding.")
+            encoding = tiktoken.get_encoding("cl100k_base")
+        for i in functionSignatures:
+            count += len(encoding.encode(str(i)))
+        return count
+
+    # The following method was modified from source:
+    # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
+    def count_tokens_from_messages(self, messages, model=""):
+        if not model:
+            model = config.chatGPTApiModel
+
+        """Return the number of tokens used by a list of messages."""
+        try:
+            encoding = tiktoken.encoding_for_model(model)
+        except KeyError:
+            print("Warning: model not found. Using cl100k_base encoding.")
+            encoding = tiktoken.get_encoding("cl100k_base")
+        if model in {
+            "gpt-3.5-turbo",
+            "gpt-3.5-turbo-0613",
+            "gpt-3.5-turbo-16k",
+            "gpt-3.5-turbo-16k-0613",
+            "gpt-4-0314",
+            "gpt-4-32k-0314",
+            "gpt-4",
+            "gpt-4-0613",
+            "gpt-4-32k",
+            "gpt-4-32k-0613",
+            }:
+            tokens_per_message = 3
+            tokens_per_name = 1
+        elif model == "gpt-3.5-turbo-0301":
+            tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
+            tokens_per_name = -1  # if there's a name, the role is omitted
+        elif "gpt-3.5-turbo" in model:
+            #print("Warning: gpt-3.5-turbo may update over time. Returning num tokens assuming gpt-3.5-turbo-0613.")
+            return self.count_tokens_from_messages(messages, model="gpt-3.5-turbo-0613")
+        elif "gpt-4" in model:
+            #print("Warning: gpt-4 may update over time. Returning num tokens assuming gpt-4-0613.")
+            return self.count_tokens_from_messages(messages, model="gpt-4-0613")
+        else:
+            raise NotImplementedError(
+                f"""count_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens."""
+            )
+        num_tokens = 0
+        for message in messages:
+            num_tokens += tokens_per_message
+            if not "content" in message or not message.get("content", ""):
+                num_tokens += len(encoding.encode(str(message)))
+            else:
+                for key, value in message.items():
+                    num_tokens += len(encoding.encode(value))
+                    if key == "name":
+                        num_tokens += tokens_per_name
+        num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
+        return num_tokens
 
     def checkCompletion(self):
         openai.api_key = os.environ["OPENAI_API_KEY"] = config.openaiApiKey

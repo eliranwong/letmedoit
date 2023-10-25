@@ -26,7 +26,7 @@ Developed by: [Eliran Wong](https://github.com/eliranwong)
 
 1. Internet access
 
-2. Windows / macOS / Linux / ChromeOS / Android / iOS / any devices that supports [Python](https://www.python.org)
+2. Windows / macOS / Linux / ChromeOS / Android / iOS / any devices that supports [Python](https://www.python.org) [supported versions 3.8-3.11]
 
 3. ChatGPT API key (read https://github.com/eliranwong/myHand.ai/wiki/ChatGPT-API-Key)
 

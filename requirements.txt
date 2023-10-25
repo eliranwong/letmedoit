@@ -9,4 +9,5 @@ google-cloud-texttospeech
 yt-dlp
 pyperclip
 colorama
+tiktoken
 pygame

@@ -81,6 +81,36 @@ class Prompts:
         def _(event):
             buffer = event.app.current_buffer
             buffer.reset()
+        @this_key_bindings.add("escape", "c")
+        def _(event):
+            try:
+                import tiktoken
+                try:
+                    encoding = tiktoken.encoding_for_model(config.chatGPTApiModel)
+                except:
+                    encoding = tiktoken.get_encoding("cl100k_base")
+                currentInput = event.app.current_buffer.text
+                currentInputTokens = len(encoding.encode(config.fineTuneUserInput(currentInput)))
+                loadedMessageTokens = config.count_tokens_from_messages(config.currentMessages)
+                availableFunctionTokens = config.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
+                selectedModelLimit = config.tokenLimits[config.chatGPTApiModel]
+                estimatedAvailableTokens = selectedModelLimit - availableFunctionTokens - loadedMessageTokens - currentInputTokens
+
+                content = f"""{config.divider}
+# Current model
+{config.chatGPTApiModel}
+# Token Count
+Model limit: {selectedModelLimit}
+Active functions: {availableFunctionTokens}
+Loaded messages: {loadedMessageTokens}
+Current input: {currentInputTokens}
+{config.divider}
+Available tokens: {estimatedAvailableTokens}
+{config.divider}
+"""
+            except:
+                content = "Required package 'tiktoken' not found!"
+            run_in_terminal(lambda: config.print(content))
         @this_key_bindings.add("c-g")
         def _(_):
             config.launchPager()
@@ -118,7 +148,7 @@ class Prompts:
             if config.tts:
                 config.ttsOutput = not config.ttsOutput
                 run_in_terminal(lambda: config.print(f"Response Audio '{'enabled' if config.ttsOutput else 'disabled'}'!"))
-        @this_key_bindings.add("escape", "g")
+        @this_key_bindings.add("escape", "i")
         def _(_):
             config.displayImprovedWriting = not config.displayImprovedWriting
             run_in_terminal(lambda: config.print(f"Improved Writing Display '{'enabled' if config.displayImprovedWriting else 'disabled'}'!"))
@@ -160,27 +190,28 @@ class Prompts:
             "ctrl+b": "toggle input audio",
             "ctrl+p": "toggle response audio",
             "ctrl+w": "toggle word wrap",
-            "escape+g": "toggle improved writing feature",
-            "escape+m": "toggle mouse support",
-            "escape+t": "system command prompt",
-            "escape+b": "move cursor to line beginning",
-            "escape+e": "move cursor to line end",
-            "escape+a": "move cursor to entry beginning",
-            "escape+z": "move cursor to entry end",
-            "escape+d": "forward delete",
-            "escape+s": "swap text brightness",
+            "esc+c": "count current message tokens",
+            "esc+i": "toggle improved writing feature",
+            "esc+m": "toggle mouse support",
+            "esc+t": "system command prompt",
+            "esc+b": "move cursor to line beginning",
+            "esc+e": "move cursor to line end",
+            "esc+a": "move cursor to entry beginning",
+            "esc+z": "move cursor to entry end",
+            "esc+d": "forward delete",
+            "esc+s": "swap text brightness",
         }
         multilineBindings = {
-            "escape+1": "go up 10 lines",
-            "escape+2": "go up 20 lines",
-            "escape+3": "go up 30 lines",
-            "escape+4": "go up 40 lines",
-            "escape+5": "go up 50 lines",
-            "escape+6": "go up 60 lines",
-            "escape+7": "go up 70 lines",
-            "escape+8": "go up 80 lines",
-            "escape+9": "go up 90 lines",
-            "escape+0": "go up 100 lines",
+            "esc+1": "go up 10 lines",
+            "esc+2": "go up 20 lines",
+            "esc+3": "go up 30 lines",
+            "esc+4": "go up 40 lines",
+            "esc+5": "go up 50 lines",
+            "esc+6": "go up 60 lines",
+            "esc+7": "go up 70 lines",
+            "esc+8": "go up 80 lines",
+            "esc+9": "go up 90 lines",
+            "esc+0": "go up 100 lines",
             "f1": "go down 10 lines",
             "f2": "go down 20 lines",
             "f3": "go down 30 lines",

@@ -10,3 +10,4 @@ config.py
 myHand.desktop
 credentials_GoogleCloudTextToSpeech.json
 credentials_GoogleCloudTextToSpeech_backup.json
+.python-version

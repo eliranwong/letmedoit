@@ -1,17 +1,63 @@
-# set up config
-import os, traceback
-# go the project home directory
+import os, sys, platform
+from shutil import copyfile
+
+# requires python 3.8+; required by package 'tiktoken'
+pythonVersion = sys.version_info
+if pythonVersion < (3, 8):
+    print("Python version higher than 3.8 is required!")
+    print("Closing ...")
+    exit(1)
+elif pythonVersion > (3, 11):
+    print("Some features may not work with python version newer than 3.11!")
+
+# navigate to project directory
 myHandFile = os.path.realpath(__file__)
 myHandAIFolder = os.path.dirname(myHandFile)
 if os.getcwd() != myHandAIFolder:
     os.chdir(myHandAIFolder)
+
+# check current platform
+thisPlatform = platform.system()
+
+# Activate virtual environment, if any
+venvDir = "venv"
+venvDirFullPath = os.path.join(myHandAIFolder, venvDir)
+if os.path.isdir(venvDirFullPath) and not sys.executable.startswith(venvDirFullPath):
+    try:
+        python = os.path.basename(sys.executable)
+        binDir = "Scripts" if thisPlatform == "Windows" else "bin"
+        if thisPlatform == "Windows":
+            if python.endswith(".exe"):
+                python = python[:-4]
+            # Activate virtual environment
+            activator = os.path.join(venvDirFullPath, binDir, "activate")
+            # Run main.py
+            os.system(f"{activator} & {python} {myHandFile}")
+        else:
+            # Activate virtual environment
+            activator = os.path.join(venvDirFullPath, binDir, "activate_this.py")
+            if not os.path.exists(activator):
+                copyfile("activate_this.py", activator)
+            with open(activator) as f:
+                code = compile(f.read(), activator, 'exec')
+                exec(code, dict(__file__=activator))
+            # Run main.py
+            os.system(f"{python} {myHandFile}")
+        venvActivated = True
+    except:
+        venvActivated = False
+    if venvActivated:
+        # exit non-venv process
+        exit(0)
+
+# set up config
 # create config.py if it does not exist
 configFile = os.path.join(myHandAIFolder, "config.py")
 if not os.path.isfile(configFile):
     open(configFile, "a", encoding="utf-8").close()
 
 # import config and setup default 
-import config
+import config, traceback
 from utils.configDefault import *
 config.myHandFile = myHandFile
 config.myHandAIFolder = myHandAIFolder
@@ -33,10 +79,7 @@ if config.autoUpdate:
             if mod:
                 installmodule(f"--upgrade {mod}")
 
-# set up shortcuts
-from utils.shortcuts import *
 # import other libraries
-import platform
 from utils.shortcuts import *
 from utils.chats import MyHandAI
 from utils.vlc_utils import VlcUtil
@@ -51,7 +94,7 @@ except:
     config.isPygameInstalled = False
 
 def setOsOpenCmd():
-    config.thisPlatform = thisPlatform = platform.system()
+    config.thisPlatform = thisPlatform
     if config.terminalEnableTermuxAPI:
         config.open = "termux-share"
     elif thisPlatform == "Linux":
@@ -68,6 +111,11 @@ def aboutToQuit():
     with open(configFile, "w", encoding="utf-8") as fileObj:
         for name in dir(config):
             excludeConfigList = [
+                "count_tokens_from_messages",
+                "count_tokens_from_functions",
+                "fineTuneUserInput",
+                "tokenLimits",
+                "currentMessages",
                 "addPagerText",
                 "launchPager",
                 "pagerContent",
