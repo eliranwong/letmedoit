@@ -92,7 +92,7 @@ class Prompts:
                 currentInput = event.app.current_buffer.text
                 currentInputTokens = len(encoding.encode(config.fineTuneUserInput(currentInput)))
                 loadedMessageTokens = config.count_tokens_from_messages(config.currentMessages)
-                availableFunctionTokens = config.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
+                availableFunctionTokens = 0 if "[NO_FUNCTION_CALL]" in currentInput else config.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
                 selectedModelLimit = config.tokenLimits[config.chatGPTApiModel]
                 estimatedAvailableTokens = selectedModelLimit - availableFunctionTokens - loadedMessageTokens - currentInputTokens
 

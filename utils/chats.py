@@ -954,6 +954,7 @@ Otherwise, answer "chat". Here is the request:"""
             self.print(f"ChatGPT model selected: {model}")
             # handle max tokens
             if tiktokenImported:
+                functionTokens = self.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
                 tokenLimit = self.tokenLimits[config.chatGPTApiModel] - functionTokens
             else:
                 tokenLimit = self.tokenLimits[config.chatGPTApiModel]
