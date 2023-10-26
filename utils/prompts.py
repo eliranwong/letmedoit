@@ -1,4 +1,4 @@
-import config
+import config, pydoc
 
 from prompt_toolkit import prompt
 from prompt_toolkit.application import run_in_terminal
@@ -8,6 +8,7 @@ from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
 from utils.prompt_shared_key_bindings import prompt_shared_key_bindings
 from utils.prompt_multiline_shared_key_bindings import prompt_multiline_shared_key_bindings
 from utils.promptValidator import NumberValidator
+from utils.shared_utils import SharedUtil
 from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 
 class Prompts:
@@ -53,8 +54,8 @@ class Prompts:
 
     def getToolBar(self, multiline=False):
         if multiline:
-            return f" [ctrl+q] {config.exit_entry}; [blank] actions; [escape+enter] send "
-        return f" [ctrl+q] {config.exit_entry}; [blank] actions; [enter] send "
+            return f" [ctrl+q] exit [escape+enter] send "
+        return f" [ctrl+q] exit [enter] send "
 
     def shareKeyBindings(self):
         this_key_bindings = KeyBindings()
@@ -90,9 +91,13 @@ class Prompts:
                 except:
                     encoding = tiktoken.get_encoding("cl100k_base")
                 currentInput = event.app.current_buffer.text
+                if "[NO_FUNCTION_CALL]" in currentInput:
+                    availableFunctionTokens = 0
+                    currentInput = currentInput.replace("[NO_FUNCTION_CALL]", "")
+                else:
+                    availableFunctionTokens = config.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
                 currentInputTokens = len(encoding.encode(config.fineTuneUserInput(currentInput)))
                 loadedMessageTokens = config.count_tokens_from_messages(config.currentMessages)
-                availableFunctionTokens = 0 if "[NO_FUNCTION_CALL]" in currentInput else config.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
                 selectedModelLimit = config.tokenLimits[config.chatGPTApiModel]
                 estimatedAvailableTokens = selectedModelLimit - availableFunctionTokens - loadedMessageTokens - currentInputTokens
 
@@ -181,6 +186,7 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+n": "new chat",
             "ctrl+y": "new chat without context",
             "ctrl+s": "save chat",
+            "ctrl+r": "reverse i-search",
             "ctrl+o": "change predefined context",
             "ctrl+g": "pager view",
             "ctrl+d": "swap developer mode",
@@ -202,6 +208,8 @@ Available tokens: {estimatedAvailableTokens}
             "esc+s": "swap text brightness",
         }
         multilineBindings = {
+            "enter": "new line",
+            "esc+enter": "complete entry",
             "esc+1": "go up 10 lines",
             "esc+2": "go up 20 lines",
             "esc+3": "go up 30 lines",
@@ -226,18 +234,23 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+u": f"go up '{config.terminalEditorScrollLineCount}' lines [configurable]",
             "ctrl+j": f"go down '{config.terminalEditorScrollLineCount}' lines [configurable]",
         }
-        print(config.divider)
-        print("# Key Bindings")
-        print("[blank]: launch action menu")
+        keyHelp = f"{config.divider}\n"
+        keyHelp += "# Key Bindings\n"
+        keyHelp += "[blank]: launch action menu\n"
         for key, value in bindings.items():
-            print(f"{key}: {value}")
-        print("## Key Bindings [multiline entry only]")
+            keyHelp += f"{key}: {value}\n"
+        keyHelp += "\n## Key Bindings\n[for multiline entry only]\n"
         for key, value in multilineBindings.items():
-            print(f"{key}: {value}")
-        print(config.divider)
+            keyHelp += f"{key}: {value}\n"
+        keyHelp += f"{config.divider}\n"
+
+        if SharedUtil.isPackageInstalled("less"):
+            pydoc.pipepager(f"To close this help page, press 'q'\n\n{keyHelp}\nTo close this help page, press 'q'", cmd='less -R')
+        else:
+            print(keyHelp)
         
 
-    def simplePrompt(self, numberOnly=False, validator=None, multiline=False, inputIndicator="", default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False):
+    def simplePrompt(self, numberOnly=False, validator=None, multiline=False, inputIndicator="", default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False, bottom_toolbar=None):
         config.selectAll = False
         inputPrompt = promptSession.prompt if promptSession is not None else prompt
         if not inputIndicator:
@@ -247,7 +260,7 @@ Available tokens: {estimatedAvailableTokens}
         userInput = inputPrompt(
             inputIndicator,
             key_bindings=self.prompt_multiline_shared_key_bindings if multiline else self.prompt_shared_key_bindings,
-            bottom_toolbar=self.getToolBar(multiline),
+            bottom_toolbar=self.getToolBar(multiline) if bottom_toolbar is None else bottom_toolbar,
             enable_system_prompt=True,
             swap_light_and_dark_colors=Condition(lambda: not config.terminalResourceLinkColor.startswith("ansibright")),
             style=self.promptStyle1 if style is None else style,

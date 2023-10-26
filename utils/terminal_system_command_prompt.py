@@ -34,7 +34,7 @@ class SystemCommandPrompt:
         self.openCommand = config.open
 
     def getToolBar(self):
-        return " [ctrl+q] cancel [ctrl+l] list content [ctrl+p] add path "
+        return " [ctrl+q] exit [ctrl+l] list content [ctrl+p] add path "
 
     def getSystemCommands(self):
         try:

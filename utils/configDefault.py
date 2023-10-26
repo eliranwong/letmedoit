@@ -38,7 +38,7 @@ defaultSettings = (
     ('terminalEnableTermuxAPI', False),
     ('terminalEnableTermuxAPIToast', False),
     ('cancel_entry', '.cancel'),
-    ('exit_entry', '.quit'),
+    ('exit_entry', '.exit'),
     ('terminalHeadingTextColor', 'ansigreen'),
     ('terminalResourceLinkColor', 'ansiyellow'),
     ('terminalCommandEntryColor1', 'ansiyellow'),

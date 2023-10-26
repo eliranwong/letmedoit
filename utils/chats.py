@@ -12,7 +12,7 @@ from prompt_toolkit.shortcuts import clear
 from prompt_toolkit import print_formatted_text, HTML
 from utils.terminal_mode_dialogs import TerminalModeDialogs
 from utils.prompts import Prompts
-from utils.promptValidator import FloatValidator
+from utils.promptValidator import FloatValidator, TokenValidator
 from utils.get_path_prompt import GetPath
 from utils.prompt_shared_key_bindings import swapTerminalColors
 from utils.file_utils import FileUtil
@@ -51,6 +51,7 @@ class MyHandAI:
         config.addPagerText = self.addPagerText
 
         # token limit
+        # reference: https://platform.openai.com/docs/models/gpt-4
         config.tokenLimits = self.tokenLimits = {
             "gpt-3.5-turbo-instruct": 4097,
             "gpt-3.5-turbo": 4097,
@@ -696,7 +697,7 @@ Otherwise, answer "chat". Here is the request:"""
     def fineTuneUserInput(self, userInput):
         # customise chat context
         context = self.getCurrentContext()
-        if context and (not self.conversationStarted or (self.conversationStarted and config.chatGPTApiContextInAllInputs)):
+        if context and (not config.conversationStarted or (config.conversationStarted and config.chatGPTApiContextInAllInputs)):
             # context may start with "You will be provided with my input delimited with a pair of XML tags, <input> and </input>. ...
             userInput = re.sub("<content>|<content [^<>]*?>|</content>", "", userInput)
             userInput = f"{context}\n<content>{userInput}</content>" if userInput.strip() else context
@@ -1010,6 +1011,8 @@ Otherwise, answer "chat". Here is the request:"""
     def swapMultiline(self):
         self.multilineInput = not self.multilineInput
         self.print(f"Multi-line input {'enabled' if self.multilineInput else 'disabled'}!")
+        if self.multilineInput:
+            self.print("Please press 'enter' to start a new line, and use 'escape + enter' to complete your entry.")
 
     def isTtsAvailable(self):
         if config.tts:
@@ -1202,6 +1205,9 @@ Otherwise, answer "chat". Here is the request:"""
         print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>{logo}</{config.terminalPromptIndicatorColor2}>"))
 
     def startChats(self):
+        tokenValidator = TokenValidator()
+        def getDynamicToolBar():
+            return config.dynamicToolBarText
         def startChat():
             clear()
             self.print(self.divider)
@@ -1214,7 +1220,7 @@ Otherwise, answer "chat". Here is the request:"""
             self.print(f"startup directory:\n{startupdirectory}")
             self.print(self.divider)
 
-            self.conversationStarted = False
+            config.conversationStarted = False
             return (startupdirectory, messages)
         startupdirectory, messages = startChat()
         self.multilineInput = False
@@ -1255,6 +1261,8 @@ Otherwise, answer "chat". Here is the request:"""
         )
         featuresLower = [i.lower() for i in features] + ["...", ".save", ".share"]
         while True:
+            # default toolbar text
+            config.dynamicToolBarText = " [ctrl+q] exit [ctrl+k] shortcut keys "
             # display current directory if changed
             currentDirectory = os.getcwd()
             if not currentDirectory == startupdirectory:
@@ -1269,7 +1277,7 @@ Otherwise, answer "chat". Here is the request:"""
             # input suggestions
             inputSuggestions = config.inputSuggestions[:] + self.getDirectoryList() if config.developer else config.inputSuggestions
             completer = WordCompleter(inputSuggestions, ignore_case=True) if inputSuggestions else None
-            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=self.multilineInput, completer=completer, default=defaultEntry, accept_default=accept_default)
+            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=self.multilineInput, completer=completer, default=defaultEntry, accept_default=accept_default, validator=tokenValidator, bottom_toolbar=getDynamicToolBar)
             # display options when empty string is entered
             userInputLower = userInput.lower()
             if not userInputLower:
@@ -1309,13 +1317,13 @@ Otherwise, answer "chat". Here is the request:"""
                 self.runInstruction()
             elif userInputLower == ".context":
                 self.changeContext()
-                if not config.chatGPTApiContextInAllInputs and self.conversationStarted:
+                if not config.chatGPTApiContextInAllInputs and config.conversationStarted:
                     self.saveChat(messages)
                     startupdirectory, messages = startChat()
-            elif userInputLower == ".new" and self.conversationStarted:
+            elif userInputLower == ".new" and config.conversationStarted:
                 self.saveChat(messages)
                 startupdirectory, messages = startChat()
-            elif userInputLower in (".share", ".save") and self.conversationStarted:
+            elif userInputLower in (".share", ".save") and config.conversationStarted:
                 self.saveChat(messages, openFile=True)
             elif userInput and not userInputLower in featuresLower:
                 try:
@@ -1416,7 +1424,7 @@ Otherwise, answer "chat". Here is the request:"""
                     if config.pagerView:
                         self.launchPager(config.pagerContent)
 
-                    self.conversationStarted = True
+                    config.conversationStarted = True
 
                 # error codes: https://platform.openai.com/docs/guides/error-codes/python-library-error-types
                 except openai.error.APIError as e:

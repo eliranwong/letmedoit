@@ -34,7 +34,7 @@ import platform, os, subprocess, config
 class GetPath:
 
     def __init__(self, cancel_entry="", promptIndicatorColor="ansicyan", promptEntryColor="ansigreen", subHeadingColor="ansigreen", itemColor="ansiyellow", workingDirectory="", ctrl_q_to_exit=False, ctrl_s_to_system=False):
-        self.cancel_entry = cancel_entry if cancel_entry else config.cancel_entry
+        self.cancel_entry = cancel_entry if cancel_entry else config.exit_entry
         self.promptIndicatorColor = promptIndicatorColor
         self.promptEntryColor = promptEntryColor
         self.subHeadingColor = subHeadingColor
@@ -141,8 +141,7 @@ class GetPath:
                 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
                 #from util.prompt_shared_key_bindings import prompt_shared_key_bindings
 
-                wd = self.workingDirectory if self.workingDirectory else thisPath
-                filePathHistory = os.path.join(wd, "history", "paths")
+                filePathHistory = os.path.join(config.myHandAIFolder, "history", "paths")
                 filePathSession = PromptSession(history=FileHistory(filePathHistory))
 
                 # key bindings
@@ -155,10 +154,10 @@ class GetPath:
                         event.app.current_buffer.validate_and_handle()"""
                 @this_key_bindings.add("c-q")
                 def _(event):
-                    if self.ctrl_q_to_exit:
-                        event.app.current_buffer.text = ".quit"
-                    else:
-                        event.app.current_buffer.text = self.cancel_entry
+                    #if self.ctrl_q_to_exit:
+                    #    event.app.current_buffer.text = ".quit"
+                    #else:
+                    #    event.app.current_buffer.text = self.cancel_entry
                     event.app.current_buffer.text = self.cancel_entry
                     event.app.current_buffer.validate_and_handle()
                 """
@@ -182,7 +181,7 @@ class GetPath:
                     #prompt_shared_key_bindings,
                 ])
                 if not bottom_toolbar:
-                    bottom_toolbar = "[ctrl+q] cancel; [cd {folder}] change dir; [cd] home dir;"
+                    bottom_toolbar = "[ctrl+q] exit [cd {folder}] change dir [cd] home dir"
                 userInput = filePathSession.prompt(
                     inputIndicator,
                     style=promptStyle,
