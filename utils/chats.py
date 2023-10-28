@@ -1190,16 +1190,17 @@ Otherwise, answer "chat". Here is the request:"""
         terminal_width = shutil.get_terminal_size().columns
         try:
             from art import text2art
-            if terminal_width >= 61:
-                logo = text2art("myHand AI")
-            elif terminal_width >= 46:
-                logo = text2art("myHand")
-            elif terminal_width >= 30:
-                logo = text2art("HAND")
-            elif terminal_width >= 17:
-                logo = text2art("mH")
+            if terminal_width >= 50:
+                logo = text2art("myHand AI", font="small")
+            elif terminal_width >= 37:
+                logo = text2art("myHand", font="small")
+            elif terminal_width >= 24:
+                logo = text2art("HAND", font="small")
+            elif terminal_width >= 14:
+                logo = text2art("mH", font="small")
             else:
                 logo = f"myHand AI"
+            logo = logo[:-1] # remove the linebreak at the end
         except:
             logo = f"myHand AI"
         print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>{logo}</{config.terminalPromptIndicatorColor2}>"))
