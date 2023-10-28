@@ -52,6 +52,11 @@ def _(event):
     data = buffer.cut_selection()
     # remarks: set_data does not work
     config.clipboard.set_text(data.text)
+# insert linebreak
+@prompt_shared_key_bindings.add("c-r")
+def _(event):
+    buffer = event.app.current_buffer
+    buffer.insert_text("\n")
 
 # navigation
 

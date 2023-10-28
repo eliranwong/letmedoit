@@ -74,6 +74,10 @@ class SystemCommandPrompt:
             self.systemCommandPromptEntry = buffer.text
             self.systemCommandPromptPosition = buffer.cursor_position
             buffer.validate_and_handle()
+        @this_key_bindings.add("escape", "m")
+        def _(_):
+            config.mouseSupport = not config.mouseSupport
+            run_in_terminal(lambda: config.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))
 
         this_key_bindings = merge_key_bindings([
             this_key_bindings,
@@ -96,7 +100,7 @@ class SystemCommandPrompt:
                 else:
                     completer = WordCompleter(sorted([f"{i}{dirIndicator}" if os.path.isdir(i) else i for i in os.listdir()]))
                 auto_suggestion=AutoSuggestFromHistory()
-                userInput = self.terminal_system_command_session.prompt(inputIndicator, swap_light_and_dark_colors=Condition(lambda: not config.terminalResourceLinkColor.startswith("ansibright")), style=self.promptStyle, key_bindings=this_key_bindings, auto_suggest=auto_suggestion, completer=completer, bottom_toolbar=self.getToolBar(), default=self.systemCommandPromptEntry).strip()
+                userInput = self.terminal_system_command_session.prompt(inputIndicator, swap_light_and_dark_colors=Condition(lambda: not config.terminalResourceLinkColor.startswith("ansibright")), mouse_support=Condition(lambda: config.mouseSupport), style=self.promptStyle, key_bindings=this_key_bindings, auto_suggest=auto_suggestion, completer=completer, bottom_toolbar=self.getToolBar(), default=self.systemCommandPromptEntry).strip()
                 if self.addPath:
                     self.addPath = False
                     prefix = self.systemCommandPromptEntry[:self.systemCommandPromptPosition]

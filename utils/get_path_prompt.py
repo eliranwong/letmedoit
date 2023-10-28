@@ -140,6 +140,7 @@ class GetPath:
                 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
                 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
                 #from util.prompt_shared_key_bindings import prompt_shared_key_bindings
+                from prompt_toolkit.filters import Condition
 
                 filePathHistory = os.path.join(config.myHandAIFolder, "history", "paths")
                 filePathSession = PromptSession(history=FileHistory(filePathHistory))
@@ -166,6 +167,10 @@ class GetPath:
                     # list directories and files
                     run_in_terminal(lambda: self.displayDirectoryContent(display_dir_only=display_dir_only))
                 """
+                @this_key_bindings.add("escape", "m")
+                def _(_):
+                    config.mouseSupport = not config.mouseSupport
+                    run_in_terminal(lambda: config.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))
 
                 inputIndicator = [("class:indicator", indicator)]
                 completer = PathCompleter()
@@ -189,7 +194,7 @@ class GetPath:
                     auto_suggest=auto_suggestion,
                     completer=completer,
                     bottom_toolbar=bottom_toolbar,
-                    #mouse_support=True,
+                    mouse_support=Condition(lambda: config.mouseSupport), 
                 ).strip()
             except:
                 self.displayDirectoryContent(display_dir_only=display_dir_only)

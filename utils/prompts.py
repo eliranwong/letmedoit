@@ -177,7 +177,7 @@ Available tokens: {estimatedAvailableTokens}
         ])
     def showKeyBindings(self):
         bindings = {
-            "ctrl+q": "quit or exit current feature",
+            "ctrl+q": "exit",
             "ctrl+z": "cancel",
             "ctrl+a": "select / unselect all",
             "ctrl+c": "copy [w/ mouse support]",
@@ -186,7 +186,7 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+n": "new chat",
             "ctrl+y": "new chat without context",
             "ctrl+s": "save chat",
-            "ctrl+r": "reverse i-search",
+            "ctrl+r": "insert a linebreak",
             "ctrl+o": "change predefined context",
             "ctrl+g": "pager view",
             "ctrl+d": "swap developer mode",
