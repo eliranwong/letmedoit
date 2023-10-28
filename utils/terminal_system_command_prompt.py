@@ -9,7 +9,6 @@ from prompt_toolkit.filters import Condition
 from prompt_toolkit.styles import Style
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
-from prompt_toolkit.shortcuts import confirm
 
 
 class SystemCommandPrompt:
@@ -49,8 +48,8 @@ class SystemCommandPrompt:
     def run(self, allowPathChanges=False):
         self.runSystemCommandPrompt = True
         # initial message
-        config.print("You are now using system command prompt!")
-        config.print(f"To exit, either press 'ctrl+q' or run '{config.exit_entry}'.")
+        config.print("You are running system command prompt!")
+        config.print(f"To exit, either press 'ctrl+q' or enter '{config.exit_entry}'.")
         # keep current path in case users change directory
         appPath = os.getcwd()
 
@@ -148,5 +147,6 @@ class SystemCommandPrompt:
                     self.systemCommandPromptPosition = 0
             except:
                 pass
+        config.print("System command prompt closed!")
         if not allowPathChanges:
             os.chdir(appPath)
