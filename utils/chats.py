@@ -968,6 +968,7 @@ Otherwise, answer "chat". Here is the request:"""
         self.print("Please specify minimum response tokens below:")
         mintokens = self.prompts.simplePrompt(numberOnly=True, default=str(config.chatGPTApiMinTokens))
         if mintokens and not mintokens.strip().lower() == config.exit_entry and int(mintokens) > 0:
+            config.chatGPTApiMinTokens = int(mintokens)
             if config.chatGPTApiMinTokens > config.chatGPTApiMaxTokens:
                 config.chatGPTApiMinTokens = config.chatGPTApiMaxTokens
             self.print(f"Minimum tokens entered: {config.chatGPTApiMinTokens}")

@@ -56,6 +56,10 @@ class SystemCommandPrompt:
 
         this_key_bindings = KeyBindings()
 
+        @this_key_bindings.add("c-z")
+        def _(event):
+            buffer = event.app.current_buffer
+            buffer.reset()
         @this_key_bindings.add("c-q")
         def _(event):
             event.app.current_buffer.text = config.exit_entry

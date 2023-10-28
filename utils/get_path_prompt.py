@@ -161,6 +161,10 @@ class GetPath:
                     #    event.app.current_buffer.text = self.cancel_entry
                     event.app.current_buffer.text = self.cancel_entry
                     event.app.current_buffer.validate_and_handle()
+                @this_key_bindings.add("c-z")
+                def _(event):
+                    buffer = event.app.current_buffer
+                    buffer.reset()
                 """
                 @this_key_bindings.add("c-l")
                 def _(_):

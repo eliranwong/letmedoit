@@ -1,6 +1,7 @@
 import config
 from prompt_toolkit.validation import Validator, ValidationError
-from prompt_toolkit import prompt
+from prompt_toolkit.application import run_in_terminal
+#from prompt_toolkit.application import get_app
 try:
     import tiktoken
     tiktokenImported = True
@@ -10,12 +11,15 @@ except:
 
 class TokenValidator(Validator):
     def validate(self, document):
-        if tiktokenImported:
+        #current_buffer = get_app().current_buffer
+        currentInput = document.text
+        if currentInput.lower() in (config.exit_entry, config.cancel_entry, ".new", ".share", ".save", ""):
+            pass
+        elif tiktokenImported:
             try:
                 encoding = tiktoken.encoding_for_model(config.chatGPTApiModel)
             except:
                 encoding = tiktoken.get_encoding("cl100k_base")
-            currentInput = document.text
             if "[NO_FUNCTION_CALL]" in currentInput:
                 availableFunctionTokens = 0
                 currentInput = currentInput.replace("[NO_FUNCTION_CALL]", "")
@@ -29,7 +33,13 @@ class TokenValidator(Validator):
             config.dynamicToolBarText = f"Tokens: {(availableFunctionTokens + loadedMessageTokens + currentInputTokens)}/{selectedModelLimit} [ctrl+k] shortcut keys "
             #if config.conversationStarted:
             #    config.dynamicToolBarText = config.dynamicToolBarText + " [ctrl+n] new"
-        pass
+            if selectedModelLimit - (availableFunctionTokens + loadedMessageTokens + currentInputTokens) >= config.chatGPTApiMinTokens:
+                pass
+            else:
+                run_in_terminal(lambda: print("Press 'ctrl+n' to start a new chat!"))
+                raise ValidationError(message='Token limit reached!', cursor_position=document.cursor_position)
+        else:
+            pass
 
 
 class NumberValidator(Validator):
