@@ -78,10 +78,6 @@ class Prompts:
         def _(event):
             event.app.current_buffer.text = ".save"
             event.app.current_buffer.validate_and_handle()
-        @this_key_bindings.add("c-z")
-        def _(event):
-            buffer = event.app.current_buffer
-            buffer.reset()
         @this_key_bindings.add("escape", "c")
         def _(event):
             try:
@@ -207,6 +203,9 @@ Available tokens: {estimatedAvailableTokens}
             "esc+d": "forward delete",
             "esc+s": "swap text brightness",
         }
+        textEditor = config.textEditor.split(" ", 1)[0]
+        if textEditor and SharedUtil.isPackageInstalled(textEditor):
+            bindings["esc+o"] = f"open with '{config.textEditor}'"
         multilineBindings = {
             "enter": "new line",
             "esc+enter": "complete entry",

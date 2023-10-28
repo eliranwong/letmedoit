@@ -11,7 +11,8 @@ persistentConfigs = (
 )
 config.setConfig(persistentConfigs)
 
-if SharedUtil.isPackageInstalled(config.textEditor.split(" ", 1)[0]):
+textEditor = config.textEditor.split(" ", 1)[0]
+if textEditor and SharedUtil.isPackageInstalled(textEditor):
 
     def edit_text(function_args):
         filename = function_args.get("filename") # required
@@ -20,7 +21,7 @@ if SharedUtil.isPackageInstalled(config.textEditor.split(" ", 1)[0]):
             os.system(f"""{config.open} {filename}""")
             return "Finished! Directory opened!"
         else:
-            tool = f"micro {filename}" if filename else "micro"
+            tool = f"{config.textEditor} {filename}" if filename else config.textEditor
             config.stopSpinning()
             SharedUtil.textTool(tool, "")
             return "Finished! Text editor closed!"
@@ -43,4 +44,4 @@ if SharedUtil.isPackageInstalled(config.textEditor.split(" ", 1)[0]):
     config.chatGPTApiFunctionSignatures.append(functionSignature)
     config.chatGPTApiAvailableFunctions["edit_text"] = edit_text
 else:
-    config.print("Install text editor 'micro' to work with plugin 'edit text'.")
+    config.print(f"Install text editor '{textEditor}' to work with plugin 'edit text'.")

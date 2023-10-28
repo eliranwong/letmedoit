@@ -962,7 +962,7 @@ Otherwise, answer "chat". Here is the request:"""
             suggestedMaxToken = int(tokenLimit / 2)
             #if config.chatGPTApiMaxTokens > suggestedMaxToken:
             config.chatGPTApiMaxTokens = suggestedMaxToken
-            self.print(f"Maximum tokens set to {config.chatGPTApiMaxTokens}.")
+            self.print(f"Maximum response tokens set to {config.chatGPTApiMaxTokens}.")
 
     def setMinTokens(self):
         self.print("Please specify minimum response tokens below:")

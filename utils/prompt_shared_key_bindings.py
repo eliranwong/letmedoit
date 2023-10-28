@@ -1,4 +1,4 @@
-import config, pydoc
+import config, pydoc, os, re
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.application.current import get_app
 from utils.shared_utils import SharedUtil
@@ -95,7 +95,30 @@ def _(event):
 @prompt_shared_key_bindings.add("escape", "d")
 def _(event):
     buffer = event.app.current_buffer
-    data = buffer.delete(1)
+    buffer.delete(1)
+
+# reset buffer
+@prompt_shared_key_bindings.add("c-z")
+def _(event):
+    buffer = event.app.current_buffer
+    buffer.reset()
+
+# open in text editor
+@prompt_shared_key_bindings.add("escape", "o")
+def _(event):
+    textEditor = config.textEditor.split(" ", 1)[0]
+    if textEditor and SharedUtil.isPackageInstalled(textEditor):
+        current_buffer = event.app.current_buffer
+        text = current_buffer.text
+        filename = os.path.join(config.myHandAIFolder, "temp", "current_input.txt")
+        with open(filename, "w", encoding="utf-8") as fileObj:
+            fileObj.write(text)
+        SharedUtil.textTool(f"{config.textEditor} {filename}", "")
+        with open(filename, "r", encoding="utf-8") as fileObj:
+            editedText = fileObj.read()
+        editedText = re.sub("\n$", "", editedText)
+        current_buffer.text = editedText
+        current_buffer.cursor_position = len(editedText)
 
 # swap color theme
 @prompt_shared_key_bindings.add("escape", "s")
