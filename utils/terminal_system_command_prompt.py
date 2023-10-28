@@ -48,7 +48,7 @@ class SystemCommandPrompt:
     def run(self, allowPathChanges=False):
         self.runSystemCommandPrompt = True
         # initial message
-        config.print("You are running system command prompt!")
+        config.print("You are currently running system command prompt!")
         config.print(f"To exit, either press 'ctrl+q' or enter '{config.exit_entry}'.")
         # keep current path in case users change directory
         appPath = os.getcwd()

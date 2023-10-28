@@ -106,7 +106,7 @@ def _(event):
 # open in text editor
 @prompt_shared_key_bindings.add("escape", "o")
 def _(event):
-    textEditor = config.textEditor.split(" ", 1)[0]
+    textEditor = re.sub(" .*?$", "", config.textEditor)
     if textEditor and SharedUtil.isPackageInstalled(textEditor):
         current_buffer = event.app.current_buffer
         text = current_buffer.text

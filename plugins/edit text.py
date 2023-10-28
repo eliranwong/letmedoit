@@ -1,6 +1,6 @@
 # install package gTTS to work with this plugin
 
-import config, os
+import config, os, re
 from utils.shared_utils import SharedUtil
 
 # persistent
@@ -11,7 +11,7 @@ persistentConfigs = (
 )
 config.setConfig(persistentConfigs)
 
-textEditor = config.textEditor.split(" ", 1)[0]
+textEditor = re.sub(" .*?$", "", config.textEditor)
 if textEditor and SharedUtil.isPackageInstalled(textEditor):
 
     def edit_text(function_args):
