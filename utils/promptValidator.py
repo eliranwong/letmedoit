@@ -30,7 +30,7 @@ class TokenValidator(Validator):
             selectedModelLimit = config.tokenLimits[config.chatGPTApiModel]
             #estimatedAvailableTokens = selectedModelLimit - availableFunctionTokens - loadedMessageTokens - currentInputTokens
 
-            config.dynamicToolBarText = f"Tokens: {(availableFunctionTokens + loadedMessageTokens + currentInputTokens)}/{selectedModelLimit} [ctrl+k] shortcut keys "
+            config.dynamicToolBarText = f" Tokens: {(availableFunctionTokens + loadedMessageTokens + currentInputTokens)}/{selectedModelLimit} [ctrl+k] shortcut keys "
             #if config.conversationStarted:
             #    config.dynamicToolBarText = config.dynamicToolBarText + " [ctrl+n] new"
             if selectedModelLimit - (availableFunctionTokens + loadedMessageTokens + currentInputTokens) >= config.chatGPTApiMinTokens:
