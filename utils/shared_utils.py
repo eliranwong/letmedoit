@@ -1,4 +1,4 @@
-import config, openai, platform, subprocess, os, pydoc, webbrowser
+import config, openai, platform, subprocess, os, pydoc, webbrowser, re
 
 class SharedUtil:
 
@@ -36,11 +36,11 @@ class SharedUtil:
 
     @staticmethod
     def textTool(tool="", content=""):
-        if tool and SharedUtil.isPackageInstalled(tool):
+        command = re.sub(" .*?$", "", tool.strip())
+        if command and SharedUtil.isPackageInstalled(command):
             pydoc.pipepager(content, cmd=tool)
             if SharedUtil.isPackageInstalled("pkill"):
-                tool = tool.strip().split(" ")[0]
-                os.system(f"pkill {tool}")
+                os.system(f"pkill {command}")
         return ""
 
     @staticmethod
