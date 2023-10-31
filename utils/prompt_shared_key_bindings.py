@@ -1,6 +1,5 @@
-import config, pydoc, os, re
+import config, pydoc, os, re, sys
 from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.application.current import get_app
 from utils.shared_utils import SharedUtil
 
 prompt_shared_key_bindings = KeyBindings()
@@ -106,19 +105,18 @@ def _(event):
 # open in text editor
 @prompt_shared_key_bindings.add("escape", "o")
 def _(event):
-    textEditor = re.sub(" .*?$", "", config.textEditor)
-    if textEditor and SharedUtil.isPackageInstalled(textEditor):
-        current_buffer = event.app.current_buffer
-        text = current_buffer.text
-        filename = os.path.join(config.myHandAIFolder, "temp", "current_input.txt")
-        with open(filename, "w", encoding="utf-8") as fileObj:
-            fileObj.write(text)
-        SharedUtil.textTool(f"{config.textEditor} {filename}", "")
-        with open(filename, "r", encoding="utf-8") as fileObj:
-            editedText = fileObj.read()
-        editedText = re.sub("\n$", "", editedText)
-        current_buffer.text = editedText
-        current_buffer.cursor_position = len(editedText)
+    customTextEditor = config.customTextEditor if config.customTextEditor else f"{sys.executable} {os.path.join(config.myHandAIFolder, 'eTextEdit.py')}"
+    current_buffer = event.app.current_buffer
+    text = current_buffer.text
+    filename = os.path.join(config.myHandAIFolder, "temp", "current_input.txt")
+    with open(filename, "w", encoding="utf-8") as fileObj:
+        fileObj.write(text)
+    os.system(f"{customTextEditor} {filename}")
+    with open(filename, "r", encoding="utf-8") as fileObj:
+        editedText = fileObj.read()
+    editedText = re.sub("\n$", "", editedText)
+    current_buffer.text = editedText
+    current_buffer.cursor_position = len(editedText)
 
 # swap color theme
 @prompt_shared_key_bindings.add("escape", "s")

@@ -1,6 +1,7 @@
 --pre aiohttp
 openai==0.28.1
 prompt_toolkit
+Pygments
 googlesearch-python
 art
 apsw
