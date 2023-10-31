@@ -99,9 +99,24 @@ text_field = TextArea(
     search_field=search_toolbar,
     focus_on_click=True,
 )
+from prompt_toolkit.validation import Validator, ValidationError
+class NumberValidator(Validator):
+    def validate(self, document):
+        text = document.text
+
+        if text and not text.isdigit():
+            i = 0
+
+            # Get index of first non numeric character.
+            # We want to move the cursor here.
+            for i, c in enumerate(text):
+                if not c.isdigit():
+                    break
+
+            raise ValidationError(message='This entry accepts numbers only!', cursor_position=i)
 
 class TextInputDialog:
-    def __init__(self, title="", label_text="", completer=None):
+    def __init__(self, title="", label_text="", completer=None, validator=None):
         self.future = Future()
 
         def accept_text(buf):
@@ -116,6 +131,7 @@ class TextInputDialog:
             self.future.set_result(None)
 
         self.text_area = TextArea(
+            validator=validator,
             completer=completer,
             multiline=False,
             width=D(preferred=40),
@@ -127,6 +143,7 @@ class TextInputDialog:
         cancel_button = Button(text="Cancel", handler=cancel)
 
         self.dialog = Dialog(
+            #style=dialog_style,
             title=title,
             body=HSplit([Label(text=label_text), self.text_area]),
             buttons=[ok_button, cancel_button],
@@ -514,7 +531,7 @@ def do_add_spaces():
 
 def do_go_to():
     async def coroutine():
-        dialog = TextInputDialog(title="Go to line", label_text="Line number:")
+        dialog = TextInputDialog(title="Go to line", label_text="Line number:", validator=NumberValidator())
 
         line_number = await show_dialog_as_float(dialog)
         if line_number is not None:
@@ -659,6 +676,7 @@ custom_style = Style.from_dict(
         "shadow": "bg:#440044",
         "textarea": "bg:#1E1E1E",
         'search-toolbar': 'bg:#1E1E1E',
+        'dialog.title': 'bg:#ff0000 fg:#1E1E1E',
     }
 )
 #https://github.com/prompt-toolkit/python-prompt-toolkit/issues/765#issuecomment-434465617
