@@ -78,7 +78,7 @@ class ApplicationState:
     clipboard = PyperclipClipboard()
 
 def get_statusbar_text():
-    return " [esc-m] menu [ctrl+h] help "
+    return " [esc-m] menu [ctrl+k] help "
 
 def get_statusbar_right_text():
     return " {}:{}  ".format(
@@ -281,7 +281,7 @@ def _(event):
         event.app.layout.focus(root_container.window)
         ApplicationState.focus_menu = True
     
-@bindings.add("c-h")
+@bindings.add("c-k")
 def _(_):
     do_help()
 
@@ -615,9 +615,9 @@ root_container = MenuContainer(
                 MenuItem("[Z] Undo", handler=do_undo),
                 #MenuItem("[Y] Redo", handler=do_redo),
                 MenuItem("-", disabled=True),
-                MenuItem("[X] Cut", handler=do_cut),
                 MenuItem("[C] Copy", handler=do_copy),
                 MenuItem("[V] Paste", handler=do_paste),
+                MenuItem("[X] Cut", handler=do_cut),
                 MenuItem("[D] Delete", handler=do_delete),
                 MenuItem("-", disabled=True),
                 MenuItem("[F] Find", handler=do_find),
@@ -658,6 +658,7 @@ custom_style = Style.from_dict(
         "status": "reverse",
         "shadow": "bg:#440044",
         "textarea": "bg:#1E1E1E",
+        'search-toolbar': 'bg:#1E1E1E',
     }
 )
 #https://github.com/prompt-toolkit/python-prompt-toolkit/issues/765#issuecomment-434465617
