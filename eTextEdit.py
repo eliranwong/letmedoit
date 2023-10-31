@@ -28,6 +28,8 @@ from prompt_toolkit.styles import merge_styles
 from pygments.styles import get_style_by_name
 from prompt_toolkit.styles.pygments import style_from_pygments_cls
 from prompt_toolkit.shortcuts import set_title, clear_title
+from prompt_toolkit import HTML
+from prompt_toolkit.validation import Validator, ValidationError
 from prompt_toolkit.application import Application
 from prompt_toolkit.application.current import get_app
 from prompt_toolkit.completion import PathCompleter
@@ -86,6 +88,9 @@ def get_statusbar_right_text():
         text_field.document.cursor_position_col + 1,
     )
 
+def formatDialogTitle(title):
+    return HTML(f"<ansimagenta>{title}</ansimagenta>")
+
 search_toolbar = SearchToolbar(ignore_case=True)
 text_field = TextArea(
     style="class:textarea",
@@ -99,21 +104,18 @@ text_field = TextArea(
     search_field=search_toolbar,
     focus_on_click=True,
 )
-from prompt_toolkit.validation import Validator, ValidationError
+
 class NumberValidator(Validator):
     def validate(self, document):
         text = document.text
-
         if text and not text.isdigit():
             i = 0
-
             # Get index of first non numeric character.
             # We want to move the cursor here.
             for i, c in enumerate(text):
                 if not c.isdigit():
                     break
-
-            raise ValidationError(message='This entry accepts numbers only!', cursor_position=i)
+            raise ValidationError(message='Integer ONLY!', cursor_position=i)
 
 class TextInputDialog:
     def __init__(self, title="", label_text="", completer=None, validator=None):
@@ -143,8 +145,7 @@ class TextInputDialog:
         cancel_button = Button(text="Cancel", handler=cancel)
 
         self.dialog = Dialog(
-            #style=dialog_style,
-            title=title,
+            title=formatDialogTitle(title),
             body=HSplit([Label(text=label_text), self.text_area]),
             buttons=[ok_button, cancel_button],
             width=D(preferred=80),
@@ -206,7 +207,7 @@ class SearchReplaceDialog:
         cancel_button = Button(text="Cancel", handler=cancel)
 
         self.dialog = Dialog(
-            title=title,
+            title=formatDialogTitle(title),
             body=HSplit([Label(text=label_find), self.search_area, Label(text=label_replace), self.replace_area, VSplit([self.case_sensitivity, self.regex_search])]),
             buttons=[replace_all_button, selection_only_button, cancel_button],
             width=D(preferred=80),
@@ -226,7 +227,7 @@ class MessageDialog:
         ok_button = Button(text="OK", handler=(lambda: set_done()))
 
         self.dialog = Dialog(
-            title=title,
+            title=formatDialogTitle(title),
             body=HSplit([Label(text=text)]),
             buttons=[ok_button],
             width=D(preferred=80),
@@ -250,7 +251,7 @@ class ConfirmDialog:
         no_button = Button(text="NO", handler=no)
 
         self.dialog = Dialog(
-            title=title,
+            title=formatDialogTitle(title),
             body=HSplit([Label(text=text)]),
             buttons=[ok_button, no_button],
             width=D(preferred=80),
@@ -675,8 +676,8 @@ custom_style = Style.from_dict(
         "status": "reverse",
         "shadow": "bg:#440044",
         "textarea": "bg:#1E1E1E",
-        'search-toolbar': 'bg:#1E1E1E',
-        'dialog.title': 'bg:#ff0000 fg:#1E1E1E',
+        "search-toolbar": "bg:#1E1E1E",
+        "button.focused": "bg:#F9AAF8 fg:#000000"
     }
 )
 #https://github.com/prompt-toolkit/python-prompt-toolkit/issues/765#issuecomment-434465617
