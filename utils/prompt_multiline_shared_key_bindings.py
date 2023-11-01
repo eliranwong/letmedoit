@@ -3,22 +3,6 @@ from prompt_toolkit.key_binding import KeyBindings
 
 prompt_multiline_shared_key_bindings = KeyBindings()
 
-
-# navigation
-
-# move left
-@prompt_multiline_shared_key_bindings.add("left")
-def _(event):
-    buffer = event.app.current_buffer
-    if buffer.cursor_position > 0:
-        buffer.cursor_position = buffer.cursor_position - 1
-# move right
-@prompt_multiline_shared_key_bindings.add("right")
-def _(event):
-    buffer = event.app.current_buffer
-    if buffer.cursor_position < len(buffer.text):
-        buffer.cursor_position = buffer.cursor_position + 1
-
 # scrolling
 
 # go up 10 lines
@@ -141,9 +125,3 @@ def _(event):
 def _(event):
     buffer = event.app.current_buffer
     buffer.cursor_down(config.terminalEditorScrollLineCount)
-
-# insert text with TAB key
-@prompt_multiline_shared_key_bindings.add("c-i")
-def _(event):
-    buffer = event.app.current_buffer
-    buffer.insert_text(config.terminalEditorTabText)

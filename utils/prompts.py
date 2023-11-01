@@ -115,7 +115,7 @@ Available tokens: {estimatedAvailableTokens}
         @this_key_bindings.add("c-g")
         def _(_):
             config.launchPager()
-        @this_key_bindings.add("c-d")
+        @this_key_bindings.add("escape", "d")
         def _(_):
             config.developer = not config.developer
             run_in_terminal(lambda: config.print(f"Developer mode {'enabled' if config.developer else 'disabled'}!"))
@@ -165,9 +165,9 @@ Available tokens: {estimatedAvailableTokens}
             filter=Condition(lambda: config.multilineInput),
         )
         self.prompt_shared_key_bindings = merge_key_bindings([
-            prompt_shared_key_bindings,
-            conditional_prompt_multiline_shared_key_bindings,
             this_key_bindings,
+            conditional_prompt_multiline_shared_key_bindings,
+            prompt_shared_key_bindings,
         ])
     def showKeyBindings(self):
         bindings = {
@@ -181,9 +181,11 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+y": "new chat without context",
             "ctrl+s": "save chat",
             "ctrl+r": "insert a linebreak",
+            "ctrl+i": f"insert '{config.terminalEditorTabText}' [configurable]",
             "ctrl+o": "change predefined context",
             "ctrl+g": "pager view",
-            "ctrl+d": "swap developer mode",
+            "ctrl+d": "forward delete",
+            "ctrl+h": "backspace",
             "ctrl+e": "swap command execution mode",
             "ctrl+k": "show key bindings",
             "ctrl+l": "toggle multi-line entry",
@@ -198,8 +200,8 @@ Available tokens: {estimatedAvailableTokens}
             "esc+e": "move cursor to line end",
             "esc+a": "move cursor to entry beginning",
             "esc+z": "move cursor to entry end",
-            "esc+d": "forward delete",
             "esc+s": "swap text brightness",
+            "esc+d": "swap developer mode",
         }
         textEditor = config.textEditor.split(" ", 1)[0]
         if textEditor and SharedUtil.isPackageInstalled(textEditor):
@@ -227,7 +229,6 @@ Available tokens: {estimatedAvailableTokens}
             "f8": "go down 80 lines",
             "f9": "go down 90 lines",
             "f10": "go down 100 lines",
-            "ctrl+i": f"insert '{config.terminalEditorTabText}' [configurable]",
             "ctrl+u": f"go up '{config.terminalEditorScrollLineCount}' lines [configurable]",
             "ctrl+j": f"go down '{config.terminalEditorScrollLineCount}' lines [configurable]",
         }

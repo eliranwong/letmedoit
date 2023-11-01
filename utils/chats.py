@@ -34,6 +34,7 @@ class MyHandAI:
         config.divider = self.divider = "--------------------"
         config.showErrors = self.showErrors
         config.stopSpinning = self.stopSpinning
+        config.getStringWidth = self.getStringWidth
         config.toggleMultiline = self.toggleMultiline
         config.print = self.print
         config.getWrappedHTMLText = self.getWrappedHTMLText

@@ -1,8 +1,11 @@
-import config, pydoc, os, re, sys
+import config, pydoc, os, re, sys, shutil
 from prompt_toolkit.key_binding import KeyBindings
 from utils.shared_utils import SharedUtil
 
 prompt_shared_key_bindings = KeyBindings()
+
+def getTextFieldWidth():
+    return shutil.get_terminal_size().columns - 4 # len(">>> ")
 
 # selection
 
@@ -58,6 +61,60 @@ def _(event):
     buffer.insert_text("\n")
 
 # navigation
+
+# left arrow; necessary for moving between lines
+@prompt_shared_key_bindings.add("left")
+def _(event):
+    buffer = event.app.current_buffer
+    if buffer.cursor_position > 0:
+        buffer.cursor_position = buffer.cursor_position - 1
+# right arrow; necessary for moving between lines
+@prompt_shared_key_bindings.add("right")
+def _(event):
+    buffer = event.app.current_buffer
+    if buffer.cursor_position < len(buffer.text):
+        buffer.cursor_position = buffer.cursor_position + 1
+# up arrow; necessary for moving between characters of the same line
+@prompt_shared_key_bindings.add("up")
+def _(event):
+    buffer = event.app.current_buffer
+    text_field_width = getTextFieldWidth()
+    if buffer.document.cursor_position_col >= text_field_width:
+        buffer.cursor_position = buffer.cursor_position - text_field_width
+    elif buffer.document.on_first_line:
+        buffer.cursor_position = 0
+    else:
+        previous_line = buffer.document.lines[buffer.document.cursor_position_row - 1]
+        previous_line_width = config.getStringWidth(previous_line)
+        previous_line_last_chunk_width = previous_line_width%text_field_width
+        current_ursor_position_col = buffer.document.cursor_position_col
+        if previous_line_last_chunk_width > current_ursor_position_col:
+            buffer.cursor_position = buffer.cursor_position - previous_line_last_chunk_width - 1
+        else:
+            buffer.cursor_position = buffer.cursor_position - current_ursor_position_col - 1
+# down arrow; necessary for moving between characters of the same line
+@prompt_shared_key_bindings.add("down")
+def _(event):
+    buffer = event.app.current_buffer
+    text_field_width = getTextFieldWidth()
+    cursor_position_col = buffer.document.cursor_position_col
+    current_chunk_cursor_position_col = cursor_position_col%text_field_width
+    end_of_line_position = buffer.document.get_end_of_line_position()
+    remaining_width_available = text_field_width - current_chunk_cursor_position_col
+    if end_of_line_position > remaining_width_available:
+        if end_of_line_position > text_field_width:
+            buffer.cursor_position = buffer.cursor_position + text_field_width
+        else:
+            buffer.cursor_position = buffer.cursor_position + end_of_line_position
+    elif buffer.document.on_last_line:
+        buffer.cursor_position = len(buffer.text)
+    else:
+        next_line = buffer.document.lines[buffer.document.cursor_position_row + 1]
+        next_line_width = config.getStringWidth(next_line)
+        if next_line_width >= current_chunk_cursor_position_col:
+            buffer.cursor_position = buffer.cursor_position + end_of_line_position + current_chunk_cursor_position_col + 1
+        else:
+            buffer.cursor_position = buffer.cursor_position + end_of_line_position + next_line_width + 1
 
 # go to current line starting position
 @prompt_shared_key_bindings.add("escape", "b")
@@ -153,19 +210,32 @@ def swapTerminalColors():
 #        config.terminalFindHighlightForeground = config.terminalColors[config.terminalFindHighlightForeground]
     #config.terminalSwapColors = (config.terminalResourceLinkColor.startswith("ansibright"))
 
-# change text
-
-# delete text, Ctrl+H or Backspace
-"""
+# edit
+# insert spaces by pressing the TAB key
+@prompt_shared_key_bindings.add("c-i")
+def _(event):
+    buffer = event.app.current_buffer
+    buffer.insert_text(config.terminalEditorTabText)
+# backspace
 @prompt_shared_key_bindings.add("c-h")
 def _(event):
     buffer = event.app.current_buffer
     data = buffer.cut_selection()
-    # delete one char before cursor as Backspace usually does when there is no text selection.
+    # delete one char before cursor [backspace] if there is no text selection
     if not data.text and buffer.cursor_position >= 1:
-        buffer.start_selection()
-        buffer.cursor_position = buffer.cursor_position - 1
-        buffer.cut_selection()
-"""
-# binded in this set
-#a, j, e, c, v, x, h, i
+        buffer.delete_before_cursor(1)
+# forward delete
+@prompt_shared_key_bindings.add("c-d")
+def _(event):
+    buffer = event.app.current_buffer
+    data = buffer.cut_selection()
+    # forward delete one character if there is no selection
+    if not data.text and buffer.cursor_position < len(buffer.text):
+        buffer.delete(1)
+# replace selection
+@prompt_shared_key_bindings.add("<any>")
+def _(event):
+    buffer = event.app.current_buffer
+    buffer.cut_selection().text
+    # a key sequence looks like [KeyPress(key='a', data='a')]
+    buffer.insert_text(event.key_sequence[0].data)
