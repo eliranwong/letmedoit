@@ -1,7 +1,66 @@
-import config
+import config, shutil
 from prompt_toolkit.key_binding import KeyBindings
 
 prompt_multiline_shared_key_bindings = KeyBindings()
+
+# navigation
+
+def getTextFieldWidth():
+    return shutil.get_terminal_size().columns - 4 # len(">>> ")
+
+# left arrow; necessary for moving between lines
+@prompt_multiline_shared_key_bindings.add("left")
+def _(event):
+    buffer = event.app.current_buffer
+    if buffer.cursor_position > 0:
+        buffer.cursor_position = buffer.cursor_position - 1
+# right arrow; necessary for moving between lines
+@prompt_multiline_shared_key_bindings.add("right")
+def _(event):
+    buffer = event.app.current_buffer
+    if buffer.cursor_position < len(buffer.text):
+        buffer.cursor_position = buffer.cursor_position + 1
+# up arrow; necessary for moving between characters of the same line
+@prompt_multiline_shared_key_bindings.add("up")
+def _(event):
+    buffer = event.app.current_buffer
+    text_field_width = getTextFieldWidth()
+    if buffer.document.cursor_position_col >= text_field_width:
+        buffer.cursor_position = buffer.cursor_position - text_field_width
+    elif buffer.document.on_first_line:
+        buffer.cursor_position = 0
+    else:
+        previous_line = buffer.document.lines[buffer.document.cursor_position_row - 1]
+        previous_line_width = config.getStringWidth(previous_line)
+        previous_line_last_chunk_width = previous_line_width%text_field_width
+        current_ursor_position_col = buffer.document.cursor_position_col
+        if previous_line_last_chunk_width > current_ursor_position_col:
+            buffer.cursor_position = buffer.cursor_position - previous_line_last_chunk_width - 1
+        else:
+            buffer.cursor_position = buffer.cursor_position - current_ursor_position_col - 1
+# down arrow; necessary for moving between characters of the same line
+@prompt_multiline_shared_key_bindings.add("down")
+def _(event):
+    buffer = event.app.current_buffer
+    text_field_width = getTextFieldWidth()
+    cursor_position_col = buffer.document.cursor_position_col
+    current_chunk_cursor_position_col = cursor_position_col%text_field_width
+    end_of_line_position = buffer.document.get_end_of_line_position()
+    remaining_width_available = text_field_width - current_chunk_cursor_position_col
+    if end_of_line_position > remaining_width_available:
+        if end_of_line_position > text_field_width:
+            buffer.cursor_position = buffer.cursor_position + text_field_width
+        else:
+            buffer.cursor_position = buffer.cursor_position + end_of_line_position
+    elif buffer.document.on_last_line:
+        buffer.cursor_position = len(buffer.text)
+    else:
+        next_line = buffer.document.lines[buffer.document.cursor_position_row + 1]
+        next_line_width = config.getStringWidth(next_line)
+        if next_line_width >= current_chunk_cursor_position_col:
+            buffer.cursor_position = buffer.cursor_position + end_of_line_position + current_chunk_cursor_position_col + 1
+        else:
+            buffer.cursor_position = buffer.cursor_position + end_of_line_position + next_line_width + 1
 
 # scrolling
 
