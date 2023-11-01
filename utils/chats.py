@@ -1546,7 +1546,6 @@ Otherwise, answer "chat". Here is the request:"""
                 if self.is_CJK(item):
                     for iIndex, i in enumerate(item):
                         isSpaceItem = (not isLastItem and (len(item) - iIndex == 1))
-                        #iIsLastItem = (isLastItem and (len(item) - iIndex == 1))
                         iWidth = self.getStringWidth(i)
                         if isSpaceItem:
                             newLineWidth = self.lineWidth + iWidth + 1
