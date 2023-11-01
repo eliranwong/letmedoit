@@ -9,6 +9,7 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.shortcuts import clear
+from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit import print_formatted_text, HTML
 from utils.terminal_mode_dialogs import TerminalModeDialogs
 from utils.prompts import Prompts
@@ -33,6 +34,7 @@ class MyHandAI:
         config.divider = self.divider = "--------------------"
         config.showErrors = self.showErrors
         config.stopSpinning = self.stopSpinning
+        config.toggleMultiline = self.toggleMultiline
         config.print = self.print
         config.getWrappedHTMLText = self.getWrappedHTMLText
         config.count_tokens_from_messages = self.count_tokens_from_messages
@@ -710,7 +712,6 @@ Otherwise, answer "chat". Here is the request:"""
         descriptions = (
             "start a new chat [ctrl+n]",
             "share content [ctrl+s]" if config.terminalEnableTermuxAPI else "save content [ctrl+s]",
-            "swap multi-line input [ctrl+l]",
             "swap text brightness [esc+s]",
             "run an instruction",
             "change chat context [ctrl+o]",
@@ -732,6 +733,7 @@ Otherwise, answer "chat". Here is the request:"""
             "change Termux API integration",
             "change developer mode [ctrl+d]",
             "change automatic update",
+            "toggle multi-line input [ctrl+l]",
             "toogle mouse support [esc+m]",
             "toggle word wrap [ctrl+w]",
             "toggle improved writing [esc+i]",
@@ -1005,15 +1007,15 @@ Otherwise, answer "chat". Here is the request:"""
 
     def runSystemCommand(self, command):
         command = command.strip()[1:]
-        if self.multilineInput:
+        if config.multilineInput:
             command = ";".join(command.split("\n"))
         os.system(command)
 
-    def swapMultiline(self):
-        self.multilineInput = not self.multilineInput
-        self.print(f"Multi-line input {'enabled' if self.multilineInput else 'disabled'}!")
-        if self.multilineInput:
-            self.print("Please press 'enter' to start a new line, and use 'escape + enter' to complete your entry.")
+    def toggleMultiline(self):
+        config.multilineInput = not config.multilineInput
+        run_in_terminal(lambda: self.print(f"Multi-line input {'enabled' if config.multilineInput else 'disabled'}!"))
+        if config.multilineInput:
+            run_in_terminal(lambda: self.print("Please press 'enter' to start a new line, and use 'escape + enter' to complete your entry."))
 
     def isTtsAvailable(self):
         if config.tts:
@@ -1225,11 +1227,10 @@ Otherwise, answer "chat". Here is the request:"""
             config.conversationStarted = False
             return (startupdirectory, messages)
         startupdirectory, messages = startChat()
-        self.multilineInput = False
+        config.multilineInput = False
         features = (
             ".new",
             ".share" if config.terminalEnableTermuxAPI else ".save",
-            ".swapmultiline",
             ".swaptextbrightness",
             ".instruction",
             ".context",
@@ -1251,6 +1252,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".termuxapi",
             ".developer",
             ".autoupdate",
+            ".togglemultiline",
             ".togglemousesupport",
             ".togglewordwrap",
             ".toggleimprovedwriting",
@@ -1279,7 +1281,7 @@ Otherwise, answer "chat". Here is the request:"""
             # input suggestions
             inputSuggestions = config.inputSuggestions[:] + self.getDirectoryList() if config.developer else config.inputSuggestions
             completer = WordCompleter(inputSuggestions, ignore_case=True) if inputSuggestions else None
-            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=self.multilineInput, completer=completer, default=defaultEntry, accept_default=accept_default, validator=tokenValidator, bottom_toolbar=getDynamicToolBar)
+            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=config.multilineInput, completer=completer, default=defaultEntry, accept_default=accept_default, validator=tokenValidator, bottom_toolbar=getDynamicToolBar)
             # display options when empty string is entered
             userInputLower = userInput.lower()
             if not userInputLower:
@@ -1299,8 +1301,8 @@ Otherwise, answer "chat". Here is the request:"""
                 pass
             elif userInputLower == ".system":
                 SystemCommandPrompt().run(allowPathChanges=True)
-            elif userInputLower == ".swapmultiline":
-                self.swapMultiline()
+            elif userInputLower == ".togglemultiline":
+                self.toggleMultiline()
             elif userInputLower == ".swaptextbrightness":
                 swapTerminalColors()
             elif userInputLower == ".togglemousesupport":

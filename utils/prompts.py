@@ -4,7 +4,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.styles import Style
 from prompt_toolkit.filters import Condition
-from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
+from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings, ConditionalKeyBindings
 from utils.prompt_shared_key_bindings import prompt_shared_key_bindings
 from utils.prompt_multiline_shared_key_bindings import prompt_multiline_shared_key_bindings
 from utils.promptValidator import NumberValidator
@@ -124,10 +124,8 @@ Available tokens: {estimatedAvailableTokens}
             config.enhanceCommandExecution = not config.enhanceCommandExecution
             run_in_terminal(lambda: config.print(f"Command execution mode changed to '{'enhanced' if config.enhanceCommandExecution else 'auto'}'!"))
         @this_key_bindings.add("c-l")
-        def _(event):
-            config.defaultEntry = event.app.current_buffer.text
-            event.app.current_buffer.text = ".swapmultiline"
-            event.app.current_buffer.validate_and_handle()
+        def _(_):
+            config.toggleMultiline()
         @this_key_bindings.add("c-o")
         def _(event):
             event.app.current_buffer.text = ".context"
@@ -162,13 +160,13 @@ Available tokens: {estimatedAvailableTokens}
             config.mouseSupport = not config.mouseSupport
             run_in_terminal(lambda: config.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))
 
+        conditional_prompt_multiline_shared_key_bindings = ConditionalKeyBindings(
+            key_bindings=prompt_multiline_shared_key_bindings,
+            filter=Condition(lambda: config.multilineInput),
+        )
         self.prompt_shared_key_bindings = merge_key_bindings([
             prompt_shared_key_bindings,
-            this_key_bindings,
-        ])
-        self.prompt_multiline_shared_key_bindings = merge_key_bindings([
-            prompt_shared_key_bindings,
-            prompt_multiline_shared_key_bindings,
+            conditional_prompt_multiline_shared_key_bindings,
             this_key_bindings,
         ])
     def showKeyBindings(self):
@@ -247,7 +245,6 @@ Available tokens: {estimatedAvailableTokens}
             pydoc.pipepager(f"To close this help page, press 'q'\n\n{keyHelp}\nTo close this help page, press 'q'", cmd='less -R')
         else:
             print(keyHelp)
-        
 
     def simplePrompt(self, numberOnly=False, validator=None, multiline=False, inputIndicator="", default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False, bottom_toolbar=None):
         config.selectAll = False
@@ -258,13 +255,13 @@ Available tokens: {estimatedAvailableTokens}
             validator = NumberValidator()
         userInput = inputPrompt(
             inputIndicator,
-            key_bindings=self.prompt_multiline_shared_key_bindings if multiline else self.prompt_shared_key_bindings,
-            bottom_toolbar=self.getToolBar(multiline) if bottom_toolbar is None else bottom_toolbar,
+            key_bindings=self.prompt_shared_key_bindings,
+            bottom_toolbar=self.getToolBar(config.multilineInput) if bottom_toolbar is None else bottom_toolbar,
             enable_system_prompt=True,
             swap_light_and_dark_colors=Condition(lambda: not config.terminalResourceLinkColor.startswith("ansibright")),
             style=self.promptStyle1 if style is None else style,
             validator=validator,
-            multiline=multiline,
+            multiline=Condition(lambda: config.multilineInput),
             default=default,
             accept_default=accept_default,
             completer=completer,
