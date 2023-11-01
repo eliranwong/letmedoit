@@ -1193,9 +1193,9 @@ Otherwise, answer "chat". Here is the request:"""
         terminal_width = shutil.get_terminal_size().columns
         try:
             from art import text2art
-            if terminal_width >= 50:
-                logo = text2art("myHand AI", font="small")
-            elif terminal_width >= 37:
+            #if terminal_width >= 50:
+            #    logo = text2art("myHand AI", font="small")
+            if terminal_width >= 37:
                 logo = text2art("myHand", font="small")
             elif terminal_width >= 24:
                 logo = text2art("HAND", font="small")
