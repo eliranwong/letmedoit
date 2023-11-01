@@ -1016,7 +1016,7 @@ Otherwise, answer "chat". Here is the request:"""
         config.multilineInput = not config.multilineInput
         run_in_terminal(lambda: self.print(f"Multi-line input {'enabled' if config.multilineInput else 'disabled'}!"))
         if config.multilineInput:
-            run_in_terminal(lambda: self.print("Please press 'enter' to start a new line, and use 'escape + enter' to complete your entry."))
+            run_in_terminal(lambda: self.print("Use 'escape + enter' to complete your entry."))
 
     def isTtsAvailable(self):
         if config.tts:
