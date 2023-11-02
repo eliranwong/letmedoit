@@ -31,7 +31,7 @@ try:
         versions = function_args.get("versions", "")
         if versions:
             try:
-                compareVersions = eval(versions)
+                compareVersions = eval(versions) if isinstance(versions, str) else versions
                 compareVersions = [i for i in compareVersions if i in allVersions]
                 if config.mainText in compareVersions:
                     compareVersions.remove(config.mainText)
