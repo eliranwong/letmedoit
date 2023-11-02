@@ -5,6 +5,11 @@ try:
 except:
     tiktokenImported = False
 from pathlib import Path
+import pygments
+from pygments.token import Token
+from pygments.lexers.python import PythonLexer
+from pygments.lexers import BashLexer
+from prompt_toolkit.formatted_text import PygmentsTokens
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter
@@ -286,7 +291,10 @@ Acess the risk level of this Python code:
             self.showRisk(risk)
             if config.developer or config.codeDisplay:
                 print("```")
-                print(python_code)
+                #print(python_code)
+                # pygments python style
+                tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
+                print_formatted_text(PygmentsTokens(tokens))
                 print("```")
             self.print(self.divider)
 
@@ -368,7 +376,9 @@ Acess the risk level of this Python code:
             self.showRisk(risk)
             if config.developer or config.codeDisplay:
                 self.print("```")
-                print(function_args)
+                #print(function_args)
+                tokens = list(pygments.lex(function_args, lexer=BashLexer()))
+                print_formatted_text(PygmentsTokens(tokens))
                 self.print("```")
             self.print(self.divider)
             
@@ -439,7 +449,10 @@ Acess the risk level of this Python code:
             self.showRisk(risk)
             if config.developer or config.codeDisplay:
                 self.print("```")
-                print(python_code)
+                #print(python_code)
+                # pygments python style
+                tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
+                print_formatted_text(PygmentsTokens(tokens))
                 self.print("```")
             self.print(self.divider)
             

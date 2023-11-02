@@ -90,12 +90,6 @@ def _(event):
     buffer = event.app.current_buffer
     buffer.cursor_position = 0
 
-# delete after cusor
-@prompt_shared_key_bindings.add("escape", "d")
-def _(event):
-    buffer = event.app.current_buffer
-    buffer.delete(1)
-
 # reset buffer
 @prompt_shared_key_bindings.add("c-z")
 def _(event):
