@@ -25,7 +25,8 @@ def _(event):
 def _(event):
     buffer = event.app.current_buffer
     text_field_width = getTextFieldWidth()
-    if buffer.document.cursor_position_col >= text_field_width:
+    current_cursor_position_col = buffer.document.cursor_position_col
+    if current_cursor_position_col >= text_field_width:
         buffer.cursor_position = buffer.cursor_position - text_field_width
     elif buffer.document.on_first_line:
         buffer.cursor_position = 0
@@ -33,11 +34,10 @@ def _(event):
         previous_line = buffer.document.lines[buffer.document.cursor_position_row - 1]
         previous_line_width = config.getStringWidth(previous_line)
         previous_line_last_chunk_width = previous_line_width%text_field_width
-        current_ursor_position_col = buffer.document.cursor_position_col
-        if previous_line_last_chunk_width > current_ursor_position_col:
+        if previous_line_last_chunk_width > current_cursor_position_col:
             buffer.cursor_position = buffer.cursor_position - previous_line_last_chunk_width - 1
         else:
-            buffer.cursor_position = buffer.cursor_position - current_ursor_position_col - 1
+            buffer.cursor_position = buffer.cursor_position - current_cursor_position_col - 1
 # down arrow; necessary for moving between characters of the same line
 @prompt_multiline_shared_key_bindings.add("down")
 def _(event):
