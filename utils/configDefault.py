@@ -48,6 +48,7 @@ defaultSettings = (
     ('terminalPromptIndicatorColor2', 'ansicyan'),
     ('terminalSearchHighlightBackground', 'ansiblue'),
     ('terminalSearchHighlightForeground', 'ansidefault'),
+    ('pygments_style', '')
     ('developer', False),
     ('enhanceCommandExecution', False),
     ('confirmExecution', "always"), # 'always', 'high_risk_only', 'medium_risk_or_above', 'none'
