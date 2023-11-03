@@ -94,7 +94,7 @@ class MyHandAI:
         self.isTtsAvailable()
 
     def getPygmentsStyle(self):
-        return style_from_pygments_cls(get_style_by_name("stata-light" if config.terminalResourceLinkColor.startswith("ansibright") else "stata-dark"))
+        return style_from_pygments_cls(get_style_by_name("stata-dark" if config.terminalResourceLinkColor.startswith("ansibright") else "stata-light"))
 
     def getFolderPath(self):
         # get path
