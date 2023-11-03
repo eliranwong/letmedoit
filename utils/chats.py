@@ -6,9 +6,10 @@ except:
     tiktokenImported = False
 from pathlib import Path
 import pygments
-from pygments.token import Token
 from pygments.lexers.python import PythonLexer
-from pygments.lexers import BashLexer
+from pygments.lexers.shell import BashLexer
+from pygments.styles import get_style_by_name
+from prompt_toolkit.styles.pygments import style_from_pygments_cls
 from prompt_toolkit.formatted_text import PygmentsTokens
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -91,6 +92,9 @@ class MyHandAI:
         else:
             config.tts = True
         self.isTtsAvailable()
+
+    def getPygmentsStyle(self):
+        return style_from_pygments_cls(get_style_by_name("stata-light" if config.terminalResourceLinkColor.startswith("ansibright") else "stata-dark"))
 
     def getFolderPath(self):
         # get path
@@ -294,7 +298,7 @@ Acess the risk level of this Python code:
                 #print(python_code)
                 # pygments python style
                 tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
-                print_formatted_text(PygmentsTokens(tokens))
+                print_formatted_text(PygmentsTokens(tokens), style=self.getPygmentsStyle())
                 print("```")
             self.print(self.divider)
 
@@ -378,7 +382,7 @@ Acess the risk level of this Python code:
                 self.print("```")
                 #print(function_args)
                 tokens = list(pygments.lex(function_args, lexer=BashLexer()))
-                print_formatted_text(PygmentsTokens(tokens))
+                print_formatted_text(PygmentsTokens(tokens), style=self.getPygmentsStyle())
                 self.print("```")
             self.print(self.divider)
             
@@ -452,7 +456,7 @@ Acess the risk level of this Python code:
                 #print(python_code)
                 # pygments python style
                 tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
-                print_formatted_text(PygmentsTokens(tokens))
+                print_formatted_text(PygmentsTokens(tokens), style=self.getPygmentsStyle())
                 self.print("```")
             self.print(self.divider)
             

@@ -811,10 +811,10 @@ styles = pygments.styles.get_all_styles()
 for i in styles: 
     print(i) 
 """
-monokai_style = style_from_pygments_cls(get_style_by_name("github-dark"))
+pygments_style = style_from_pygments_cls(get_style_by_name("github-dark"))
 combined_style = merge_styles([
     custom_style,
-    monokai_style,
+    pygments_style,
 ])
 
 layout = Layout(root_container, focused_element=text_field)
