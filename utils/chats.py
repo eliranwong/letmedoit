@@ -8,6 +8,7 @@ from pathlib import Path
 import pygments
 from pygments.lexers.python import PythonLexer
 from pygments.lexers.shell import BashLexer
+#from pygments.lexers.markup import MarkdownLexer
 from pygments.styles import get_style_by_name
 from prompt_toolkit.styles.pygments import style_from_pygments_cls
 from prompt_toolkit.formatted_text import PygmentsTokens
