@@ -14,6 +14,7 @@ from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 class Prompts:
 
     def __init__(self):
+        config.multilineInput = False
         config.clipboard = PyperclipClipboard()
         self.promptStyle1 = Style.from_dict({
             # User input (default text).
