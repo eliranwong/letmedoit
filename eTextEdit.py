@@ -538,7 +538,7 @@ def confirm_open_file():
 def do_find_replace():
     async def coroutine():
         search_replace_dialog = SearchReplaceDialog(
-            title="Find & Replace",
+            title="Find and Replace",
             label_find="Find:",
             label_replace="Replace with:",
         )
