@@ -1301,7 +1301,7 @@ Otherwise, answer "chat". Here is the request:"""
             # input suggestions
             inputSuggestions = config.inputSuggestions[:] + self.getDirectoryList() if config.developer else config.inputSuggestions
             completer = WordCompleter(inputSuggestions, ignore_case=True) if inputSuggestions else None
-            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, multiline=config.multilineInput, completer=completer, default=defaultEntry, accept_default=accept_default, validator=tokenValidator, bottom_toolbar=getDynamicToolBar)
+            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, completer=completer, default=defaultEntry, accept_default=accept_default, validator=tokenValidator, bottom_toolbar=getDynamicToolBar)
             # display options when empty string is entered
             userInputLower = userInput.lower()
             if not userInputLower:

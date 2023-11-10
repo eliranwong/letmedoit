@@ -248,7 +248,7 @@ Available tokens: {estimatedAvailableTokens}
         else:
             print(keyHelp)
 
-    def simplePrompt(self, numberOnly=False, validator=None, multiline=False, inputIndicator="", default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False, bottom_toolbar=None):
+    def simplePrompt(self, numberOnly=False, validator=None, inputIndicator="", default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False, bottom_toolbar=None):
         config.selectAll = False
         inputPrompt = promptSession.prompt if promptSession is not None else prompt
         if not inputIndicator:
