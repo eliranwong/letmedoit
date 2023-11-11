@@ -2,7 +2,6 @@
 openai==0.28.1
 prompt_toolkit
 Pygments
-pyautogen
 datetime
 googlesearch-python
 art
@@ -13,4 +12,7 @@ yt-dlp
 pyperclip
 colorama
 tiktoken
+docker
+unstructured[all-docs]
+pyautogen[blendsearch,retrievechat,mathchat]==0.1.14
 pygame

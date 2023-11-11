@@ -1,6 +1,20 @@
-import config, openai, platform, subprocess, os, pydoc, webbrowser, re
+import config, openai, platform, subprocess, os, pydoc, webbrowser, re, socket
 
 class SharedUtil:
+
+    @staticmethod
+    def getDeviceInfo():
+        thisPlatform = platform.system()
+        if thisPlatform == "Darwin":
+            thisPlatform == "macOS"
+        return f"""Operating system: {thisPlatform}
+Version: {platform.version()}
+Machine: {platform.machine()}
+Architecture: {platform.architecture()[0]}
+Processor: {platform.processor()}
+Hostname: {socket.gethostname()}
+Python version: {platform.python_version()}
+Python Implementation: {platform.python_implementation()}"""
 
     @staticmethod
     def getSingleResponse(userInput, temperature=None):

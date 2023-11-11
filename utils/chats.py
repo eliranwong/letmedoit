@@ -38,6 +38,7 @@ class MyHandAI:
         self.runPlugins()
 
     def setup(self):
+        self.models = ("gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k")
         config.divider = self.divider = "--------------------"
         config.showErrors = self.showErrors
         config.stopSpinning = self.stopSpinning
@@ -965,9 +966,8 @@ Otherwise, answer "chat". Here is the request:"""
         return userInput
 
     def setModel(self):
-        models = ("gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k")
         model = self.dialogs.getValidOptions(
-            options=models, 
+            options=self.models, 
             title="ChatGPT model", 
             default=config.chatGPTApiModel,
             text="Select a ChatGPT model:",
@@ -1308,6 +1308,13 @@ Otherwise, answer "chat". Here is the request:"""
                 userInput = config.blankEntryAction
             if userInput == "...":
                 userInputLower = self.runOptions(features, userInput)
+
+            # try to run as a python script first
+            try:
+                exec(userInput, globals())
+                userInput = ""
+            except:
+                pass
 
             if userInput.startswith("!"):
                 self.runSystemCommand(userInput)
@@ -1716,6 +1723,11 @@ Otherwise, answer "chat". Here is the request:"""
                 n=1,
                 max_tokens=10,
             )
+            # set variable 'OAI_CONFIG_LIST' to work with pyautogen
+            oai_config_list = []
+            for model in self.models:
+                oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
+            os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
         except openai.error.APIError as e:
             self.print("Error: Issue on OpenAI side.")
             self.print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
