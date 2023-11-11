@@ -464,6 +464,7 @@ def _(_):
 
 # edit
 @bindings.add("c-i")
+@bindings.add("s-tab")
 def _(_):
     do_add_spaces()
 @bindings.add("c-z")

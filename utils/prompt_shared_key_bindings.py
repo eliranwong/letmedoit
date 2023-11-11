@@ -150,6 +150,7 @@ def swapTerminalColors():
 # edit
 # insert spaces by pressing the TAB key
 @prompt_shared_key_bindings.add("c-i")
+@prompt_shared_key_bindings.add("s-tab")
 def _(event):
     buffer = event.app.current_buffer
     buffer.insert_text(config.terminalEditorTabText)

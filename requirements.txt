@@ -2,6 +2,7 @@
 openai==0.28.1
 prompt_toolkit
 Pygments
+pyautogen
 datetime
 googlesearch-python
 art
