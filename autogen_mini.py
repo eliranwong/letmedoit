@@ -3,8 +3,8 @@ from utils.prompts import Prompts
 from utils.shared_utils import SharedUtil
 from prompt_toolkit import print_formatted_text, HTML
 from prompt_toolkit.styles import Style
-from prompt_toolkit import PromptSession
-from prompt_toolkit.history import FileHistory
+#from prompt_toolkit import PromptSession
+#from prompt_toolkit.history import FileHistory
 if not hasattr(config, "max_consecutive_auto_reply"):
     config.max_consecutive_auto_reply = 10
 
