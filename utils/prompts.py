@@ -1,4 +1,4 @@
-import config, pydoc
+import config, pydoc, textwrap
 
 from prompt_toolkit import prompt
 from prompt_toolkit.application import run_in_terminal
@@ -270,5 +270,5 @@ Available tokens: {estimatedAvailableTokens}
             is_password=is_password,
             mouse_support=Condition(lambda: config.mouseSupport),
             clipboard=config.clipboard,
-        ).strip()
-        return userInput
+        )
+        return textwrap.dedent(userInput).strip() # dedent to work with code block
