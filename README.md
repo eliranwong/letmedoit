@@ -50,7 +50,9 @@ Read https://github.com/eliranwong/myHand.ai/wiki
 
 * Enter ".cancel" or press "ctrl+c" to cancel
 
-* Enter ".quit" or press "ctrl+q" to quit
+* Enter ".quit" or press "ctrl+q" to exit
+
+* Press "ctrl+k" for keyboard shortcuts
 
 # Automatic Update
 
