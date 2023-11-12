@@ -93,18 +93,18 @@ class GetPath:
             userInput = input(f"{message} (y/n)").strip()
             return True if userInput.lower() in ("y", "yes") else False
 
-    def getFilePath(self, check_isfile=False, empty_to_cancel=False, list_content_on_directory_change=False, keep_startup_directory=True, message="", bottom_toolbar="", promptIndicator = ""):
+    def getFilePath(self, check_isfile=False, empty_to_cancel=False, list_content_on_directory_change=False, keep_startup_directory=True, message="", bottom_toolbar="", promptIndicator = "", default=""):
         if not message:
             message = "Enter a file path:"
-        return self.getPath(check_isfile=check_isfile, empty_to_cancel=empty_to_cancel, list_content_on_directory_change=list_content_on_directory_change, keep_startup_directory=keep_startup_directory, message=message, bottom_toolbar=bottom_toolbar, promptIndicator=promptIndicator)
+        return self.getPath(check_isfile=check_isfile, empty_to_cancel=empty_to_cancel, list_content_on_directory_change=list_content_on_directory_change, keep_startup_directory=keep_startup_directory, message=message, bottom_toolbar=bottom_toolbar, promptIndicator=promptIndicator, default=default)
 
-    def getFolderPath(self, check_isdir=False, display_dir_only=False, create_dirs_if_not_exist=False, empty_to_cancel=False, list_content_on_directory_change=False, keep_startup_directory=True, message="", bottom_toolbar="", promptIndicator = ""):
+    def getFolderPath(self, check_isdir=False, display_dir_only=False, create_dirs_if_not_exist=False, empty_to_cancel=False, list_content_on_directory_change=False, keep_startup_directory=True, message="", bottom_toolbar="", promptIndicator = "", default=""):
         if not message:
             message = "Enter a directory path:"
         self.displayDirectoryContent(display_dir_only=True)
-        return self.getPath(check_isdir=check_isdir, display_dir_only=display_dir_only, create_dirs_if_not_exist=create_dirs_if_not_exist, empty_to_cancel=empty_to_cancel, list_content_on_directory_change=list_content_on_directory_change, keep_startup_directory=keep_startup_directory, message=message, bottom_toolbar=bottom_toolbar, promptIndicator=promptIndicator)
+        return self.getPath(check_isdir=check_isdir, display_dir_only=display_dir_only, create_dirs_if_not_exist=create_dirs_if_not_exist, empty_to_cancel=empty_to_cancel, list_content_on_directory_change=list_content_on_directory_change, keep_startup_directory=keep_startup_directory, message=message, bottom_toolbar=bottom_toolbar, promptIndicator=promptIndicator, default=default)
 
-    def getPath(self, check_isfile=False, check_isdir=False, display_dir_only=False, create_dirs_if_not_exist=False, empty_to_cancel=False, list_content_on_directory_change=False, keep_startup_directory=True, message="", bottom_toolbar="", promptIndicator = ""):
+    def getPath(self, check_isfile=False, check_isdir=False, display_dir_only=False, create_dirs_if_not_exist=False, empty_to_cancel=False, list_content_on_directory_change=False, keep_startup_directory=True, message="", bottom_toolbar="", promptIndicator = "", default=""):
         if not message:
             message = "Enter a path:"
         thisPath = os.getcwd()
@@ -194,6 +194,7 @@ class GetPath:
                     bottom_toolbar = " [ctrl+q] exit [ctrl+l] list content [cd <dir>] change dir "
                 userInput = filePathSession.prompt(
                     inputIndicator,
+                    default=default,
                     style=promptStyle,
                     key_bindings=this_key_bindings,
                     auto_suggest=auto_suggestion,
@@ -202,6 +203,7 @@ class GetPath:
                     mouse_support=Condition(lambda: config.mouseSupport), 
                     swap_light_and_dark_colors=True,
                 ).strip()
+                default = ""
             except:
                 self.displayDirectoryContent(display_dir_only=display_dir_only)
                 if platform.system() == "Windows":

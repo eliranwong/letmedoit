@@ -1307,9 +1307,16 @@ Otherwise, answer "chat". Here is the request:"""
             userInputLower = userInput.lower()
             if config.addPathAt is not None:
                 prefix = userInput[:config.addPathAt]
+                prefixSplit = prefix.rsplit(" ", 1)
+                if len(prefixSplit) > 1:
+                    default = prefixSplit[-1]
+                    prefix = f"{prefixSplit[0]} "
+                else:
+                    default = prefix
+                    prefix = ""
                 suffix = userInput[config.addPathAt:]
                 config.addPathAt = None
-                userPath = self.getPath.getPath(message=f"{prefix}<{config.terminalCommandEntryColor2}>[add a path here]</{config.terminalCommandEntryColor2}>{suffix}", promptIndicator=">>> ", empty_to_cancel=True)
+                userPath = self.getPath.getPath(message=f"{prefix}<{config.terminalCommandEntryColor2}>[add a path here]</{config.terminalCommandEntryColor2}>{suffix}", promptIndicator=">>> ", empty_to_cancel=True, default=default)
                 config.defaultEntry = f"{prefix}{userPath}{suffix}"
                 userInput = ""
             elif not userInputLower:

@@ -66,8 +66,9 @@ class Prompts:
             event.app.current_buffer.validate_and_handle()
         @this_key_bindings.add("c-i") # add path
         def _(event):
-            config.addPathAt = event.app.current_buffer.cursor_position
-            event.app.current_buffer.validate_and_handle()
+            buffer = event.app.current_buffer
+            config.addPathAt = buffer.cursor_position
+            buffer.validate_and_handle()
         @this_key_bindings.add("c-n")
         def _(event):
             event.app.current_buffer.text = ".new"

@@ -105,9 +105,16 @@ class SystemCommandPrompt:
                 if self.addPath:
                     self.addPath = False
                     prefix = self.systemCommandPromptEntry[:self.systemCommandPromptPosition]
+                    prefixSplit = prefix.rsplit(" ", 1)
+                    if len(prefixSplit) > 1:
+                        default = prefixSplit[-1]
+                        prefix = f"{prefixSplit[0]} "
+                    else:
+                        default = prefix
+                        prefix = ""
                     suffix = self.systemCommandPromptEntry[self.systemCommandPromptPosition:]
                     message = f"{prefix}<{config.terminalCommandEntryColor2}>[add a path here]</{config.terminalCommandEntryColor2}>{suffix}"
-                    userInput = self.getPath.getPath(message=message, promptIndicator=">>> ", empty_to_cancel=True)
+                    userInput = self.getPath.getPath(message=message, promptIndicator=">>> ", empty_to_cancel=True, default=default)
                     self.systemCommandPromptEntry = f"{prefix}{userInput}{suffix}"
                 elif userInput and not userInput == config.exit_entry:
                     self.systemCommandPromptEntry = ""
