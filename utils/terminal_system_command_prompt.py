@@ -59,13 +59,11 @@ class SystemCommandPrompt:
         def _(event):
             event.app.current_buffer.text = config.exit_entry
             event.app.current_buffer.validate_and_handle()
-
         @this_key_bindings.add("c-l")
         def _(_):
             config.print("")
             config.print(self.divider)
             run_in_terminal(lambda: self.getPath.displayDirectoryContent())
-
         @this_key_bindings.add("c-i")
         def _(event):
             self.addPath = True
@@ -73,6 +71,10 @@ class SystemCommandPrompt:
             self.systemCommandPromptEntry = buffer.text
             self.systemCommandPromptPosition = buffer.cursor_position
             buffer.validate_and_handle()
+        @this_key_bindings.add("c-r")
+        def _(event):
+            buffer = event.app.current_buffer
+            buffer.insert_text("\n")
         @this_key_bindings.add("escape", "m")
         def _(_):
             config.mouseSupport = not config.mouseSupport
@@ -130,6 +132,8 @@ class SystemCommandPrompt:
                         os.system(f"{self.openCommand} {userInput}")
                     # run as command
                     else:
+                        if "\n" in userInput:
+                            userInput = ";".join(userInput.split("\n"))
                         os.system(userInput)
                         # check if directory is changed
                         cmdList = []
