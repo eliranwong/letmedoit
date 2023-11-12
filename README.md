@@ -74,7 +74,7 @@ Read more at https://github.com/eliranwong/myHand.ai/wiki/Features
 
 # Highlight - Plugins
 
-Developers can write their own plugins to add functionalities to run specific tasks with myHand.ai
+Developers can write their own plugins to add functionalities or to run customised tasks with myHand.ai
 
 Check our built-in plugins at: https://github.com/eliranwong/myHand.ai/tree/main/plugins
 
