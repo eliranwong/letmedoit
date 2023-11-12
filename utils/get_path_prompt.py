@@ -33,13 +33,12 @@ import platform, os, subprocess, config
 
 class GetPath:
 
-    def __init__(self, cancel_entry="", promptIndicatorColor="ansicyan", promptEntryColor="ansigreen", subHeadingColor="ansigreen", itemColor="ansiyellow", workingDirectory="", ctrl_q_to_exit=False, ctrl_s_to_system=False):
+    def __init__(self, cancel_entry="", promptIndicatorColor="ansicyan", promptEntryColor="ansigreen", subHeadingColor="ansigreen", itemColor="ansiyellow", ctrl_q_to_exit=False, ctrl_s_to_system=False):
         self.cancel_entry = cancel_entry if cancel_entry else config.exit_entry
         self.promptIndicatorColor = promptIndicatorColor
         self.promptEntryColor = promptEntryColor
         self.subHeadingColor = subHeadingColor
         self.itemColor = itemColor
-        self.workingDirectory = workingDirectory
         self.ctrl_q_to_exit = ctrl_q_to_exit
         self.ctrl_s_to_system = ctrl_s_to_system
 
@@ -128,7 +127,11 @@ class GetPath:
         promptEntry = True
         while promptEntry:
             promptEntry = False
-            print(message)
+            try:
+                from prompt_toolkit import print_formatted_text, HTML
+                print_formatted_text(HTML(message))
+            except:
+                print(message)
             indicator = promptIndicator if promptIndicator else "{0} {1} ".format(os.path.basename(os.getcwd()), "%")
             try:
                 # prompt toolkit is installed
@@ -165,12 +168,10 @@ class GetPath:
                 def _(event):
                     buffer = event.app.current_buffer
                     buffer.reset()
-                """
                 @this_key_bindings.add("c-l")
                 def _(_):
                     # list directories and files
                     run_in_terminal(lambda: self.displayDirectoryContent(display_dir_only=display_dir_only))
-                """
                 @this_key_bindings.add("escape", "m")
                 def _(_):
                     config.mouseSupport = not config.mouseSupport
@@ -190,7 +191,7 @@ class GetPath:
                     #prompt_shared_key_bindings,
                 ])
                 if not bottom_toolbar:
-                    bottom_toolbar = "[ctrl+q] exit [cd {folder}] change dir [cd] home dir"
+                    bottom_toolbar = " [ctrl+q] exit [ctrl+l] list content [cd <dir>] change dir "
                 userInput = filePathSession.prompt(
                     inputIndicator,
                     style=promptStyle,
@@ -199,6 +200,7 @@ class GetPath:
                     completer=completer,
                     bottom_toolbar=bottom_toolbar,
                     mouse_support=Condition(lambda: config.mouseSupport), 
+                    swap_light_and_dark_colors=True,
                 ).strip()
             except:
                 self.displayDirectoryContent(display_dir_only=display_dir_only)

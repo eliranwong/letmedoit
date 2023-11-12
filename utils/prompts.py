@@ -64,6 +64,10 @@ class Prompts:
         def _(event):
             event.app.current_buffer.text = config.exit_entry
             event.app.current_buffer.validate_and_handle()
+        @this_key_bindings.add("c-i") # add path
+        def _(event):
+            config.addPathAt = event.app.current_buffer.cursor_position
+            event.app.current_buffer.validate_and_handle()
         @this_key_bindings.add("c-n")
         def _(event):
             event.app.current_buffer.text = ".new"
@@ -181,8 +185,6 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+n": "new chat",
             "ctrl+y": "new chat without context",
             "ctrl+s": "save chat",
-            "ctrl+r": "insert a linebreak",
-            "ctrl+i": f"insert '{config.terminalEditorTabText}' [configurable]",
             "ctrl+o": "change predefined context",
             "ctrl+g": "pager view",
             "ctrl+d": "forward delete",
@@ -193,6 +195,9 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+b": "toggle input audio",
             "ctrl+p": "toggle response audio",
             "ctrl+w": "toggle word wrap",
+            "ctrl+r": "insert a linebreak",
+            "ctrl+i or tab": "insert a file or folder path",
+            "shift+tab": f"insert '{config.terminalEditorTabText}' [configurable]",
             "esc+c": "count current message tokens",
             "esc+i": "toggle improved writing feature",
             "esc+m": "toggle mouse support",

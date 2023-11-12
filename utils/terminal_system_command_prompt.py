@@ -33,7 +33,7 @@ class SystemCommandPrompt:
         self.openCommand = config.open
 
     def getToolBar(self):
-        return " [ctrl+q] exit [ctrl+l] list content [ctrl+p] add path "
+        return " [ctrl+q] exit [ctrl+l] list content [ctrl+i] insert path "
 
     def getSystemCommands(self):
         try:
@@ -66,7 +66,7 @@ class SystemCommandPrompt:
             config.print(self.divider)
             run_in_terminal(lambda: self.getPath.displayDirectoryContent())
 
-        @this_key_bindings.add("c-p")
+        @this_key_bindings.add("c-i")
         def _(event):
             self.addPath = True
             buffer = event.app.current_buffer
@@ -104,8 +104,8 @@ class SystemCommandPrompt:
                     self.addPath = False
                     prefix = self.systemCommandPromptEntry[:self.systemCommandPromptPosition]
                     suffix = self.systemCommandPromptEntry[self.systemCommandPromptPosition:]
-                    message = f"{prefix}[add a path here]{suffix}"
-                    userInput = self.getPath.getPath(message=message, bottom_toolbar=self.getToolBar(), promptIndicator=">>> ", empty_to_cancel=True)
+                    message = f"{prefix}<{config.terminalCommandEntryColor2}>[add a path here]</{config.terminalCommandEntryColor2}>{suffix}"
+                    userInput = self.getPath.getPath(message=message, promptIndicator=">>> ", empty_to_cancel=True)
                     self.systemCommandPromptEntry = f"{prefix}{userInput}{suffix}"
                 elif userInput and not userInput == config.exit_entry:
                     self.systemCommandPromptEntry = ""

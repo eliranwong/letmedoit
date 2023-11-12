@@ -61,6 +61,16 @@ class MyHandAI:
         config.launchPager = self.launchPager
         config.addPagerText = self.addPagerText
 
+        # get path
+        config.addPathAt = None
+        self.getPath = GetPath(
+            cancel_entry="",
+            promptIndicatorColor=config.terminalPromptIndicatorColor2,
+            promptEntryColor=config.terminalCommandEntryColor2,
+            subHeadingColor=config.terminalHeadingTextColor,
+            itemColor=config.terminalResourceLinkColor,
+        )
+
         # token limit
         # reference: https://platform.openai.com/docs/models/gpt-4
         config.tokenLimits = self.tokenLimits = {
@@ -100,16 +110,7 @@ class MyHandAI:
         return style_from_pygments_cls(get_style_by_name(theme))
 
     def getFolderPath(self):
-        # get path
-        getPath = GetPath(
-            cancel_entry="",
-            promptIndicatorColor=config.terminalPromptIndicatorColor2,
-            promptEntryColor=config.terminalCommandEntryColor2,
-            subHeadingColor=config.terminalHeadingTextColor,
-            itemColor=config.terminalResourceLinkColor,
-            workingDirectory=config.myHandAIFolder,
-        )
-        return getPath.getFolderPath(
+        return self.getPath.getFolderPath(
             check_isdir=True, 
             display_dir_only=True, 
             create_dirs_if_not_exist=True, 
@@ -1304,7 +1305,14 @@ Otherwise, answer "chat". Here is the request:"""
             userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, completer=completer, default=defaultEntry, accept_default=accept_default, validator=tokenValidator, bottom_toolbar=getDynamicToolBar)
             # display options when empty string is entered
             userInputLower = userInput.lower()
-            if not userInputLower:
+            if config.addPathAt is not None:
+                prefix = userInput[:config.addPathAt]
+                suffix = userInput[config.addPathAt:]
+                config.addPathAt = None
+                userPath = self.getPath.getPath(message=f"{prefix}<{config.terminalCommandEntryColor2}>[add a path here]</{config.terminalCommandEntryColor2}>{suffix}", promptIndicator=">>> ", empty_to_cancel=True)
+                config.defaultEntry = f"{prefix}{userPath}{suffix}"
+                userInput = ""
+            elif not userInputLower:
                 userInput = config.blankEntryAction
             if userInput == "...":
                 userInputLower = self.runOptions(features, userInput)

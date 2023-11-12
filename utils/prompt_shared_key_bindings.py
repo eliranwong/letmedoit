@@ -148,8 +148,7 @@ def swapTerminalColors():
     #config.terminalSwapColors = (config.terminalResourceLinkColor.startswith("ansibright"))
 
 # edit
-# insert spaces by pressing the TAB key
-@prompt_shared_key_bindings.add("c-i")
+# insert spaces by pressing the SHIFT+TAB key
 @prompt_shared_key_bindings.add("s-tab")
 def _(event):
     buffer = event.app.current_buffer
