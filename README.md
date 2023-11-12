@@ -12,16 +12,6 @@ Repository: https://github.com/eliranwong/myHand.ai
 
 Developed by: [Eliran Wong](https://github.com/eliranwong)
 
-# Video Tutorials
-
-> Actions Speak Louder than Words
-
-[![Watch the video](https://img.youtube.com/vi/4iVM6vM325Y/maxresdefault.jpg)](https://youtu.be/4iVM6vM325Y)
-
-> Plugin showcase: Study the Bible Easily
-
-[![Watch the video](https://img.youtube.com/vi/CfhmceKvKi8/maxresdefault.jpg)](https://youtu.be/CfhmceKvKi8)
-
 # Requirements
 
 1. Internet access
@@ -46,13 +36,7 @@ Read https://github.com/eliranwong/myHand.ai/wiki
 
 # Quick Operations
 
-* Enter "" (blank entry) to change open action menu
-
-* Enter ".cancel" or press "ctrl+c" to cancel
-
-* Enter ".quit" or press "ctrl+q" to exit
-
-* Press "ctrl+k" for keyboard shortcuts
+https://github.com/eliranwong/myHand.ai/wiki/Quick-Guide
 
 # Automatic Update
 
@@ -87,6 +71,12 @@ myHand is an advanced AI assistant that brings a wide range of powerful features
 * Natural Language Support
 
 Read more at https://github.com/eliranwong/myHand.ai/wiki/Features
+
+# Highlight - Plugins
+
+Developers can write their own plugins to add functionalities to run specific tasks with myHand.ai
+
+Check our built-in plugins at: https://github.com/eliranwong/myHand.ai/tree/main/plugins
 
 # Highlight - Command Execution
 
