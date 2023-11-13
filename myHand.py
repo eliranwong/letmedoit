@@ -146,12 +146,14 @@ def aboutToQuit():
                 "predefinedInstructions", # used with plugins; pre-defined instructions
                 "predefinedContexts", # used with plugins; pre-defined contexts
                 "inputSuggestions", # used with plugins; user input suggestions
+                # used with plugins; function call
                 "execute_python_code_signature",
                 "execute_termux_command_signature",
                 "integrate_google_searches_signature",
-                "chatGPTApiFunctionSignatures", # used with plugins; function calling
-                "chatGPTApiAvailableFunctions", # used with plugins; function calling
-                "pythonFunctionResponse", # used with plugins; function calling when function name is 'python'
+                "heal_python_signature",
+                "chatGPTApiFunctionSignatures",
+                "chatGPTApiAvailableFunctions",
+                "pythonFunctionResponse", # used with plugins; function call when function name is 'python'
                 # MyHandAI methods shared from Class MyHandAI
                 "stopSpinning",
                 "toggleMultiline",

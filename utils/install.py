@@ -1,4 +1,4 @@
-import subprocess, platform, re
+import subprocess, re, sys
 
 def installmodule(module, update=True):
     #executablePath = os.path.dirname(sys.executable)
@@ -7,7 +7,8 @@ def installmodule(module, update=True):
     #pip3path = os.path.join(executablePath, "pip3")
     #pip3 = pip3path if os.path.isfile(pip3path) else "pip3"
 
-    isInstalled, _ = subprocess.Popen("pip3 -V", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    isInstalled, _ = subprocess.Popen("pip -V", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    pipInstallCommand = f"{sys.executable} -m pip install"
 
     if isInstalled:
 
@@ -17,7 +18,7 @@ def installmodule(module, update=True):
                 pipFailedUpdated = "pip tool failed to be updated!"
                 try:
                     # Update pip tool in case it is too old
-                    updatePip = subprocess.Popen("pip install --upgrade pip" if platform.system() == "Windows" else "pip3 install --upgrade pip", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    updatePip = subprocess.Popen(f"{pipInstallCommand} --upgrade pip", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     *_, stderr = updatePip.communicate()
                     if not stderr:
                         print("pip tool updated!")
@@ -33,7 +34,7 @@ def installmodule(module, update=True):
             else:
                 moduleName = module
             print(f"{'Upgrading' if upgrade else 'Installing'} '{moduleName}' ...")
-            installNewModule = subprocess.Popen(f"pip3 install {module}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            installNewModule = subprocess.Popen(f"{pipInstallCommand} {module}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             *_, stderr = installNewModule.communicate()
             if not stderr:
                 print(f"Package '{moduleName}' {'upgraded' if upgrade else 'installed'}!")
@@ -47,6 +48,6 @@ def installmodule(module, update=True):
 
     else:
 
-        print("pip3 command is not found!")
+        print("pip command is not found!")
         return False
 

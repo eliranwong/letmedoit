@@ -237,23 +237,6 @@ class MyHandAI:
                 chat_response = t(chat_response)
         return chat_response
 
-    def fineTunePythonCode(self, code):
-        config.pythonFunctionResponse = ""
-        insert_string = "import config\nconfig.pythonFunctionResponse = "
-        code = re.sub("^!(.*?)$", r'import os\nos.system(""" \1 """)', code, flags=re.M)
-        if "\n" in code:
-            substrings = code.rsplit("\n", 1)
-            lastLine = re.sub("print\((.*)\)", r"\1", substrings[-1])
-            if lastLine.startswith(" "):
-                lastLine = re.sub("^([ ]+?)([^ ].*?)$", r"\1config.pythonFunctionResponse = \2", lastLine)
-                code = f"import config\n{substrings[0]}\n{lastLine}"
-            else:
-                lastLine = f"{insert_string}{lastLine}"
-                code = f"{substrings[0]}\n{lastLine}"
-        else:
-            code = f"{insert_string}{code}"
-        return code
-
     def confirmExecution(self, risk):
         if config.confirmExecution == "always" or (risk == "high" and config.confirmExecution == "high_risk_only") or (not risk == "low" and config.confirmExecution == "medium_risk_or_above"):
             return True
@@ -347,8 +330,8 @@ class MyHandAI:
             # retrieve argument values from a dictionary
             risk = function_args.get("risk") # required
             title = function_args.get("title") # required
-            python_code = textwrap.dedent(function_args.get("code")) # required
-            refinedCode = self.fineTunePythonCode(python_code)
+            python_code = function_args.get("code") # required
+            refinedCode = SharedUtil.fineTunePythonCode(python_code)
             systemCommand = ("os.system(" in refinedCode)
 
             # show pyton code for developer
@@ -482,7 +465,7 @@ Otherwise, answer "chat". Here is the request:"""
                 {
                     "role": "function",
                     "name": function_name,
-                    "content": function_response if function_response else config.tempContent,
+                    "content": function_call_response if function_call_response else config.tempContent,
                 }
             )
             config.tempContent = ""
@@ -491,12 +474,12 @@ Otherwise, answer "chat". Here is the request:"""
             return messagesCopy
         return messages
 
-    def getFunctionMessageAndResponse(self, messages, functionSignatures, function_name):
+    def getFunctionMessageAndResponse(self, messages, functionSignatures, function_name, temperature=None):
         completion = openai.ChatCompletion.create(
             model=config.chatGPTApiModel,
             messages=messages,
             max_tokens=SharedUtil.getDynamicTokens(messages, functionSignatures),
-            temperature=config.chatGPTApiTemperature,
+            temperature=temperature if temperature is not None else config.chatGPTApiTemperature,
             n=1,
             functions=functionSignatures,
             function_call={"name": function_name},
@@ -509,7 +492,7 @@ Otherwise, answer "chat". Here is the request:"""
         # ChatGPT's built-in function named "python"
         if function_name == "python":
             python_code = textwrap.dedent(response_message["function_call"]["arguments"])
-            refinedCode = self.fineTunePythonCode(python_code)
+            refinedCode = SharedUtil.fineTunePythonCode(python_code)
             systemCommand = ("os.system(" in refinedCode)
 
             self.print(self.divider)

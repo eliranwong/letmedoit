@@ -1,4 +1,4 @@
-import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces
+import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, openai
 try:
     import tiktoken
     tiktokenImported = True
@@ -20,6 +20,47 @@ class SharedUtil:
     @staticmethod
     def showErrors():
         print(traceback.format_exc() if config.developer else "Error encountered!")
+
+    @staticmethod
+    def autoHealPythonCode(code, trace):
+        for i in range(config.max_consecutive_auto_heal):
+            userInput = f"""I want you to act as a Python expert.
+
+Original python code:
+```
+{code}
+```
+
+Traceback:
+```
+{trace}
+
+Please fix it.
+"""
+            function_call_message, function_call_response = SharedUtil.getSingleFunctionResponse(userInput, config.heal_python_signature, "heal_python")
+            if function_call_response == "EXECUTED":
+                break
+
+    @staticmethod
+    def fineTunePythonCode(code):
+        # dedent
+        code = textwrap.dedent(code)
+        # capture print output
+        config.pythonFunctionResponse = ""
+        insert_string = "import config\nconfig.pythonFunctionResponse = "
+        code = re.sub("^!(.*?)$", r'import os\nos.system(""" \1 """)', code, flags=re.M)
+        if "\n" in code:
+            substrings = code.rsplit("\n", 1)
+            lastLine = re.sub("print\((.*)\)", r"\1", substrings[-1])
+            if lastLine.startswith(" "):
+                lastLine = re.sub("^([ ]+?)([^ ].*?)$", r"\1config.pythonFunctionResponse = \2", lastLine)
+                code = f"import config\n{substrings[0]}\n{lastLine}"
+            else:
+                lastLine = f"{insert_string}{lastLine}"
+                code = f"{substrings[0]}\n{lastLine}"
+        else:
+            code = f"{insert_string}{code}"
+        return code
 
     @staticmethod
     def getDynamicTokens(messages, functionSignatures=None):
@@ -126,6 +167,11 @@ Acess the risk level of this Python code:
             return answer
         except:
             return "high"
+
+    @staticmethod
+    def getSingleFunctionResponse(userInput, functionSignatures, function_name, temperature=None):
+        messages=[{"role": "user", "content" : userInput}]
+        return config.getFunctionMessageAndResponse(messages, functionSignatures, function_name, temperature=temperature)
 
     @staticmethod
     def getSingleChatResponse(userInput, temperature=None):
