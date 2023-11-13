@@ -1,4 +1,4 @@
-import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, pydoc, textwrap, string, shutil, wcwidth, unicodedata
+import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, pydoc, textwrap, string, shutil
 try:
     import tiktoken
     tiktokenImported = True
@@ -26,7 +26,8 @@ from utils.prompt_shared_key_bindings import swapTerminalColors
 from utils.file_utils import FileUtil
 from utils.terminal_system_command_prompt import SystemCommandPrompt
 from utils.shared_utils import SharedUtil
-from utils.tts_utils import ttsUtil
+from utils.tts_utils import TTSUtil
+
 
 class MyHandAI:
 
@@ -38,17 +39,8 @@ class MyHandAI:
         self.runPlugins()
 
     def setup(self):
-        self.models = ("gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k")
+        self.models = list(SharedUtil.tokenLimits.keys())
         config.divider = self.divider = "--------------------"
-        config.showErrors = self.showErrors
-        config.stopSpinning = self.stopSpinning
-        config.getStringWidth = self.getStringWidth
-        config.toggleMultiline = self.toggleMultiline
-        config.print = self.print
-        config.getWrappedHTMLText = self.getWrappedHTMLText
-        config.count_tokens_from_messages = self.count_tokens_from_messages
-        config.count_tokens_from_functions = self.count_tokens_from_functions
-        config.fineTuneUserInput = self.fineTuneUserInput
         self.runPython = True
         config.accept_default = False
         config.defaultEntry = ""
@@ -58,8 +50,15 @@ class MyHandAI:
         config.systemCommandPromptEntry = ""
         config.pagerContent = ""
         self.addPagerContent = False
+        # share the following methods in config so that they are accessible via plugins
+        config.stopSpinning = self.stopSpinning
+        config.toggleMultiline = self.toggleMultiline
+        config.print = self.print
+        config.getWrappedHTMLText = self.getWrappedHTMLText
+        config.fineTuneUserInput = self.fineTuneUserInput
         config.launchPager = self.launchPager
         config.addPagerText = self.addPagerText
+        config.getFunctionMessageAndResponse = self.getFunctionMessageAndResponse
 
         # get path
         config.addPathAt = None
@@ -70,16 +69,6 @@ class MyHandAI:
             subHeadingColor=config.terminalHeadingTextColor,
             itemColor=config.terminalResourceLinkColor,
         )
-
-        # token limit
-        # reference: https://platform.openai.com/docs/models/gpt-4
-        config.tokenLimits = self.tokenLimits = {
-            "gpt-3.5-turbo-instruct": 4097,
-            "gpt-3.5-turbo": 4097,
-            "gpt-3.5-turbo-16k": 16385,
-            "gpt-4": 8192,
-            "gpt-4-32k": 32768,
-        }
 
         if not config.openaiApiKey:
             self.changeAPIkey()
@@ -134,7 +123,7 @@ class MyHandAI:
                     exec(code, globals())
             except:
                 self.print("Failed to run '{0}'!".format(os.path.basename(script)))
-                self.showErrors()
+                SharedUtil.showErrors()
 
     def runPlugins(self):
         # The following config values can be modified with plugins, to extend functionalities
@@ -265,95 +254,6 @@ class MyHandAI:
             code = f"{insert_string}{code}"
         return code
 
-    def riskAssessment(self, code):
-        content = f"""I want you to act as a Python expert.
-Assess the risk level of damaging my device upon executing the python code that I will provide for you. 
-Answer me either 'high', 'medium' or 'low', without giving me any extra information.
-e.g. file deletions or similar significant impacts are regarded as 'high' level.
-Acess the risk level of this Python code:
-```
-{code}
-```
-"""
-        try:
-            answer = SharedUtil.getSingleResponse(content, temperature=0.0)
-            if not answer:
-                answer = "high"
-            answer = re.sub("[^A-Za-z]", "", answer).lower()
-            if not answer in ("high", "medium", "low"):
-                answer = "high"
-            return answer
-        except:
-            return "high"
-
-    def getFunctionResponse(self, response_message, function_name):
-        # ChatGPT's built-in function named "python"
-        if function_name == "python":
-            python_code = textwrap.dedent(response_message["function_call"]["arguments"])
-            refinedCode = self.fineTunePythonCode(python_code)
-            systemCommand = ("os.system(" in refinedCode)
-
-            self.print(self.divider)
-            self.print(f"running python code ...")
-            risk = self.riskAssessment(python_code)
-            self.showRisk(risk)
-            if config.developer or config.codeDisplay:
-                print("```")
-                #print(python_code)
-                # pygments python style
-                tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
-                print_formatted_text(PygmentsTokens(tokens), style=self.getPygmentsStyle())
-                print("```")
-            self.print(self.divider)
-
-            self.stopSpinning()
-            if not self.runPython:
-                info = {"information": python_code}
-                return json.dumps(info)
-            elif self.confirmExecution(risk):
-                self.print("Do you want to continue? [y]es / [N]o")
-                confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
-                if not confirmation.lower() in ("y", "yes"):
-                    info = {"information": python_code}
-                    return json.dumps(info)
-            try:
-                exec(refinedCode, globals())
-                function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) and not systemCommand else ""
-            except:
-                self.showErrors()
-                self.print(self.divider)
-                function_response = "[INVALID]"
-            if function_response:
-                info = {"information": function_response}
-                function_response = json.dumps(info)
-        elif not function_name in config.chatGPTApiAvailableFunctions:
-            # handle unexpected function
-            self.print(f"Unexpected function: {function_name}")
-            self.print(self.divider)
-            print(response_message)
-            self.print(self.divider)
-            function_response = ""
-        else:
-            fuction_to_call = config.chatGPTApiAvailableFunctions[function_name]
-            function_args = json.loads(response_message["function_call"]["arguments"])
-            function_response = fuction_to_call(function_args)
-        return function_response
-
-    def getStreamFunctionResponseMessage(self, completion, function_name):
-        function_arguments = ""
-        for event in completion:
-            delta = event["choices"][0]["delta"]
-            if delta and delta.get("function_call"):
-                function_arguments += delta["function_call"]["arguments"]
-        return {
-            "role": "assistant",
-            "content": None,
-            "function_call": {
-                "name": function_name,
-                "arguments": function_arguments,
-            }
-        }
-
     def confirmExecution(self, risk):
         if config.confirmExecution == "always" or (risk == "high" and config.confirmExecution == "high_risk_only") or (not risk == "low" and config.confirmExecution == "medium_risk_or_above"):
             return True
@@ -406,7 +306,7 @@ Acess the risk level of this Python code:
                     function_response = SharedUtil.runSystemCommand(function_args)
                 self.print(function_response)
             except:
-                self.showErrors()
+                SharedUtil.showErrors()
                 self.print(self.divider)
                 return "[INVALID]"
             info = {"information": function_response}
@@ -478,7 +378,7 @@ Acess the risk level of this Python code:
                 exec(refinedCode, globals())
                 function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) and not systemCommand else ""
             except:
-                self.showErrors()
+                SharedUtil.showErrors()
                 self.print(self.divider)
                 return "[INVALID]"
             if not function_response:
@@ -539,7 +439,7 @@ Otherwise, answer "chat". Here is the request:"""
             messages=messagesCopy,
             n=1,
             temperature=0.0,
-            max_tokens=self.getDynamicTokens(messagesCopy),
+            max_tokens=SharedUtil.getDynamicTokens(messagesCopy),
         )
         answer = completion.choices[0].message.content
         self.screenAction = answer = re.sub("[^A-Za-z]", "", answer).lower()
@@ -576,18 +476,8 @@ Otherwise, answer "chat". Here is the request:"""
     def runFunction(self, messages, functionSignatures, function_name):
         messagesCopy = messages[:]
         try:
-            completion = openai.ChatCompletion.create(
-                model=config.chatGPTApiModel,
-                messages=messages,
-                max_tokens=self.getDynamicTokens(messages, functionSignatures),
-                temperature=config.chatGPTApiTemperature,
-                n=1,
-                functions=functionSignatures,
-                function_call={"name": function_name},
-            )
-            response_message = completion["choices"][0]["message"]
-            function_response = self.getFunctionResponse(response_message, function_name)
-            messages.append(response_message)
+            function_call_message, function_call_response = self.getFunctionMessageAndResponse(messages, functionSignatures, function_name)
+            messages.append(function_call_message)
             messages.append(
                 {
                     "role": "function",
@@ -597,12 +487,76 @@ Otherwise, answer "chat". Here is the request:"""
             )
             config.tempContent = ""
         except:
-            self.showErrors()
+            SharedUtil.showErrors()
             return messagesCopy
         return messages
 
-    def showErrors(self):
-        print(traceback.format_exc() if config.developer else "Error encountered!")
+    def getFunctionMessageAndResponse(self, messages, functionSignatures, function_name):
+        completion = openai.ChatCompletion.create(
+            model=config.chatGPTApiModel,
+            messages=messages,
+            max_tokens=SharedUtil.getDynamicTokens(messages, functionSignatures),
+            temperature=config.chatGPTApiTemperature,
+            n=1,
+            functions=functionSignatures,
+            function_call={"name": function_name},
+        )
+        function_call_message = completion["choices"][0]["message"]
+        function_call_response = self.getFunctionResponse(function_call_message, function_name)
+        return function_call_message, function_call_response
+
+    def getFunctionResponse(self, response_message, function_name):
+        # ChatGPT's built-in function named "python"
+        if function_name == "python":
+            python_code = textwrap.dedent(response_message["function_call"]["arguments"])
+            refinedCode = self.fineTunePythonCode(python_code)
+            systemCommand = ("os.system(" in refinedCode)
+
+            self.print(self.divider)
+            self.print(f"running python code ...")
+            risk = SharedUtil.riskAssessment(python_code)
+            self.showRisk(risk)
+            if config.developer or config.codeDisplay:
+                print("```")
+                #print(python_code)
+                # pygments python style
+                tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
+                print_formatted_text(PygmentsTokens(tokens), style=self.getPygmentsStyle())
+                print("```")
+            self.print(self.divider)
+
+            self.stopSpinning()
+            if not self.runPython:
+                info = {"information": python_code}
+                return json.dumps(info)
+            elif self.confirmExecution(risk):
+                self.print("Do you want to continue? [y]es / [N]o")
+                confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
+                if not confirmation.lower() in ("y", "yes"):
+                    info = {"information": python_code}
+                    return json.dumps(info)
+            try:
+                exec(refinedCode, globals())
+                function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) and not systemCommand else ""
+            except:
+                SharedUtil.showErrors()
+                self.print(self.divider)
+                function_response = "[INVALID]"
+            if function_response:
+                info = {"information": function_response}
+                function_response = json.dumps(info)
+        elif not function_name in config.chatGPTApiAvailableFunctions:
+            # handle unexpected function
+            self.print(f"Unexpected function: {function_name}")
+            self.print(self.divider)
+            print(response_message)
+            self.print(self.divider)
+            function_response = ""
+        else:
+            fuction_to_call = config.chatGPTApiAvailableFunctions[function_name]
+            function_args = json.loads(response_message["function_call"]["arguments"])
+            function_response = fuction_to_call(function_args)
+        return function_response
 
     def runCompletion(self, thisMessage, noFunctionCall=False):
         self.functionJustCalled = False
@@ -613,7 +567,7 @@ Otherwise, answer "chat". Here is the request:"""
                     messages=thisThisMessage,
                     n=1,
                     temperature=config.chatGPTApiTemperature,
-                    max_tokens=self.getDynamicTokens(thisThisMessage, config.chatGPTApiFunctionSignatures),
+                    max_tokens=SharedUtil.getDynamicTokens(thisThisMessage, config.chatGPTApiFunctionSignatures),
                     functions=config.chatGPTApiFunctionSignatures,
                     function_call=config.chatGPTApiFunctionCall,
                     stream=True,
@@ -623,7 +577,7 @@ Otherwise, answer "chat". Here is the request:"""
                 messages=thisThisMessage,
                 n=1,
                 temperature=config.chatGPTApiTemperature,
-                max_tokens=self.getDynamicTokens(thisThisMessage),
+                max_tokens=SharedUtil.getDynamicTokens(thisThisMessage),
                 stream=True,
             )
 
@@ -649,7 +603,7 @@ Otherwise, answer "chat". Here is the request:"""
                     break
 
                 if function_name:
-                    response_message = self.getStreamFunctionResponseMessage(completion, function_name)
+                    response_message = SharedUtil.getStreamFunctionResponseMessage(completion, function_name)
                 else:
                     # when function name is not available (very rare)
                     # try again without streaming
@@ -658,7 +612,7 @@ Otherwise, answer "chat". Here is the request:"""
                         messages=thisMessage,
                         n=1,
                         temperature=config.chatGPTApiTemperature,
-                        max_tokens=self.getDynamicTokens(thisMessage, config.chatGPTApiFunctionSignatures),
+                        max_tokens=SharedUtil.getDynamicTokens(thisMessage, config.chatGPTApiFunctionSignatures),
                         functions=config.chatGPTApiFunctionSignatures,
                         function_call=config.chatGPTApiFunctionCall,
                     )
@@ -689,7 +643,7 @@ Otherwise, answer "chat". Here is the request:"""
                         self.print(function_response)
                     break
             except:
-                self.showErrors()
+                SharedUtil.showErrors()
                 break
 
         return completion
@@ -978,10 +932,10 @@ Otherwise, answer "chat". Here is the request:"""
             self.print(f"ChatGPT model selected: {model}")
             # handle max tokens
             if tiktokenImported:
-                functionTokens = self.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
-                tokenLimit = self.tokenLimits[config.chatGPTApiModel] - functionTokens
+                functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
+                tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel] - functionTokens
             else:
-                tokenLimit = self.tokenLimits[config.chatGPTApiModel]
+                tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
             suggestedMaxToken = int(tokenLimit / 2)
             #if config.chatGPTApiMaxTokens > suggestedMaxToken:
             config.chatGPTApiMaxTokens = suggestedMaxToken
@@ -998,10 +952,10 @@ Otherwise, answer "chat". Here is the request:"""
 
     def setMaxTokens(self):
         if tiktokenImported:
-            functionTokens = self.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
-            tokenLimit = self.tokenLimits[config.chatGPTApiModel] - functionTokens - config.chatGPTApiMinTokens
+            functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
+            tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel] - functionTokens - config.chatGPTApiMinTokens
         else:
-            tokenLimit = self.tokenLimits[config.chatGPTApiModel]
+            tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
         if tiktokenImported and tokenLimit < config.chatGPTApiMinTokens:
             self.print(f"Availble functions have already taken up too many tokens [{functionTokens}] to work with selected model '{config.chatGPTApiModel}'. You may either changing to a model that supports more tokens or deactivating some of the plugins that you don't need to reduce the number of tokens in total.")
         else:
@@ -1072,7 +1026,7 @@ Otherwise, answer "chat". Here is the request:"""
                 command = f'''{ttsCommand} "testing"{ttsCommandSuffix}'''
             _, stdErr = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
             if stdErr:
-                self.showErrors() if config.developer else self.print("Entered command invalid!")
+                SharedUtil.showErrors() if config.developer else self.print("Entered command invalid!")
             else:
                 config.ttsCommand, config.ttsCommandSuffix = ttsCommand, ttsCommandSuffix
         else:
@@ -1135,7 +1089,7 @@ Otherwise, answer "chat". Here is the request:"""
                         os.system(f'''{config.open} "{chatFile}"''')
             except:
                 self.print("Failed to save chat!\n")
-                self.showErrors()
+                SharedUtil.showErrors()
 
     def runInstruction(self):
         instructions = list(config.predefinedInstructions.keys())
@@ -1198,7 +1152,7 @@ Otherwise, answer "chat". Here is the request:"""
             config.tempChunk = ""
             # play with tts
             if config.ttsOutput:
-                ttsUtil.play(chunk)
+                TTSUtil.play(chunk)
         else:
             # append to a chunk for reading
             config.tempChunk += answer
@@ -1374,15 +1328,15 @@ Otherwise, answer "chat". Here is the request:"""
             elif userInput and not userInputLower in featuresLower:
                 try:
                     if userInput and config.ttsInput:
-                        ttsUtil.play(userInput)
+                        TTSUtil.play(userInput)
                     # Feature: improve writing:
                     if userInput and config.displayImprovedWriting:
-                        improvedVersion = SharedUtil.getSingleResponse(f"Improve the following writing, according to {config.improvedWritingSytle}\nRemember, provide me with the improved writing only, enclosed in triple quotes ``` and without any additional information or comments.\nMy writing\n:{userInput}")
+                        improvedVersion = SharedUtil.getSingleChatResponse(f"Improve the following writing, according to {config.improvedWritingSytle}\nRemember, provide me with the improved writing only, enclosed in triple quotes ``` and without any additional information or comments.\nMy writing\n:{userInput}")
                         if improvedVersion and improvedVersion.startswith("```") and improvedVersion.endswith("```"):
                             self.print(improvedVersion)
                             userInput = improvedVersion[3:-3]
                             if config.ttsOutput:
-                                ttsUtil.play(userInput)
+                                TTSUtil.play(userInput)
                     # refine messages before running completion
                     fineTunedUserInput = self.fineTuneUserInput(userInput)
                     noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.chatGPTApiPredefinedContext.startswith("Counselling - ") or config.chatGPTApiPredefinedContext.endswith("Counselling"))
@@ -1407,7 +1361,7 @@ Otherwise, answer "chat". Here is the request:"""
                             messages = self.runFunction(messages, config.integrate_google_searches_signature, "integrate_google_searches")
                         except:
                             self.print("Unable to load internet resources.")
-                            self.showErrors()
+                            SharedUtil.showErrors()
 
                     config.pagerContent = ""
                     self.addPagerContent = True
@@ -1524,7 +1478,7 @@ Otherwise, answer "chat". Here is the request:"""
                     pydoc.pager(pagerContent)
             except:
                 config.pagerView = False
-                self.showErrors()
+                SharedUtil.showErrors()
 
     def wrapStreamWords(self, answer, terminal_width):
         if " " in answer:
@@ -1536,7 +1490,7 @@ Otherwise, answer "chat". Here is the request:"""
                 answers = answer.split(" ")
                 for index, item in enumerate(answers):
                     isLastItem = (len(answers) - index == 1)
-                    itemWidth = self.getStringWidth(item)
+                    itemWidth = SharedUtil.getStringWidth(item)
                     newLineWidth = (self.lineWidth + itemWidth) if isLastItem else (self.lineWidth + itemWidth + 1)
                     if isLastItem:
                         if newLineWidth > terminal_width:
@@ -1556,7 +1510,7 @@ Otherwise, answer "chat". Here is the request:"""
                             print(f"{item} ", end='', flush=True)
                             self.lineWidth += (itemWidth + 1)
         else:
-            answerWidth = self.getStringWidth(answer)
+            answerWidth = SharedUtil.getStringWidth(answer)
             newLineWidth = self.lineWidth + answerWidth
             if newLineWidth > terminal_width:
                 print(f"\n{answer}", end='', flush=True)
@@ -1564,12 +1518,6 @@ Otherwise, answer "chat". Here is the request:"""
             else:
                 print(answer, end='', flush=True)
                 self.lineWidth += answerWidth
-
-    def is_CJK(self, text):
-        for char in text:
-            if 'CJK' in unicodedata.name(char):
-                return True
-        return False
 
     # wrap html text at spaces
     def getWrappedHTMLText(self, text, terminal_width=None):
@@ -1584,10 +1532,10 @@ Otherwise, answer "chat". Here is the request:"""
             words = words.split(" ")
             for index, item in enumerate(words):
                 isLastItem = (len(words) - index == 1)
-                if self.is_CJK(item):
+                if SharedUtil.is_CJK(item):
                     for iIndex, i in enumerate(item):
                         isSpaceItem = (not isLastItem and (len(item) - iIndex == 1))
-                        iWidth = self.getStringWidth(i)
+                        iWidth = SharedUtil.getStringWidth(i)
                         if isSpaceItem:
                             newLineWidth = self.lineWidth + iWidth + 1
                         else:
@@ -1599,7 +1547,7 @@ Otherwise, answer "chat". Here is the request:"""
                             self.wrappedText += f"{i} " if isSpaceItem else i
                             self.lineWidth += iWidth + 1 if isSpaceItem else iWidth
                 else:
-                    itemWidth = self.getStringWidth(item)
+                    itemWidth = SharedUtil.getStringWidth(item)
                     if isLastItem:
                         newLineWidth = self.lineWidth + itemWidth
                     else:
@@ -1642,93 +1590,6 @@ Otherwise, answer "chat". Here is the request:"""
         
         return self.wrappedText
 
-    def getStringWidth(self, text): 
-        width = 0 
-        for character in text: 
-            width += wcwidth.wcwidth(character) 
-        return width
-
-    def getDynamicTokens(self, messages, functionSignatures=None):
-        if not tiktokenImported:
-            return config.chatGPTApiMaxTokens
-        if functionSignatures is None:
-            functionTokens = 0
-        else:
-            functionTokens = self.count_tokens_from_functions(functionSignatures)
-        tokenLimit = self.tokenLimits[config.chatGPTApiModel]
-        currentMessagesTokens = self.count_tokens_from_messages(messages) + functionTokens
-        availableTokens = tokenLimit - currentMessagesTokens
-        if availableTokens >= config.chatGPTApiMaxTokens:
-            return config.chatGPTApiMaxTokens
-        elif (config.chatGPTApiMaxTokens > availableTokens > config.chatGPTApiMinTokens):
-            return availableTokens
-        return config.chatGPTApiMinTokens
-
-    def count_tokens_from_functions(self, functionSignatures, model=""):
-        count = 0
-        if not model:
-            model = config.chatGPTApiModel
-        try:
-            encoding = tiktoken.encoding_for_model(model)
-        except KeyError:
-            print("Warning: model not found. Using cl100k_base encoding.")
-            encoding = tiktoken.get_encoding("cl100k_base")
-        for i in functionSignatures:
-            count += len(encoding.encode(str(i)))
-        return count
-
-    # The following method was modified from source:
-    # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
-    def count_tokens_from_messages(self, messages, model=""):
-        if not model:
-            model = config.chatGPTApiModel
-
-        """Return the number of tokens used by a list of messages."""
-        try:
-            encoding = tiktoken.encoding_for_model(model)
-        except KeyError:
-            print("Warning: model not found. Using cl100k_base encoding.")
-            encoding = tiktoken.get_encoding("cl100k_base")
-        if model in {
-            "gpt-3.5-turbo",
-            "gpt-3.5-turbo-0613",
-            "gpt-3.5-turbo-16k",
-            "gpt-3.5-turbo-16k-0613",
-            "gpt-4-0314",
-            "gpt-4-32k-0314",
-            "gpt-4",
-            "gpt-4-0613",
-            "gpt-4-32k",
-            "gpt-4-32k-0613",
-            }:
-            tokens_per_message = 3
-            tokens_per_name = 1
-        elif model == "gpt-3.5-turbo-0301":
-            tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
-            tokens_per_name = -1  # if there's a name, the role is omitted
-        elif "gpt-3.5-turbo" in model:
-            #print("Warning: gpt-3.5-turbo may update over time. Returning num tokens assuming gpt-3.5-turbo-0613.")
-            return self.count_tokens_from_messages(messages, model="gpt-3.5-turbo-0613")
-        elif "gpt-4" in model:
-            #print("Warning: gpt-4 may update over time. Returning num tokens assuming gpt-4-0613.")
-            return self.count_tokens_from_messages(messages, model="gpt-4-0613")
-        else:
-            raise NotImplementedError(
-                f"""count_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens."""
-            )
-        num_tokens = 0
-        for message in messages:
-            num_tokens += tokens_per_message
-            if not "content" in message or not message.get("content", ""):
-                num_tokens += len(encoding.encode(str(message)))
-            else:
-                for key, value in message.items():
-                    num_tokens += len(encoding.encode(value))
-                    if key == "name":
-                        num_tokens += tokens_per_name
-        num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
-        return num_tokens
-
     def checkCompletion(self):
         openai.api_key = os.environ["OPENAI_API_KEY"] = config.openaiApiKey
         try:
@@ -1766,4 +1627,4 @@ Otherwise, answer "chat". Here is the request:"""
             self.print("Error: Issue on OpenAI servers. ")
             self.print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
         except:
-            self.showErrors()
+            SharedUtil.showErrors()

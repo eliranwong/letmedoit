@@ -1,23 +1,134 @@
-import config, openai, platform, subprocess, os, pydoc, webbrowser, re, socket
+import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces
+try:
+    import tiktoken
+    tiktokenImported = True
+except:
+    tiktokenImported = False
 
 class SharedUtil:
 
-    @staticmethod
-    def getDeviceInfo():
-        thisPlatform = platform.system()
-        if thisPlatform == "Darwin":
-            thisPlatform == "macOS"
-        return f"""Operating system: {thisPlatform}
-Version: {platform.version()}
-Machine: {platform.machine()}
-Architecture: {platform.architecture()[0]}
-Processor: {platform.processor()}
-Hostname: {socket.gethostname()}
-Python version: {platform.python_version()}
-Python Implementation: {platform.python_implementation()}"""
+    # token limit
+    # reference: https://platform.openai.com/docs/models/gpt-4
+    tokenLimits = {
+        #"gpt-3.5-turbo-instruct": 4097,
+        "gpt-3.5-turbo": 4097,
+        "gpt-3.5-turbo-16k": 16385,
+        "gpt-4": 8192,
+        "gpt-4-32k": 32768,
+    }
 
     @staticmethod
-    def getSingleResponse(userInput, temperature=None):
+    def showErrors():
+        print(traceback.format_exc() if config.developer else "Error encountered!")
+
+    @staticmethod
+    def getDynamicTokens(messages, functionSignatures=None):
+        if not tiktokenImported:
+            return config.chatGPTApiMaxTokens
+        if functionSignatures is None:
+            functionTokens = 0
+        else:
+            functionTokens = SharedUtil.count_tokens_from_functions(functionSignatures)
+        tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
+        currentMessagesTokens = SharedUtil.count_tokens_from_messages(messages) + functionTokens
+        availableTokens = tokenLimit - currentMessagesTokens
+        if availableTokens >= config.chatGPTApiMaxTokens:
+            return config.chatGPTApiMaxTokens
+        elif (config.chatGPTApiMaxTokens > availableTokens > config.chatGPTApiMinTokens):
+            return availableTokens
+        return config.chatGPTApiMinTokens
+
+    @staticmethod
+    def count_tokens_from_functions(functionSignatures, model=""):
+        count = 0
+        if not model:
+            model = config.chatGPTApiModel
+        try:
+            encoding = tiktoken.encoding_for_model(model)
+        except KeyError:
+            print("Warning: model not found. Using cl100k_base encoding.")
+            encoding = tiktoken.get_encoding("cl100k_base")
+        for i in functionSignatures:
+            count += len(encoding.encode(str(i)))
+        return count
+
+    # The following method was modified from source:
+    # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
+    @staticmethod
+    def count_tokens_from_messages(messages, model=""):
+        if not model:
+            model = config.chatGPTApiModel
+
+        """Return the number of tokens used by a list of messages."""
+        try:
+            encoding = tiktoken.encoding_for_model(model)
+        except KeyError:
+            print("Warning: model not found. Using cl100k_base encoding.")
+            encoding = tiktoken.get_encoding("cl100k_base")
+        if model in {
+            "gpt-3.5-turbo",
+            "gpt-3.5-turbo-0613",
+            "gpt-3.5-turbo-16k",
+            "gpt-3.5-turbo-16k-0613",
+            "gpt-4-0314",
+            "gpt-4-32k-0314",
+            "gpt-4",
+            "gpt-4-0613",
+            "gpt-4-32k",
+            "gpt-4-32k-0613",
+            }:
+            tokens_per_message = 3
+            tokens_per_name = 1
+        elif model == "gpt-3.5-turbo-0301":
+            tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
+            tokens_per_name = -1  # if there's a name, the role is omitted
+        elif "gpt-3.5-turbo" in model:
+            #print("Warning: gpt-3.5-turbo may update over time. Returning num tokens assuming gpt-3.5-turbo-0613.")
+            return SharedUtil.count_tokens_from_messages(messages, model="gpt-3.5-turbo-0613")
+        elif "gpt-4" in model:
+            #print("Warning: gpt-4 may update over time. Returning num tokens assuming gpt-4-0613.")
+            return SharedUtil.count_tokens_from_messages(messages, model="gpt-4-0613")
+        else:
+            raise NotImplementedError(
+                f"""count_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens."""
+            )
+        num_tokens = 0
+        for message in messages:
+            num_tokens += tokens_per_message
+            if not "content" in message or not message.get("content", ""):
+                num_tokens += len(encoding.encode(str(message)))
+            else:
+                for key, value in message.items():
+                    num_tokens += len(encoding.encode(value))
+                    if key == "name":
+                        num_tokens += tokens_per_name
+        num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
+        return num_tokens
+
+    @staticmethod
+    def riskAssessment(code):
+        content = f"""I want you to act as a Python expert.
+Assess the risk level of damaging my device upon executing the python code that I will provide for you. 
+Answer me either 'high', 'medium' or 'low', without giving me any extra information.
+e.g. file deletions or similar significant impacts are regarded as 'high' level.
+Acess the risk level of this Python code:
+```
+{code}
+```
+"""
+        try:
+            answer = SharedUtil.getSingleChatResponse(content, temperature=0.0)
+            if not answer:
+                answer = "high"
+            answer = re.sub("[^A-Za-z]", "", answer).lower()
+            if not answer in ("high", "medium", "low"):
+                answer = "high"
+            return answer
+        except:
+            return "high"
+
+    @staticmethod
+    def getSingleChatResponse(userInput, temperature=None):
         try:
             completion = openai.ChatCompletion.create(
                 model=config.chatGPTApiModel,
@@ -29,6 +140,78 @@ Python Implementation: {platform.python_implementation()}"""
             return completion.choices[0].message.content
         except:
             return ""
+
+    # streaming
+    @staticmethod
+    def getStreamFunctionResponseMessage(completion, function_name):
+        function_arguments = ""
+        for event in completion:
+            delta = event["choices"][0]["delta"]
+            if delta and delta.get("function_call"):
+                function_arguments += delta["function_call"]["arguments"]
+        return {
+            "role": "assistant",
+            "content": None,
+            "function_call": {
+                "name": function_name,
+                "arguments": function_arguments,
+            }
+        }
+ 
+    @staticmethod
+    def get_wan_ip():
+        response = requests.get('https://api.ipify.org?format=json')
+        data = response.json()
+        return data['ip']
+
+    @staticmethod
+    def get_local_ip():
+        interfaces = netifaces.interfaces()
+        for interface in interfaces:
+            addresses = netifaces.ifaddresses(interface)
+            if netifaces.AF_INET in addresses:
+                for address in addresses[netifaces.AF_INET]:
+                    ip = address['addr']
+                    if ip != '127.0.0.1':
+                        return ip
+
+    @staticmethod
+    def getDeviceInfo():
+        thisPlatform = platform.system()
+        if thisPlatform == "Darwin":
+            thisPlatform = "macOS"
+        wan_ip = SharedUtil.get_wan_ip()
+        local_ip = SharedUtil.get_local_ip()
+        date, time = str(datetime.datetime.now()).split(" ", 1)
+        time = re.sub("\..*?$", "", time)
+        return f"""Date: {date}
+Time: {time}
+Operating system: {thisPlatform}
+Version: {platform.version()}
+Machine: {platform.machine()}
+Architecture: {platform.architecture()[0]}
+Processor: {platform.processor()}
+Hostname: {socket.gethostname()}
+Python version: {platform.python_version()}
+Python implementation: {platform.python_implementation()}
+Wan ip: {wan_ip}
+Local ip: {local_ip}
+Current directory: {os.getcwd()}
+"""
+
+    @staticmethod
+    def getStringWidth(text): 
+        width = 0 
+        for character in text: 
+            width += wcwidth.wcwidth(character) 
+        return width
+
+    @staticmethod
+    def is_CJK(text):
+        for char in text:
+            if 'CJK' in unicodedata.name(char):
+                return True
+        return False
 
     @staticmethod
     def isPackageInstalled(package):

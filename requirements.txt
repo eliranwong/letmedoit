@@ -3,6 +3,7 @@ openai==0.28.1
 prompt_toolkit
 Pygments
 datetime
+netifaces
 googlesearch-python
 art
 apsw

@@ -1,4 +1,5 @@
 import config
+from utils.shared_utils import SharedUtil
 from prompt_toolkit.validation import Validator, ValidationError
 from prompt_toolkit.application import run_in_terminal
 #from prompt_toolkit.application import get_app
@@ -24,10 +25,10 @@ class TokenValidator(Validator):
                 availableFunctionTokens = 0
                 currentInput = currentInput.replace("[NO_FUNCTION_CALL]", "")
             else:
-                availableFunctionTokens = config.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
+                availableFunctionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
             currentInputTokens = len(encoding.encode(config.fineTuneUserInput(currentInput)))
-            loadedMessageTokens = config.count_tokens_from_messages(config.currentMessages)
-            selectedModelLimit = config.tokenLimits[config.chatGPTApiModel]
+            loadedMessageTokens = SharedUtil.count_tokens_from_messages(config.currentMessages)
+            selectedModelLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
             #estimatedAvailableTokens = selectedModelLimit - availableFunctionTokens - loadedMessageTokens - currentInputTokens
 
             config.dynamicToolBarText = f" Tokens: {(availableFunctionTokens + loadedMessageTokens + currentInputTokens)}/{selectedModelLimit} [ctrl+k] shortcut keys "

@@ -32,7 +32,7 @@ def _(event):
         buffer.cursor_position = 0
     else:
         previous_line = buffer.document.lines[buffer.document.cursor_position_row - 1]
-        previous_line_width = config.getStringWidth(previous_line)
+        previous_line_width = SharedUtil.getStringWidth(previous_line)
         previous_line_last_chunk_width = previous_line_width%text_field_width
         if previous_line_last_chunk_width > current_cursor_position_col:
             buffer.cursor_position = buffer.cursor_position - previous_line_last_chunk_width - 1
@@ -56,7 +56,7 @@ def _(event):
         buffer.cursor_position = len(buffer.text)
     else:
         next_line = buffer.document.lines[buffer.document.cursor_position_row + 1]
-        next_line_width = config.getStringWidth(next_line)
+        next_line_width = SharedUtil.getStringWidth(next_line)
         if next_line_width >= current_chunk_cursor_position_col:
             buffer.cursor_position = buffer.cursor_position + end_of_line_position + current_chunk_cursor_position_col + 1
         else:

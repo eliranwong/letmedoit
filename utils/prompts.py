@@ -62,8 +62,9 @@ class Prompts:
         this_key_bindings = KeyBindings()
         @this_key_bindings.add("c-q")
         def _(event):
-            event.app.current_buffer.text = config.exit_entry
-            event.app.current_buffer.validate_and_handle()
+            buffer = event.app.current_buffer
+            buffer.text = config.exit_entry
+            buffer.validate_and_handle()
         @this_key_bindings.add("c-i") # add path
         def _(event):
             buffer = event.app.current_buffer
@@ -71,19 +72,26 @@ class Prompts:
             buffer.validate_and_handle()
         @this_key_bindings.add("c-n")
         def _(event):
-            event.app.current_buffer.text = ".new"
-            event.app.current_buffer.validate_and_handle()
+            buffer = event.app.current_buffer
+            config.defaultEntry = buffer.text
+            buffer.text = ".new"
+            buffer.validate_and_handle()
         @this_key_bindings.add("c-y")
         def _(event):
+            buffer = event.app.current_buffer
             config.chatGPTApiPredefinedContextTemp = config.chatGPTApiPredefinedContext
             config.chatGPTApiPredefinedContext = "[none]"
-            event.app.current_buffer.text = ".new"
-            event.app.current_buffer.validate_and_handle()
+            buffer.text = ".new"
+            buffer.validate_and_handle()
             run_in_terminal(lambda: config.print("Predefined context is now temporarily changed to '[none]'."))
         @this_key_bindings.add("c-s")
         def _(event):
-            event.app.current_buffer.text = ".save"
-            event.app.current_buffer.validate_and_handle()
+            buffer = event.app.current_buffer
+            buffer.text = ".save"
+            buffer.validate_and_handle()
+        @this_key_bindings.add("escape", "f")
+        def _(event):
+            run_in_terminal(lambda: print(SharedUtil.getDeviceInfo()))
         @this_key_bindings.add("escape", "c")
         def _(event):
             try:
@@ -97,9 +105,9 @@ class Prompts:
                     availableFunctionTokens = 0
                     currentInput = currentInput.replace("[NO_FUNCTION_CALL]", "")
                 else:
-                    availableFunctionTokens = config.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
+                    availableFunctionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
                 currentInputTokens = len(encoding.encode(config.fineTuneUserInput(currentInput)))
-                loadedMessageTokens = config.count_tokens_from_messages(config.currentMessages)
+                loadedMessageTokens = SharedUtil.count_tokens_from_messages(config.currentMessages)
                 selectedModelLimit = config.tokenLimits[config.chatGPTApiModel]
                 estimatedAvailableTokens = selectedModelLimit - availableFunctionTokens - loadedMessageTokens - currentInputTokens
 
@@ -199,6 +207,7 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+r": "insert a linebreak",
             "ctrl+i or tab": "insert a file or folder path",
             "shift+tab": f"insert '{config.terminalEditorTabText}' [configurable]",
+            "esc+f": "display device information",
             "esc+c": "count current message tokens",
             "esc+i": "toggle improved writing feature",
             "esc+m": "toggle mouse support",

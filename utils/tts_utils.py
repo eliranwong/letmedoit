@@ -10,7 +10,7 @@ try:
 except:
     config.usePygame = False
 
-class ttsUtil:
+class TTSUtil:
 
     @staticmethod
     def play(content, language=""):

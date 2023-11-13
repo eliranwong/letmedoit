@@ -30,7 +30,7 @@ if SharedUtil.isPackageInstalled("yt-dlp"):
                     except:
                         pass
                 except:
-                    config.showErrors() 
+                    SharedUtil.showErrors() 
             else:
                 config.print("Tool 'ffmpeg' is not found on your system!")
                 config.print("Read https://github.com/eliranwong/myHand.ai/wiki/Install-ffmpeg")

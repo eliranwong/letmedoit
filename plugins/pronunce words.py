@@ -1,7 +1,7 @@
 # install package gTTS to work with this plugin
 
 import config
-from utils.tts_utils import ttsUtil
+from utils.tts_utils import TTSUtil
 
 try:
     from gtts import gTTS
@@ -10,7 +10,7 @@ try:
         words = function_args.get("words") # required
         language = function_args.get("language") # required
         config.print("Loading speech feature ...")
-        ttsUtil.play(words, language)
+        TTSUtil.play(words, language)
         return "Finished! Speech engine closed!"
 
     functionSignature = {

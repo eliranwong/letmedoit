@@ -1,5 +1,6 @@
 import config, json, openai, os
 from base64 import b64decode
+from utils.shared_utils import SharedUtil
 
 def generate_image(function_args):
     prompt = function_args.get("prompt") # required
@@ -14,10 +15,10 @@ def generate_image(function_args):
         )
         # open image
         #imageUrl = response['data'][0]['url']
-        jsonFile = os.path.join("temp", "openai_image.json")
+        jsonFile = os.path.join(config.myHandAIFolder, "temp", "openai_image.json")
         with open(jsonFile, mode="w", encoding="utf-8") as fileObj:
             json.dump(response, fileObj)
-        imageFile = os.path.join("temp", "openai_image.png")
+        imageFile = os.path.join(config.myHandAIFolder, "temp", "openai_image.png")
         with open(jsonFile, mode="r", encoding="utf-8") as fileObj:
             jsonContent = json.load(fileObj)
             image_data = b64decode(jsonContent["data"][0]["b64_json"])
@@ -50,7 +51,7 @@ def generate_image(function_args):
         config.print("Error: Issue on OpenAI servers. ")
         config.print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
     except:
-        config.showErrors()
+        SharedUtil.showErrors()
 
 
 functionSignature = {

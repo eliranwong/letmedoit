@@ -81,7 +81,7 @@ if config.autoUpdate:
 
 # import other libraries
 from utils.shortcuts import *
-from utils.chats import MyHandAI
+from utils.assistant import MyHandAI
 from utils.vlc_utils import VlcUtil
 from prompt_toolkit.shortcuts import set_title, clear_title, clear
 try:
@@ -112,27 +112,16 @@ def aboutToQuit():
         for name in dir(config):
             excludeConfigList = [
                 "addPathAt",
-                "getStringWidth",
-                "toggleMultiline",
                 "multilineInput",
                 "conversationStarted",
                 "dynamicToolBarText",
-                "count_tokens_from_messages",
-                "count_tokens_from_functions",
-                "fineTuneUserInput",
                 "tokenLimits",
                 "currentMessages",
-                "addPagerText",
-                "launchPager",
                 "pagerContent",
-                "getWrappedHTMLText",
                 "selectAll",
                 "clipboard",
                 "showKeyBindings",
                 "divider",
-                "showErrors",
-                "stopSpinning",
-                "print",
                 "systemCommandPromptEntry",
                 "stop_event",
                 "spinner_thread",
@@ -163,6 +152,15 @@ def aboutToQuit():
                 "chatGPTApiFunctionSignatures", # used with plugins; function calling
                 "chatGPTApiAvailableFunctions", # used with plugins; function calling
                 "pythonFunctionResponse", # used with plugins; function calling when function name is 'python'
+                # MyHandAI methods shared from Class MyHandAI
+                "stopSpinning",
+                "toggleMultiline",
+                "print",
+                "getWrappedHTMLText",
+                "fineTuneUserInput",
+                "launchPager",
+                "addPagerText",
+                "getFunctionMessageAndResponse",
             ]
             excludeConfigList = excludeConfigList + config.excludeConfigList
             if not name.startswith("__") and not name in excludeConfigList:
