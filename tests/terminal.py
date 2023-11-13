@@ -45,15 +45,15 @@ class TerminalEmulator:
         while True:
             # Read a line from the output
             output = process.stdout.readline().decode().strip()
-            
+
             # If there is no more output, break the loop
             if not output:
                 break
-            
+
             # Do something with the output
             self.output_field.text = f"{self.output_field.text}\n{output}"
             self.output_field.buffer.cursor_position = len(self.output_field.text)
-        
+
         # Wait for the process to complete
         process.wait()
         # reset is necessary after another full-screen application is closed

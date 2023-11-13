@@ -105,10 +105,10 @@ text_field = TextArea(
     focus_on_click=True,
 )
 
-def getStringWidth(text): 
-        width = 0 
-        for character in text: 
-            width += wcwidth.wcwidth(character) 
+def getStringWidth(text):
+        width = 0
+        for character in text:
+            width += wcwidth.wcwidth(character)
         return width
 
 def getTextFieldWidth(buffer):
@@ -806,11 +806,11 @@ custom_style = Style.from_dict(
 # convert pygments style to prompt toolkit style
 # To check available pygments styles, run
 """
-import pygments.styles 
- 
-styles = pygments.styles.get_all_styles() 
-for i in styles: 
-    print(i) 
+import pygments.styles
+
+styles = pygments.styles.get_all_styles()
+for i in styles:
+    print(i)
 """
 pygments_style = style_from_pygments_cls(get_style_by_name("github-dark"))
 combined_style = merge_styles([

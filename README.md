@@ -80,6 +80,8 @@ Check our built-in plugins at: https://github.com/eliranwong/myHand.ai/tree/main
 
 # Highlight - Command Execution
 
+Latest: MyHand AI is now equipped with an [auto-healing feature for Python code](https://github.com/eliranwong/myHand.ai/wiki/Python-Code-Auto%E2%80%90heal-Feature).
+
 myHand.ai goes beyond just being a chatbot by offering a unique and powerful capability - the ability to execute commands and perform computing tasks on your behalf. Unlike a mere chatbot, myHand.ai can interact with your computer system and carry out specific commands to accomplish various computing tasks. This feature allows you to leverage the expertise and efficiency of myHand.ai to automate processes, streamline workflows, and perform complex tasks with ease. However, it is essential to remember that with great power comes great responsibility, and users should exercise caution and use this feature at their own risk.
 
 Command execution helps:

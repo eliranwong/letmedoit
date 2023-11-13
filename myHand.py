@@ -56,13 +56,14 @@ configFile = os.path.join(myHandAIFolder, "config.py")
 if not os.path.isfile(configFile):
     open(configFile, "a", encoding="utf-8").close()
 
-# import config and setup default 
+# import config and setup default
 import config, traceback
 from utils.configDefault import *
 config.myHandFile = myHandFile
 config.myHandAIFolder = myHandAIFolder
 
 # automatic update
+config.pipIsUpdated = False
 if config.autoUpdate:
     # update to the latest codes
     try:
@@ -72,7 +73,6 @@ if config.autoUpdate:
         print(traceback.format_exc() if config.developer else "Error encountered!")
     # upgrade python packages
     from utils.install import *
-    config.pipIsUpdated = False
     with open("requirements.txt", "r") as fileObj:
         for line in fileObj.readlines():
             mod = line.strip()

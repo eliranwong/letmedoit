@@ -76,7 +76,7 @@ Below is my message:
             "indicator": config.terminalPromptIndicatorColor2,
         })
         prompts = Prompts()
-        
+
         auto = False
         self.print("Do you want auto-reply (y/yes/N/NO)?")
         userInput = prompts.simplePrompt(style=promptStyle)

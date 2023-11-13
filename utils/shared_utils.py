@@ -1,4 +1,4 @@
-import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, openai
+import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, openai, json
 try:
     import tiktoken
     tiktokenImported = True
@@ -19,27 +19,43 @@ class SharedUtil:
 
     @staticmethod
     def showErrors():
-        print(traceback.format_exc() if config.developer else "Error encountered!")
+        trace = traceback.format_exc()
+        print(trace if config.developer else "Error encountered!")
+        return trace
+
+    @staticmethod
+    def getPythonFunctionResponse(code):
+        return str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) and not ("os.system(" in code) else ""
 
     @staticmethod
     def autoHealPythonCode(code, trace):
         for i in range(config.max_consecutive_auto_heal):
-            userInput = f"""I want you to act as a Python expert.
-
-Original python code:
-```
-{code}
-```
-
-Traceback:
-```
-{trace}
-
-Please fix it.
-"""
+            userInput = f"Original python code:\n```\n{code}\n```\n\nTraceback:\n```\n{trace}\n```"
+            config.print(f"Auto-heal attempt {(i + 1)} ...")
+            config.print(f"running python code ...")
+            if config.developer:
+                print(f"```\n{code}\n```")
             function_call_message, function_call_response = SharedUtil.getSingleFunctionResponse(userInput, config.heal_python_signature, "heal_python")
+            # display response
+            config.print(config.divider)
+            if config.developer:
+                print(function_call_response)
+            else:
+                config.print("Executed!" if function_call_response == "EXECUTED" else "Failed!")
             if function_call_response == "EXECUTED":
                 break
+            else:
+                code = json.loads(function_call_message["function_call"]["arguments"]).get("fix")
+                trace = function_call_response
+            config.print(config.divider)
+        # return information if any
+        if function_call_response == "EXECUTED":
+            pythonFunctionResponse = SharedUtil.getPythonFunctionResponse(code)
+            if pythonFunctionResponse:
+                return json.dumps({"information": pythonFunctionResponse})
+            else:
+                return ""
+        return "[INVALID]"
 
     @staticmethod
     def fineTunePythonCode(code):
@@ -149,7 +165,7 @@ Please fix it.
     @staticmethod
     def riskAssessment(code):
         content = f"""I want you to act as a Python expert.
-Assess the risk level of damaging my device upon executing the python code that I will provide for you. 
+Assess the risk level of damaging my device upon executing the python code that I will provide for you.
 Answer me either 'high', 'medium' or 'low', without giving me any extra information.
 e.g. file deletions or similar significant impacts are regarded as 'high' level.
 Acess the risk level of this Python code:
@@ -203,7 +219,7 @@ Acess the risk level of this Python code:
                 "arguments": function_arguments,
             }
         }
- 
+
     @staticmethod
     def get_wan_ip():
         response = requests.get('https://api.ipify.org?format=json')
@@ -246,10 +262,10 @@ Current directory: {os.getcwd()}
 """
 
     @staticmethod
-    def getStringWidth(text): 
-        width = 0 
-        for character in text: 
-            width += wcwidth.wcwidth(character) 
+    def getStringWidth(text):
+        width = 0
+        for character in text:
+            width += wcwidth.wcwidth(character)
         return width
 
     @staticmethod

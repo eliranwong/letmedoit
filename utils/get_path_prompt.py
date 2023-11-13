@@ -200,7 +200,7 @@ class GetPath:
                     auto_suggest=auto_suggestion,
                     completer=completer,
                     bottom_toolbar=bottom_toolbar,
-                    mouse_support=Condition(lambda: config.mouseSupport), 
+                    mouse_support=Condition(lambda: config.mouseSupport),
                     swap_light_and_dark_colors=True,
                 ).strip()
                 default = ""

@@ -100,14 +100,14 @@ class MyHandAI:
 
     def getFolderPath(self):
         return self.getPath.getFolderPath(
-            check_isdir=True, 
-            display_dir_only=True, 
-            create_dirs_if_not_exist=True, 
-            empty_to_cancel=True, 
-            list_content_on_directory_change=True, 
-            keep_startup_directory=True, 
-            message=f"{self.divider}\nSetting a startup directory ...\nEnter a folder name or path below:", 
-            bottom_toolbar="", 
+            check_isdir=True,
+            display_dir_only=True,
+            create_dirs_if_not_exist=True,
+            empty_to_cancel=True,
+            list_content_on_directory_change=True,
+            keep_startup_directory=True,
+            message=f"{self.divider}\nSetting a startup directory ...\nEnter a folder name or path below:",
+            bottom_toolbar="",
             promptIndicator = ""
         )
 
@@ -142,6 +142,12 @@ class MyHandAI:
         internetSeraches = "integrate google searches"
         script = os.path.join(pluginFolder, "{0}.py".format(internetSeraches))
         self.execPythonFile(script)
+        # always include the following plugins
+        requiredPlugins = ("auto heal python code",)
+        for i in requiredPlugins:
+            if i in config.chatGPTPluginExcludeList:
+                config.chatGPTPluginExcludeList.remove(i)
+        # execute enabled plugins
         for plugin in FileUtil.fileNamesWithoutExtension(pluginFolder, "py"):
             if not plugin in config.chatGPTPluginExcludeList:
                 script = os.path.join(pluginFolder, "{0}.py".format(plugin))
@@ -161,9 +167,9 @@ class MyHandAI:
             if not plugin in config.chatGPTPluginExcludeList:
                 enabledPlugins.append(plugin)
         enabledPlugins = self.dialogs.getMultipleSelection(
-            title="Enable / Disable Plugins", 
-            text="Select to enable plugin(s):", 
-            options=plugins, 
+            title="Enable / Disable Plugins",
+            text="Select to enable plugin(s):",
+            options=plugins,
             default_values=enabledPlugins,
         )
         if enabledPlugins is not None:
@@ -272,7 +278,7 @@ class MyHandAI:
                 print_formatted_text(PygmentsTokens(tokens), style=self.getPygmentsStyle())
                 self.print("```")
             self.print(self.divider)
-            
+
             self.stopSpinning()
             if self.confirmExecution(risk):
                 self.print("Do you want to execute it? [y]es / [N]o")
@@ -332,7 +338,6 @@ class MyHandAI:
             title = function_args.get("title") # required
             python_code = function_args.get("code") # required
             refinedCode = SharedUtil.fineTunePythonCode(python_code)
-            systemCommand = ("os.system(" in refinedCode)
 
             # show pyton code for developer
             self.print(self.divider)
@@ -346,7 +351,7 @@ class MyHandAI:
                 print_formatted_text(PygmentsTokens(tokens), style=self.getPygmentsStyle())
                 self.print("```")
             self.print(self.divider)
-            
+
             self.stopSpinning()
             if not self.runPython:
                 return "[INVALID]"
@@ -359,16 +364,17 @@ class MyHandAI:
 
             try:
                 exec(refinedCode, globals())
-                function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) and not systemCommand else ""
+                pythonFunctionResponse = SharedUtil.getPythonFunctionResponse(refinedCode)
             except:
-                SharedUtil.showErrors()
+                trace = SharedUtil.showErrors()
                 self.print(self.divider)
-                return "[INVALID]"
-            if not function_response:
+                if config.max_consecutive_auto_heal > 0:
+                    return SharedUtil.autoHealPythonCode(refinedCode, trace)
+                else:
+                    return "[INVALID]"
+            if not pythonFunctionResponse:
                 return ""
-            info = {"information": function_response}
-            function_response = json.dumps(info)
-            return json.dumps(info)
+            return json.dumps({"information": pythonFunctionResponse})
 
         functionSignature = {
             "name": "execute_python_code",
@@ -493,7 +499,6 @@ Otherwise, answer "chat". Here is the request:"""
         if function_name == "python":
             python_code = textwrap.dedent(response_message["function_call"]["arguments"])
             refinedCode = SharedUtil.fineTunePythonCode(python_code)
-            systemCommand = ("os.system(" in refinedCode)
 
             self.print(self.divider)
             self.print(f"running python code ...")
@@ -520,11 +525,14 @@ Otherwise, answer "chat". Here is the request:"""
                     return json.dumps(info)
             try:
                 exec(refinedCode, globals())
-                function_response = str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) and not systemCommand else ""
+                function_response = SharedUtil.getPythonFunctionResponse(refinedCode)
             except:
-                SharedUtil.showErrors()
+                trace = SharedUtil.showErrors()
                 self.print(self.divider)
-                function_response = "[INVALID]"
+                if config.max_consecutive_auto_heal > 0:
+                    return SharedUtil.autoHealPythonCode(refinedCode, trace)
+                else:
+                    return "[INVALID]"
             if function_response:
                 info = {"information": function_response}
                 function_response = json.dumps(info)
@@ -680,6 +688,7 @@ Otherwise, answer "chat". Here is the request:"""
             "change ChatGPT temperature",
             "change maximum response tokens",
             "change minimum response tokens",
+            "change maximum consecutive auto-heal",
             "change plugins",
             "change function call",
             "change function response",
@@ -704,9 +713,9 @@ Otherwise, answer "chat". Here is the request:"""
             "display key bindings",
         )
         feature = self.dialogs.getValidOptions(
-            options=features, 
-            descriptions=descriptions, 
-            title="myHand AI", 
+            options=features,
+            descriptions=descriptions,
+            title="myHand AI",
             default=config.defaultBlankEntryAction,
             text="Select an action or make changes:",
         )
@@ -721,10 +730,10 @@ Otherwise, answer "chat". Here is the request:"""
                     "do not perform online searches",
                 )
                 option = self.dialogs.getValidOptions(
-                    options=options, 
-                    descriptions=descriptions, 
-                    title="Latest Online Searches", 
-                    default=config.loadingInternetSearches, 
+                    options=options,
+                    descriptions=descriptions,
+                    title="Latest Online Searches",
+                    default=config.loadingInternetSearches,
                     text="myHand can perform online searches.\nHow do you want this feature?",
                 )
                 if option:
@@ -749,8 +758,8 @@ Otherwise, answer "chat". Here is the request:"""
             elif feature == ".contextinclusion":
                 options = ("the first input only", "all inputs")
                 option = self.dialogs.getValidOptions(
-                    options=options, 
-                    title="Predefined Context Inclusion", 
+                    options=options,
+                    title="Predefined Context Inclusion",
                     default="all inputs" if config.chatGPTApiContextInAllInputs else "the first input only",
                     text="Define below how you want to include predefined context\nwith your inputs.\nApply predefined context in ...",
                 )
@@ -760,8 +769,8 @@ Otherwise, answer "chat". Here is the request:"""
             elif feature == ".codedisplay":
                 options = ("enable", "disable")
                 option = self.dialogs.getValidOptions(
-                    options=options, 
-                    title="Command / Code Display", 
+                    options=options,
+                    title="Command / Code Display",
                     default="enable" if config.codeDisplay else "disable",
                     text="Options to display commands / codes before execution:"
                 )
@@ -779,11 +788,11 @@ Otherwise, answer "chat". Here is the request:"""
                     "none",
                 )
                 option = self.dialogs.getValidOptions(
-                    options=options, 
-                    descriptions=descriptions, 
+                    options=options,
+                    descriptions=descriptions,
                     title="Command Execution Confirmation",
-                    text="myHand.ai can execute commands on your behalf.\nWhen do you want confirmation\nbefore commands are executed:\n(caution: execute commands at your own risk)",  
-                    default=config.confirmExecution, 
+                    text="myHand.ai can execute commands on your behalf.\nWhen do you want confirmation\nbefore commands are executed:\n(caution: execute commands at your own risk)",
+                    default=config.confirmExecution,
                 )
                 if option:
                     config.confirmExecution = option
@@ -797,8 +806,8 @@ Otherwise, answer "chat". Here is the request:"""
             elif feature == ".pagerview":
                 options = ("auto", "manual [ctrl+g]")
                 option = self.dialogs.getValidOptions(
-                    options=options, 
-                    title="Pager View", 
+                    options=options,
+                    title="Pager View",
                     default="auto" if config.pagerView else "manual [ctrl+g]",
                 )
                 if option:
@@ -807,8 +816,8 @@ Otherwise, answer "chat". Here is the request:"""
             elif feature == ".developer":
                 options = ("enable", "disable")
                 option = self.dialogs.getValidOptions(
-                    options=options, 
-                    title="Developer Mode", 
+                    options=options,
+                    title="Developer Mode",
                     default="enable" if config.developer else "disable",
                     text="Read myHand.ai wiki for more information.\nSelect an option below:"
                 )
@@ -818,8 +827,8 @@ Otherwise, answer "chat". Here is the request:"""
             elif feature == ".autoupdate":
                 options = ("enable", "disable")
                 option = self.dialogs.getValidOptions(
-                    options=options, 
-                    title="Automatic Update on Startup", 
+                    options=options,
+                    title="Automatic Update on Startup",
                     default="enable" if config.autoUpdate else "disable",
                     text="Select an option below:"
                 )
@@ -829,8 +838,8 @@ Otherwise, answer "chat". Here is the request:"""
             elif feature == ".termuxapi":
                 options = ("enable", "disable")
                 option = self.dialogs.getValidOptions(
-                    options=options, 
-                    title="Termux API Integration", 
+                    options=options,
+                    title="Termux API Integration",
                     default="enable" if config.terminalEnableTermuxAPI else "disable",
                     text="To learn about Termux API, read:\nhttps://wiki.termux.com/wiki/Termux:API\nSelect an option below:"
                 )
@@ -851,8 +860,8 @@ Otherwise, answer "chat". Here is the request:"""
             elif feature == ".enhanceexecution":
                 options = ("enhanced", "auto")
                 option = self.dialogs.getValidOptions(
-                    options=options, 
-                    title="Command Execution Mode", 
+                    options=options,
+                    title="Command Execution Mode",
                     default="enhanced" if config.enhanceCommandExecution else "auto",
                     text="myHand can execute commands\nto retrieve the requested information\nor perform tasks for users.\n(read https://github.com/eliranwong/myHand.ai/wiki/Command-Execution)\nSelect a mode below:",
                 )
@@ -862,8 +871,8 @@ Otherwise, answer "chat". Here is the request:"""
             elif feature == ".functioncall":
                 calls = ("auto", "none")
                 call = self.dialogs.getValidOptions(
-                    options=calls, 
-                    title="ChatGPT Function Call", 
+                    options=calls,
+                    title="ChatGPT Function Call",
                     default=config.chatGPTApiFunctionCall,
                     text="Enabling function call\nallows online searches\nor other third-party features\nto extend ChatGPT capabilities.\nEnable / Disable this feature below:",
                 )
@@ -873,8 +882,8 @@ Otherwise, answer "chat". Here is the request:"""
             elif feature == ".functionresponse":
                 calls = ("enable", "disable")
                 call = self.dialogs.getValidOptions(
-                    options=calls, 
-                    title="Automatic Chat Generation with Function Response", 
+                    options=calls,
+                    title="Automatic Chat Generation with Function Response",
                     default="enable" if config.chatAfterFunctionCalled else "disable",
                     text="Enable this feature\nto generate further responses\naccording to function call results.\nDisable this feature allows\nperforming function calls\nwihtout generating further responses."
                 )
@@ -885,6 +894,8 @@ Otherwise, answer "chat". Here is the request:"""
                 self.setMinTokens()
             elif feature == ".maxtokens":
                 self.setMaxTokens()
+            elif feature == ".maxautoheal":
+                self.setMaxAutoHeal()
             elif feature == ".temperature":
                 self.print("Enter a value between 0.0 and 2.0:")
                 self.print("(Lower values for temperature result in more consistent outputs, while higher values generate more diverse and creative results. Select a temperature value based on the desired trade-off between coherence and creativity for your specific application.)")
@@ -905,8 +916,8 @@ Otherwise, answer "chat". Here is the request:"""
 
     def setModel(self):
         model = self.dialogs.getValidOptions(
-            options=self.models, 
-            title="ChatGPT model", 
+            options=self.models,
+            title="ChatGPT model",
             default=config.chatGPTApiModel,
             text="Select a ChatGPT model:",
         )
@@ -923,6 +934,15 @@ Otherwise, answer "chat". Here is the request:"""
             #if config.chatGPTApiMaxTokens > suggestedMaxToken:
             config.chatGPTApiMaxTokens = suggestedMaxToken
             self.print(f"Maximum response tokens set to {config.chatGPTApiMaxTokens}.")
+
+    def setMaxAutoHeal(self):
+        self.print("The auto-heal feature enables myHand AI to automatically fix broken Python code if it was not executed properly.")
+        self.print("Please specify maximum number of auto-heal attempts below:")
+        self.print("(Remarks: Enter '0' if you want to disable auto-heal feature)")
+        maxAutoHeal = self.prompts.simplePrompt(numberOnly=True, default=str(config.max_consecutive_auto_heal))
+        if maxAutoHeal and not maxAutoHeal.strip().lower() == config.exit_entry and int(maxAutoHeal) >= 0:
+            config.max_consecutive_auto_heal = int(maxAutoHeal)
+            self.print(f"Maximum consecutive auto-heal entered: {config.max_consecutive_auto_heal}")
 
     def setMinTokens(self):
         self.print("Please specify minimum response tokens below:")
@@ -961,7 +981,11 @@ Otherwise, answer "chat". Here is the request:"""
         try:
             exec(script, globals())
         except:
-            print(traceback.format_exc())
+            trace = traceback.format_exc()
+            print()
+            self.print(self.divider)
+            if config.max_consecutive_auto_heal > 0:
+                SharedUtil.autoHealPythonCode(script, trace)
 
     def runSystemCommand(self, command):
         command = command.strip()[1:]
@@ -1077,7 +1101,7 @@ Otherwise, answer "chat". Here is the request:"""
     def runInstruction(self):
         instructions = list(config.predefinedInstructions.keys())
         instruction = self.dialogs.getValidOptions(
-            options=instructions, 
+            options=instructions,
             title="Predefined Instructions",
             text="Select an instruction:",
         )
@@ -1088,8 +1112,8 @@ Otherwise, answer "chat". Here is the request:"""
     def changeContext(self):
         contexts = list(config.predefinedContexts.keys())
         predefinedContext = self.dialogs.getValidOptions(
-            options=contexts, 
-            title="Predefined Contexts", 
+            options=contexts,
+            title="Predefined Contexts",
             default=config.chatGPTApiPredefinedContext,
             text="Select a context:",
         )
@@ -1198,6 +1222,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".temperature",
             ".maxtokens",
             ".mintokens",
+            ".maxautoheal",
             ".plugins",
             ".functioncall",
             ".functionresponse",
@@ -1359,7 +1384,7 @@ Otherwise, answer "chat". Here is the request:"""
                     self.lineWidth = 0
                     blockStart = False
                     wrapWords = config.wrapWords
-                    for event in completion:                                 
+                    for event in completion:
                         # RETRIEVE THE TEXT FROM THE RESPONSE
                         event_text = event["choices"][0]["delta"] # EVENT DELTA RESPONSE
                         answer = event_text.get("content", "") # RETRIEVE CONTENT
@@ -1393,11 +1418,11 @@ Otherwise, answer "chat". Here is the request:"""
                     # reset config.tempChunk
                     config.tempChunk = ""
                     print("\n")
-                    
+
                     # optional
                     # remove predefined context to reduce token size and cost
                     #messages[-1] = {"role": "user", "content": userInput}
-                    
+
                     messages.append({"role": "assistant", "content": chat_response})
                     config.currentMessages = messages
 
@@ -1433,7 +1458,7 @@ Otherwise, answer "chat". Here is the request:"""
                         self.print(self.divider)
                     else:
                         self.print("Error encountered!")
-                    
+
                     config.defaultEntry = userInput
                     self.print("starting a new chat!")
                     self.saveChat(messages)
@@ -1540,8 +1565,8 @@ Otherwise, answer "chat". Here is the request:"""
                         self.lineWidth = itemWidth if isLastItem else itemWidth + 1
                     else:
                         self.wrappedText += item if isLastItem else f"{item} "
-                        self.lineWidth += itemWidth if isLastItem else itemWidth + 1                    
-        
+                        self.lineWidth += itemWidth if isLastItem else itemWidth + 1
+
         def processLine(lineText):
             if re.search("<[^<>]+?>", lineText):
                 # handle html/xml tags
@@ -1570,7 +1595,7 @@ Otherwise, answer "chat". Here is the request:"""
             if not isLastLine:
                 self.wrappedText += "\n"
                 self.lineWidth = 0
-        
+
         return self.wrappedText
 
     def checkCompletion(self):
