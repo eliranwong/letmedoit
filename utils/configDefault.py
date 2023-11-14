@@ -36,7 +36,7 @@ defaultSettings = (
     ('maximumInternetSearchResults', 5),
     ('chatGPTApiContextInAllInputs', False),
     ('thisTranslation', {}),
-    ('chatGPTPluginExcludeList', ["counselling"]),
+    ('chatGPTPluginExcludeList', ["counselling", "simplified Chinese to traditional Chinese"]),
     ('terminalEnableTermuxAPI', False),
     ('terminalEnableTermuxAPIToast', False),
     ('cancel_entry', '.cancel'),

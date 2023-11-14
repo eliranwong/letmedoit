@@ -221,6 +221,7 @@ class MyHandAI:
         return "\n".join([textwrap.fill(line, width=terminal_width) for line in content.split("\n")])
 
     def print(self, content):
+        content = SharedUtil.transformText(content)
         if config.wrapWords:
             # wrap words to fit terminal width
             terminal_width = shutil.get_terminal_size().columns
@@ -1400,6 +1401,7 @@ Otherwise, answer "chat". Here is the request:"""
                         #event_text = dict(event.choices[0].delta) # EVENT DELTA RESPONSE
                         #answer = event_text.get("content", "") # RETRIEVE CONTENT
                         answer = event.choices[0].delta.content
+                        answer = SharedUtil.transformText(answer)
                         # STREAM THE ANSWER
                         if answer is not None:
                             # display the chunk

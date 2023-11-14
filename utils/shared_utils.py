@@ -33,6 +33,12 @@ class SharedUtil:
         return trace
 
     @staticmethod
+    def transformText(text):
+        for transformer in config.chatGPTTransformers:
+                text = transformer(text)
+        return text
+
+    @staticmethod
     def convertFunctionSignaturesIntoTools(functionSignatures):
         return [{"type": "function", "function": func} for func in functionSignatures]
 
