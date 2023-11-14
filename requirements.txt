@@ -1,9 +1,9 @@
---pre aiohttp
-openai==0.28.1
+openai==1.2.4
 prompt_toolkit
 Pygments
 datetime
 netifaces
+geocoder
 googlesearch-python
 art
 apsw
@@ -15,5 +15,5 @@ colorama
 tiktoken
 docker
 unstructured[all-docs]
-pyautogen[blendsearch,retrievechat,mathchat]==0.1.14
+--pre pyautogen
 pygame

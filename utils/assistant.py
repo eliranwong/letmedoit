@@ -1,4 +1,5 @@
 import config, openai, threading, os, time, traceback, re, subprocess, json, datetime, pydoc, textwrap, string, shutil
+from openai import OpenAI
 try:
     import tiktoken
     tiktokenImported = True
@@ -27,6 +28,7 @@ from utils.file_utils import FileUtil
 from utils.terminal_system_command_prompt import SystemCommandPrompt
 from utils.shared_utils import SharedUtil
 from utils.tts_utils import TTSUtil
+from plugins.bibleTools.utils.TextUtil import TextUtil
 
 
 class MyHandAI:
@@ -82,7 +84,7 @@ class MyHandAI:
         self.checkCompletion()
         # optional
         if config.openaiApiOrganization:
-            openai.organization = config.openaiApiOrganization
+            raise Exception("The 'openai.organization' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(organization=config.openaiApiOrganization)'")
         # chat records
         chat_history = os.path.join(config.myHandAIFolder, "history", "chats")
         self.terminal_chat_session = PromptSession(history=FileHistory(chat_history))
@@ -235,13 +237,13 @@ class MyHandAI:
                 print(symbol, end='\r')
                 time.sleep(0.1)
 
-    def getChatResponse(self, completion):
-        chat_response = completion["choices"][0]["message"]["content"]
-        # transform response with plugins
-        if chat_response:
-            for t in config.chatGPTTransformers:
-                chat_response = t(chat_response)
-        return chat_response
+#    def getChatResponse(self, completion):
+#        chat_response = completion["choices"][0]["message"]["content"]
+#        # transform response with plugins
+#        if chat_response:
+#            for t in config.chatGPTTransformers:
+#                chat_response = t(chat_response)
+#        return chat_response
 
     def confirmExecution(self, risk):
         if config.confirmExecution == "always" or (risk == "high" and config.confirmExecution == "high_risk_only") or (not risk == "low" and config.confirmExecution == "medium_risk_or_above"):
@@ -423,7 +425,7 @@ Answer "chat" if I explicitly ask you "do not execute" or if I start my request 
 Otherwise, answer "chat". Here is the request:"""
 
         messagesCopy.append({"role": "user", "content": f"{context} {userInput}"})
-        completion = openai.ChatCompletion.create(
+        completion = self.client.chat.completions.create(
             model=config.chatGPTApiModel,
             messages=messagesCopy,
             n=1,
@@ -481,23 +483,33 @@ Otherwise, answer "chat". Here is the request:"""
         return messages
 
     def getFunctionMessageAndResponse(self, messages, functionSignatures, function_name, temperature=None):
-        completion = openai.ChatCompletion.create(
+        completion = self.client.chat.completions.create(
             model=config.chatGPTApiModel,
             messages=messages,
             max_tokens=SharedUtil.getDynamicTokens(messages, functionSignatures),
             temperature=temperature if temperature is not None else config.chatGPTApiTemperature,
             n=1,
-            functions=functionSignatures,
-            function_call={"name": function_name},
+            tools=SharedUtil.convertFunctionSignaturesIntoTools(functionSignatures),
+            tool_choice={"type": "function", "function": {"name": function_name}},
         )
-        function_call_message = completion["choices"][0]["message"]
-        function_call_response = self.getFunctionResponse(function_call_message, function_name)
-        return function_call_message, function_call_response
+        function_call_message = completion.choices[0].message
+        tool_call = function_call_message.tool_calls[0]
+        func_arguments = tool_call.function.arguments
+        function_call_message_mini = {
+            "role": "assistant",
+            "content": None,
+            "function_call": {
+                "name": tool_call.function.name,
+                "arguments": func_arguments,
+            }
+        }
+        function_call_response = self.getFunctionResponse(func_arguments, function_name)
+        return function_call_message_mini, function_call_response
 
-    def getFunctionResponse(self, response_message, function_name):
+    def getFunctionResponse(self, func_arguments, function_name):
         # ChatGPT's built-in function named "python"
         if function_name == "python":
-            python_code = textwrap.dedent(response_message["function_call"]["arguments"])
+            python_code = textwrap.dedent(func_arguments)
             refinedCode = SharedUtil.fineTunePythonCode(python_code)
 
             self.print(self.divider)
@@ -540,12 +552,13 @@ Otherwise, answer "chat". Here is the request:"""
             # handle unexpected function
             self.print(f"Unexpected function: {function_name}")
             self.print(self.divider)
-            print(response_message)
+            print(func_arguments)
             self.print(self.divider)
             function_response = ""
         else:
             fuction_to_call = config.chatGPTApiAvailableFunctions[function_name]
-            function_args = json.loads(response_message["function_call"]["arguments"])
+            # convert the arguments from json into a dict
+            function_args = json.loads(func_arguments)
             function_response = fuction_to_call(function_args)
         return function_response
 
@@ -553,17 +566,17 @@ Otherwise, answer "chat". Here is the request:"""
         self.functionJustCalled = False
         def runThisCompletion(thisThisMessage):
             if config.chatGPTApiFunctionSignatures and not self.functionJustCalled and not noFunctionCall:
-                return openai.ChatCompletion.create(
+                return self.client.chat.completions.create(
                     model=config.chatGPTApiModel,
                     messages=thisThisMessage,
                     n=1,
                     temperature=config.chatGPTApiTemperature,
                     max_tokens=SharedUtil.getDynamicTokens(thisThisMessage, config.chatGPTApiFunctionSignatures),
-                    functions=config.chatGPTApiFunctionSignatures,
-                    function_call=config.chatGPTApiFunctionCall,
+                    tools=SharedUtil.convertFunctionSignaturesIntoTools(config.chatGPTApiFunctionSignatures),
+                    tool_choice=config.chatGPTApiFunctionCall,
                     stream=True,
                 )
-            return openai.ChatCompletion.create(
+            return self.client.chat.completions.create(
                 model=config.chatGPTApiModel,
                 messages=thisThisMessage,
                 n=1,
@@ -574,64 +587,63 @@ Otherwise, answer "chat". Here is the request:"""
 
         while True:
             completion = runThisCompletion(thisMessage)
-            function_name = ""
             try:
                 # consume the first delta
                 for event in completion:
-                    delta = event["choices"][0]["delta"]
-                    # Check if a function is called
-                    if not delta.get("function_call"):
-                        # a function is not called; same handling as a function is just called
+                    first_delta = event.choices[0].delta
+                    # check if a tool is called
+                    if first_delta.tool_calls: # a tool is called
+                        function_calls = [i for i in first_delta.tool_calls if i.type == "function"]
+                        # non_function_calls = [i for i in first_delta.tool_calls if not i.type == "function"]
+                    else: # no tool is called; same treatment as tool calls are finished
                         self.functionJustCalled = True
-                    # When streaming is enabled, in some rare cases, ChatGPT does not return function name
-                    # check here
-                    elif "name" in delta["function_call"]:
-                        function_name = delta["function_call"]["name"]
-                    # check the first delta is enough
+                    # consume the first delta only at this point
                     break
                 # Continue only when a function is called
                 if self.functionJustCalled:
                     break
 
-                if function_name:
-                    response_message = SharedUtil.getStreamFunctionResponseMessage(completion, function_name)
-                else:
-                    # when function name is not available (very rare)
-                    # try again without streaming
-                    completion = openai.ChatCompletion.create(
-                        model=config.chatGPTApiModel,
-                        messages=thisMessage,
-                        n=1,
-                        temperature=config.chatGPTApiTemperature,
-                        max_tokens=SharedUtil.getDynamicTokens(thisMessage, config.chatGPTApiFunctionSignatures),
-                        functions=config.chatGPTApiFunctionSignatures,
-                        function_call=config.chatGPTApiFunctionCall,
-                    )
-                    response_message = completion["choices"][0]["message"]
-                    if response_message.get("function_call"):
-                        function_name = response_message["function_call"]["name"]
-                    else:
-                        break
-                # get function response
-                function_response = self.getFunctionResponse(response_message, function_name)
+                # get all tool arguments, both of functions and non-functions
+                toolArguments = SharedUtil.getToolArgumentsFromStreams(completion)
 
-                if not function_response == "[INVALID]":
-                    # process function response
-                    # send the info on the function call and function response to GPT
-                    thisMessage.append(response_message) # extend conversation with assistant's reply
-                    thisMessage.append(
-                        {
-                            "role": "function",
-                            "name": function_name,
-                            "content": function_response,
+                func_responses = ""
+                # handle function calls
+                for func in function_calls:
+                    func_index = func.index
+                    func_id = func.id
+                    func_name = func.function.name
+                    func_arguments = toolArguments[func_index]
+
+                    # get function response
+                    func_response = self.getFunctionResponse(func_arguments, func_name)
+
+                    if not func_response == "[INVALID]":
+                        # send the function call info and response to GPT
+                        function_call_message = {
+                            "role": "assistant",
+                            "content": None,
+                            "function_call": {
+                                "name": func_name,
+                                "arguments": func_arguments,
+                            }
                         }
-                    )  # extend conversation with function response
+                        thisMessage.append(function_call_message) # extend conversation with assistant's reply
+                        thisMessage.append(
+                            {
+                                "tool_call_id": func_id,
+                                "role": "function",
+                                "name": func_name,
+                                "content": func_response,
+                            }
+                        )  # extend conversation with function response
+                        if func_response:
+                            func_responses += f"\n{func_response}\n{config.divider}"
 
                 self.functionJustCalled = True
 
-                if not config.chatAfterFunctionCalled or not function_response:
-                    if function_response:
-                        self.print(function_response)
+                if not config.chatAfterFunctionCalled or not func_responses:
+                    if func_responses:
+                        self.print(f"{config.divider}\n{func_responses}")
                     break
             except:
                 SharedUtil.showErrors()
@@ -1059,10 +1071,6 @@ Otherwise, answer "chat". Here is the request:"""
                 config.improvedWritingSytle = style
         self.print(f"Improved Writing Display '{'enabled' if config.displayImprovedWriting else 'disabled'}'!")
 
-    def getCurrentDateTime(self):
-        current_datetime = datetime.datetime.now()
-        return current_datetime.strftime("%Y-%m-%d_%H_%M_%S")
-
     def saveChat(self, messages, openFile=False):
         plainText = ""
         for i in messages:
@@ -1088,7 +1096,7 @@ Otherwise, answer "chat". Here is the request:"""
         else:
             try:
                 #filename = re.sub('[\\\/\:\*\?\"\<\>\|]', "", messages[2 if config.chatGPTApiCustomContext.strip() else 1]["content"])[:40].strip()
-                filename = self.getCurrentDateTime()
+                filename = SharedUtil.getCurrentDateTime()
                 foldername = os.path.join(config.myHandAIFolder, "files", "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", filename))
                 Path(foldername).mkdir(parents=True, exist_ok=True)
                 if filename:
@@ -1389,8 +1397,9 @@ Otherwise, answer "chat". Here is the request:"""
                     wrapWords = config.wrapWords
                     for event in completion:
                         # RETRIEVE THE TEXT FROM THE RESPONSE
-                        event_text = event["choices"][0]["delta"] # EVENT DELTA RESPONSE
-                        answer = event_text.get("content", "") # RETRIEVE CONTENT
+                        #event_text = dict(event.choices[0].delta) # EVENT DELTA RESPONSE
+                        #answer = event_text.get("content", "") # RETRIEVE CONTENT
+                        answer = event.choices[0].delta.content
                         # STREAM THE ANSWER
                         if answer is not None:
                             # display the chunk
@@ -1438,15 +1447,15 @@ Otherwise, answer "chat". Here is the request:"""
                     config.conversationStarted = True
 
                 # error codes: https://platform.openai.com/docs/guides/error-codes/python-library-error-types
-                except openai.error.APIError as e:
+                except openai.APIError as e:
                     self.stopSpinning()
                     #Handle API error here, e.g. retry or log
                     self.print(f"OpenAI API returned an API Error: {e}")
-                except openai.error.APIConnectionError as e:
+                except openai.APIConnectionError as e:
                     self.stopSpinning()
                     #Handle connection error here
                     self.print(f"Failed to connect to OpenAI API: {e}")
-                except openai.error.RateLimitError as e:
+                except openai.RateLimitError as e:
                     self.stopSpinning()
                     #Handle rate limit error (we recommend using exponential backoff)
                     self.print(f"OpenAI API request exceeded rate limit: {e}")
@@ -1602,9 +1611,11 @@ Otherwise, answer "chat". Here is the request:"""
         return self.wrappedText
 
     def checkCompletion(self):
-        openai.api_key = os.environ["OPENAI_API_KEY"] = config.openaiApiKey
+        # instantiate a client that can shared with plugins
+        os.environ["OPENAI_API_KEY"] = config.openaiApiKey
+        self.client = OpenAI()
         try:
-            openai.ChatCompletion.create(
+            self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content" : "hello"}],
                 n=1,
@@ -1615,27 +1626,27 @@ Otherwise, answer "chat". Here is the request:"""
             for model in self.models:
                 oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
             os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
-        except openai.error.APIError as e:
+        except openai.APIError as e:
             self.print("Error: Issue on OpenAI side.")
             self.print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
-        except openai.error.Timeout as e:
-            self.print("Error: Request timed out.")
-            self.print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
-        except openai.error.RateLimitError as e:
+        #except openai.Timeout as e:
+        #    self.print("Error: Request timed out.")
+        #    self.print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
+        except openai.RateLimitError as e:
             self.print("Error: You have hit your assigned rate limit.")
             self.print("Solution: Pace your requests. Read more in OpenAI [Rate limit guide](https://platform.openai.com/docs/guides/rate-limits).")
-        except openai.error.APIConnectionError as e:
+        except openai.APIConnectionError as e:
             self.print("Error: Issue connecting to our services.")
             self.print("Solution: Check your network settings, proxy configuration, SSL certificates, or firewall rules.")
-        except openai.error.InvalidRequestError as e:
-            self.print("Error: Your request was malformed or missing some required parameters, such as a token or an input.")
-            self.print("Solution: The error message should advise you on the specific error made. Check the [documentation](https://platform.openai.com/docs/api-reference/) for the specific API method you are calling and make sure you are sending valid and complete parameters. You may also need to check the encoding, format, or size of your request data.")
-        except openai.error.AuthenticationError as e:
+        #except openai.InvalidRequestError as e:
+        #    self.print("Error: Your request was malformed or missing some required parameters, such as a token or an input.")
+        #    self.print("Solution: The error message should advise you on the specific error made. Check the [documentation](https://platform.openai.com/docs/api-reference/) for the specific API method you are calling and make sure you are sending valid and complete parameters. You may also need to check the encoding, format, or size of your request data.")
+        except openai.AuthenticationError as e:
             self.print("Error: Your API key or token was invalid, expired, or revoked.")
             self.print("Solution: Check your API key or token and make sure it is correct and active. You may need to generate a new one from your account dashboard.")
             self.changeAPIkey()
-        except openai.error.ServiceUnavailableError as e:
-            self.print("Error: Issue on OpenAI servers. ")
-            self.print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
+        #except openai.ServiceUnavailableError as e:
+        #    self.print("Error: Issue on OpenAI servers. ")
+        #    self.print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
         except:
             SharedUtil.showErrors()

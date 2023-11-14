@@ -28,8 +28,8 @@ class TTSUtil:
                     elif "-" in language:
                         language, accent = language.split("-", 1)
                         language = f"{language}-{accent.upper()}"
-                    ttsUtil.saveCloudTTSAudio(content, language, filename=audioFile)
-                    ttsUtil.playAudioFile(audioFile)
+                    TTSUtil.saveCloudTTSAudio(content, language, filename=audioFile)
+                    TTSUtil.playAudioFile(audioFile)
                 elif config.ttsCommand:
                     # remove '"' from the content
                     content = re.sub('"', "", content)
@@ -64,7 +64,7 @@ class TTSUtil:
                     audioFile = os.path.join(config.myHandAIFolder, "temp", "gtts.mp3")
                     tts = gTTS(content, lang=language, tld=config.gttsTld) if config.gttsTld else gTTS(content, lang=language)
                     tts.save(audioFile)
-                    ttsUtil.playAudioFile(audioFile)
+                    TTSUtil.playAudioFile(audioFile)
             except:
                 if config.developer:
                     print(traceback.format_exc())
@@ -79,7 +79,7 @@ class TTSUtil:
                 VlcUtil.playMediaFile(audioFile)
             else:
                 # use pygame if config.usePygame or vlc player is not installed
-                ttsUtil.playAudioFilePygame(audioFile)
+                TTSUtil.playAudioFilePygame(audioFile)
         except:
             command = f"{config.open} {audioFile}"
             subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
@@ -91,6 +91,14 @@ class TTSUtil:
         while pygame.mixer.music.get_busy():
             pygame.time.Clock().tick(10)  # Check every 10 milliseconds
         pygame.mixer.music.stop()
+
+    # Temporary filepath for tts export
+    @staticmethod
+    def getGttsFilename():
+        folder = os.path.join(config.myHandAIFolder, "temp")
+        if not os.path.isdir(folder):
+            os.makedirs(folder, exist_ok=True)
+        return os.path.abspath(os.path.join(folder, "gtts.mp3"))
 
     # Official Google Cloud Text-to-speech Service
     @staticmethod
@@ -135,7 +143,7 @@ class TTSUtil:
         # The response's audio_content is binary.
         # Save into mp3
         if not filename:
-            filename = os.path.abspath(self.getGttsFilename())
+            filename = os.path.abspath(TTSUtil.getGttsFilename())
         if os.path.isfile(filename):
             os.remove(filename)
         with open(filename, "wb") as out:

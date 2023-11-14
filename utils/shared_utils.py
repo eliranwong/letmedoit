@@ -1,9 +1,11 @@
-import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, openai, json, geocoder
+import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, json, geocoder
 try:
     import tiktoken
     tiktokenImported = True
 except:
     tiktokenImported = False
+from openai import OpenAI
+
 
 class SharedUtil:
 
@@ -20,10 +22,19 @@ class SharedUtil:
     }
 
     @staticmethod
+    def getCurrentDateTime():
+        current_datetime = datetime.datetime.now()
+        return current_datetime.strftime("%Y-%m-%d_%H_%M_%S")
+
+    @staticmethod
     def showErrors():
         trace = traceback.format_exc()
         print(trace if config.developer else "Error encountered!")
         return trace
+
+    @staticmethod
+    def convertFunctionSignaturesIntoTools(functionSignatures):
+        return [{"type": "function", "function": func} for func in functionSignatures]
 
     @staticmethod
     def getPythonFunctionResponse(code):
@@ -194,7 +205,7 @@ Acess the risk level of this Python code:
     @staticmethod
     def getSingleChatResponse(userInput, temperature=None):
         try:
-            completion = openai.ChatCompletion.create(
+            completion = OpenAI().chat.completions.create(
                 model=config.chatGPTApiModel,
                 messages=[{"role": "user", "content" : userInput}],
                 n=1,
@@ -207,20 +218,21 @@ Acess the risk level of this Python code:
 
     # streaming
     @staticmethod
-    def getStreamFunctionResponseMessage(completion, function_name):
-        function_arguments = ""
+    def getToolArgumentsFromStreams(completion):
+        toolArguments = {}
         for event in completion:
-            delta = event["choices"][0]["delta"]
-            if delta and delta.get("function_call"):
-                function_arguments += delta["function_call"]["arguments"]
-        return {
-            "role": "assistant",
-            "content": None,
-            "function_call": {
-                "name": function_name,
-                "arguments": function_arguments,
-            }
-        }
+            delta = event.choices[0].delta
+            if delta and delta.tool_calls:
+                for tool_call in delta.tool_calls:
+                    # handle functions
+                    if tool_call.function:
+                        func_index = tool_call.index
+                        if func_index in toolArguments:
+                            toolArguments[func_index] += tool_call.function.arguments
+                        else:
+                            toolArguments[func_index] = tool_call.function.arguments
+                    # may support non functions later
+        return toolArguments
 
     @staticmethod
     def get_wan_ip():

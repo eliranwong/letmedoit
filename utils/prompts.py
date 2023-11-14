@@ -219,9 +219,8 @@ Available tokens: {estimatedAvailableTokens}
             "esc+s": "swap text brightness",
             "esc+d": "swap developer mode",
         }
-        textEditor = config.textEditor.split(" ", 1)[0]
-        if textEditor and SharedUtil.isPackageInstalled(textEditor):
-            bindings["esc+o"] = f"open with '{config.textEditor}'"
+        textEditor = config.customTextEditor.split(" ", 1)[0]
+        bindings["esc+o"] = f"""open with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
         multilineBindings = {
             "enter": "new line",
             "esc+enter": "complete entry",
