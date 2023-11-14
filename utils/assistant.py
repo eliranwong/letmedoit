@@ -436,7 +436,7 @@ Otherwise, answer "chat". Here is the request:"""
         self.print("screening done!")
 
         if answer == "termux":
-            context = """I am running Turmux terminal on this Android device. Execute Termux command directly on my behalf to achieve the following tasks. Do not show me the command unless I explicitly request it."""
+            context = """I am running Turmux terminal on this Android device.\nFind my device information below:\n```\n{SharedUtil.getDeviceInfo()}\n```\nExecute Termux command or python code to achieve the following tasks."""
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_termux_command_signature, "execute_termux_command")
@@ -446,7 +446,7 @@ Otherwise, answer "chat". Here is the request:"""
             else:
                 return messages
         elif answer == "python":
-            context = f"""I am running {config.thisPlatform} on this device. Execute python code directly on my behalf to achieve the following tasks. Do not show me the code unless I explicitly request it."""
+            context = f"""Find my device information below:\n```\n{SharedUtil.getDeviceInfo()}\n```\nExecute python code to achieve the following tasks."""
             userInputWithcontext = f"{context}\n{userInput}"
             messages.append({"role": "user", "content" : userInputWithcontext})
             messages = self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
@@ -641,7 +641,7 @@ Otherwise, answer "chat". Here is the request:"""
 
     # reset message when a new chart is started or context is changed
     def resetMessages(self):
-        systemMessage = f"You’re myHand AI, an advanced AI assistant, capable of engaging in conversations and executing tasks on local devices. I am running {config.thisPlatform} on this device. You have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python code on my behalf."
+        systemMessage = f"You’re myHand AI, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.\nFind my device information below:\n```\n{SharedUtil.getDeviceInfo()}\n```\nYou have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python codes on my behalf."
         if config.chatGPTApiFunctionCall == "auto" and config.chatGPTApiFunctionSignatures:
             systemMessage += " Your functionality expands as I add more plugins to you. Only use the functions you have been provided with."
         messages = [
@@ -664,12 +664,15 @@ Otherwise, answer "chat". Here is the request:"""
         return context
 
     def fineTuneUserInput(self, userInput):
+        # time
+        time = re.sub("\.[^\.]+?$", "", str(datetime.datetime.now()))
         # customise chat context
         context = self.getCurrentContext()
         if context and (not config.conversationStarted or (config.conversationStarted and config.chatGPTApiContextInAllInputs)):
             # context may start with "You will be provided with my input delimited with a pair of XML tags, <input> and </input>. ...
             userInput = re.sub("<content>|<content [^<>]*?>|</content>", "", userInput)
             userInput = f"{context}\n<content>{userInput}</content>" if userInput.strip() else context
+        userInput = f"{userInput}\n[Current time: {time}] [Current directory: {os.getcwd()}]"
         if config.chatGPTApiPredefinedContextTemp:
             config.chatGPTApiPredefinedContext = config.chatGPTApiPredefinedContextTemp
             config.chatGPTApiPredefinedContextTemp = ""

@@ -1,4 +1,4 @@
-import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, openai, json
+import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, openai, json, geocoder
 try:
     import tiktoken
     tiktokenImported = True
@@ -13,6 +13,8 @@ class SharedUtil:
         #"gpt-3.5-turbo-instruct": 4097,
         "gpt-3.5-turbo": 4097,
         "gpt-3.5-turbo-16k": 16385,
+        "gpt-4-1106-preview": 128000,
+        "gpt-4-vision-preview": 128000,
         "gpt-4": 8192,
         "gpt-4-32k": 32768,
     }
@@ -239,13 +241,17 @@ Acess the risk level of this Python code:
 
     @staticmethod
     def getDeviceInfo():
-        thisPlatform = platform.system()
-        if thisPlatform == "Darwin":
-            thisPlatform = "macOS"
+        g = geocoder.ip('me')
+        if hasattr(config, "thisPlatform"):
+            thisPlatform = config.thisPlatform
+        else:
+            thisPlatform = platform.system()
+            if thisPlatform == "Darwin":
+                thisPlatform = "macOS"
         wan_ip = SharedUtil.get_wan_ip()
         local_ip = SharedUtil.get_local_ip()
         date, time = str(datetime.datetime.now()).split(" ", 1)
-        time = re.sub("\..*?$", "", time)
+        time = re.sub("\.[^\.]+?$", "", time)
         return f"""Date: {date}
 Time: {time}
 Operating system: {thisPlatform}
@@ -256,10 +262,13 @@ Processor: {platform.processor()}
 Hostname: {socket.gethostname()}
 Python version: {platform.python_version()}
 Python implementation: {platform.python_implementation()}
+Current directory: {os.getcwd()}
 Wan ip: {wan_ip}
 Local ip: {local_ip}
-Current directory: {os.getcwd()}
-"""
+Latitude & longitude: {g.latlng}
+Country: {g.country}
+State: {g.state}
+City: {g.city}"""
 
     @staticmethod
     def getStringWidth(text):
