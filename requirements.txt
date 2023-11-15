@@ -1,3 +1,4 @@
+requests
 openai==1.2.4
 prompt_toolkit
 Pygments
@@ -15,5 +16,6 @@ colorama
 tiktoken
 docker
 unstructured[all-docs]
+pillow
 --pre pyautogen
 pygame

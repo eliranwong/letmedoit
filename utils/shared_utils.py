@@ -1,10 +1,11 @@
-import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, json, geocoder
+import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, json, geocoder, base64
 try:
     import tiktoken
     tiktokenImported = True
 except:
     tiktokenImported = False
 from openai import OpenAI
+from PIL import Image
 
 
 class SharedUtil:
@@ -31,6 +32,51 @@ class SharedUtil:
         trace = traceback.format_exc()
         print(trace if config.developer else "Error encountered!")
         return trace
+
+    @staticmethod
+    def is_valid_url(url):
+        # Regular expression pattern for URL validation
+        pattern = re.compile(
+            r'^(http|https)://'  # http:// or https://
+            r'([a-zA-Z0-9.-]+)'  # domain name
+            r'(\.[a-zA-Z]{2,63})'  # dot and top-level domain (e.g. .com, .org)
+            r'(:[0-9]{1,5})?'  # optional port number
+            r'(/.*)?$'  # optional path
+        )
+        return bool(re.match(pattern, url))
+
+    @staticmethod
+    def is_valid_image_url(url): 
+        try: 
+            response = requests.head(url) 
+            content_type = response.headers['content-type'] 
+            if 'image' in content_type: 
+                return True 
+            else: 
+                return False 
+        except requests.exceptions.RequestException: 
+            return False
+
+    @staticmethod
+    def is_valid_image_file(file_path):
+        try:
+            # Open the image file
+            with Image.open(file_path) as img:
+                # Check if the file format is supported by PIL
+                img.verify()
+                return True
+        except (IOError, SyntaxError) as e:
+            # The file path is not a valid image file path
+            return False
+
+    # Function to encode the image
+    @staticmethod
+    def encode_image(image_path):
+        with open(image_path, "rb") as image_file:
+            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+        os.path.splitext(os.path.basename(image_path))[1]
+        return f"data:image/png;base64,{base64_image}"
+
 
     @staticmethod
     def transformText(text):
