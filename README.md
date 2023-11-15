@@ -30,6 +30,12 @@ myHand AI has been updated to use OpenAI API v1+ in https://github.com/eliranwon
 > source venv/bin/activate<br>
 > python3 myHand.py
 
+# Recent Additions
+
+[Plugin - anaylze image](https://github.com/eliranwong/myHand.ai/wiki/Plugins-%E2%80%90-Analyze-Image)
+
+![analyze_image_demo](https://github.com/eliranwong/myHand.ai/assets/25262722/e8767d02-bcc7-47f7-8169-29a0325e9ef9)
+
 # Documentation
 
 Read https://github.com/eliranwong/myHand.ai/wiki
