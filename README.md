@@ -158,7 +158,11 @@ https://github.com/eliranwong/myHand.ai/wiki/Command-Execution#confirmation-prom
 
 # Comparison with Open Interpreter
 
-Open Interpreter uses [the same principle](https://github.com/KillianLucas/open-interpreter#how-does-it-work) as myHand AI for task execution on local device. myHand AI, however, are [more customisable and extensible with use of plugins](https://github.com/eliranwong/myHand.ai/wiki/Plugins-%E2%80%90-Overview).
+The Open Interpreter utilizes the same principle as myHand AI for task execution on a local device. However, myHand AI offers [more customisable and extensible with use of plugins](https://github.com/eliranwong/myHand.ai/wiki/Plugins-%E2%80%90-Overview). 
+
+The key advantage is that you can launch the Open Interpreter anytime from myHand AI by running the command "!interpreter". When you're done using the Open Interpreter, you can return to myHand AI by pressing "Ctrl+C". Therefore, you don't have to choose between the two; you can use both. 
+
+Additionally, myHand integrates an AutoGen interactive chat, making it convenient to have all these powerful tools in one place.
 
 # Comparison with Siri and Others
 
