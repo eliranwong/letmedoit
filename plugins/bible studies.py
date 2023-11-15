@@ -1,3 +1,10 @@
+"""
+myHand.ai plugin - bible studies
+
+add input suggestions and predefined instructions for bible studies
+
+"""
+
 import config
 
 config.inputSuggestions.append("""Bible Topic.

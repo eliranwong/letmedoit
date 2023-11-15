@@ -1,3 +1,10 @@
+"""
+myHand.ai plugin - character analysis
+
+add contexts for character analysis
+
+"""
+
 import config
 
 config.predefinedContexts["Character - Close Reading"] = """Use the following step-by-step instructions to respond to my inputs.

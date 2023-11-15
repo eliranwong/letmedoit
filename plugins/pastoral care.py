@@ -1,3 +1,9 @@
+"""
+myHand.ai plugin - pastoral care
+
+add predefined contexts about pastoral care
+"""
+
 import config
 
 # full description

@@ -1,6 +1,15 @@
+"""
+myHand.ai plugin - global finance
+
+add input suggestions and contexts about global finance
+
+"""
+
 import config
 
 """
+# Information
+
 **Prompt: Global Finance Assistant**
 
 As a global finance assistant, ChatGPT can provide you with valuable information and assistance related to various aspects of finance. Whether you need help with personal finance management, investment strategies, understanding financial markets, or staying updated with the latest financial news, ChatGPT is here to assist you.

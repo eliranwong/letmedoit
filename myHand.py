@@ -142,10 +142,10 @@ def aboutToQuit():
                 "myHandFile",
                 "myHandAIFolder",
                 "open",
+                "inputSuggestions", # used with plugins; user input suggestions
                 "chatGPTTransformers", # used with plugins; transform ChatGPT response message
                 "predefinedInstructions", # used with plugins; pre-defined instructions
                 "predefinedContexts", # used with plugins; pre-defined contexts
-                "inputSuggestions", # used with plugins; user input suggestions
                 # used with plugins; function call
                 "execute_python_code_signature",
                 "execute_termux_command_signature",

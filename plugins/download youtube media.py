@@ -1,5 +1,12 @@
 # install binary ffmpeg and python package yt-dlp to work with this plugin
 
+"""
+myHand.ai plugin - download youtube media
+
+download Youtube videos or audios
+
+"""
+
 import config, re, subprocess, os
 from utils.shared_utils import SharedUtil
 

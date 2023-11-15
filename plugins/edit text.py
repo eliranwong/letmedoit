@@ -1,4 +1,9 @@
-# install package gTTS to work with this plugin
+"""
+myHand.ai plugin - edit text
+
+edit text files
+
+"""
 
 import config, os, re, sys
 from utils.shared_utils import SharedUtil

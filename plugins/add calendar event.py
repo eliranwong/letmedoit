@@ -3,6 +3,16 @@ from utils.shared_utils import SharedUtil
 import urllib.parse
 
 """
+myHand.ai plugin - add calender event
+
+supported calendars:
+* google calendar
+* outlook calendar
+"""
+
+"""
+# Information gathered for plugin creation
+
 Example: Google Calendar URL
 ```https://calendar.google.com/calendar/render?action=TEMPLATE
 &text=Event%20Title

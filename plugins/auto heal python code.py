@@ -3,11 +3,13 @@ from utils.install import *
 from utils.shared_utils import SharedUtil
 
 """
-myHand AI plugin: auto heal python code
+myHand.ai plugin - auto heal python code
+
+functionalities:
 * install missing packages
 * fixed broken codes
 
-User can define number of attempts of auto-healing by editing "max_consecutive_auto_heal" in config.py.
+User can define the maximum number of auto-healing attempts by editing "max_consecutive_auto_heal" in config.py.
 The default value of config.max_consecutive_auto_heal is 3.
 """
 

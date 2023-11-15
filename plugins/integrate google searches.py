@@ -1,3 +1,9 @@
+"""
+myHand.ai plugin - integrate google searches
+
+Search internet for keywords when ChatGPT lacks information or when user ask about news or latest updates
+"""
+
 import config, json, googlesearch
 
 # pip3 install googlesearch-python

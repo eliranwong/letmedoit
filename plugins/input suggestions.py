@@ -1,3 +1,9 @@
+"""
+myHand.ai plugin - input suggestions
+
+add input suggestions
+"""
+
 import config, sys, os
 
 config.inputSuggestions += [

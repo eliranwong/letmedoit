@@ -1,8 +1,16 @@
+"""
+myHand.ai plugin - send emails
+
+send google or outlook emails
+"""
+
 import config
 from utils.shared_utils import SharedUtil
 import urllib.parse
 
 """
+# Information
+
 To send an email using a single URL via Google Mail, you can use the following format:
 
 https://mail.google.com/mail/?view=cm&fs=1&to=Recipient&subject=Subject&body=Body

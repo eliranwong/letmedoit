@@ -1,4 +1,11 @@
-import config, json, openai, os
+"""
+myHand.ai plugin - generate image
+
+generate images with model "dall-e-3"
+
+"""
+
+import config, openai, os
 from base64 import b64decode
 from utils.shared_utils import SharedUtil
 from openai import OpenAI

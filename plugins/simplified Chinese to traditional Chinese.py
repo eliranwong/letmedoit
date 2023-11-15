@@ -1,5 +1,6 @@
 """
-A myHand AI plugin:
+myHand.ai plugin - convert simplified Chinese into traditional Chinese
+
 Convert simplified Chinese into traditional Chinese in text output
 """
 

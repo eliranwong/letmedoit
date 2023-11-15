@@ -1,6 +1,13 @@
-import config
+"""
+myHand.ai plugin - conselling
+
+add contexts for conselling
 
 """
+
+"""
+# Information
+
 >>> What are popular approaches of counselling?
 
 There are several popular approaches to counseling that are commonly used by therapists and counselors. Here are some of the most well-known approaches:
@@ -49,6 +56,8 @@ There are several popular approaches to counseling that are commonly used by the
 
 22. Transpersonal Therapy: Transpersonal therapy explores beyond the individual's personal identity and focuses on spiritual and transcendent aspects of human experience. It may involve practices such as meditation, visualization, and exploring existential questions.
 """
+
+import config
 
 approaches = (
     "Cognitive Behavioral Therapy (CBT)",
