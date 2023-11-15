@@ -86,6 +86,8 @@ Read more at https://github.com/eliranwong/myHand.ai/wiki/Features
 
 Developers can write their own plugins to add functionalities or to run customised tasks with myHand.ai
 
+Read more at https://github.com/eliranwong/myHand.ai/wiki/Plugins-%E2%80%90-Overview
+
 Check our built-in plugins at: https://github.com/eliranwong/myHand.ai/tree/main/plugins
 
 # Highlight - Command Execution
@@ -147,6 +149,10 @@ In most cases, myHand.ai run Python codes for task execution. This makes myHand.
 In addition, myHand.ai offers more options for risk managements:
 
 https://github.com/eliranwong/myHand.ai/wiki/Command-Execution#confirmation-prompt-options-for-command-execution
+
+# Comparison with Open Interpreter
+
+Open Interpreter uses [the same principle](https://github.com/KillianLucas/open-interpreter#how-does-it-work) as myHand AI for task execution on local device. myHand AI, however, are [more customisable and extensible with use of plugins](https://github.com/eliranwong/myHand.ai/wiki/Plugins-%E2%80%90-Overview).
 
 # Comparison with Siri and Others
 
