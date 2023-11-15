@@ -129,6 +129,7 @@ class MyHandAI:
 
     def runPlugins(self):
         # The following config values can be modified with plugins, to extend functionalities
+        config.aliases = {}
         config.predefinedContexts = {
             "[none]": "",
             "[custom]": "",
@@ -1304,6 +1305,9 @@ Otherwise, answer "chat". Here is the request:"""
                 userInput = ""
             except:
                 pass
+
+            if userInput in config.aliases:
+                userInput = config.aliases[userInput]
 
             if userInput.startswith("!"):
                 self.runSystemCommand(userInput)

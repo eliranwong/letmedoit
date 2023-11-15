@@ -10,8 +10,6 @@ config.inputSuggestions += [
         "[NO_SCREENING] ",
         "[NO_FUNCTION_CALL] ",
         f"!{sys.executable}" ,
-        f"!{sys.executable} {os.path.join(config.myHandAIFolder, 'autogen_mini.py')}",
-        f"!{sys.executable} {os.path.join(config.myHandAIFolder, 'eTextEdit.py')}",
         "write a summary ", 
         "open ",
         "open the current directory",
