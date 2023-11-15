@@ -20,7 +20,7 @@ Developed by: [Eliran Wong](https://github.com/eliranwong)
 
 3. ChatGPT API key (read https://github.com/eliranwong/myHand.ai/wiki/ChatGPT-API-Key)
 
-# myHand now supports OpenAI v1+
+# myHand now supports OpenAI SDK v1+
 
 myHand AI has been updated to use OpenAI API v1+ in https://github.com/eliranwong/myHand.ai/commit/92f71cb640d852f3d4cf058d12fa77e8051210fd. If you previously ran myHand AI with a virtual environment, you can simply delete it and create a new one.
 
