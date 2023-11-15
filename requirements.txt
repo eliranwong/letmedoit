@@ -17,5 +17,5 @@ tiktoken
 docker
 unstructured[all-docs]
 pillow
---pre pyautogen
+pyautogen==0.2.0b5
 pygame
