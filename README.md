@@ -158,9 +158,11 @@ https://github.com/eliranwong/myHand.ai/wiki/Command-Execution#confirmation-prom
 
 # Comparison with Open Interpreter
 
-The Open Interpreter utilizes [the same principle](https://github.com/KillianLucas/open-interpreter#how-does-it-work), i.e. ChatGPT function calls + Python exec(), as myHand AI for task execution on a local device. However, myHand AI offers [more customisable and extensible with use of plugins](https://github.com/eliranwong/myHand.ai/wiki/Plugins-%E2%80%90-Overview). 
+Both myHand AI and the Open Interpreter have the ability to execute code on a local device to accomplish specific tasks. Both platforms employ the same principle for code execution, which involves using ChatGPT function calls along with the Python exec() function.
 
-The key advantage is that you can launch the Open Interpreter anytime from myHand AI by running the command "!interpreter", assuming you have open-interpreter installed on your device. When you're done using the Open Interpreter, you can return to myHand AI by pressing "Ctrl+C". Therefore, you don't have to choose between the two; you can use both. 
+However, myHand AI offers additional advantages, particularly in terms of [customization and extensibility through the use of plugins](https://github.com/eliranwong/myHand.ai/wiki/Plugins-%E2%80%90-Overview). These plugins allow users to tailor myHand AI to their specific needs and enhance its functionality beyond basic code execution.
+
+One key advantage of myHand AI is the seamless integration with the Open Interpreter. You can conveniently launch the Open Interpreter directly from myHand AI by running the command "!interpreter" [[read more](https://github.com/eliranwong/myHand.ai/assets/25262722/4233b3c8-364e-466b-8218-c2dca7c134e5)]. This integration eliminates the need to choose between the two platforms; you can utilize both simultaneously.
 
 Additionally, myHand integrates an [AutoGen mini interactive chat](https://github.com/eliranwong/myHand.ai/wiki/Integration-with-AutoGen), making it convenient to have all these powerful tools in one place.
 
@@ -175,6 +177,8 @@ Read https://github.com/eliranwong/myHand.ai/wiki/Features
 [AutoGen mini interactive chat](https://github.com/eliranwong/myHand.ai/wiki/Integration-with-AutoGen)
 
 [Launch Open Interpreter from myHand AI](https://github.com/eliranwong/myHand.ai/wiki/Integration-with-Open-Interpreter)
+
+![integration_open_interpreter2](https://github.com/eliranwong/myHand.ai/assets/25262722/4233b3c8-364e-466b-8218-c2dca7c134e5)
 
 # Mobile Support
 
