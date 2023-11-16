@@ -1,4 +1,4 @@
-import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, json, geocoder, base64
+import config, platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, json, geocoder, base64, getpass
 try:
     import tiktoken
     tiktokenImported = True
@@ -32,6 +32,10 @@ class SharedUtil:
         trace = traceback.format_exc()
         print(trace if config.developer else "Error encountered!")
         return trace
+
+    def addTimeStamp(content):
+        time = re.sub("\.[^\.]+?$", "", str(datetime.datetime.now()))
+        return f"{content}\n[Current time: {time}] [Current directory: {os.getcwd()}]"
 
     @staticmethod
     def is_valid_url(url):
@@ -229,15 +233,14 @@ class SharedUtil:
 
     @staticmethod
     def riskAssessment(code):
-        content = f"""I want you to act as a Python expert.
+        content = f"""You are a senior python engineer.
 Assess the risk level of damaging my device upon executing the python code that I will provide for you.
 Answer me either 'high', 'medium' or 'low', without giving me any extra information.
 e.g. file deletions or similar significant impacts are regarded as 'high' level.
 Acess the risk level of this Python code:
 ```
 {code}
-```
-"""
+```"""
         try:
             answer = SharedUtil.getSingleChatResponse(content, temperature=0.0)
             if not answer:
@@ -324,6 +327,7 @@ Machine: {platform.machine()}
 Architecture: {platform.architecture()[0]}
 Processor: {platform.processor()}
 Hostname: {socket.gethostname()}
+Username: {getpass.getuser()}
 Python version: {platform.python_version()}
 Python implementation: {platform.python_implementation()}
 Current directory: {os.getcwd()}

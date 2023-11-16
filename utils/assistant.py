@@ -678,15 +678,13 @@ Otherwise, answer "chat". Here is the request:"""
         return context
 
     def fineTuneUserInput(self, userInput):
-        # time
-        time = re.sub("\.[^\.]+?$", "", str(datetime.datetime.now()))
         # customise chat context
         context = self.getCurrentContext()
         if context and (not config.conversationStarted or (config.conversationStarted and config.chatGPTApiContextInAllInputs)):
             # context may start with "You will be provided with my input delimited with a pair of XML tags, <input> and </input>. ...
             userInput = re.sub("<content>|<content [^<>]*?>|</content>", "", userInput)
             userInput = f"{context}\n<content>{userInput}</content>" if userInput.strip() else context
-        userInput = f"{userInput}\n[Current time: {time}] [Current directory: {os.getcwd()}]"
+        userInput = SharedUtil.addTimeStamp(userInput)
         if config.chatGPTApiPredefinedContextTemp:
             config.chatGPTApiPredefinedContext = config.chatGPTApiPredefinedContextTemp
             config.chatGPTApiPredefinedContextTemp = ""
@@ -1355,10 +1353,11 @@ Otherwise, answer "chat". Here is the request:"""
                         TTSUtil.play(userInput)
                     # Feature: improve writing:
                     if userInput and config.displayImprovedWriting:
+                        userInput = re.sub("\n\[Current time: [^\n]*?$", "", userInput)
                         improvedVersion = SharedUtil.getSingleChatResponse(f"Improve the following writing, according to {config.improvedWritingSytle}\nRemember, provide me with the improved writing only, enclosed in triple quotes ``` and without any additional information or comments.\nMy writing\n:{userInput}")
                         if improvedVersion and improvedVersion.startswith("```") and improvedVersion.endswith("```"):
                             self.print(improvedVersion)
-                            userInput = improvedVersion[3:-3]
+                            userInput = SharedUtil.addTimeStamp(improvedVersion[3:-3])
                             if config.ttsOutput:
                                 TTSUtil.play(userInput)
                     # refine messages before running completion
