@@ -174,11 +174,11 @@ Read https://github.com/eliranwong/myHand.ai/wiki/Features
 
 # Integrateion with AutoGen and Open Interpreter
 
-![integrate_autogen_retriever_1](https://github.com/eliranwong/myHand.ai/assets/25262722/9ab39e40-d51e-44d4-9266-eba1dd3b5f97)
+[AutoGen mini interactive chat](https://github.com/eliranwong/myHand.ai/wiki/Integration-with-AutoGen)
 
 [Launch Open Interpreter from myHand AI](https://github.com/eliranwong/myHand.ai/wiki/Integration-with-Open-Interpreter)
 
-![integration_open_interpreter2](https://github.com/eliranwong/myHand.ai/assets/25262722/4233b3c8-364e-466b-8218-c2dca7c134e5)
+![integrate_autogen_retriever_1](https://github.com/eliranwong/myHand.ai/assets/25262722/9ab39e40-d51e-44d4-9266-eba1dd3b5f97)
 
 # Mobile Support
 
