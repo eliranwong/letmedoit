@@ -663,6 +663,20 @@ Otherwise, answer "chat". Here is the request:"""
         ]
         return messages
 
+    # in a long conversation, ChatGPT often forgets its system message
+    # enhance system message by moving it forward
+    def moveForwardSystemMessage(self, messages):
+        for index, message in enumerate(messages):
+            try:
+                if message.get("role", "") == "system":
+                    item = messages.pop(index)
+                    messages.append(item)
+                    print("system message moved forwarded")
+                    break
+            except:
+                pass
+        return messages
+
     def getCurrentContext(self):
         if not config.chatGPTApiPredefinedContext in config.predefinedContexts:
             config.chatGPTApiPredefinedContext = "[none]"
@@ -1389,6 +1403,8 @@ Otherwise, answer "chat". Here is the request:"""
                     config.pagerContent = ""
                     self.addPagerContent = True
 
+                    if config.conversationStarted:
+                        messages = self.moveForwardSystemMessage(messages)
                     completion = self.runCompletion(messages, noFunctionCall)
                     # stop spinning
                     self.runPython = True

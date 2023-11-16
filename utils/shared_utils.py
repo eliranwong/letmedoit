@@ -317,11 +317,7 @@ Acess the risk level of this Python code:
                 thisPlatform = "macOS"
         wan_ip = SharedUtil.get_wan_ip()
         local_ip = SharedUtil.get_local_ip()
-        date, time = str(datetime.datetime.now()).split(" ", 1)
-        time = re.sub("\.[^\.]+?$", "", time)
-        return f"""Date: {date}
-Time: {time}
-Operating system: {thisPlatform}
+        return f"""Operating system: {thisPlatform}
 Version: {platform.version()}
 Machine: {platform.machine()}
 Architecture: {platform.architecture()[0]}

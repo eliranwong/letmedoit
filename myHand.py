@@ -195,6 +195,7 @@ if __name__ == '__main__':
 
     set_title("myHand.AI")
     setOsOpenCmd()
+    createShortcuts()
     config.excludeConfigList = []
     config.isVlcPlayerInstalled = VlcUtil.isVlcPlayerInstalled()
     # check log files; remove old lines if more than 3000 lines is found in a log file
