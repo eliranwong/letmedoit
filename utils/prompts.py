@@ -144,6 +144,7 @@ Available tokens: {estimatedAvailableTokens}
         def _(event):
             event.app.current_buffer.text = ".context"
             event.app.current_buffer.validate_and_handle()
+        @this_key_bindings.add("escape", "!")
         @this_key_bindings.add("escape", "t")
         def _(event):
             event.app.current_buffer.text = ".system"
@@ -273,7 +274,7 @@ Available tokens: {estimatedAvailableTokens}
             inputIndicator,
             key_bindings=self.prompt_shared_key_bindings,
             bottom_toolbar=self.getToolBar(config.multilineInput) if bottom_toolbar is None else bottom_toolbar,
-            enable_system_prompt=True,
+            #enable_system_prompt=True,
             swap_light_and_dark_colors=Condition(lambda: not config.terminalResourceLinkColor.startswith("ansibright")),
             style=self.promptStyle1 if style is None else style,
             validator=validator,

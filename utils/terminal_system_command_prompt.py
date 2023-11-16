@@ -9,6 +9,7 @@ from prompt_toolkit.filters import Condition
 from prompt_toolkit.styles import Style
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
+from prompt_toolkit import print_formatted_text, HTML
 
 
 class SystemCommandPrompt:
@@ -48,7 +49,7 @@ class SystemCommandPrompt:
     def run(self, allowPathChanges=False):
         self.runSystemCommandPrompt = True
         # initial message
-        config.print("You are currently running system command prompt!")
+        print_formatted_text(HTML(f"<{config.terminalCommandEntryColor1}>You are currently running system command prompt!</{config.terminalCommandEntryColor1}>"))
         config.print(f"To exit, either press 'ctrl+q' or enter '{config.exit_entry}'.")
         # keep current path in case users change directory
         startupDirectory = self.previousDirectory = self.currentDirectory = os.getcwd()
@@ -62,7 +63,6 @@ class SystemCommandPrompt:
         @this_key_bindings.add("c-l")
         def _(_):
             config.print("")
-            config.print(self.divider)
             run_in_terminal(lambda: self.getPath.displayDirectoryContent())
         @this_key_bindings.add("c-i")
         def _(event):
@@ -158,11 +158,14 @@ class SystemCommandPrompt:
                                 os.chdir(lastDir)
                                 self.previousDirectory = previousDirectory
                                 self.currentDirectory = lastDir
+                                # display directory content upon a change
+                                self.getPath.displayDirectoryContent()
                 else:
                     self.systemCommandPromptEntry = ""
                     self.systemCommandPromptPosition = 0
             except:
                 pass
-        config.print("System command prompt closed!")
+        print_formatted_text(HTML(f"<{config.terminalCommandEntryColor1}>System command prompt closed!</{config.terminalCommandEntryColor1}>"))
         if not allowPathChanges:
             os.chdir(startupDirectory)
+

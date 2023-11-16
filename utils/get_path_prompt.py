@@ -55,6 +55,7 @@ class GetPath:
     def displayDirectoryContent(self, display_dir_only=False):
 
         def printDirsFiles(display_dir_only=display_dir_only):
+            config.print(config.divider)
             dirs, files = self.listDirectoryContent()
             if dirs:
                 print("Directories:")
@@ -62,6 +63,7 @@ class GetPath:
             if files and not display_dir_only:
                 print("Files:")
                 print(" | ".join(sorted(files)))
+            config.print(config.divider)
 
         def printFormattedDirsFiles(display_dir_only=display_dir_only):
             # require prompt-toolkit
@@ -70,6 +72,7 @@ class GetPath:
             # read more color codes at https://github.com/prompt-toolkit/python-prompt-toolkit/blob/65c3d0607c69c19d80abb052a18569a2546280e5/src/prompt_toolkit/styles/named_colors.py
             dirs, files = self.listDirectoryContent()
             separator = '</{0}> | <{0}>'.format(self.itemColor)
+            print_formatted_text(config.divider)
             if dirs:
                 dirs = "<{0}>{1}</{0}>".format(self.itemColor, separator.join(dirs))
                 print_formatted_text(HTML("<b><{0}>Directories</{0}></b>".format(self.subHeadingColor)))
@@ -78,6 +81,7 @@ class GetPath:
                 files = "<{0}>{1}</{0}>".format(self.itemColor, separator.join(files))
                 print_formatted_text(HTML("<b><{0}>Files</{0}></b>".format(self.subHeadingColor)))
                 print_formatted_text(HTML(files))
+            print_formatted_text(config.divider)
 
         try:
             # when prompt-toolkit is installed
