@@ -8,7 +8,7 @@ import config, sys, os
 
 config.aliases["!autogen"] = f"!{sys.executable} {os.path.join(config.myHandAIFolder, 'autogen_assistant.py')}"
 config.aliases["!retriever"] = f"!{sys.executable} {os.path.join(config.myHandAIFolder, 'autogen_retriever.py')}"
-config.aliases["!etextedit"] = f"!{sys.executable} {os.path.join(config.myHandAIFolder, 'eTextEdit.py')}",
+config.aliases["!etextedit"] = f"!{sys.executable} {os.path.join(config.myHandAIFolder, 'eTextEdit.py')}"
 
 config.inputSuggestions += ["!autogen", "!retriever", "!etextedit"]
 
