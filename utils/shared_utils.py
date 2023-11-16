@@ -17,7 +17,7 @@ class SharedUtil:
         "gpt-3.5-turbo": 4097,
         "gpt-3.5-turbo-16k": 16385,
         "gpt-4-1106-preview": 8190,
-        "gpt-4-vision-preview": 8190,
+        #"gpt-4-vision-preview": 8190, # used in plugin "analyze images"
         "gpt-4": 8192,
         "gpt-4-32k": 32768,
     }
