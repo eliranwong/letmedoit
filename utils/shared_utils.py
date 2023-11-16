@@ -35,7 +35,7 @@ class SharedUtil:
 
     def addTimeStamp(content):
         time = re.sub("\.[^\.]+?$", "", str(datetime.datetime.now()))
-        return f"{content}\n[Current time: {time}] [Current directory: {os.getcwd()}]"
+        return f"{content}\n[Current time: {time}]"
 
     @staticmethod
     def is_valid_url(url):

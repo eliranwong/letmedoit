@@ -670,8 +670,8 @@ Otherwise, answer "chat". Here is the request:"""
             try:
                 if message.get("role", "") == "system":
                     item = messages.pop(index)
+                    item["content"] = re.sub("^Current directory: .*?$", f"Current directory: {os.getcwd()}", item["content"], flags=re.M)
                     messages.append(item)
-                    #print("system message moved forwarded")
                     break
             except:
                 pass

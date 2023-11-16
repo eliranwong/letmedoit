@@ -51,7 +51,7 @@ class SystemCommandPrompt:
         config.print("You are currently running system command prompt!")
         config.print(f"To exit, either press 'ctrl+q' or enter '{config.exit_entry}'.")
         # keep current path in case users change directory
-        appPath = os.getcwd()
+        startupDirectory = self.previousDirectory = self.currentDirectory = os.getcwd()
 
         this_key_bindings = KeyBindings()
 
@@ -139,8 +139,11 @@ class SystemCommandPrompt:
                         os.system(f"{self.openCommand} {userInput}")
                     # run as command
                     else:
-                        if "\n" in userInput:
+                        if userInput.strip() == "cd -":
+                            userInput = f"cd {self.previousDirectory}"
+                        elif "\n" in userInput:
                             userInput = ";".join(userInput.split("\n"))
+                        previousDirectory = os.getcwd()
                         os.system(userInput)
                         # check if directory is changed
                         cmdList = []
@@ -153,6 +156,8 @@ class SystemCommandPrompt:
                             lastDir = cmdList[-1][3:]
                             if os.path.isdir(lastDir):
                                 os.chdir(lastDir)
+                                self.previousDirectory = previousDirectory
+                                self.currentDirectory = lastDir
                 else:
                     self.systemCommandPromptEntry = ""
                     self.systemCommandPromptPosition = 0
@@ -160,4 +165,4 @@ class SystemCommandPrompt:
                 pass
         config.print("System command prompt closed!")
         if not allowPathChanges:
-            os.chdir(appPath)
+            os.chdir(startupDirectory)
