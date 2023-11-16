@@ -9,7 +9,7 @@ if not hasattr(config, "max_consecutive_auto_reply"):
     config.max_consecutive_auto_reply = 10
 
 
-class AutoGenMini:
+class AutoGenAssistant:
 
     def __init__(self):
         #config_list = autogen.get_config_list(
@@ -79,7 +79,7 @@ Below is my message:
 
         auto = False
         self.print("Do you want auto-reply (y/yes/N/NO)?")
-        userInput = prompts.simplePrompt(style=promptStyle)
+        userInput = prompts.simplePrompt(style=promptStyle, default="NO")
         if userInput.strip().lower() in ("y", "yes"):
             auto = True
             self.print("Enter maximum consecutive auto-reply below:")
@@ -87,11 +87,11 @@ Below is my message:
             if max_consecutive_auto_reply and int(max_consecutive_auto_reply) > 1:
                 config.max_consecutive_auto_reply = int(max_consecutive_auto_reply)
 
-        self.print("Autogen mini launched!")
+        self.print(f"<{config.terminalCommandEntryColor1}>AutoGen Assistant launched!</{config.terminalCommandEntryColor1}>")
         self.print("[press 'ctrl+q' to exit]")
         while True:
-            self.print("New chat started!")
-            self.print("Enter your message below:")
+            self.print(f"<{config.terminalCommandEntryColor1}>New chat started!</{config.terminalCommandEntryColor1}>")
+            self.print(f"<{config.terminalCommandEntryColor1}>Enter your message below:</{config.terminalCommandEntryColor1}>")
             message = prompts.simplePrompt(style=promptStyle)
             if message == config.exit_entry:
                 break
@@ -100,7 +100,7 @@ Below is my message:
             except:
                 self.print(traceback.format_exc())
                 break
-        self.print("\n\nAutogen mini closed!")
+        self.print(f"<{config.terminalCommandEntryColor1}>\n\nAutoGen Assistant closed!</{config.terminalCommandEntryColor1}>")
 
 if __name__ == '__main__':
-    AutoGenMini().run()
+    AutoGenAssistant().run()

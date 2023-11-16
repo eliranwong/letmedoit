@@ -17,5 +17,6 @@ tiktoken
 docker
 unstructured[all-docs]
 pillow
-pyautogen==0.2.0b5
+pyautogen[retrievechat]==0.2.0b5
+chromadb
 pygame
