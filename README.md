@@ -32,9 +32,13 @@ myHand AI has been updated to use OpenAI API v1+ in https://github.com/eliranwon
 
 # Recent Additions
 
-[Plugin - anaylze image](https://github.com/eliranwong/myHand.ai/wiki/Plugins-%E2%80%90-Analyze-Image)
+[Plugin - anaylze images](https://github.com/eliranwong/myHand.ai/wiki/Plugins-%E2%80%90-Analyze-Images)
 
 ![analyze_image_demo](https://github.com/eliranwong/myHand.ai/assets/25262722/e8767d02-bcc7-47f7-8169-29a0325e9ef9)
+
+[Plugin - anaylze files](https://github.com/eliranwong/myHand.ai/wiki/Plugins-%E2%80%90-Analyze-Files)
+
+![integration_autogen_retriever](https://github.com/eliranwong/myHand.ai/assets/25262722/0e31735c-5126-41ac-881c-eb8abce2aace)
 
 # Documentation
 

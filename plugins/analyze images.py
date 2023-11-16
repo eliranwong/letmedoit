@@ -1,5 +1,5 @@
 """
-myHand.ai plugin - analyze image
+myHand.ai plugin - analyze images
 
 analyze images with model "gpt-4-vision-preview"
 
@@ -10,7 +10,7 @@ import config, openai
 from utils.shared_utils import SharedUtil
 from openai import OpenAI
 
-def analyze_image(function_args):
+def analyze_images(function_args):
     query = function_args.get("query") # required
     files = function_args.get("files") # required
     #print(files)
@@ -72,7 +72,7 @@ def analyze_image(function_args):
     return "[INVALID]"
 
 functionSignature = {
-    "name": "analyze_image",
+    "name": "analyze_images",
     "description": "describe or analyze images",
     "parameters": {
         "type": "object",
@@ -91,4 +91,4 @@ functionSignature = {
 }
 
 config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["analyze_image"] = analyze_image
+config.chatGPTApiAvailableFunctions["analyze_images"] = analyze_images
