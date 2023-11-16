@@ -174,7 +174,7 @@ Read https://github.com/eliranwong/myHand.ai/wiki/Features
 
 # Integrateion with AutoGen and Open Interpreter
 
-[AutoGen mini interactive chat](https://github.com/eliranwong/myHand.ai/wiki/Integration-with-AutoGen)
+[Integration with AutoGen](https://github.com/eliranwong/myHand.ai/wiki/Integration-with-AutoGen)
 
 [Launch Open Interpreter from myHand AI](https://github.com/eliranwong/myHand.ai/wiki/Integration-with-Open-Interpreter)
 
