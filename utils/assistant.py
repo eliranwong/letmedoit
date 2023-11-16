@@ -499,7 +499,7 @@ Otherwise, answer "chat". Here is the request:"""
         func_arguments = tool_call.function.arguments
         function_call_message_mini = {
             "role": "assistant",
-            "content": None,
+            "content": "",
             "function_call": {
                 "name": tool_call.function.name,
                 "arguments": func_arguments,
@@ -623,7 +623,7 @@ Otherwise, answer "chat". Here is the request:"""
                         # send the function call info and response to GPT
                         function_call_message = {
                             "role": "assistant",
-                            "content": None,
+                            "content": "",
                             "function_call": {
                                 "name": func_name,
                                 "arguments": func_arguments,
@@ -635,7 +635,7 @@ Otherwise, answer "chat". Here is the request:"""
                                 "tool_call_id": func_id,
                                 "role": "function",
                                 "name": func_name,
-                                "content": func_response,
+                                "content": func_response if func_response else "",
                             }
                         )  # extend conversation with function response
                         if func_response:
@@ -671,7 +671,7 @@ Otherwise, answer "chat". Here is the request:"""
                 if message.get("role", "") == "system":
                     item = messages.pop(index)
                     messages.append(item)
-                    print("system message moved forwarded")
+                    #print("system message moved forwarded")
                     break
             except:
                 pass
