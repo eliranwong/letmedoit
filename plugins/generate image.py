@@ -42,8 +42,8 @@ def generate_image(function_args):
         response = OpenAI().images.generate(
             model="dall-e-3",
             prompt=f"I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS:\n{prompt}",
-            size="1024x1024",
-            quality="hd", # "hd" or "standard"
+            size=size,
+            quality=quality, # "hd" or "standard"
             response_format="b64_json",
             n=1,
         )
