@@ -880,8 +880,9 @@ def launch(input_text=None, filename=None):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        # users may use unescaped space for filename
-        filename = sys.argv[1] if len(sys.argv) == 2 else " ".join(sys.argv[1:])
+        #filename = sys.argv[1] if len(sys.argv) == 2 else " ".join(sys.argv[1:])
+        # take the first argument as filename
+        filename = sys.argv[1]
         try:
             # create file if it does not exist
             if not os.path.isfile(filename):

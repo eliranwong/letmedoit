@@ -24,8 +24,10 @@ class AutoGenRetriever:
         os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
 
     def getResponse(self, docs_path, message, auto=False):
-
-        db = os.path.join("temp", "chromadb")
+        this_file = os.path.realpath(__file__)
+        currentFolder = os.path.dirname(this_file)
+        folder = config.startupdirectory if config.startupdirectory else os.path.join(currentFolder, "files")
+        db = os.path.join(folder, "autogen", "retriever")
         Path(db).mkdir(parents=True, exist_ok=True)
 
         config_list = autogen.config_list_from_json(
@@ -42,10 +44,11 @@ class AutoGenRetriever:
             name="assistant", 
             system_message="You are a helpful assistant.",
             llm_config={
+                #"cache_seed": 42,  # seed for caching and reproducibility
+                "config_list": config_list,  # a list of OpenAI API configurations
+                "temperature": config.chatGPTApiTemperature,  # temperature for sampling
                 "timeout": 600,
-                #"cache_seed": 42,
-                "config_list": config_list,
-            },
+            },  # configuration for autogen's enhanced inference API which is compatible with OpenAI API
         )
 
         # https://microsoft.github.io/autogen/docs/reference/agentchat/contrib/retrieve_user_proxy_agent

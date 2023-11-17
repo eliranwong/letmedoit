@@ -28,7 +28,8 @@ def generate_image(function_args):
         #jsonFile = os.path.join(config.myHandAIFolder, "temp", "openai_image.json")
         #with open(jsonFile, mode="w", encoding="utf-8") as fileObj:
         #    json.dump(response.data[0].b64_json, fileObj)
-        imageFile = os.path.join(config.myHandAIFolder, "temp", f"{SharedUtil.getCurrentDateTime()}.png")
+        folder = config.startupdirectory if config.startupdirectory else os.path.join(config.myHandAIFolder, "files")
+        imageFile = os.path.join(folder, "images", f"{SharedUtil.getCurrentDateTime()}.png")
         image_data = b64decode(response.data[0].b64_json)
         with open(imageFile, mode="wb") as pngObj:
             pngObj.write(image_data)
