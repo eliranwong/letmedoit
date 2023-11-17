@@ -9,6 +9,7 @@ import config, openai, os
 from base64 import b64decode
 from utils.shared_utils import SharedUtil
 from openai import OpenAI
+from pathlib import Path
 
 def generate_image(function_args):
     prompt = function_args.get("prompt") # required
@@ -29,7 +30,9 @@ def generate_image(function_args):
         #with open(jsonFile, mode="w", encoding="utf-8") as fileObj:
         #    json.dump(response.data[0].b64_json, fileObj)
         folder = config.startupdirectory if config.startupdirectory else os.path.join(config.myHandAIFolder, "files")
-        imageFile = os.path.join(folder, "images", f"{SharedUtil.getCurrentDateTime()}.png")
+        folder = os.path.join(folder, "images")
+        Path(folder).mkdir(parents=True, exist_ok=True)
+        imageFile = os.path.join(folder, f"{SharedUtil.getCurrentDateTime()}.png")
         image_data = b64decode(response.data[0].b64_json)
         with open(imageFile, mode="wb") as pngObj:
             pngObj.write(image_data)
