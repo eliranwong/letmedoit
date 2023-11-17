@@ -8,11 +8,34 @@ generate images with model "dall-e-3"
 import config, openai, os
 from base64 import b64decode
 from utils.shared_utils import SharedUtil
+from utils.terminal_mode_dialogs import TerminalModeDialogs
 from openai import OpenAI
 from pathlib import Path
 
 def generate_image(function_args):
+    config.stopSpinning()
     prompt = function_args.get("prompt") # required
+    dialogs = TerminalModeDialogs(None)
+    # size selection
+    options = ("1024x1024", "1024x1792", "1792x1024")
+    size = dialogs.getValidOptions(
+        options=options,
+        title="Generating an image ...",
+        default="1024x1024",
+        text="Select size below:"
+    )
+    if not size:
+        size = "1024x1024"
+    # quality selection
+    options = ("standard", "hd")
+    quality = dialogs.getValidOptions(
+        options=options,
+        title="Generating an image ...",
+        default="hd",
+        text="Select quality below:"
+    )
+    if not quality:
+        quality = "hd"
     try:
         # get responses
         #https://platform.openai.com/docs/guides/images/introduction

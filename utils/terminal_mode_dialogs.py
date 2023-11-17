@@ -92,7 +92,10 @@ class TerminalModeDialogs:
             style=self.style,
         ).run()
         if result:
-            self.parent.print(result)
+            if self.parent:
+                self.parent.print(result)
+            else:
+                print(result)
             return result
         return ""
 

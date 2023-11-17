@@ -68,11 +68,12 @@ class AutoGenTeachable:
         verbosity = TerminalModeDialogs(self).getValidOptions(
             options=options.keys(),
             title="Launching AutoGen Teachable ...",
-            default="0",
+            default="(default) for basic info",
             text="Choose verbosity below:"
         )
-        if verbosity:
-            self.getResponse(options[verbosity])
+        if not verbosity:
+            verbosity = "(default) for basic info"
+        self.getResponse(options[verbosity])
         
         self.print(f"\n\n<{config.terminalCommandEntryColor1}>AutoGen Teachable closed!</{config.terminalCommandEntryColor1}>")
 
