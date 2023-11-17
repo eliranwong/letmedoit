@@ -333,20 +333,20 @@ def _(_):
 # Navigation
 # left arrow; necessary for moving between lines
 @bindings.add("left")
-def _(_):
-    buffer = text_field.buffer
+def _(event):
+    buffer = event.app.current_buffer
     if buffer.cursor_position > 0:
         buffer.cursor_position = buffer.cursor_position - 1
 # right arrow; necessary for moving between lines
 @bindings.add("right")
-def _(_):
-    buffer = text_field.buffer
+def _(event):
+    buffer = event.app.current_buffer
     if buffer.cursor_position < len(buffer.text):
         buffer.cursor_position = buffer.cursor_position + 1
 # up arrow; necessary for moving between characters of the same line
 @bindings.add("up")
-def _(_):
-    buffer = text_field.buffer
+def _(event):
+    buffer = event.app.current_buffer
     text_field_width = getTextFieldWidth(buffer)
     current_cursor_position_col = buffer.document.cursor_position_col
     if current_cursor_position_col >= text_field_width:
@@ -363,8 +363,8 @@ def _(_):
             buffer.cursor_position = buffer.cursor_position - current_cursor_position_col - 1
 # down arrow; necessary for moving between characters of the same line
 @bindings.add("down")
-def _(_):
-    buffer = text_field.buffer
+def _(event):
+    buffer = event.app.current_buffer
     text_field_width = getTextFieldWidth(buffer)
     cursor_position_col = buffer.document.cursor_position_col
     current_chunk_cursor_position_col = cursor_position_col%text_field_width
@@ -385,26 +385,25 @@ def _(_):
         else:
             buffer.cursor_position = buffer.cursor_position + end_of_line_position + next_line_width + 1
 
-
 # go to the beginning of the current line
 @bindings.add("escape", "b")
-def _(_):
-    buffer = text_field.buffer
+def _(event):
+    buffer = event.app.current_buffer
     buffer.cursor_position = buffer.cursor_position - buffer.document.cursor_position_col
 # go to the end of the current line
 @bindings.add("escape", "e")
-def _(_):
-    buffer = text_field.buffer
+def _(event):
+    buffer = event.app.current_buffer
     buffer.cursor_position = buffer.cursor_position + buffer.document.get_end_of_line_position()
 # go to the beginning of the whole text
 @bindings.add("escape", "a")
-def _(_):
-    buffer = text_field.buffer
+def _(event):
+    buffer = event.app.current_buffer
     buffer.cursor_position = 0
 # go to the end of the whole text
 @bindings.add("escape", "z")
-def _(_):
-    buffer = text_field.buffer
+def _(event):
+    buffer = event.app.current_buffer
     buffer.cursor_position = len(buffer.text)
 # go to line
 @bindings.add("c-l")
@@ -414,32 +413,43 @@ def _(_):
 # Delete
 # backspace
 @bindings.add("c-h")
-def _(_):
-    do_backspace()
+def _(event):
+    do_backspace(event)
 # forward delete
 @bindings.add("c-d")
-def _(_):
-    do_delete()
+def _(event):
+    do_delete(event)
 
 # selection
 @bindings.add("c-a")
-def _(_):
-    do_select_all()
+def _(event):
+    do_select_all(event)
 @bindings.add("escape", "d")
-def _(_):
-    do_deselect_all()
+def _(event):
+    do_deselect_all(event)
 
 # clipboard
 @bindings.add("c-c")
-def _(_):
-    do_copy()
+def _(event):
+    do_copy(event)
 @bindings.add("c-v")
-def _(_):
-    do_paste()
+def _(event):
+    do_paste(event)
 @bindings.add("c-x")
-def _(_):
-    do_cut()
+def _(event):
+    do_cut(event)
 
+# Clear i-search highlights
+# Reference: https://github.com/prompt-toolkit/python-prompt-toolkit/blob/3e71b1ea844f1a4dc711e39c015a0d22bb491010/src/prompt_toolkit/search.py#L84
+@bindings.add("escape", "f")
+def _(event):
+    cursor_position = text_field.buffer.cursor_position
+    search_state = event.app.current_search_state
+    search_state.text = ""
+    text_field.buffer.apply_search(
+        search_state, include_current_position=True
+    )
+    text_field.buffer.cursor_position = cursor_position
 # search
 @bindings.add("c-f")
 def _(_):
@@ -465,14 +475,14 @@ def _(_):
 # edit
 @bindings.add("c-i")
 @bindings.add("s-tab")
-def _(_):
-    do_add_spaces()
+def _(event):
+    do_add_spaces(event)
 @bindings.add("c-z")
-def _(_):
-    do_undo()
+def _(event):
+    do_undo(event)
 @bindings.add("<any>")
 def _(event):
-    buffer = text_field.buffer
+    buffer = event.app.current_buffer
     buffer.cut_selection().text
     # a key sequence looks like [KeyPress(key='a', data='a')]
     buffer.insert_text(event.key_sequence[0].data)
@@ -637,8 +647,9 @@ def do_time_date():
     text = datetime.datetime.now().isoformat()
     text_field.buffer.insert_text(text)
 
-def do_add_spaces():
-    text_field.buffer.insert_text("    ")
+def do_add_spaces(event=None):
+    buffer = event.app.current_buffer if event is not None else text_field.buffer
+    buffer.insert_text("    ")
 
 def do_go_to():
     async def coroutine():
@@ -658,30 +669,34 @@ def do_go_to():
                 )
     ensure_future(coroutine())
 
-def do_undo():
-    text_field.buffer.undo()
+def do_undo(event=None):
+    buffer = event.app.current_buffer if event is not None else text_field.buffer
+    buffer.undo()
 
-def do_redo():
+def do_redo(event=None):
+    buffer = event.app.current_buffer if event is not None else text_field.buffer
     #it does not work properly
-    text_field.buffer.redo()
+    buffer.redo()
 
-def do_cut():
-    data = text_field.buffer.cut_selection()
+def do_cut(event=None):
+    buffer = event.app.current_buffer if event is not None else text_field.buffer
+    data = buffer.cut_selection()
     get_app().clipboard.set_data(data)
 
-def do_copy():
-    data = text_field.buffer.copy_selection()
+def do_copy(event=None):
+    buffer = event.app.current_buffer if event is not None else text_field.buffer
+    data = buffer.copy_selection()
     get_app().clipboard.set_data(data)
 
-def do_backspace():
-    buffer = text_field.buffer
+def do_backspace(event=None):
+    buffer = event.app.current_buffer if event is not None else text_field.buffer
     data = buffer.cut_selection()
     # delete one char before cursor [backspace] if there is no text selection
     if not data.text and buffer.cursor_position >= 1:
         buffer.delete_before_cursor(1)
 
-def do_delete():
-    buffer = text_field.buffer
+def do_delete(event=None):
+    buffer = event.app.current_buffer if event is not None else text_field.buffer
     data = buffer.cut_selection()
     # forward delete one character if there is no selection
     if not data.text and buffer.cursor_position < len(buffer.text):
@@ -701,25 +716,25 @@ def do_find_next():
     )
     text_field.buffer.cursor_position = cursor_position
 
-def do_paste():
-    buffer = text_field.buffer
+def do_paste(event=None):
+    buffer = event.app.current_buffer if event is not None else text_field.buffer
     buffer.cut_selection()
     clipboardText = ApplicationState.clipboard.get_data().text
     buffer.insert_text(clipboardText)
     # the following line does not work well; cursor position not aligned
     #text_field.buffer.paste_clipboard_data(get_app().clipboard.get_data())
 
-def do_deselect_all():
-    buffer = text_field.buffer
+def do_deselect_all(event=None):
+    buffer = event.app.current_buffer if event is not None else text_field.buffer
     cursor_position = buffer.cursor_position
     text = buffer.text
     buffer.reset()
     buffer.text = text
     buffer.cursor_position = cursor_position
 
-def do_select_all():
+def do_select_all(event=None):
     # toggle between select all and deselect all
-    buffer = text_field.buffer
+    buffer = event.app.current_buffer if event is not None else text_field.buffer
     # select all
     text_field.buffer.cursor_position = 0
     text_field.buffer.start_selection()
