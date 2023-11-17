@@ -452,7 +452,12 @@ def _(event):
     text_field.buffer.cursor_position = cursor_position
 # search
 @bindings.add("c-f")
-def _(_):
+def _(event):
+    search_state = event.app.current_search_state
+    previous_search_text = search_state.text
+    if previous_search_text:
+        search_toolbar.search_buffer.text = previous_search_text
+        search_toolbar.search_buffer.cursor_position = len(previous_search_text)
     do_find()
 @bindings.add("c-r")
 def _(_):
@@ -736,9 +741,9 @@ def do_select_all(event=None):
     # toggle between select all and deselect all
     buffer = event.app.current_buffer if event is not None else text_field.buffer
     # select all
-    text_field.buffer.cursor_position = 0
-    text_field.buffer.start_selection()
-    text_field.buffer.cursor_position = len(buffer.text)
+    buffer.cursor_position = 0
+    buffer.start_selection()
+    buffer.cursor_position = len(buffer.text)
 
 def do_status_bar():
     ApplicationState.show_status_bar = not ApplicationState.show_status_bar
