@@ -80,7 +80,7 @@ Name=MyHand Bot
                     copyfile(linuxDesktopFile, desktopPathShortcut)
             except:
                 pass
-    createAppAlias()
+    #createAppAlias()
 
 def createAppAlias():
     alias = "myhand"

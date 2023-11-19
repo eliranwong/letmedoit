@@ -42,6 +42,16 @@ Read https://github.com/eliranwong/myhand/wiki
 
 > myhand
 
+## Install with pip and venv (recommended)
+
+> python3 -m venv myhand
+
+> source myhand/bin/activate
+
+> pip install myhand
+
+> myhand
+
 # Quick Quide
 
 https://github.com/eliranwong/myhand/wiki/Quick-Guide
