@@ -1,8 +1,8 @@
-# myHand
+# MyHand
 
 "myHand" is AI assistant, powered by ChatGPT, that can both chat and run tasks on local devices.
 
-## Watch this Video! myHand AI introduces itself!
+## Watch this Video! MyHand Bot introduces itself!
 
 [![Watch the video](https://img.youtube.com/vi/Dfsl-Cxx0bQ/maxresdefault.jpg)](https://youtu.be/Dfsl-Cxx0bQ)
 
@@ -20,16 +20,6 @@ Developed by: [Eliran Wong](https://github.com/eliranwong)
 
 3. ChatGPT API key (read https://github.com/eliranwong/myhand/wiki/ChatGPT-API-Key)
 
-# myHand now supports OpenAI SDK v1+
-
-myHand AI has been updated to use OpenAI API v1+ in https://github.com/eliranwong/myhand/commit/92f71cb640d852f3d4cf058d12fa77e8051210fd. If you previously ran myHand AI with a virtual environment, you can simply delete it and create a new one.
-
-> cd myhand<br>
-> rm -rf venv<br>
-> python3 -m venv venv<br>
-> source venv/bin/activate<br>
-> python3 myHand.py
-
 # Recent Additions
 
 [Plugin - anaylze images](https://github.com/eliranwong/myhand/wiki/Plugins-%E2%80%90-Analyze-Images)
@@ -44,31 +34,21 @@ myHand AI has been updated to use OpenAI API v1+ in https://github.com/eliranwon
 
 Read https://github.com/eliranwong/myhand/wiki
 
-# Download
+# Install
 
-> git clone https://github.com/eliranwong/myhand.git
+## Install with pip
 
-# Quick Start
+> pip install myhand
 
-> cd myhand
+> myhand
 
-> python3 myHand.py
-
-# Quick Operations
+# Quick Quide
 
 https://github.com/eliranwong/myhand/wiki/Quick-Guide
 
-# Automatic Update
+# Upgrade with pip
 
-myhand automatically upgrade dependencies and update to the latest codes on startup.
-
-You may enable / disable this feature:
-
-1. Enter blank entry to open the action menu
-
-2. Select 'configure automatic update'
-
-3. Select 'enable' or 'disable'
+> pip install --upgrade myhand
 
 # Features
 
@@ -94,7 +74,7 @@ Read more at https://github.com/eliranwong/myhand/wiki/Features
 
 # Highlight - Plugins
 
-Developers can write their own plugins to add functionalities or to run customised tasks with myhand
+Developers can write their own plugins to add functionalities or to run customised tasks with MyHand
 
 Read more at https://github.com/eliranwong/myhand/wiki/Plugins-%E2%80%90-Overview
 
@@ -102,9 +82,9 @@ Check our built-in plugins at: https://github.com/eliranwong/myhand/tree/main/pl
 
 # Highlight - Command Execution
 
-Latest: MyHand AI is now equipped with an [auto-healing feature for Python code](https://github.com/eliranwong/myhand/wiki/Python-Code-Auto%E2%80%90heal-Feature).
+Latest: MyHand Bot is now equipped with an [auto-healing feature for Python code](https://github.com/eliranwong/myhand/wiki/Python-Code-Auto%E2%80%90heal-Feature).
 
-myhand goes beyond just being a chatbot by offering a unique and powerful capability - the ability to execute commands and perform computing tasks on your behalf. Unlike a mere chatbot, myhand can interact with your computer system and carry out specific commands to accomplish various computing tasks. This feature allows you to leverage the expertise and efficiency of myhand to automate processes, streamline workflows, and perform complex tasks with ease. However, it is essential to remember that with great power comes great responsibility, and users should exercise caution and use this feature at their own risk.
+MyHand goes beyond just being a chatbot by offering a unique and powerful capability - the ability to execute commands and perform computing tasks on your behalf. Unlike a mere chatbot, MyHand can interact with your computer system and carry out specific commands to accomplish various computing tasks. This feature allows you to leverage the expertise and efficiency of MyHand to automate processes, streamline workflows, and perform complex tasks with ease. However, it is essential to remember that with great power comes great responsibility, and users should exercise caution and use this feature at their own risk.
 
 Command execution helps:
 
@@ -154,19 +134,19 @@ Read https://github.com/eliranwong/myhand/wiki/Compare-with-ChatGPT
 
 [ShellGPT](https://github.com/TheR1D/shell_gpt) only supports platform that run shell command-prompt.  Therefore, ShellGPT does not support Windows.
 
-In most cases, myhand run Python codes for task execution. This makes myhand terms of platforms, myhand was developed and tested on Windows, macOS, Linux, ChromeOS and Termux (Android).
+In most cases, MyHand run Python codes for task execution. This makes MyHand terms of platforms, MyHand was developed and tested on Windows, macOS, Linux, ChromeOS and Termux (Android).
 
-In addition, myhand offers more options for risk managements:
+In addition, MyHand offers more options for risk managements:
 
 https://github.com/eliranwong/myhand/wiki/Command-Execution#confirmation-prompt-options-for-command-execution
 
 # Comparison with Open Interpreter
 
-Both myHand AI and the [Open Interpreter](https://github.com/KillianLucas/open-interpreter) have the ability to execute code on a local device to accomplish specific tasks. Both platforms employ the same principle for code execution, which involves using ChatGPT function calls along with the Python exec() function.
+Both MyHand Bot and the [Open Interpreter](https://github.com/KillianLucas/open-interpreter) have the ability to execute code on a local device to accomplish specific tasks. Both platforms employ the same principle for code execution, which involves using ChatGPT function calls along with the Python exec() function.
 
-However, myHand AI offers additional advantages, particularly in terms of [customization and extensibility through the use of plugins](https://github.com/eliranwong/myhand/wiki/Plugins-%E2%80%90-Overview). These plugins allow users to tailor myHand AI to their specific needs and enhance its functionality beyond basic code execution.
+However, MyHand Bot offers additional advantages, particularly in terms of [customization and extensibility through the use of plugins](https://github.com/eliranwong/myhand/wiki/Plugins-%E2%80%90-Overview). These plugins allow users to tailor MyHand Bot to their specific needs and enhance its functionality beyond basic code execution.
 
-One key advantage of myHand AI is the seamless integration with the Open Interpreter. You can conveniently launch the Open Interpreter directly from myHand AI by running the command "!interpreter" [[read more](https://github.com/eliranwong/myhand/assets/25262722/4233b3c8-364e-466b-8218-c2dca7c134e5)]. This integration eliminates the need to choose between the two platforms; you can utilize both simultaneously.
+One key advantage of MyHand Bot is the seamless integration with the Open Interpreter. You can conveniently launch the Open Interpreter directly from MyHand Bot by running the command "!interpreter" [[read more](https://github.com/eliranwong/myhand/assets/25262722/4233b3c8-364e-466b-8218-c2dca7c134e5)]. This integration eliminates the need to choose between the two platforms; you can utilize both simultaneously.
 
 Additionally, myHand integrates [AutoGen Assistant and Retriever](https://github.com/eliranwong/myhand/wiki/Integration-with-AutoGen), making it convenient to have all these powerful tools in one place.
 
@@ -180,13 +160,13 @@ Read https://github.com/eliranwong/myhand/wiki/Features
 
 [Integration with AutoGen](https://github.com/eliranwong/myhand/wiki/Integration-with-AutoGen)
 
-[Launch Open Interpreter from myHand AI](https://github.com/eliranwong/myhand/wiki/Integration-with-Open-Interpreter)
+[Launch Open Interpreter from MyHand Bot](https://github.com/eliranwong/myhand/wiki/Integration-with-Open-Interpreter)
 
 ![integrate_autogen_retriever_1](https://github.com/eliranwong/myhand/assets/25262722/9ab39e40-d51e-44d4-9266-eba1dd3b5f97)
 
 # Mobile Support
 
-myhand is also tested on [Termux](https://termux.dev/en/). myhand also integrates [Termux:API](https://wiki.termux.com/wiki/Termux:API) for task execution.
+MyHand is also tested on [Termux](https://termux.dev/en/). MyHand also integrates [Termux:API](https://wiki.termux.com/wiki/Termux:API) for task execution.
 
 For examples, users can run on Android:
 
