@@ -93,8 +93,11 @@ def createAppAlias():
         def addAliasToLoginProfile(profile, content):
             if os.path.isfile(profile):
                 content = f"\r\n{content}" if config.thisPlatform == "Windows" else f"\n{content}"
-            with open(profile, "a", encoding="utf-8") as fileObj:
-                fileObj.write(content)
+            try:
+                with open(profile, "a", encoding="utf-8") as fileObj:
+                    fileObj.write(content)
+            except:
+                pass
         home = os.path.expanduser("~")
         if config.thisPlatform == "Windows":
             """# command prompt
@@ -107,7 +110,7 @@ def createAppAlias():
             addAliasToLoginProfile(profile, content)"""
             pass
         else:
-            content = f'''alias {alias}="{target}"'''
+            content = f"""alias {alias}='{target}'"""
             try:
                 for profile in (".bash_profile", ".zprofile", ".bashrc", ".zshrc"):
                     addAliasToLoginProfile(os.path.join(home, profile), content)

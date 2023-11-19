@@ -1,0 +1,31 @@
+Metadata-Version: 2.1
+Name: myhand
+Version: 1.0.0
+Summary: MyHand Bot, your advanced AI assistant, capable of engaging in conversations, executing codes, and assisting you with a wide range of tasks.
+Home-page: https://github.com/eliranwong/myhand
+Author: Eliran Wong
+Author-email: support@myhand.bot
+License: GNU General Public License (GPL)
+Requires-Python: >=3.8, <3.12
+Requires-Dist: requests
+Requires-Dist: openai==1.3.3
+Requires-Dist: prompt_toolkit
+Requires-Dist: Pygments
+Requires-Dist: datetime
+Requires-Dist: netifaces
+Requires-Dist: geocoder
+Requires-Dist: googlesearch-python
+Requires-Dist: art
+Requires-Dist: apsw
+Requires-Dist: gTTS
+Requires-Dist: google-cloud-texttospeech
+Requires-Dist: yt-dlp
+Requires-Dist: pyperclip
+Requires-Dist: colorama
+Requires-Dist: tiktoken
+Requires-Dist: docker
+Requires-Dist: unstructured[all-docs]
+Requires-Dist: pillow
+Requires-Dist: pyautogen[mathchat,retrievechat,teachable]==0.2.0b5
+Requires-Dist: chromadb
+Requires-Dist: pygame

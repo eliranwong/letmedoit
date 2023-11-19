@@ -1,0 +1,17 @@
+README.md
+setup.py
+myhand/__init__.py
+myhand/autogen_assistant.py
+myhand/autogen_math.py
+myhand/autogen_retriever.py
+myhand/autogen_teachable.py
+myhand/cli.py
+myhand/config.py
+myhand/eTextEdit.py
+myhand/main.py
+myhand.egg-info/PKG-INFO
+myhand.egg-info/SOURCES.txt
+myhand.egg-info/dependency_links.txt
+myhand.egg-info/entry_points.txt
+myhand.egg-info/requires.txt
+myhand.egg-info/top_level.txt

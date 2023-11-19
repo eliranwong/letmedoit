@@ -1,0 +1,2 @@
+[console_scripts]
+myhand = myhand.cli:cli

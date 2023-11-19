@@ -102,6 +102,7 @@ class AutoGenRetriever:
         # handle path dragged to terminal
         docs_path = docs_path.strip()
         docs_path = re.sub("^'(.*?)'$", r"\1", docs_path)
+        docs_path = docs_path.replace("\\ ", " ")
 
         if docs_path and os.path.exists(docs_path):
             self.print("Enter your query below:")

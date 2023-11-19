@@ -1,0 +1,67 @@
+>>> create an image study hard
+[Current time: 2023-11-19 18:26:43]
+
+
+
+
+
+```
+generate_image
+```
+
+
+
+
+
+
+
+>>> create an image study hard
+[Current time: 2023-11-19 18:27:15]
+
+
+
+
+
+```
+generate_image
+```
+
+
+
+
+
+
+
+>>> create an image: missionary in the UK
+[Current time: 2023-11-19 18:28:23]
+
+
+
+
+
+```
+generate_image
+```
+
+
+
+
+
+
+
+>>> pronunce apple
+[Current time: 2023-11-19 18:49:15]
+
+
+
+
+
+```
+pronunce_words
+```
+
+Finished! Speech engine closed!
+
+
+
+I have pronounced the word "apple" as "æpəl".

@@ -57,7 +57,8 @@ if not os.path.isfile(configFile):
     open(configFile, "a", encoding="utf-8").close()
 
 # import config and setup default
-import config, traceback
+import config
+import traceback
 from utils.configDefault import *
 config.myHandFile = myHandFile
 config.myHandAIFolder = myHandAIFolder
@@ -156,6 +157,7 @@ def aboutToQuit():
                 "chatGPTApiAvailableFunctions",
                 "pythonFunctionResponse", # used with plugins; function call when function name is 'python'
                 # MyHandAI methods shared from Class MyHandAI
+                "getFiles",
                 "stopSpinning",
                 "toggleMultiline",
                 "print",
@@ -202,7 +204,6 @@ if __name__ == '__main__':
     for i in ("chats", "paths", "commands"):
         filepath = os.path.join(config.myHandAIFolder, "history", i)
         set_log_file_max_lines(filepath, 3000)
-    myHand = MyHandAI()
-    myHand.startChats()
+    MyHandAI().startChats()
     aboutToQuit()
     clear_title()

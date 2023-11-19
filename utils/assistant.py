@@ -53,6 +53,7 @@ class MyHandAI:
         config.pagerContent = ""
         self.addPagerContent = False
         # share the following methods in config so that they are accessible via plugins
+        config.getFiles = self.getFiles
         config.stopSpinning = self.stopSpinning
         config.toggleMultiline = self.toggleMultiline
         config.print = self.print
@@ -96,6 +97,11 @@ class MyHandAI:
             config.tts = True
         self.isTtsAvailable()
 
+    def getFiles(self):
+        if config.startupdirectory and not os.path.isdir(config.startupdirectory):
+            config.startupdirectory = ""
+        return config.startupdirectory if config.startupdirectory else os.path.join(config.myHandAIFolder, "files")
+
     def getPygmentsStyle(self):
         theme = config.pygments_style if config.pygments_style else "stata-dark" if config.terminalResourceLinkColor.startswith("ansibright") else "stata-light"
         return style_from_pygments_cls(get_style_by_name(theme))
@@ -114,18 +120,18 @@ class MyHandAI:
         )
 
     def execPythonFile(self, script):
-        if config.developer:
-            with open(script, 'r', encoding='utf8') as f:
-                code = compile(f.read(), script, 'exec')
-                exec(code, globals())
-        else:
-            try:
+        try:
+            if config.developer:
                 with open(script, 'r', encoding='utf8') as f:
                     code = compile(f.read(), script, 'exec')
                     exec(code, globals())
-            except:
-                self.print("Failed to run '{0}'!".format(os.path.basename(script)))
-                SharedUtil.showErrors()
+            else:
+                with open(script, 'r', encoding='utf8') as f:
+                    code = compile(f.read(), script, 'exec')
+                    exec(code, globals())
+        except:
+            self.print("Failed to run '{0}'!".format(os.path.basename(script)))
+            SharedUtil.showErrors()
 
     def runPlugins(self):
         # The following config values can be modified with plugins, to extend functionalities
@@ -1111,7 +1117,7 @@ Otherwise, answer "chat". Here is the request:"""
             try:
                 #filename = re.sub('[\\\/\:\*\?\"\<\>\|]', "", messages[2 if config.chatGPTApiCustomContext.strip() else 1]["content"])[:40].strip()
                 filename = SharedUtil.getCurrentDateTime()
-                foldername = os.path.join(config.myHandAIFolder, "files", "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", filename))
+                foldername = os.path.join(self.getFiles(), "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", filename))
                 Path(foldername).mkdir(parents=True, exist_ok=True)
                 if filename:
                     chatFile = os.path.join(foldername, f"{filename}.txt")
@@ -1225,7 +1231,7 @@ Otherwise, answer "chat". Here is the request:"""
             self.showLogo()
             self.showCurrentContext()
             # go to startup directory
-            startupdirectory = config.startupdirectory if config.startupdirectory and os.path.isdir(config.startupdirectory) else os.path.join(config.myHandAIFolder, "files")
+            startupdirectory = self.getFiles()
             os.chdir(startupdirectory)
             config.currentMessages = messages = self.resetMessages()
             self.print(f"startup directory:\n{startupdirectory}")

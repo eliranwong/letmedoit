@@ -4,11 +4,11 @@
 myHand.ai plugin - download youtube media
 
 download Youtube videos or audios
-
 """
 
 import config, re, subprocess, os
 from utils.shared_utils import SharedUtil
+from pathlib import Path
 
 if SharedUtil.isPackageInstalled("yt-dlp"):
 
@@ -47,9 +47,9 @@ if SharedUtil.isPackageInstalled("yt-dlp"):
         if is_youtube_url(url):
             config.print("Loading youtube downloader ...")
             format = function_args.get("format") # required
-            location = function_args.get("location", "") # optional
             if not (location and os.path.isdir(location)):
-                location = os.path.join(config.myHandAIFolder, "files", "audio" if format == "audio" else "video")
+                location = os.path.join(config.getFiles(), "audio" if format == "audio" else "video")
+                Path(location).mkdir(parents=True, exist_ok=True)
             downloadCommand = "yt-dlp -x --audio-format mp3" if format == "audio" else "yt-dlp -f bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4"
             terminalDownloadYoutubeFile(downloadCommand, url, location)
             return "Finished! Youtube downloader closed!"

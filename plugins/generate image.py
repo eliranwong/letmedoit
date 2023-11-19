@@ -52,7 +52,7 @@ def generate_image(function_args):
         #jsonFile = os.path.join(config.myHandAIFolder, "temp", "openai_image.json")
         #with open(jsonFile, mode="w", encoding="utf-8") as fileObj:
         #    json.dump(response.data[0].b64_json, fileObj)
-        folder = config.startupdirectory if config.startupdirectory else os.path.join(config.myHandAIFolder, "files")
+        folder = config.getFiles()
         folder = os.path.join(folder, "images")
         Path(folder).mkdir(parents=True, exist_ok=True)
         imageFile = os.path.join(folder, f"{SharedUtil.getCurrentDateTime()}.png")
@@ -97,7 +97,7 @@ functionSignature = {
         "properties": {
             "prompt": {
                 "type": "string",
-                "description": "description about the image",
+                "description": "description about the image, as detailed as possible",
             },
         },
         "required": ["prompt"],
