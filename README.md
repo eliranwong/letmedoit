@@ -34,19 +34,29 @@ Developed by: [Eliran Wong](https://github.com/eliranwong)
 
 Read https://github.com/eliranwong/myhand/wiki
 
-# Install
-
-## Install with pip
+# Install with pip
 
 > pip install myhand
 
 > myhand
 
-## Install with pip and venv (recommended)
+# Install with pip and venv (recommended)
+
+## macOS / Linux Users
 
 > python3 -m venv myhand
 
 > source myhand/bin/activate
+
+> pip install myhand
+
+> myhand
+
+## Windows Users
+
+> python -m venv myhand
+
+> .\myhand\Scripts\activate
 
 > pip install myhand
 
@@ -95,6 +105,8 @@ Check our built-in plugins at: https://github.com/eliranwong/myhand/tree/main/pl
 Latest: MyHand Bot is now equipped with an [auto-healing feature for Python code](https://github.com/eliranwong/myhand/wiki/Python-Code-Auto%E2%80%90heal-Feature).
 
 MyHand goes beyond just being a chatbot by offering a unique and powerful capability - the ability to execute commands and perform computing tasks on your behalf. Unlike a mere chatbot, MyHand can interact with your computer system and carry out specific commands to accomplish various computing tasks. This feature allows you to leverage the expertise and efficiency of MyHand to automate processes, streamline workflows, and perform complex tasks with ease. However, it is essential to remember that with great power comes great responsibility, and users should exercise caution and use this feature at their own risk.
+
+Related: [Python Code Auto-healing](https://github.com/eliranwong/myhand/wiki/Python-Code-Auto%E2%80%90heal-Feature)
 
 Command execution helps:
 
