@@ -1,18 +1,44 @@
 from setuptools import setup, find_packages
+import os
 
-with open("README.md", "r", encoding="utf-8") as fileObj:
+with open(os.path.join("myhand", "README.md"), "r", encoding="utf-8") as fileObj:
     long_description = fileObj.read()
 
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name="myhand",
-    version="1.0.2",
+    version="1.0.7",
     python_requires=">=3.8, <3.12",
-    description='MyHand Bot, your advanced AI assistant, capable of engaging in conversations, executing codes, and assisting you with a wide range of tasks.',
+    description="An advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,
     author="Eliran Wong",
     author_email="support@myhand.bot",
-    packages=find_packages(),
+    packages=[
+        "myhand",
+        "myhand.files",
+        "myhand.history",
+        "myhand.icons",
+        "myhand.plugins",
+        "myhand.plugins.bibleTools.",
+        "myhand.plugins.bibleTools.bibleData.bibles",
+        "myhand.plugins.bibleTools.bibleData.",
+        "myhand.plugins.bibleTools.utils",
+        "myhand.temp",
+        "myhand.utils",
+    ],
+    package_data={
+        "myhand": ['*.*'],
+        "myhand.files": ['*.*'],
+        "myhand.history": ['*.*'],
+        "myhand.icons": ['*.*'],
+        "myhand.plugins": ['*.*'],
+        "myhand.plugins.bibleTools.": ['*.*'],
+        "myhand.plugins.bibleTools.bibleData.bibles": ['*.*'],
+        "myhand.plugins.bibleTools.bibleData.": ['*.*'],
+        "myhand.plugins.bibleTools.utils": ['*.*'],
+        "myhand.temp": ['*.*'],
+        "myhand.utils": ['*.*'],
+    },
     url="https://github.com/eliranwong/myhand",
     license="GNU General Public License (GPL)",
     install_requires=[
@@ -44,4 +70,11 @@ setup(
             "myhand=myhand.cli:cli",
         ],
     },
+    keywords="ai openai chatgpt rag autogen open interpreter auto-heal",
+    project_urls={
+        "Source": "https://github.com/eliranwong/myhand",
+        "Tracker": "https://github.com/eliranwong/myhand/issues",
+        "Documentation": "https://github.com/eliranwong/myhand/wiki",
+        "Funding": "https://www.paypal.me/MarvelBible",
+},
 )

@@ -1,12 +1,12 @@
 # MyHand
 
-"myHand" is AI assistant, powered by ChatGPT, that can both chat and run tasks on local devices.
+MyHand Bot is an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.
 
-## Watch this Video! MyHand Bot introduces itself!
+## Watch this Video! MyHand introduces itself!
 
 [![Watch the video](https://img.youtube.com/vi/Dfsl-Cxx0bQ/maxresdefault.jpg)](https://youtu.be/Dfsl-Cxx0bQ)
 
-Though myHand is built on ChatGPT, myHand goes beyond being a mere ChatGPT assistant by embodying the essence of "Actions speak louder than words." Unlike standard ChatGPT, myHand not only engages in conversational interactions but also actively performs tasks on behalf of users, demonstrating its commitment to practical action and tangible results.
+Though MyHand is built on ChatGPT, MyHand goes beyond being a mere ChatGPT assistant by embodying the essence of "Actions speak louder than words." Unlike standard ChatGPT, MyHand not only engages in conversational interactions but also actively performs tasks on behalf of users, demonstrating its commitment to practical action and tangible results.
 
 Repository: https://github.com/eliranwong/myhand
 
@@ -34,31 +34,21 @@ Developed by: [Eliran Wong](https://github.com/eliranwong)
 
 Read https://github.com/eliranwong/myhand/wiki
 
-# Install with pip
+# Install
 
-> pip install myhand
+## Install with pip
+
+> pip install --upgrade myhand
 
 > myhand
 
-# Install with pip and venv (recommended)
-
-## macOS / Linux Users
+## Install with pip and venv (recommended)
 
 > python3 -m venv myhand
 
 > source myhand/bin/activate
 
-> pip install myhand
-
-> myhand
-
-## Windows Users
-
-> python -m venv myhand
-
-> .\myhand\Scripts\activate
-
-> pip install myhand
+> pip install --upgrade myhand
 
 > myhand
 
@@ -72,7 +62,7 @@ https://github.com/eliranwong/myhand/wiki/Quick-Guide
 
 # Features
 
-myHand is an advanced AI assistant that brings a wide range of powerful features to enhance your virtual assistance experience. Here are some key features of myHand:
+MyHand is an advanced AI assistant that brings a wide range of powerful features to enhance your virtual assistance experience. Here are some key features of MyHand:
 
 * Open source
 
@@ -105,8 +95,6 @@ Check our built-in plugins at: https://github.com/eliranwong/myhand/tree/main/pl
 Latest: MyHand Bot is now equipped with an [auto-healing feature for Python code](https://github.com/eliranwong/myhand/wiki/Python-Code-Auto%E2%80%90heal-Feature).
 
 MyHand goes beyond just being a chatbot by offering a unique and powerful capability - the ability to execute commands and perform computing tasks on your behalf. Unlike a mere chatbot, MyHand can interact with your computer system and carry out specific commands to accomplish various computing tasks. This feature allows you to leverage the expertise and efficiency of MyHand to automate processes, streamline workflows, and perform complex tasks with ease. However, it is essential to remember that with great power comes great responsibility, and users should exercise caution and use this feature at their own risk.
-
-Related: [Python Code Auto-healing](https://github.com/eliranwong/myhand/wiki/Python-Code-Auto%E2%80%90heal-Feature)
 
 Command execution helps:
 
@@ -148,7 +136,7 @@ Read more at https://github.com/eliranwong/myhand/wiki/Command-Execution
 
 # Comparison with ChatGPT
 
-myHand offers advanced features beyond standard ChatGPT, including task execution on local devices and real-time access to the internet.
+MyHand offers advanced features beyond standard ChatGPT, including task execution on local devices and real-time access to the internet.
 
 Read https://github.com/eliranwong/myhand/wiki/Compare-with-ChatGPT
 
@@ -170,11 +158,11 @@ However, MyHand Bot offers additional advantages, particularly in terms of [cust
 
 One key advantage of MyHand Bot is the seamless integration with the Open Interpreter. You can conveniently launch the Open Interpreter directly from MyHand Bot by running the command "!interpreter" [[read more](https://github.com/eliranwong/myhand/assets/25262722/4233b3c8-364e-466b-8218-c2dca7c134e5)]. This integration eliminates the need to choose between the two platforms; you can utilize both simultaneously.
 
-Additionally, myHand integrates [AutoGen Assistant and Retriever](https://github.com/eliranwong/myhand/wiki/Integration-with-AutoGen), making it convenient to have all these powerful tools in one place.
+Additionally, MyHand integrates [AutoGen Assistant and Retriever](https://github.com/eliranwong/myhand/wiki/Integration-with-AutoGen), making it convenient to have all these powerful tools in one place.
 
 # Comparison with Siri and Others
 
-Unlike popular options such as Siri (macOS, iOS), Cortana (Windows), and Google Assistant (Android), myHand offers enhanced power, customization, flexibility, and compatibility.
+Unlike popular options such as Siri (macOS, iOS), Cortana (Windows), and Google Assistant (Android), MyHand offers enhanced power, customization, flexibility, and compatibility.
 
 Read https://github.com/eliranwong/myhand/wiki/Features
 
