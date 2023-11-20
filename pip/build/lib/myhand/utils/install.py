@@ -13,7 +13,7 @@ def installmodule(module, update=True):
     if isInstalled:
 
         if update:
-            import config
+            from myhand import config
             if not config.pipIsUpdated:
                 pipFailedUpdated = "pip tool failed to be updated!"
                 try:
