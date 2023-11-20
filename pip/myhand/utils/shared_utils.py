@@ -133,14 +133,14 @@ class SharedUtil:
         code = textwrap.dedent(code)
         # capture print output
         config.pythonFunctionResponse = ""
-        insert_string = "import config\nconfig.pythonFunctionResponse = "
+        insert_string = "from myhand import config\nconfig.pythonFunctionResponse = "
         code = re.sub("^!(.*?)$", r'import os\nos.system(""" \1 """)', code, flags=re.M)
         if "\n" in code:
             substrings = code.rsplit("\n", 1)
             lastLine = re.sub("print\((.*)\)", r"\1", substrings[-1])
             if lastLine.startswith(" "):
                 lastLine = re.sub("^([ ]+?)([^ ].*?)$", r"\1config.pythonFunctionResponse = \2", lastLine)
-                code = f"import config\n{substrings[0]}\n{lastLine}"
+                code = f"from myhand import config\n{substrings[0]}\n{lastLine}"
             else:
                 lastLine = f"{insert_string}{lastLine}"
                 code = f"{substrings[0]}\n{lastLine}"
