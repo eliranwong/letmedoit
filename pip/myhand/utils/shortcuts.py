@@ -1,6 +1,6 @@
 from myhand import config
 import platform, os, sys, ctypes, subprocess
-from shutil import copyfile
+#from shutil import copyfile
 
 def createShortcuts():
     thisOS = platform.system()
@@ -30,7 +30,7 @@ def createShortcuts():
                 pass
     # on macOS
     # on iOS a-Shell app, ~/Desktop/ is invalid
-    elif thisOS == "Darwin" and os.path.isdir("~/Desktop/"):
+    elif thisOS == "Darwin" and os.path.isdir(os.path.expanduser("~/Desktop/")):
         shortcut_file = os.path.expanduser(f"~/Desktop/{appName}.command")
         if not os.path.isfile(shortcut_file):
             print("creating shortcut ...")
@@ -71,13 +71,15 @@ Name=MyHand Bot
                 userAppDirShortcut = os.path.join(userAppDir, f"{appName}.desktop")
                 if not os.path.exists(userAppDirShortcut):
                     Path(userAppDir).mkdir(parents=True, exist_ok=True)
-                    copyfile(linuxDesktopFile, userAppDirShortcut)
+                    #copyfile(linuxDesktopFile, userAppDirShortcut)
+                    os.system(f"cp {linuxDesktopFile} {userAppDirShortcut}")
                 # ~/Desktop
                 homeDir = os.environ["HOME"]
                 desktopPath = f"{homeDir}/Desktop"
                 desktopPathShortcut = os.path.join(desktopPath, f"{appName}.desktop")
                 if os.path.isfile(desktopPath) and not os.path.isfile(desktopPathShortcut):
-                    copyfile(linuxDesktopFile, desktopPathShortcut)
+                    #copyfile(linuxDesktopFile, desktopPathShortcut)
+                    os.system(f"cp {linuxDesktopFile} {desktopPathShortcut}")
             except:
                 pass
     #createAppAlias()

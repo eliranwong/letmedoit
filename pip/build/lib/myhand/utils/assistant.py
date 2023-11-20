@@ -74,6 +74,8 @@ class MyHandAI:
             itemColor=config.terminalResourceLinkColor,
         )
 
+        self.preferredDir = self.getPreferredDir()
+        
         if not config.openaiApiKey:
             self.changeAPIkey()
 
@@ -85,8 +87,8 @@ class MyHandAI:
         # required
         self.checkCompletion()
         # optional
-        if config.openaiApiOrganization:
-            raise Exception("The 'openai.organization' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(organization=config.openaiApiOrganization)'")
+        #if config.openaiApiOrganization:
+        #    raise Exception("The 'openai.organization' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(organization=config.openaiApiOrganization)'")
         # chat records
         chat_history = os.path.join(config.myHandAIFolder, "history", "chats")
         self.terminal_chat_session = PromptSession(history=FileHistory(chat_history))
@@ -98,10 +100,19 @@ class MyHandAI:
             config.tts = True
         self.isTtsAvailable()
 
+    def getPreferredDir(self):
+        preferredDir = os.path.join(os.path.expanduser('~'), 'myhand')
+        try:
+            Path(preferredDir).mkdir(parents=True, exist_ok=True)
+        except:
+            pass
+        return preferredDir if os.path.isdir(preferredDir) else ""
+
     def getFiles(self):
         if config.startupdirectory and not os.path.isdir(config.startupdirectory):
             config.startupdirectory = ""
-        return config.startupdirectory if config.startupdirectory else os.path.join(config.myHandAIFolder, "files")
+        preferredDir = self.preferredDir if self.preferredDir else os.path.join(config.myHandAIFolder, "files")
+        return config.startupdirectory if config.startupdirectory else preferredDir
 
     def getPygmentsStyle(self):
         theme = config.pygments_style if config.pygments_style else "stata-dark" if config.terminalResourceLinkColor.startswith("ansibright") else "stata-light"
@@ -212,10 +223,10 @@ class MyHandAI:
             apikey = self.prompts.simplePrompt(default=config.openaiApiKey, is_password=True)
             if apikey and not apikey.strip().lower() in (config.cancel_entry, config.exit_entry):
                 config.openaiApiKey = apikey
-            self.print("Enter your Organization ID [optional]:")
-            oid = self.prompts.simplePrompt(default=config.openaiApiOrganization, is_password=True)
-            if oid and not oid.strip().lower() in (config.cancel_entry, config.exit_entry):
-                config.openaiApiOrganization = oid
+            #self.print("Enter your Organization ID [optional]:")
+            #oid = self.prompts.simplePrompt(default=config.openaiApiOrganization, is_password=True)
+            #if oid and not oid.strip().lower() in (config.cancel_entry, config.exit_entry):
+            #    config.openaiApiOrganization = oid
             self.checkCompletion()
             config.saveConfig()
             self.print("Updated!")
@@ -759,80 +770,15 @@ Otherwise, answer "chat". Here is the request:"""
             if feature == ".chatgptmodel":
                 self.setModel()
             elif feature == ".latestSearches":
-                options = ("always", "auto", "none")
-                descriptions = (
-                    "always search for latest information",
-                    "search only when ChatGPT lacks information",
-                    "do not perform online searches",
-                )
-                option = self.dialogs.getValidOptions(
-                    options=options,
-                    descriptions=descriptions,
-                    title="Latest Online Searches",
-                    default=config.loadingInternetSearches,
-                    text="myHand can perform online searches.\nHow do you want this feature?",
-                )
-                if option:
-                    config.loadingInternetSearches = option
-                    # fine tune
-                    if config.loadingInternetSearches == "auto":
-                        config.chatGPTApiFunctionCall = "auto"
-                        if "integrate google searches" in config.chatGPTPluginExcludeList:
-                            config.chatGPTPluginExcludeList.remove("integrate google searches")
-                    elif config.loadingInternetSearches == "none":
-                        if not "integrate google searches" in config.chatGPTPluginExcludeList:
-                            config.chatGPTPluginExcludeList.append("integrate google searches")
-                    # reset plugins
-                    self.runPlugins()
-                    # notify
-                    self.print(f"Latest Online Searches: {option}")
+                self.setLatestSearches()
             elif feature == ".startupDirectory":
-                folder = self.getFolderPath()
-                if folder and os.path.isdir(folder):
-                    config.startupdirectory = folder
-                    self.print(f"Startup directory changed to:\n{folder}")
+                self.setStartupDirectory()
             elif feature == ".contextinclusion":
-                options = ("the first input only", "all inputs")
-                option = self.dialogs.getValidOptions(
-                    options=options,
-                    title="Predefined Context Inclusion",
-                    default="all inputs" if config.chatGPTApiContextInAllInputs else "the first input only",
-                    text="Define below how you want to include predefined context\nwith your inputs.\nApply predefined context in ...",
-                )
-                if option:
-                    config.chatGPTApiContextInAllInputs = True if option == "all inputs" else False
-                    self.print(f"Predefined Context Inclusion: {option}!")
+                self.setContextInclusion()
             elif feature == ".codedisplay":
-                options = ("enable", "disable")
-                option = self.dialogs.getValidOptions(
-                    options=options,
-                    title="Command / Code Display",
-                    default="enable" if config.codeDisplay else "disable",
-                    text="Options to display commands / codes before execution:"
-                )
-                if option:
-                    config.codeDisplay = (option == "enable")
-                    self.print(f"Command / Code display: {option}d!")
+                self.setCodeDisplay()
             elif feature == ".confirmexecution":
-                options = ("always", "medium_risk_or_above", "high_risk_only", "none")
-                if not config.confirmExecution in options:
-                    config.confirmExecution = "always"
-                descriptions = (
-                    "always",
-                    "medium risk or above",
-                    "high risk only, e.g. file deletion",
-                    "none",
-                )
-                option = self.dialogs.getValidOptions(
-                    options=options,
-                    descriptions=descriptions,
-                    title="Command Execution Confirmation",
-                    text="MyHand Bot can execute commands on your behalf.\nWhen do you want confirmation\nbefore commands are executed:\n(caution: execute commands at your own risk)",
-                    default=config.confirmExecution,
-                )
-                if option:
-                    config.confirmExecution = option
-                    self.print(f"Command execution confirmation: {option}")
+                self.setUserConfirmation()
             elif feature == ".plugins":
                 self.selectPlugins()
             elif feature == ".keys":
@@ -840,27 +786,35 @@ Otherwise, answer "chat". Here is the request:"""
             elif feature == ".help":
                 SharedUtil.openURL('https://github.com/eliranwong/myhand/wiki')
             elif feature == ".pagerview":
-                options = ("auto", "manual [ctrl+g]")
-                option = self.dialogs.getValidOptions(
-                    options=options,
-                    title="Pager View",
-                    default="auto" if config.pagerView else "manual [ctrl+g]",
-                )
-                if option:
-                    config.pagerView = (option == "auto")
-                    self.print(f"Pager View: {option}!")
+                self.setPagerView()
             elif feature == ".developer":
-                options = ("enable", "disable")
-                option = self.dialogs.getValidOptions(
-                    options=options,
-                    title="Developer Mode",
-                    default="enable" if config.developer else "disable",
-                    text="Read myHand wiki for more information.\nSelect an option below:"
-                )
-                if option:
-                    config.developer = (option == "enable")
-                    self.print(f"Developer Mode: {option}d!")
+                self.setDeveloperMode()
 #            elif feature == ".autoupdate":
+#                self.setAutoUpdate()
+            elif feature == ".termuxapi":
+                self.setTermuxApi()
+            elif feature == ".enhanceexecution":
+                self.setCommandExecutionMode()
+            elif feature == ".functioncall":
+                self.setFunctionCall()
+            elif feature == ".functionresponse":
+                self.setFunctionResponse()
+            elif feature == ".mintokens":
+                self.setMinTokens()
+            elif feature == ".maxtokens":
+                self.setMaxTokens()
+            elif feature == ".maxautoheal":
+                self.setMaxAutoHeal()
+            elif feature == ".temperature":
+                self.setTemperature()
+            elif feature == ".changeapikey":
+                self.changeAPIkey()
+            else:
+                userInput = feature
+        return userInput
+
+# autoupdate was not designed for pip package
+#    def setAutoUpdate(self):
 #                options = ("enable", "disable")
 #                option = self.dialogs.getValidOptions(
 #                    options=options,
@@ -871,84 +825,197 @@ Otherwise, answer "chat". Here is the request:"""
 #                if option:
 #                    config.autoUpdate = (option == "enable")
 #                    self.print(f"Automatic Update: {option}d!")
-            elif feature == ".termuxapi":
-                options = ("enable", "disable")
-                option = self.dialogs.getValidOptions(
-                    options=options,
-                    title="Termux API Integration",
-                    default="enable" if config.terminalEnableTermuxAPI else "disable",
-                    text="To learn about Termux API, read:\nhttps://wiki.termux.com/wiki/Termux:API\nSelect an option below:"
-                )
-                if option:
-                    config.terminalEnableTermuxAPI = (option == "enable")
-                    if config.terminalEnableTermuxAPI and not os.path.isdir("/data/data/com.termux/files/home/"):
-                        config.terminalEnableTermuxAPI = False
-                        self.print("Termux is not installed!")
-                    if config.terminalEnableTermuxAPI:
-                        # Check if Termux API package is installed
-                        result = subprocess.run(['pkg', 'list-installed', 'termux-api'], capture_output=True, text=True)
-                        # Check if the package is installed
-                        if not "termux-api" in result.stdout:
-                            self.print("Termux:API is not installed!")
-                    # reset plugins
-                    self.runPlugins()
-                    self.print(f"""Termux API Integration: {"enable" if config.terminalEnableTermuxAPI else "disable"}d!""")
-            elif feature == ".enhanceexecution":
-                options = ("enhanced", "auto")
-                option = self.dialogs.getValidOptions(
-                    options=options,
-                    title="Command Execution Mode",
-                    default="enhanced" if config.enhanceCommandExecution else "auto",
-                    text="myHand can execute commands\nto retrieve the requested information\nor perform tasks for users.\n(read https://github.com/eliranwong/myhand/wiki/Command-Execution)\nSelect a mode below:",
-                )
-                if option:
-                    config.enhanceCommandExecution = (option == "enhanced")
-                    self.print(f"Command Execution Mode: {option}")
-            elif feature == ".functioncall":
-                calls = ("auto", "none")
-                call = self.dialogs.getValidOptions(
-                    options=calls,
-                    title="ChatGPT Function Call",
-                    default=config.chatGPTApiFunctionCall,
-                    text="Enabling function call\nallows online searches\nor other third-party features\nto extend ChatGPT capabilities.\nEnable / Disable this feature below:",
-                )
-                if call:
-                    config.chatGPTApiFunctionCall = call
-                    self.print(f"ChaptGPT function call: {'enabled' if config.chatGPTApiFunctionCall == 'auto' else 'disabled'}!")
-            elif feature == ".functionresponse":
-                calls = ("enable", "disable")
-                call = self.dialogs.getValidOptions(
-                    options=calls,
-                    title="Automatic Chat Generation with Function Response",
-                    default="enable" if config.chatAfterFunctionCalled else "disable",
-                    text="Enable this feature\nto generate further responses\naccording to function call results.\nDisable this feature allows\nperforming function calls\nwihtout generating further responses."
-                )
-                if call:
-                    config.chatAfterFunctionCalled = (call == "enable")
-                    self.print(f"Automatic Chat Generation with Function Response: {'enabled' if config.chatAfterFunctionCalled else 'disabled'}!")
-            elif feature == ".mintokens":
-                self.setMinTokens()
-            elif feature == ".maxtokens":
-                self.setMaxTokens()
-            elif feature == ".maxautoheal":
-                self.setMaxAutoHeal()
-            elif feature == ".temperature":
-                self.print("Enter a value between 0.0 and 2.0:")
-                self.print("(Lower values for temperature result in more consistent outputs, while higher values generate more diverse and creative results. Select a temperature value based on the desired trade-off between coherence and creativity for your specific application.)")
-                temperature = self.prompts.simplePrompt(validator=FloatValidator(), default=str(config.chatGPTApiTemperature))
-                if temperature and not temperature.strip().lower() == config.exit_entry:
-                    temperature = float(temperature)
-                    if temperature < 0:
-                        temperature = 0
-                    elif temperature > 2:
-                        temperature = 2
-                    config.chatGPTApiTemperature = round(temperature, 1)
-                    self.print(f"ChatGPT Temperature entered: {temperature}")
-            elif feature == ".changeapikey":
-                self.changeAPIkey()
-            else:
-                userInput = feature
-        return userInput
+
+    def setCodeDisplay(self):
+        options = ("enable", "disable")
+        option = self.dialogs.getValidOptions(
+            options=options,
+            title="Command / Code Display",
+            default="enable" if config.codeDisplay else "disable",
+            text="Options to display commands / codes before execution:"
+        )
+        if option:
+            config.codeDisplay = (option == "enable")
+            config.saveConfig()
+            self.print(f"Command / Code display: {option}d!")
+
+    def setContextInclusion(self):
+        options = ("the first input only", "all inputs")
+        option = self.dialogs.getValidOptions(
+            options=options,
+            title="Predefined Context Inclusion",
+            default="all inputs" if config.chatGPTApiContextInAllInputs else "the first input only",
+            text="Define below how you want to include predefined context\nwith your inputs.\nApply predefined context in ...",
+        )
+        if option:
+            config.chatGPTApiContextInAllInputs = True if option == "all inputs" else False
+            config.saveConfig()
+            self.print(f"Predefined Context Inclusion: {option}!")
+
+    def setStartupDirectory(self):
+        try:
+            folder = self.getFolderPath()
+        except:
+            self.print(f"Given path not accessible!")
+            folder = ""
+        if folder and os.path.isdir(folder):
+            config.startupdirectory = folder
+            config.saveConfig()
+            self.print(f"Startup directory changed to:\n{folder}")
+
+    def setLatestSearches(self):
+        options = ("always", "auto", "none")
+        descriptions = (
+            "always search for latest information",
+            "search only when ChatGPT lacks information",
+            "do not perform online searches",
+        )
+        option = self.dialogs.getValidOptions(
+            options=options,
+            descriptions=descriptions,
+            title="Latest Online Searches",
+            default=config.loadingInternetSearches,
+            text="myHand can perform online searches.\nHow do you want this feature?",
+        )
+        if option:
+            config.loadingInternetSearches = option
+            # fine tune
+            if config.loadingInternetSearches == "auto":
+                config.chatGPTApiFunctionCall = "auto"
+                if "integrate google searches" in config.chatGPTPluginExcludeList:
+                    config.chatGPTPluginExcludeList.remove("integrate google searches")
+            elif config.loadingInternetSearches == "none":
+                if not "integrate google searches" in config.chatGPTPluginExcludeList:
+                    config.chatGPTPluginExcludeList.append("integrate google searches")
+            # reset plugins
+            self.runPlugins()
+            # notify
+            config.saveConfig()
+            self.print(f"Latest Online Searches: {option}")
+
+    def setUserConfirmation(self):
+        options = ("always", "medium_risk_or_above", "high_risk_only", "none")
+        if not config.confirmExecution in options:
+            config.confirmExecution = "always"
+        descriptions = (
+            "always",
+            "medium risk or above",
+            "high risk only, e.g. file deletion",
+            "none",
+        )
+        option = self.dialogs.getValidOptions(
+            options=options,
+            descriptions=descriptions,
+            title="Command Execution Confirmation",
+            text="MyHand Bot can execute commands on your behalf.\nWhen do you want confirmation\nbefore commands are executed:\n(caution: execute commands at your own risk)",
+            default=config.confirmExecution,
+        )
+        if option:
+            config.confirmExecution = option
+            config.saveConfig()
+            self.print(f"Command execution confirmation: {option}")
+
+    def setPagerView(self):
+        options = ("auto", "manual [ctrl+g]")
+        option = self.dialogs.getValidOptions(
+            options=options,
+            title="Pager View",
+            default="auto" if config.pagerView else "manual [ctrl+g]",
+        )
+        if option:
+            config.pagerView = (option == "auto")
+            config.saveConfig()
+            self.print(f"Pager View: {option}!")
+
+    def setDeveloperMode(self):
+        options = ("enable", "disable")
+        option = self.dialogs.getValidOptions(
+            options=options,
+            title="Developer Mode",
+            default="enable" if config.developer else "disable",
+            text="Read myHand wiki for more information.\nSelect an option below:"
+        )
+        if option:
+            config.developer = (option == "enable")
+            config.saveConfig()
+            self.print(f"Developer Mode: {option}d!")
+
+    def setTermuxApi(self):
+        options = ("enable", "disable")
+        option = self.dialogs.getValidOptions(
+            options=options,
+            title="Termux API Integration",
+            default="enable" if config.terminalEnableTermuxAPI else "disable",
+            text="To learn about Termux API, read:\nhttps://wiki.termux.com/wiki/Termux:API\nSelect an option below:"
+        )
+        if option:
+            config.terminalEnableTermuxAPI = (option == "enable")
+            if config.terminalEnableTermuxAPI and not os.path.isdir("/data/data/com.termux/files/home/"):
+                config.terminalEnableTermuxAPI = False
+                self.print("Termux is not installed!")
+            if config.terminalEnableTermuxAPI:
+                # Check if Termux API package is installed
+                result = subprocess.run(['pkg', 'list-installed', 'termux-api'], capture_output=True, text=True)
+                # Check if the package is installed
+                if not "termux-api" in result.stdout:
+                    self.print("Termux:API is not installed!")
+            # reset plugins
+            self.runPlugins()
+            config.saveConfig()
+            self.print(f"""Termux API Integration: {"enable" if config.terminalEnableTermuxAPI else "disable"}d!""")
+
+    def setCommandExecutionMode(self):
+        options = ("enhanced", "auto")
+        option = self.dialogs.getValidOptions(
+            options=options,
+            title="Command Execution Mode",
+            default="enhanced" if config.enhanceCommandExecution else "auto",
+            text="myHand can execute commands\nto retrieve the requested information\nor perform tasks for users.\n(read https://github.com/eliranwong/myhand/wiki/Command-Execution)\nSelect a mode below:",
+        )
+        if option:
+            config.enhanceCommandExecution = (option == "enhanced")
+            config.saveConfig()
+            self.print(f"Command Execution Mode: {option}")
+
+    def setFunctionCall(self):
+        calls = ("auto", "none")
+        call = self.dialogs.getValidOptions(
+            options=calls,
+            title="ChatGPT Function Call",
+            default=config.chatGPTApiFunctionCall,
+            text="Enabling function call\nallows online searches\nor other third-party features\nto extend ChatGPT capabilities.\nEnable / Disable this feature below:",
+        )
+        if call:
+            config.chatGPTApiFunctionCall = call
+            config.saveConfig()
+            self.print(f"ChaptGPT function call: {'enabled' if config.chatGPTApiFunctionCall == 'auto' else 'disabled'}!")
+
+    def setFunctionResponse(self):
+        calls = ("enable", "disable")
+        call = self.dialogs.getValidOptions(
+            options=calls,
+            title="Automatic Chat Generation with Function Response",
+            default="enable" if config.chatAfterFunctionCalled else "disable",
+            text="Enable this feature\nto generate further responses\naccording to function call results.\nDisable this feature allows\nperforming function calls\nwihtout generating further responses."
+        )
+        if call:
+            config.chatAfterFunctionCalled = (call == "enable")
+            config.saveConfig()
+            self.print(f"Automatic Chat Generation with Function Response: {'enabled' if config.chatAfterFunctionCalled else 'disabled'}!")
+
+    def setTemperature(self):
+        self.print("Enter a value between 0.0 and 2.0:")
+        self.print("(Lower values for temperature result in more consistent outputs, while higher values generate more diverse and creative results. Select a temperature value based on the desired trade-off between coherence and creativity for your specific application.)")
+        temperature = self.prompts.simplePrompt(validator=FloatValidator(), default=str(config.chatGPTApiTemperature))
+        if temperature and not temperature.strip().lower() == config.exit_entry:
+            temperature = float(temperature)
+            if temperature < 0:
+                temperature = 0
+            elif temperature > 2:
+                temperature = 2
+            config.chatGPTApiTemperature = round(temperature, 1)
+            config.saveConfig()
+            self.print(f"ChatGPT Temperature entered: {temperature}")
 
     def setModel(self):
         model = self.dialogs.getValidOptions(
@@ -969,6 +1036,7 @@ Otherwise, answer "chat". Here is the request:"""
             suggestedMaxToken = int(tokenLimit / 2)
             #if config.chatGPTApiMaxTokens > suggestedMaxToken:
             config.chatGPTApiMaxTokens = suggestedMaxToken
+            config.saveConfig()
             self.print(f"Maximum response tokens set to {config.chatGPTApiMaxTokens}.")
 
     def setMaxAutoHeal(self):
@@ -978,6 +1046,7 @@ Otherwise, answer "chat". Here is the request:"""
         maxAutoHeal = self.prompts.simplePrompt(numberOnly=True, default=str(config.max_consecutive_auto_heal))
         if maxAutoHeal and not maxAutoHeal.strip().lower() == config.exit_entry and int(maxAutoHeal) >= 0:
             config.max_consecutive_auto_heal = int(maxAutoHeal)
+            config.saveConfig()
             self.print(f"Maximum consecutive auto-heal entered: {config.max_consecutive_auto_heal}")
 
     def setMinTokens(self):
@@ -987,6 +1056,7 @@ Otherwise, answer "chat". Here is the request:"""
             config.chatGPTApiMinTokens = int(mintokens)
             if config.chatGPTApiMinTokens > config.chatGPTApiMaxTokens:
                 config.chatGPTApiMinTokens = config.chatGPTApiMaxTokens
+            config.saveConfig()
             self.print(f"Minimum tokens entered: {config.chatGPTApiMinTokens}")
 
     def setMaxTokens(self):
@@ -1010,6 +1080,7 @@ Otherwise, answer "chat". Here is the request:"""
                 config.chatGPTApiMaxTokens = int(maxtokens)
                 if config.chatGPTApiMaxTokens > tokenLimit:
                     config.chatGPTApiMaxTokens = tokenLimit
+                config.saveConfig()
                 self.print(f"Maximum tokens entered: {config.chatGPTApiMaxTokens}")
 
     def runPythonScript(self, script):
@@ -1018,7 +1089,7 @@ Otherwise, answer "chat". Here is the request:"""
             exec(script, globals())
         except:
             trace = traceback.format_exc()
-            print()
+            print(trace if config.developer else "Error encountered!")
             self.print(self.divider)
             if config.max_consecutive_auto_heal > 0:
                 SharedUtil.autoHealPythonCode(script, trace)
@@ -1045,11 +1116,13 @@ Otherwise, answer "chat". Here is the request:"""
     def toggleinputaudio(self):
         if self.isTtsAvailable:
             config.ttsInput = not config.ttsInput
+            config.saveConfig()
             self.print(f"Input Audio '{'enabled' if config.ttsInput else 'disabled'}'!")
 
     def toggleresponseaudio(self):
         if self.isTtsAvailable:
             config.ttsOutput = not config.ttsOutput
+            config.saveConfig()
             self.print(f"Response Audio '{'enabled' if config.ttsOutput else 'disabled'}'!")
 
     def defineTtsCommand(self):
@@ -1072,15 +1145,18 @@ Otherwise, answer "chat". Here is the request:"""
                 SharedUtil.showErrors() if config.developer else self.print("Entered command invalid!")
             else:
                 config.ttsCommand, config.ttsCommandSuffix = ttsCommand, ttsCommandSuffix
+                config.saveConfig()
         else:
             config.ttsCommand, config.ttsCommandSuffix = "", ""
 
     def toggleWordWrap(self):
         config.wrapWords = not config.wrapWords
+        config.saveConfig()
         self.print(f"Word Wrap '{'enabled' if config.wrapWords else 'disabled'}'!")
 
     def toggleMouseSupport(self):
         config.mouseSupport = not config.mouseSupport
+        config.saveConfig()
         self.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!")
 
     def toggleImprovedWriting(self):
@@ -1090,6 +1166,7 @@ Otherwise, answer "chat". Here is the request:"""
             style = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.improvedWritingSytle)
             if style and not style in (config.exit_entry, config.cancel_entry):
                 config.improvedWritingSytle = style
+                config.saveConfig()
         self.print(f"Improved Writing Display '{'enabled' if config.displayImprovedWriting else 'disabled'}'!")
 
     def saveChat(self, messages, openFile=False):

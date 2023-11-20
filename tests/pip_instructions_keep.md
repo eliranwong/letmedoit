@@ -66,6 +66,7 @@ To create a Python package with a CLI command, you can follow these steps:
 6. **Distribution:**
    To distribute your package, you can create a source distribution or a wheel:
    ```bash
+   pip install wheel
    python setup.py sdist bdist_wheel
    ```
 

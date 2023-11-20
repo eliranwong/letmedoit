@@ -109,7 +109,7 @@ class Prompts:
                     availableFunctionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
                 currentInputTokens = len(encoding.encode(config.fineTuneUserInput(currentInput)))
                 loadedMessageTokens = SharedUtil.count_tokens_from_messages(config.currentMessages)
-                selectedModelLimit = config.tokenLimits[config.chatGPTApiModel]
+                selectedModelLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
                 estimatedAvailableTokens = selectedModelLimit - availableFunctionTokens - loadedMessageTokens - currentInputTokens
 
                 content = f"""{config.divider}
@@ -157,23 +157,28 @@ Available tokens: {estimatedAvailableTokens}
         def _(_):
             if config.tts:
                 config.ttsInput = not config.ttsInput
+                config.saveConfig()
                 run_in_terminal(lambda: config.print(f"Input Audio '{'enabled' if config.ttsInput else 'disabled'}'!"))
         @this_key_bindings.add("c-p")
         def _(_):
             if config.tts:
                 config.ttsOutput = not config.ttsOutput
+                config.saveConfig()
                 run_in_terminal(lambda: config.print(f"Response Audio '{'enabled' if config.ttsOutput else 'disabled'}'!"))
         @this_key_bindings.add("escape", "i")
         def _(_):
             config.displayImprovedWriting = not config.displayImprovedWriting
+            config.saveConfig()
             run_in_terminal(lambda: config.print(f"Improved Writing Display '{'enabled' if config.displayImprovedWriting else 'disabled'}'!"))
         @this_key_bindings.add("c-w")
         def _(_):
             config.wrapWords = not config.wrapWords
+            config.saveConfig()
             run_in_terminal(lambda: config.print(f"Word Wrap '{'enabled' if config.wrapWords else 'disabled'}'!"))
         @this_key_bindings.add("escape", "m")
         def _(_):
             config.mouseSupport = not config.mouseSupport
+            config.saveConfig()
             run_in_terminal(lambda: config.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))
 
         conditional_prompt_multiline_shared_key_bindings = ConditionalKeyBindings(

@@ -1,24 +1,38 @@
-# MyHand
+# MyHand Bot
 
 MyHand Bot is an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.
 
-## Watch this Video! MyHand introduces itself!
+Website: https://myhand.bot
 
-[![Watch the video](https://img.youtube.com/vi/Dfsl-Cxx0bQ/maxresdefault.jpg)](https://youtu.be/Dfsl-Cxx0bQ)
-
-Though MyHand is built on ChatGPT, MyHand goes beyond being a mere ChatGPT assistant by embodying the essence of "Actions speak louder than words." Unlike standard ChatGPT, MyHand not only engages in conversational interactions but also actively performs tasks on behalf of users, demonstrating its commitment to practical action and tangible results.
-
-Repository: https://github.com/eliranwong/myhand
+Source: https://github.com/eliranwong/myhand
 
 Developed by: [Eliran Wong](https://github.com/eliranwong)
 
+# Self-introduction
+
+> Condense your standout features, distinguishing them from the capabilities of most AIs, including ChatGPT, into a single sentence.
+
+I am an advanced AI assistant uniquely equipped with direct execution capabilities, allowing me to perform tasks such as executing Python code, editing text files, downloading YouTube media, searching databases, generating images, pronouncing words, sending emails, and integrating Google searches, all of which can be done directly on your local device, as per your current settings, and my functionality can expand through the addition of more plugins, setting me apart from other AIs including ChatGPT by providing a more interactive and hands-on experience.
+
+> Please list three unique attributes that distinguish you from most AI assistants, including ChatGPT.
+
+1. **Advanced Code Execution with Safety Features**: My capabilities go beyond typical AI, enabling me to execute and manage code on your local device with precision. With my built-in risk assessment and code auto-healing features, I can safely perform various tasks like running Python scripts, editing text files, and managing downloads. I operate within the permissions you set, ensuring your device's security while providing a highly efficient service.
+
+2. **Integration with Device-Specific Functions and Tools**: I have the unique ability to interface with specific functions of your local device. For example, I can retrieve information from files in your directory, describe images, and even add events to your calendar. This integration allows me to perform a wide range of tasks that require direct interaction with your device's operating system and installed applications.
+
+3. **Expandability through Plugins**: My functionality is not static; it can be expanded through the addition of plugins. This means that as new tools and capabilities are developed, they can be integrated into my system, giving me new abilities and allowing me to provide even more personalized assistance. This adaptability ensures that I can evolve and cater to your specific needs over time.
+
+## Watch this Video! MyHand speaks for itself!
+
+[![Watch the video](https://img.youtube.com/vi/Dfsl-Cxx0bQ/maxresdefault.jpg)](https://youtu.be/Dfsl-Cxx0bQ)
+
 # Requirements
 
-1. Internet access
+1. ChatGPT API key (read https://github.com/eliranwong/myhand/wiki/ChatGPT-API-Key)
 
-2. Windows / macOS / Linux / ChromeOS / Android / iOS with [Python](https://www.python.org) versions 3.8-3.11; read [Install a Supported Python Version](https://github.com/eliranwong/myhand/wiki/Install-a-Supported-Python-Version)
+2. [Python](https://www.python.org) version 3.8-3.11; read [Install a Supported Python Version](https://github.com/eliranwong/myhand/wiki/Install-a-Supported-Python-Version)
 
-3. ChatGPT API key (read https://github.com/eliranwong/myhand/wiki/ChatGPT-API-Key)
+3. Supported OS: Windows / macOS / Linux / ChromeOS / Android
 
 # Recent Additions
 
@@ -34,19 +48,33 @@ Developed by: [Eliran Wong](https://github.com/eliranwong)
 
 Read https://github.com/eliranwong/myhand/wiki
 
-# Install
-
-## Install with pip
+# Install with pip
 
 > pip install --upgrade myhand
 
 > myhand
 
-## Install with pip and venv (recommended)
+# Install with pip and venv (recommended)
+
+## macOS / Linux Users
+
+> cd ~
 
 > python3 -m venv myhand
 
 > source myhand/bin/activate
+
+> pip install --upgrade myhand
+
+> myhand
+
+## Windows Users
+
+> cd ~
+
+> python -m venv myhand
+
+> .\myhand\Scripts\activate
 
 > pip install --upgrade myhand
 
@@ -118,9 +146,13 @@ Command execution helps:
 
 > open Safari and search for "ChatGPT"
 
-4. to interact with os assistant, e.g.
+4. to interact with other assistants, e.g.
 
 > open Siri
+
+> !autogen_teachable
+
+> !interpreter
 
 [Enhanced Mode](https://github.com/eliranwong/myhand/wiki/Command-Execution#two-command-execution-mode)
 
