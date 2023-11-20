@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: myhand
-Version: 1.0.7
+Version: 1.0.9
 Summary: An advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.
 Home-page: https://github.com/eliranwong/myhand
 Author: Eliran Wong

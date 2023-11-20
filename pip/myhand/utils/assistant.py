@@ -217,6 +217,7 @@ class MyHandAI:
             if oid and not oid.strip().lower() in (config.cancel_entry, config.exit_entry):
                 config.openaiApiOrganization = oid
             self.checkCompletion()
+            config.saveConfig()
             self.print("Updated!")
 
     def exitAction(self):

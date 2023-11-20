@@ -109,10 +109,11 @@ def setOsOpenCmd():
     if config.thisPlatform == "Darwin":
         config.thisPlatform = "macOS"
 
-def aboutToQuit():
+def saveConfig():
     with open(configFile, "w", encoding="utf-8") as fileObj:
         for name in dir(config):
             excludeConfigList = [
+                "saveConfig",
                 "aliases",
                 "addPathAt",
                 "multilineInput",
@@ -175,6 +176,7 @@ def aboutToQuit():
                     fileObj.write("{0} = {1}\n".format(name, pprint.pformat(value)))
                 except:
                     pass
+config.saveConfig = saveConfig
 
 def set_log_file_max_lines(log_file, max_lines):
     if os.path.isfile(log_file):
@@ -205,7 +207,7 @@ def main():
         filepath = os.path.join(config.myHandAIFolder, "history", i)
         set_log_file_max_lines(filepath, 3000)
     MyHandAI().startChats()
-    aboutToQuit()
+    saveConfig()
     clear_title()
 
 if __name__ == "__main__":
