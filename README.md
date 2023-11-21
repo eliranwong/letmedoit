@@ -58,8 +58,6 @@ Read https://github.com/eliranwong/myhand/wiki
 
 ## macOS / Linux Users
 
-> cd ~
-
 > python3 -m venv myhand
 
 > source myhand/bin/activate
@@ -69,8 +67,6 @@ Read https://github.com/eliranwong/myhand/wiki
 > myhand
 
 ## Windows Users
-
-> cd ~
 
 > python -m venv myhand
 
