@@ -83,15 +83,16 @@ if os.path.isdir(preferredDir):
     configFile = os.path.join(config.myHandAIFolder, "config.py")
     if os.path.getsize(configFile) == 0:
         backupFile = os.path.join(preferredDir, "config_backup.py")
-        restore_backup = yes_no_dialog(
-            title="Configuration Backup Found",
-            text=f"Do you want to use the following backup?\n{backupFile}"
-        ).run()
-        if restore_backup:
-            shutil.copy(backupFile, configFile)
-            print("Configuration backup restored!")
-            print("Restarting MyHand Bot ...")
-            config.restartApp()
+        if os.path.isfile(backupFile):
+            restore_backup = yes_no_dialog(
+                title="Configuration Backup Found",
+                text=f"Do you want to use the following backup?\n{backupFile}"
+            ).run()
+            if restore_backup:
+                shutil.copy(backupFile, configFile)
+                print("Configuration backup restored!")
+                print("Restarting MyHand Bot ...")
+                config.restartApp()
 setConfig(defaultSettings)
 # allow plugins to add customised config
 # e.g. check plugins/bible.py

@@ -10,7 +10,8 @@ import sys, os
 config.inputSuggestions += [
         "[NO_SCREENING] ",
         "[NO_FUNCTION_CALL] ",
-        f"!{sys.executable}" ,
+        f"!{config.open} ",
+        f"!{sys.executable} ",
         "write a summary ", 
         "open ",
         "open the current directory",
