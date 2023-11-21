@@ -43,8 +43,10 @@ class MyHandAI:
         self.models = list(SharedUtil.tokenLimits.keys())
         config.divider = self.divider = "--------------------"
         self.runPython = True
-        config.accept_default = False
-        config.defaultEntry = ""
+        if not hasattr(config, "accept_default"):
+            config.accept_default = False
+        if not hasattr(config, "defaultEntry"):
+            config.defaultEntry = ""
         config.tempContent = ""
         config.tempChunk = ""
         config.chatGPTApiPredefinedContextTemp = ""

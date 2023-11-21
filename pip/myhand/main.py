@@ -214,7 +214,7 @@ def set_log_file_max_lines(log_file, max_lines):
             filename = os.path.basename(log_file)
             print(f"{num_lines_to_delete} old lines deleted from log file '{filename}'.")
 
-def main():
+def main(default="", run=False):
     set_title("My Hand Bot")
     setOsOpenCmd()
     createShortcuts()
@@ -224,6 +224,8 @@ def main():
     for i in ("chats", "paths", "commands"):
         filepath = os.path.join(config.myHandAIFolder, "history", i)
         set_log_file_max_lines(filepath, 3000)
+    config.defaultEntry = default
+    config.accept_default = run
     MyHandAI().startChats()
     saveConfig()
     preferredDir = getPreferredDir()
@@ -232,4 +234,18 @@ def main():
     clear_title()
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    # Create the parser
+    parser = argparse.ArgumentParser(description="Process some inputs.")
+    # Add arguments
+    parser.add_argument("default", nargs="?", default=None, help="enter default entry")
+    parser.add_argument('-r', '--run', action='store', dest='run', help="run default entry with -r flag")
+    # Parse arguments
+    args = parser.parse_args()
+    # Check what kind of arguments were provided and perform actions accordingly
+    if args.run:
+        main(args.run, True)
+    elif args.default:
+        main(args.default)
+    else:
+        main()

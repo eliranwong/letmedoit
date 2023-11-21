@@ -41,6 +41,7 @@ setup(
     },
     license="GNU General Public License (GPL)",
     install_requires=[
+        "argparse",
         "requests",
         "openai==1.3.3",
         "prompt_toolkit",
