@@ -91,7 +91,7 @@ class Prompts:
             buffer.text = ".save"
             buffer.validate_and_handle()
         @this_key_bindings.add("escape", "f")
-        def _(event):
+        def _(_):
             run_in_terminal(lambda: print(SharedUtil.getDeviceInfo()))
         @this_key_bindings.add("escape", "c")
         def _(event):
@@ -133,10 +133,12 @@ Available tokens: {estimatedAvailableTokens}
         @this_key_bindings.add("escape", "d")
         def _(_):
             config.developer = not config.developer
+            config.saveConfig()
             run_in_terminal(lambda: config.print(f"Developer mode {'enabled' if config.developer else 'disabled'}!"))
         @this_key_bindings.add("c-e")
         def _(_):
             config.enhanceCommandExecution = not config.enhanceCommandExecution
+            config.saveConfig()
             run_in_terminal(lambda: config.print(f"Command execution mode changed to '{'enhanced' if config.enhanceCommandExecution else 'auto'}'!"))
         @this_key_bindings.add("c-l")
         def _(_):
