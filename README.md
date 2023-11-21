@@ -80,9 +80,13 @@ Read https://github.com/eliranwong/myhand/wiki
 
 https://github.com/eliranwong/myhand/wiki/Quick-Guide
 
-# Upgrade with pip
+# Upgrade
+
+You can manually upgrade by running:
 
 > pip install --upgrade myhand
+
+You can also enable [Automatic Upgrade Option](https://github.com/eliranwong/myhand/wiki/Automatic-Upgrade-Option)
 
 # Features
 
