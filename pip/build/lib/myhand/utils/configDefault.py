@@ -20,7 +20,7 @@ defaultSettings = (
     ('usePygame', False),
     ('wrapWords', True),
     ('mouseSupport', False),
-    ('autoUpdate', False),
+    ('autoUpgrade', True),
     ('chatGPTApiModel', 'gpt-3.5-turbo'),
     ('chatGPTApiPredefinedContext', '[none]'),
     ('chatGPTApiCustomContext', ''),
@@ -91,7 +91,6 @@ if os.path.isdir(preferredDir):
             if restore_backup:
                 shutil.copy(backupFile, configFile)
                 print("Configuration backup restored!")
-                print("Restarting MyHand Bot ...")
                 config.restartApp()
 setConfig(defaultSettings)
 # allow plugins to add customised config

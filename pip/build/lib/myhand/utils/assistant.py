@@ -725,6 +725,7 @@ Otherwise, answer "chat". Here is the request:"""
             "change pager view",
             "change startup directory",
             "change Termux API integration",
+            "change automatic upgrade",
             "change developer mode [ctrl+d]",
             "toggle multi-line input [ctrl+l]",
             "toogle mouse support [esc+m]",
@@ -767,8 +768,8 @@ Otherwise, answer "chat". Here is the request:"""
                 self.setPagerView()
             elif feature == ".developer":
                 self.setDeveloperMode()
-#            elif feature == ".autoupdate":
-#                self.setAutoUpdate()
+            elif feature == ".autoupgrade":
+                self.setAutoUpgrade()
             elif feature == ".termuxapi":
                 self.setTermuxApi()
             elif feature == ".enhanceexecution":
@@ -791,18 +792,18 @@ Otherwise, answer "chat". Here is the request:"""
                 userInput = feature
         return userInput
 
-# autoupdate was not designed for pip package
-#    def setAutoUpdate(self):
-#                options = ("enable", "disable")
-#                option = self.dialogs.getValidOptions(
-#                    options=options,
-#                    title="Automatic Update on Startup",
-#                    default="enable" if config.autoUpdate else "disable",
-#                    text="Select an option below:"
-#                )
-#                if option:
-#                    config.autoUpdate = (option == "enable")
-#                    self.print(f"Automatic Update: {option}d!")
+    def setAutoUpgrade(self):
+        options = ("enable", "disable")
+        option = self.dialogs.getValidOptions(
+            options=options,
+            title="Automatic Upgrade on Startup",
+            default="enable" if config.autoUpgrade else "disable",
+            text="Select an option below:"
+        )
+        if option:
+            config.autoUpgrade = (option == "enable")
+            config.saveConfig()
+            self.print(f"Automatic Upgrade: {option}d!")
 
     def setCodeDisplay(self):
         options = ("enable", "disable")
@@ -1047,7 +1048,10 @@ Otherwise, answer "chat". Here is the request:"""
             self.print(f"Availble functions have already taken up too many tokens [{functionTokens}] to work with selected model '{config.chatGPTApiModel}'. You may either changing to a model that supports more tokens or deactivating some of the plugins that you don't need to reduce the number of tokens in total.")
         else:
             self.print(self.divider)
-            self.print(f"You are using ChatGPT model '{config.chatGPTApiModel}', which allows no more than {tokenLimit} tokens, including both prompt and response")
+            if config.chatGPTApiModel == "gpt-4-1106-preview":
+                self.print(f"You are using ChatGPT model '{config.chatGPTApiModel}'. This model supports at most 4096 completion tokens. You can set at most {tokenLimit} maximum response token below.")
+            else:
+                self.print(f"You are using ChatGPT model '{config.chatGPTApiModel}', which allows no more than {tokenLimit} tokens, including both prompt and response")
             self.print("(GPT and embeddings models process text in chunks called tokens. As a rough rule of thumb, 1 token is approximately 4 characters or 0.75 words for English text. One limitation to keep in mind is that for a GPT model the prompt and the generated output combined must be no more than the model's maximum context length.)")
             if tiktokenImported:
                 self.print(f"Remarks: The current available functions have already taken up {functionTokens} tokens.")
@@ -1320,6 +1324,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".pagerview",
             ".startupDirectory",
             ".termuxapi",
+            ".autoupgrade",
             ".developer",
             ".togglemultiline",
             ".togglemousesupport",

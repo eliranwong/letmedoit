@@ -1,5 +1,6 @@
 from myhand import config
-import platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, json, geocoder, base64, getpass
+from packaging import version
+import platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, json, geocoder, base64, getpass, pkg_resources
 import pygments
 from pygments.lexers.python import PythonLexer
 from pygments.styles import get_style_by_name
@@ -23,11 +24,31 @@ class SharedUtil:
         #"gpt-3.5-turbo-instruct": 4097,
         "gpt-3.5-turbo": 4097,
         "gpt-3.5-turbo-16k": 16385,
-        "gpt-4-1106-preview": 8190,
-        #"gpt-4-vision-preview": 8190, # used in plugin "analyze images"
+        "gpt-4-1106-preview": 8192, # official 128,000; but "This model supports at most 4096 completion tokens"; set 8192 here to work with MyHand Bot dynamic token feature
+        #"gpt-4-vision-preview": 128,000, # used in plugin "analyze images"
         "gpt-4": 8192,
         "gpt-4-32k": 32768,
     }
+
+    @staticmethod
+    def getPackageInstalledVersion(package):
+        try:
+            installed_version = pkg_resources.get_distribution(package).version
+            return version.parse(installed_version)
+        except pkg_resources.DistributionNotFound:
+            return None
+
+    @staticmethod
+    def getPackageLatestVersion(package):
+        response = requests.get(f"https://pypi.org/pypi/{package}/json")
+        latest_version = response.json()['info']['version']
+        return version.parse(latest_version)
+
+    @staticmethod
+    def isPackageUpgradable(package):
+        latest_version = SharedUtil.getPackageLatestVersion(package)
+        installed_version = SharedUtil.getPackageInstalledVersion(package)
+        return (latest_version > installed_version)
 
     @staticmethod
     def getCurrentDateTime():
@@ -169,7 +190,7 @@ class SharedUtil:
     @staticmethod
     def fineTunePythonCode(code):
         # dedent
-        code = textwrap.dedent(code)
+        code = textwrap.dedent(code).rstrip()
         # capture print output
         config.pythonFunctionResponse = ""
         insert_string = "from myhand import config\nconfig.pythonFunctionResponse = "

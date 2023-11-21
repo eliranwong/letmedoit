@@ -7,7 +7,7 @@ with open(os.path.join("myhand", "README.md"), "r", encoding="utf-8") as fileObj
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name="myhand",
-    version="1.1.5",
+    version="1.1.7",
     python_requires=">=3.8, <3.12",
     description="An advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,
@@ -43,7 +43,7 @@ setup(
     install_requires=[
         "argparse",
         "requests",
-        "openai==1.3.3",
+        "openai==1.3.4",
         "prompt_toolkit",
         "Pygments",
         "datetime",

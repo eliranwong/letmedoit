@@ -74,15 +74,31 @@ def getPreferredDir():
 config.getPreferredDir = getPreferredDir
 
 def restartApp():
+    print("Restarting MyHand Bot ...")
     os.system(f"{sys.executable} {config.myHandFile}")
     exit(0)
 config.restartApp = restartApp
 
 from myhand.utils.configDefault import *
+from myhand.utils.shared_utils import SharedUtil
 
 # automatic update
 config.pipIsUpdated = False
-#if config.autoUpdate:
+print("Checking MyHand Bot version ...")
+installed_version = SharedUtil.getPackageInstalledVersion("myhand")
+print(f"Installed version: {installed_version}")
+latest_version = SharedUtil.getPackageLatestVersion("myhand")
+print(f"Latest version: {latest_version}")
+if config.autoUpgrade and (latest_version > installed_version):
+    from myhand.utils.install import *
+    try:
+        installmodule(f"--upgrade myhand")
+        restartApp()
+    except:
+        print("Failed to upgrade MyHand Bot!")
+
+# old update method with git pull
+#if config.autoUpgrade:
 #    # update to the latest codes
 #    try:
 #        os.system("git pull")
