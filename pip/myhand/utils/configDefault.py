@@ -1,5 +1,6 @@
 from myhand import config
-import pprint
+import pprint, os, shutil, sys
+from prompt_toolkit.shortcuts import yes_no_dialog
 
 def setConfig(defaultSettings, thisTranslation={}, temporary=False):
     for key, value in defaultSettings:
@@ -37,7 +38,7 @@ defaultSettings = (
     ('maximumInternetSearchResults', 5),
     ('chatGPTApiContextInAllInputs', False),
     ('thisTranslation', {}),
-    ('chatGPTPluginExcludeList', ["counselling", "edit text", "simplified Chinese to traditional Chinese"]),
+    ('chatGPTPluginExcludeList', ["bible", "bible studies", "biblical counselling", "counselling", "edit text", "simplified Chinese to traditional Chinese"]),
     ('terminalEnableTermuxAPI', False),
     ('terminalEnableTermuxAPIToast', False),
     ('cancel_entry', '.cancel'),
@@ -77,6 +78,20 @@ defaultSettings = (
     ("ttsLanguagesCommandMap", {"en": "", "en-gb": "", "en-us": "", "zh": "", "yue": "", "el": "",}), # advanced users need to edit this item manually to support different voices with customised tts command, e.g. ttsCommand set to "say -r 200 -v Daniel" and ttsLanguagesCommandMap set to {"en": "Daniel", "en-gb": "Daniel", "en-us": "", "zh": "", "yue": "", "el": "",}
 )
 
+preferredDir = config.getPreferredDir()
+if os.path.isdir(preferredDir):
+    configFile = os.path.join(config.myHandAIFolder, "config.py")
+    if os.path.getsize(configFile) == 0:
+        backupFile = os.path.join(preferredDir, "config_backup.py")
+        restore_backup = yes_no_dialog(
+            title="Configuration Backup Found",
+            text=f"Do you want to use the following backup?\n{backupFile}"
+        ).run()
+        if restore_backup:
+            shutil.copy(backupFile, configFile)
+            print("Configuration backup restored!")
+            print("Restarting MyHand Bot ...")
+            config.restartApp()
 setConfig(defaultSettings)
 # allow plugins to add customised config
 # e.g. check plugins/bible.py

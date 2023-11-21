@@ -114,10 +114,6 @@ class MyHandAI:
         preferredDir = self.preferredDir if self.preferredDir else os.path.join(config.myHandAIFolder, "files")
         return config.startupdirectory if config.startupdirectory else preferredDir
 
-    def getPygmentsStyle(self):
-        theme = config.pygments_style if config.pygments_style else "stata-dark" if config.terminalResourceLinkColor.startswith("ansibright") else "stata-light"
-        return style_from_pygments_cls(get_style_by_name(theme))
-
     def getFolderPath(self):
         return self.getPath.getFolderPath(
             check_isdir=True,
@@ -133,14 +129,9 @@ class MyHandAI:
 
     def execPythonFile(self, script):
         try:
-            if config.developer:
-                with open(script, 'r', encoding='utf8') as f:
-                    code = compile(f.read(), script, 'exec')
-                    exec(code, globals())
-            else:
-                with open(script, 'r', encoding='utf8') as f:
-                    code = compile(f.read(), script, 'exec')
-                    exec(code, globals())
+            with open(script, 'r', encoding='utf8') as f:
+                code = compile(f.read(), script, 'exec')
+                exec(code, globals())
         except:
             self.print("Failed to run '{0}'!".format(os.path.basename(script)))
             SharedUtil.showErrors()
@@ -298,7 +289,7 @@ class MyHandAI:
                 self.print("```")
                 #print(function_args)
                 tokens = list(pygments.lex(function_args, lexer=BashLexer()))
-                print_formatted_text(PygmentsTokens(tokens), style=self.getPygmentsStyle())
+                print_formatted_text(PygmentsTokens(tokens), style=SharedUtil.getPygmentsStyle())
                 self.print("```")
             self.print(self.divider)
 
@@ -371,7 +362,7 @@ class MyHandAI:
                 #print(python_code)
                 # pygments python style
                 tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
-                print_formatted_text(PygmentsTokens(tokens), style=self.getPygmentsStyle())
+                print_formatted_text(PygmentsTokens(tokens), style=SharedUtil.getPygmentsStyle())
                 self.print("```")
             self.print(self.divider)
 
@@ -384,20 +375,7 @@ class MyHandAI:
                 if not confirmation.lower() in ("y", "yes"):
                     self.runPython = False
                     return "[INVALID]"
-
-            try:
-                exec(refinedCode, globals())
-                pythonFunctionResponse = SharedUtil.getPythonFunctionResponse(refinedCode)
-            except:
-                trace = SharedUtil.showErrors()
-                self.print(self.divider)
-                if config.max_consecutive_auto_heal > 0:
-                    return SharedUtil.autoHealPythonCode(refinedCode, trace)
-                else:
-                    return "[INVALID]"
-            if not pythonFunctionResponse:
-                return ""
-            return json.dumps({"information": pythonFunctionResponse})
+            return SharedUtil.executePythonCode(refinedCode)
 
         functionSignature = {
             "name": "execute_python_code",
@@ -542,7 +520,7 @@ Otherwise, answer "chat". Here is the request:"""
                 #print(python_code)
                 # pygments python style
                 tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
-                print_formatted_text(PygmentsTokens(tokens), style=self.getPygmentsStyle())
+                print_formatted_text(PygmentsTokens(tokens), style=SharedUtil.getPygmentsStyle())
                 print("```")
             self.print(self.divider)
 
@@ -717,7 +695,7 @@ Otherwise, answer "chat". Here is the request:"""
             # context may start with "You will be provided with my input delimited with a pair of XML tags, <input> and </input>. ...
             userInput = re.sub("<content>|<content [^<>]*?>|</content>", "", userInput)
             userInput = f"{context}\n<content>{userInput}</content>" if userInput.strip() else context
-        userInput = SharedUtil.addTimeStamp(userInput)
+        #userInput = SharedUtil.addTimeStamp(userInput)
         if config.chatGPTApiPredefinedContextTemp:
             config.chatGPTApiPredefinedContext = config.chatGPTApiPredefinedContextTemp
             config.chatGPTApiPredefinedContextTemp = ""
@@ -1364,6 +1342,7 @@ Otherwise, answer "chat". Here is the request:"""
                 self.print(self.divider)
                 self.print(f"current directory:\n{currentDirectory}")
                 self.print(self.divider)
+                startupdirectory = currentDirectory
             # default input entry
             accept_default = config.accept_default
             config.accept_default = False
@@ -1454,7 +1433,8 @@ Otherwise, answer "chat". Here is the request:"""
                         improvedVersion = SharedUtil.getSingleChatResponse(f"Improve the following writing, according to {config.improvedWritingSytle}\nRemember, provide me with the improved writing only, enclosed in triple quotes ``` and without any additional information or comments.\nMy writing\n:{userInput}")
                         if improvedVersion and improvedVersion.startswith("```") and improvedVersion.endswith("```"):
                             self.print(improvedVersion)
-                            userInput = SharedUtil.addTimeStamp(improvedVersion[3:-3])
+                            #userInput = SharedUtil.addTimeStamp(improvedVersion[3:-3])
+                            userInput = improvedVersion[3:-3]
                             if config.ttsOutput:
                                 TTSUtil.play(userInput)
                     # refine messages before running completion

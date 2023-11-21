@@ -1,5 +1,4 @@
-import os, sys, platform
-from shutil import copyfile
+import os, sys, platform, shutil
 
 # requires python 3.8+; required by package 'tiktoken'
 pythonVersion = sys.version_info
@@ -60,9 +59,26 @@ if not os.path.isfile(configFile):
 # import config and setup default
 import traceback
 from myhand import config
-from myhand.utils.configDefault import *
+from pathlib import Path
+
 config.myHandFile = myHandFile
 config.myHandAIFolder = myHandAIFolder
+
+def getPreferredDir():
+    preferredDir = os.path.join(os.path.expanduser('~'), 'myhand')
+    try:
+        Path(preferredDir).mkdir(parents=True, exist_ok=True)
+    except:
+        pass
+    return preferredDir if os.path.isdir(preferredDir) else ""
+config.getPreferredDir = getPreferredDir
+
+def restartApp():
+    os.system(f"{sys.executable} {config.myHandFile}")
+    exit(0)
+config.restartApp = restartApp
+
+from myhand.utils.configDefault import *
 
 # automatic update
 config.pipIsUpdated = False
@@ -85,7 +101,7 @@ config.pipIsUpdated = False
 from myhand.utils.shortcuts import *
 from myhand.utils.assistant import MyHandAI
 from myhand.utils.vlc_utils import VlcUtil
-from prompt_toolkit.shortcuts import set_title, clear_title, clear
+from prompt_toolkit.shortcuts import set_title, clear_title
 try:
     # hide pygame welcome message
     os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
@@ -113,6 +129,8 @@ def saveConfig():
     with open(configFile, "w", encoding="utf-8") as fileObj:
         for name in dir(config):
             excludeConfigList = [
+                "restartApp",
+                "getPreferredDir",
                 "saveConfig",
                 "aliases",
                 "addPathAt",
@@ -208,6 +226,9 @@ def main():
         set_log_file_max_lines(filepath, 3000)
     MyHandAI().startChats()
     saveConfig()
+    preferredDir = getPreferredDir()
+    if os.path.isdir(preferredDir):
+        shutil.copy(configFile, os.path.join(preferredDir, "config_backup.py"))
     clear_title()
 
 if __name__ == "__main__":

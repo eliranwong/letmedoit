@@ -1,5 +1,11 @@
 from myhand import config
 import platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, json, geocoder, base64, getpass
+import pygments
+from pygments.lexers.python import PythonLexer
+from pygments.styles import get_style_by_name
+from prompt_toolkit.styles.pygments import style_from_pygments_cls
+from prompt_toolkit import print_formatted_text
+from prompt_toolkit.formatted_text import PygmentsTokens
 try:
     import tiktoken
     tiktokenImported = True
@@ -88,6 +94,39 @@ class SharedUtil:
         for transformer in config.chatGPTTransformers:
                 text = transformer(text)
         return text
+
+    @staticmethod
+    def getPygmentsStyle():
+        theme = config.pygments_style if config.pygments_style else "stata-dark" if not config.terminalResourceLinkColor.startswith("ansibright") else "stata-light"
+        return style_from_pygments_cls(get_style_by_name(theme))
+
+    @staticmethod
+    def showAndExecutePythonCode(code):
+        if config.developer or config.codeDisplay:
+            config.print("```python")
+            tokens = list(pygments.lex(code, lexer=PythonLexer()))
+            print_formatted_text(PygmentsTokens(tokens), style=SharedUtil.getPygmentsStyle())
+            config.print("```")
+        config.stopSpinning()
+        refinedCode = SharedUtil.fineTunePythonCode(code)
+        information = SharedUtil.executePythonCode(refinedCode)
+        return information
+
+    @staticmethod
+    def executePythonCode(code):
+        try:
+            exec(code, globals())
+            pythonFunctionResponse = SharedUtil.getPythonFunctionResponse(code)
+        except:
+            trace = SharedUtil.showErrors()
+            config.print(config.divider)
+            if config.max_consecutive_auto_heal > 0:
+                return SharedUtil.autoHealPythonCode(code, trace)
+            else:
+                return "[INVALID]"
+        if not pythonFunctionResponse:
+            return ""
+        return json.dumps({"information": pythonFunctionResponse})
 
     @staticmethod
     def convertFunctionSignaturesIntoTools(functionSignatures):
