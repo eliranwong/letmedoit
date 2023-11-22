@@ -2,6 +2,8 @@
 My Hand Bot Plugin - send emails
 
 send google or outlook emails
+
+[FUNCTION_CALL]
 """
 
 from myhand import config
@@ -118,5 +120,6 @@ functionSignature = {
     },
 }
 
+config.pluginsWithFunctionCall.append("send_email")
 config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["send_email"] = send_email

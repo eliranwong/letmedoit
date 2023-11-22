@@ -77,7 +77,16 @@ class MyHandAI:
 
         self.preferredDir = self.getPreferredDir()
         if (not config.historyParentFolder or not os.path.isdir(config.historyParentFolder)) and self.preferredDir:
-            config.historyParentFolder = self.preferredDir
+            try:
+                historyParentFolder = os.path.join(self.preferredDir, "history")
+                Path(historyParentFolder).mkdir(parents=True, exist_ok=True)
+                for i in ("chats", "paths", "commands"):
+                    historyFile = os.path.join(historyParentFolder, i)
+                    if not os.path.isfile(historyFile):
+                        open(historyFile, "a", encoding="utf-8").close()
+                config.historyParentFolder = self.preferredDir
+            except:
+                config.historyParentFolder = ""
             config.saveConfig()
         
         if not config.openaiApiKey:
@@ -131,19 +140,20 @@ class MyHandAI:
             promptIndicator = ""
         )
 
-    def execPythonFile(self, script, content=""):
-        def runCode(text):
-            code = compile(text, script, 'exec')
-            exec(code, globals())
-        try:
-            if content:
-                runCode(content)
-            else:
-                with open(script, 'r', encoding='utf8') as f:
-                    runCode(f.read())
-        except:
-            self.print("Failed to run '{0}'!".format(os.path.basename(script)))
-            SharedUtil.showErrors()
+    def execPythonFile(self, script="", content=""):
+        if script or content:
+            def runCode(text):
+                code = compile(text, script, 'exec')
+                exec(code, globals())
+            try:
+                if content:
+                    runCode(content)
+                else:
+                    with open(script, 'r', encoding='utf8') as f:
+                        runCode(f.read())
+            except:
+                self.print("Failed to run '{0}'!".format(os.path.basename(script)))
+                SharedUtil.showErrors()
 
     def runPlugins(self):
         # The following config values can be modified with plugins, to extend functionalities
@@ -173,17 +183,14 @@ class MyHandAI:
         for plugin in FileUtil.fileNamesWithoutExtension(pluginFolder, "py"):
             if not plugin in config.chatGPTPluginExcludeList:
                 script = os.path.join(pluginFolder, "{0}.py".format(plugin))
-                with open(script, 'r', encoding='utf8') as fileObj:
-                    content = fileObj.read()
-                if "[FUNCTION_CALL]" in content:
-                    config.pluginsWithFunctionCall.append(plugin)
-                self.execPythonFile(script, content=content)
-        #print(config.pluginsWithFunctionCall)
+                self.execPythonFile(script)
         if internetSeraches in config.chatGPTPluginExcludeList:
             del config.chatGPTApiFunctionSignatures[0]
         self.setupPythonExecution()
         if config.terminalEnableTermuxAPI:
             self.setupTermuxExecution()
+        for i in config.pluginsWithFunctionCall:
+            config.inputSuggestions.append(f"[CALL {i}]")
 
     def selectPlugins(self):
         plugins = []
@@ -587,8 +594,7 @@ Otherwise, answer "chat". Here is the request:"""
                     temperature=config.chatGPTApiTemperature,
                     max_tokens=SharedUtil.getDynamicTokens(thisThisMessage, config.chatGPTApiFunctionSignatures),
                     tools=SharedUtil.convertFunctionSignaturesIntoTools(config.chatGPTApiFunctionSignatures),
-                    #tool_choice={"type": "function", "function": {"name": config.runSpecificFuntion}} if config.runSpecificFuntion else config.chatGPTApiFunctionCall,
-                    tool_choice=config.chatGPTApiFunctionCall,
+                    tool_choice={"type": "function", "function": {"name": config.runSpecificFuntion}} if config.runSpecificFuntion else config.chatGPTApiFunctionCall,
                     stream=True,
                 )
             return self.client.chat.completions.create(
@@ -686,7 +692,7 @@ Otherwise, answer "chat". Here is the request:"""
                     # update system mess
                     dayOfWeek = SharedUtil.getDayOfWeek()
                     item = messages.pop(index)
-                                        item["content"] = re.sub(
+                    item["content"] = re.sub(
                         """^Current directory: .*?\nCurrent time: .*?\nCurrent day of the week: .*?$""",
                         f"""Current directory: {os.getcwd()}\nCurrent time: {str(datetime.datetime.now())}\nCurrent day of the week: {dayOfWeek}""",
                         item["content"],

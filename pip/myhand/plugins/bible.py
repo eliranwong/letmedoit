@@ -233,5 +233,6 @@ Give me only the sql query statement, starting with "SELECT * FROM Verses WHERE 
 }
 
 # make available for function calling
+config.pluginsWithFunctionCall.append("search_bible")
 config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["search_bible"] = search_bible

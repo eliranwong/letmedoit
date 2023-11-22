@@ -23,7 +23,7 @@ with open(os.path.join("myhand", "config.py"), 'w'):
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name="myhand",
-    version="1.1.7",
+    version="1.1.8",
     python_requires=">=3.8, <3.12",
     description="An advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,

@@ -1,7 +1,7 @@
 from myhand import config
 from packaging import version
 import platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback
-import datetime, requests, netifaces, textwrap, json, geocoder, base64, getpass, pendulum
+import datetime, requests, netifaces, textwrap, json, geocoder, base64, getpass, pendulum, pkg_resources
 import pygments
 from pygments.lexers.python import PythonLexer
 from pygments.styles import get_style_by_name

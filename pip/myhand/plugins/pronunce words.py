@@ -45,5 +45,6 @@ functionSignature = {
     },
 }
 
+config.pluginsWithFunctionCall.append("pronunce_words")
 config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["pronunce_words"] = pronunce_words

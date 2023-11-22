@@ -106,5 +106,6 @@ functionSignature = {
     },
 }
 
+config.pluginsWithFunctionCall.append("create_image")
 config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["create_image"] = create_image

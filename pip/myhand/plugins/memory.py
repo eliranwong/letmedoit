@@ -139,6 +139,7 @@ functionSignature2 = {
 }
 
 config.inputSuggestions += ["Remember, "]
+config.pluginsWithFunctionCall += ["save_memory", "retrieve_memories"]
 config.chatGPTApiFunctionSignatures += [functionSignature1, functionSignature2]
 config.chatGPTApiAvailableFunctions["save_memory"] = save_memory
 config.chatGPTApiAvailableFunctions["retrieve_memories"] = retrieve_memories

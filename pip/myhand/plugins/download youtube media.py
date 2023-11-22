@@ -85,6 +85,7 @@ if SharedUtil.isPackageInstalled("yt-dlp"):
         },
     }
 
+    config.pluginsWithFunctionCall.append("download_youtube_media")
     config.chatGPTApiFunctionSignatures.append(functionSignature)
     config.chatGPTApiAvailableFunctions["download_youtube_media"] = download_youtube_media
 

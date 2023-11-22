@@ -29,5 +29,6 @@ functionSignature = {
     },
 }
 
+config.pluginsWithFunctionCall.append("datetimes")
 config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["datetimes"] = datetimes

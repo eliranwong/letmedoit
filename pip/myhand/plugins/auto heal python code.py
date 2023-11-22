@@ -58,6 +58,7 @@ persistentConfigs = (
 )
 config.setConfig(persistentConfigs)
 
+config.pluginsWithFunctionCall.append("heal_python")
 config.heal_python_signature = [functionSignature]
 config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["heal_python"] = heal_python
