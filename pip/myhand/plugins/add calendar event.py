@@ -9,6 +9,8 @@ My Hand Bot Plugin - add calender event
 supported calendars:
 * google calendar
 * outlook calendar
+
+[FUNCTION_CALL]
 """
 
 """

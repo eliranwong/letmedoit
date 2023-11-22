@@ -30,7 +30,7 @@ class SystemCommandPrompt:
             # Prompt.
             "indicator": config.terminalPromptIndicatorColor2,
         })
-        system_command_history = os.path.join(config.myHandAIFolder, "history", "commands")
+        system_command_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.myHandAIFolder, "history", "commands")
         self.terminal_system_command_session = PromptSession(history=FileHistory(system_command_history))
         self.openCommand = config.open
 

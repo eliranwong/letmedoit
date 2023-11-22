@@ -145,6 +145,8 @@ def saveConfig():
     with open(configFile, "w", encoding="utf-8") as fileObj:
         for name in dir(config):
             excludeConfigList = [
+                "runSpecificFuntion",
+                "pluginsWithFunctionCall",
                 "restartApp",
                 "getPreferredDir",
                 "saveConfig",
@@ -238,7 +240,7 @@ def main(default="", run=False):
     config.isVlcPlayerInstalled = VlcUtil.isVlcPlayerInstalled()
     # check log files; remove old lines if more than 3000 lines is found in a log file
     for i in ("chats", "paths", "commands"):
-        filepath = os.path.join(config.myHandAIFolder, "history", i)
+        filepath = os.path.join(config.historyParentFolder if config.historyParentFolder else config.myHandAIFolder, "history", i)
         set_log_file_max_lines(filepath, 3000)
     config.defaultEntry = default
     config.accept_default = run

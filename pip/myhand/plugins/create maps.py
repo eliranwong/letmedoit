@@ -2,6 +2,8 @@
 My Hand Bot Plugin - create maps
 
 Create maps
+
+[FUNCTION_CALL]
 """
 
 from myhand import config

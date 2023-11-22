@@ -1,6 +1,7 @@
 from myhand import config
 from packaging import version
-import platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, datetime, requests, netifaces, textwrap, json, geocoder, base64, getpass, pkg_resources
+import platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback
+import datetime, requests, netifaces, textwrap, json, geocoder, base64, getpass, pendulum
 import pygments
 from pygments.lexers.python import PythonLexer
 from pygments.styles import get_style_by_name
@@ -368,6 +369,11 @@ Acess the risk level of this Python code:
                         return ip
 
     @staticmethod
+    def getDayOfWeek():
+        now = pendulum.now() 
+        return now.format('dddd')
+
+    @staticmethod
     def getDeviceInfo():
         g = geocoder.ip('me')
         if hasattr(config, "thisPlatform"):
@@ -378,6 +384,7 @@ Acess the risk level of this Python code:
                 thisPlatform = "macOS"
         wan_ip = SharedUtil.get_wan_ip()
         local_ip = SharedUtil.get_local_ip()
+        dayOfWeek = SharedUtil.getDayOfWeek()
         return f"""Operating system: {thisPlatform}
 Version: {platform.version()}
 Machine: {platform.machine()}
@@ -388,6 +395,8 @@ Username: {getpass.getuser()}
 Python version: {platform.python_version()}
 Python implementation: {platform.python_implementation()}
 Current directory: {os.getcwd()}
+Current time: {str(datetime.datetime.now())}
+Current day of the week: {dayOfWeek}
 Wan ip: {wan_ip}
 Local ip: {local_ip}
 Latitude & longitude: {g.latlng}

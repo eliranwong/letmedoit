@@ -12,6 +12,8 @@ functionalities:
 
 User can define the maximum number of auto-healing attempts by editing "max_consecutive_auto_heal" in config.py.
 The default value of config.max_consecutive_auto_heal is 3.
+
+[FUNCTION_CALL]
 """
 
 def heal_python(function_args):

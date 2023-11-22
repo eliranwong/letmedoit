@@ -2,6 +2,8 @@
 My Hand Bot Plugin - create images
 
 generate images with model "dall-e-3"
+
+[FUNCTION_CALL]
 """
 
 from myhand import config

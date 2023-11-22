@@ -2,6 +2,8 @@
 My Hand Bot Plugin - integrate google searches
 
 Search internet for keywords when ChatGPT lacks information or when user ask about news or latest updates
+
+[FUNCTION_CALL]
 """
 
 from myhand import config

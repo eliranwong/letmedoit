@@ -2,6 +2,8 @@
 My Hand Bot Plugin - dates and times
 
 Retrieve information about dates and times
+
+[FUNCTION_CALL]
 """
 
 from myhand import config

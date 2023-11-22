@@ -4,6 +4,8 @@ My Hand Bot Plugin - analyze images
 analyze images with model "gpt-4-vision-preview"
 
 reference: https://platform.openai.com/docs/guides/vision
+
+[FUNCTION_CALL]
 """
 
 from myhand import config

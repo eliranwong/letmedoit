@@ -167,6 +167,10 @@ Available tokens: {estimatedAvailableTokens}
                 config.ttsOutput = not config.ttsOutput
                 config.saveConfig()
                 run_in_terminal(lambda: config.print(f"Response Audio '{'enabled' if config.ttsOutput else 'disabled'}'!"))
+        @this_key_bindings.add("escape", "r")
+        def _(_):
+            print("Restarting MyHand Bot ...")
+            config.restartApp()
         @this_key_bindings.add("escape", "i")
         def _(_):
             config.displayImprovedWriting = not config.displayImprovedWriting
@@ -227,6 +231,7 @@ Available tokens: {estimatedAvailableTokens}
             "esc+z": "move cursor to entry end",
             "esc+s": "swap text brightness",
             "esc+d": "swap developer mode",
+            "esc+r": "restart myhand",
         }
         textEditor = config.customTextEditor.split(" ", 1)[0]
         bindings["esc+o"] = f"""open with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""

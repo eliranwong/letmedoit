@@ -4,6 +4,8 @@ My Hand Bot Plugin - memory
 Save and retrieve memory
 
 modified from source: https://medium.com/@simon_attard/building-a-memory-layer-for-gpt-using-function-calling-da17d66920d0
+
+[FUNCTION_CALL]
 """
 
 from myhand import config
@@ -45,7 +47,6 @@ def add_vector(collection, text, metadata):
     )
 
 def save_memory(function_args):
-    print("saving memory ...")
     memory = function_args.get("memory") # required
     memory_title = function_args.get("title") # required
     memory_type = function_args.get("type") # required
@@ -63,11 +64,14 @@ def save_memory(function_args):
         "location": f"{g.city}, {g.state}, {g.country}",
     }
     if config.developer:
+        config.print(config.divider)
         print(">>> saving memory: ")
-        print(f"memory: {memory}")
+        config.print(f"memory: {memory}")
         print(metadata)
-    config.stopSpinning()
+        config.print(config.divider)
     add_vector(collection, memory, metadata)
+    config.stopSpinning()
+    return "I saved it in my memory!"
 
 def query_vectors(collection, query, n):
     query_embedding = get_embedding(query)
@@ -79,10 +83,12 @@ def query_vectors(collection, query, n):
 def retrieve_memories(function_args):
     query = function_args.get("query") # required
     collection = get_or_create_collection("memories")
-    res = query_vectors(collection, query, 5) # TODO: set number of retrieval in config
+    res = query_vectors(collection, query, config.numberOfMemoryClosestMatches)
     if config.developer:
+        config.print(config.divider)
         print(">>> retrieved memories: ") 
         print(res["documents"])
+        config.print(config.divider)
     info = {}
     for index, description in enumerate(res["documents"][0]):
         info[f"memory {index}"] = {
@@ -99,7 +105,7 @@ functionSignature1 = {
         "properties": {
             "memory": {
                 "type": "string",
-                "description": "Full description of the memory to be saved"
+                "description": "Full description of the memory to be saved. I would like you to help me with converting relative dates and times, if any, into exact dates and times based on the given current date and time."
             },
             "title": {
                 "type": "string",
@@ -132,6 +138,7 @@ functionSignature2 = {
     }
 }
 
+config.inputSuggestions += ["Remember, "]
 config.chatGPTApiFunctionSignatures += [functionSignature1, functionSignature2]
 config.chatGPTApiAvailableFunctions["save_memory"] = save_memory
 config.chatGPTApiAvailableFunctions["retrieve_memories"] = retrieve_memories

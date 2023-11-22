@@ -2,6 +2,8 @@
 My Hand Bot Plugin - pronunce words
 
 add predefined contexts about pastoral care
+
+[FUNCTION_CALL]
 """
 
 try:

@@ -150,7 +150,7 @@ class GetPath:
                 #from util.prompt_shared_key_bindings import prompt_shared_key_bindings
                 from prompt_toolkit.filters import Condition
 
-                filePathHistory = os.path.join(config.myHandAIFolder, "history", "paths")
+                filePathHistory = os.path.join(config.historyParentFolder if config.historyParentFolder else config.myHandAIFolder, "history", "paths")
                 filePathSession = PromptSession(history=FileHistory(filePathHistory))
 
                 # key bindings

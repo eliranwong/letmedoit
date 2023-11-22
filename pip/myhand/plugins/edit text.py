@@ -3,6 +3,7 @@ My Hand Bot Plugin - edit text
 
 edit text files
 
+[FUNCTION_CALL]
 """
 
 from myhand import config

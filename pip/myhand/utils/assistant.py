@@ -63,6 +63,7 @@ class MyHandAI:
         config.launchPager = self.launchPager
         config.addPagerText = self.addPagerText
         config.getFunctionMessageAndResponse = self.getFunctionMessageAndResponse
+        config.runSpecificFuntion = ""
 
         # get path
         config.addPathAt = None
@@ -75,6 +76,9 @@ class MyHandAI:
         )
 
         self.preferredDir = self.getPreferredDir()
+        if (not config.historyParentFolder or not os.path.isdir(config.historyParentFolder)) and self.preferredDir:
+            config.historyParentFolder = self.preferredDir
+            config.saveConfig()
         
         if not config.openaiApiKey:
             self.changeAPIkey()
@@ -90,7 +94,7 @@ class MyHandAI:
         #if config.openaiApiOrganization:
         #    raise Exception("The 'openai.organization' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(organization=config.openaiApiOrganization)'")
         # chat records
-        chat_history = os.path.join(config.myHandAIFolder, "history", "chats")
+        chat_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.myHandAIFolder, "history", "chats")
         self.terminal_chat_session = PromptSession(history=FileHistory(chat_history))
 
         # check if tts is ready
@@ -127,17 +131,23 @@ class MyHandAI:
             promptIndicator = ""
         )
 
-    def execPythonFile(self, script):
+    def execPythonFile(self, script, content=""):
+        def runCode(text):
+            code = compile(text, script, 'exec')
+            exec(code, globals())
         try:
-            with open(script, 'r', encoding='utf8') as f:
-                code = compile(f.read(), script, 'exec')
-                exec(code, globals())
+            if content:
+                runCode(content)
+            else:
+                with open(script, 'r', encoding='utf8') as f:
+                    runCode(f.read())
         except:
             self.print("Failed to run '{0}'!".format(os.path.basename(script)))
             SharedUtil.showErrors()
 
     def runPlugins(self):
         # The following config values can be modified with plugins, to extend functionalities
+        config.pluginsWithFunctionCall = []
         config.aliases = {}
         config.predefinedContexts = {
             "[none]": "",
@@ -163,7 +173,12 @@ class MyHandAI:
         for plugin in FileUtil.fileNamesWithoutExtension(pluginFolder, "py"):
             if not plugin in config.chatGPTPluginExcludeList:
                 script = os.path.join(pluginFolder, "{0}.py".format(plugin))
-                self.execPythonFile(script)
+                with open(script, 'r', encoding='utf8') as fileObj:
+                    content = fileObj.read()
+                if "[FUNCTION_CALL]" in content:
+                    config.pluginsWithFunctionCall.append(plugin)
+                self.execPythonFile(script, content=content)
+        #print(config.pluginsWithFunctionCall)
         if internetSeraches in config.chatGPTPluginExcludeList:
             del config.chatGPTApiFunctionSignatures[0]
         self.setupPythonExecution()
@@ -572,6 +587,7 @@ Otherwise, answer "chat". Here is the request:"""
                     temperature=config.chatGPTApiTemperature,
                     max_tokens=SharedUtil.getDynamicTokens(thisThisMessage, config.chatGPTApiFunctionSignatures),
                     tools=SharedUtil.convertFunctionSignaturesIntoTools(config.chatGPTApiFunctionSignatures),
+                    #tool_choice={"type": "function", "function": {"name": config.runSpecificFuntion}} if config.runSpecificFuntion else config.chatGPTApiFunctionCall,
                     tool_choice=config.chatGPTApiFunctionCall,
                     stream=True,
                 )
@@ -586,6 +602,7 @@ Otherwise, answer "chat". Here is the request:"""
 
         while True:
             completion = runThisCompletion(thisMessage)
+            config.runSpecificFuntion = ""
             try:
                 # consume the first delta
                 for event in completion:
@@ -666,8 +683,15 @@ Otherwise, answer "chat". Here is the request:"""
         for index, message in enumerate(messages):
             try:
                 if message.get("role", "") == "system":
+                    # update system mess
+                    dayOfWeek = SharedUtil.getDayOfWeek()
                     item = messages.pop(index)
-                    item["content"] = re.sub("^Current directory: .*?$", f"Current directory: {os.getcwd()}", item["content"], flags=re.M)
+                                        item["content"] = re.sub(
+                        """^Current directory: .*?\nCurrent time: .*?\nCurrent day of the week: .*?$""",
+                        f"""Current directory: {os.getcwd()}\nCurrent time: {str(datetime.datetime.now())}\nCurrent day of the week: {dayOfWeek}""",
+                        item["content"],
+                        flags=re.M,
+                    )
                     messages.append(item)
                     break
             except:
@@ -1435,10 +1459,13 @@ Otherwise, answer "chat". Here is the request:"""
                     # Feature: improve writing:
                     if userInput and config.displayImprovedWriting:
                         userInput = re.sub("\n\[Current time: [^\n]*?$", "", userInput)
-                        improvedVersion = SharedUtil.getSingleChatResponse(f"Improve the following writing, according to {config.improvedWritingSytle}\nRemember, provide me with the improved writing only, enclosed in triple quotes ``` and without any additional information or comments.\nMy writing\n:{userInput}")
+                        improvedVersion = SharedUtil.getSingleChatResponse(f"""Improve the following writing, according to {config.improvedWritingSytle}
+In addition, I would like you to help me with converting relative dates and times, if any, into exact dates and times based on the reference that today is {SharedUtil.getDayOfWeek()} and datetime is {str(datetime.datetime.now())}.
+Remember, provide me with the improved writing only, enclosed in triple quotes ``` and without any additional information or comments.
+My writing:
+{userInput}""")
                         if improvedVersion and improvedVersion.startswith("```") and improvedVersion.endswith("```"):
                             self.print(improvedVersion)
-                            #userInput = SharedUtil.addTimeStamp(improvedVersion[3:-3])
                             userInput = improvedVersion[3:-3]
                             if config.ttsOutput:
                                 TTSUtil.play(userInput)
@@ -1446,7 +1473,9 @@ Otherwise, answer "chat". Here is the request:"""
                     fineTunedUserInput = self.fineTuneUserInput(userInput)
                     noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.chatGPTApiPredefinedContext.startswith("Counselling - ") or config.chatGPTApiPredefinedContext.endswith("Counselling"))
                     noScreening = ("[NO_SCREENING]" in fineTunedUserInput)
-                    fineTunedUserInput = re.sub("\[NO_FUNCTION_CALL\]|\[NO_SCREENING\]", "", fineTunedUserInput)
+                    checkCallSpecificFunction = re.search("\[CALL ([^\[\]]*?)\]", fineTunedUserInput)
+                    config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
+                    fineTunedUserInput = re.sub("\[CALL [^\[\]]*?\]|\[NO_FUNCTION_CALL\]|\[NO_SCREENING\]", "", fineTunedUserInput)
 
                     # python execution
                     self.screenAction = ""

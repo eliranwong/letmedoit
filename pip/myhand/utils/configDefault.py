@@ -15,6 +15,7 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
                 config.thisTranslation[i] = thisTranslation[i]
 
 defaultSettings = (
+    ('historyParentFolder', ""),
     ('customTextEditor', ""), # e.g. 'micro -softwrap true -wordwrap true'; built-in text editor eTextEdit is used when it is not defined.
     ('pagerView', False),
     ('usePygame', False),
@@ -30,6 +31,7 @@ defaultSettings = (
     ('chatGPTApiTemperature', 0.8),
     ('chatGPTApiFunctionCall', "auto"),
     ('max_consecutive_auto_reply', 10), # work with pyautogen
+    ('numberOfMemoryClosestMatches', 5),
     ('chatAfterFunctionCalled', True),
     ('runPythonScriptGlobally', False),
     ('openaiApiKey', ''),

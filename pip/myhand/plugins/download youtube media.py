@@ -4,6 +4,8 @@
 My Hand Bot Plugin - download youtube media
 
 download Youtube videos or audios
+
+[FUNCTION_CALL]
 """
 
 from myhand import config

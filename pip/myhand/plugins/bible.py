@@ -3,6 +3,7 @@ My Hand Bot Plugin - bible
 
 read, compare or search the bible
 
+[FUNCTION_CALL]
 """
 
 try:

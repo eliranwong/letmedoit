@@ -2,6 +2,8 @@
 My Hand Bot Plugin - analyze files
 
 analyze files with "AutoGen Retriever"
+
+[FUNCTION_CALL]
 """
 
 

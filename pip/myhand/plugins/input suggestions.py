@@ -12,7 +12,7 @@ config.inputSuggestions += [
         "[NO_FUNCTION_CALL] ",
         f"!{config.open} ",
         f"!{sys.executable} ",
-        "write a summary ", 
+        "write a summary ",
         "open ",
         "open the current directory",
         "search ",
