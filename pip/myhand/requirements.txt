@@ -1,6 +1,7 @@
-argparse
-requests
 openai==1.3.4
+requests
+argparse
+numpy
 prompt_toolkit
 Pygments
 datetime

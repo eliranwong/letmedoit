@@ -36,8 +36,8 @@ class MyHandAI:
         #config.myHandAI = self
         self.prompts = Prompts()
         self.dialogs = TerminalModeDialogs(self)
-        self.runPlugins()
         self.setup()
+        self.runPlugins()
 
     def setup(self):
         self.models = list(SharedUtil.tokenLimits.keys())
