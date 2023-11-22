@@ -1,0 +1,70 @@
+setup.py
+myhand/README.md
+myhand/__init__.py
+myhand/autogen_assistant.py
+myhand/autogen_math.py
+myhand/autogen_retriever.py
+myhand/autogen_teachable.py
+myhand/cli.py
+myhand/config.py
+myhand/eTextEdit.py
+myhand/main.py
+myhand/requirements.txt
+myhand.egg-info/PKG-INFO
+myhand.egg-info/SOURCES.txt
+myhand.egg-info/dependency_links.txt
+myhand.egg-info/entry_points.txt
+myhand.egg-info/requires.txt
+myhand.egg-info/top_level.txt
+myhand/files/Readme.md
+myhand/history/Readme.md
+myhand/icons/myHandAI.png
+myhand/plugins/Readme.md
+myhand/plugins/add calendar event.py
+myhand/plugins/aliases.py
+myhand/plugins/analyze files.py
+myhand/plugins/analyze images.py
+myhand/plugins/auto heal python code.py
+myhand/plugins/awesome prompts.py
+myhand/plugins/bible studies.py
+myhand/plugins/bible.py
+myhand/plugins/biblical counselling.py
+myhand/plugins/character analysis.py
+myhand/plugins/counselling.py
+myhand/plugins/create images.py
+myhand/plugins/create maps.py
+myhand/plugins/dates and times.py
+myhand/plugins/download youtube media.py
+myhand/plugins/edit text.py
+myhand/plugins/global finance.py
+myhand/plugins/improve British English.py
+myhand/plugins/input suggestions.py
+myhand/plugins/instructions.py
+myhand/plugins/integrate google searches.py
+myhand/plugins/memory.py
+myhand/plugins/pastoral care.py
+myhand/plugins/pronunce words.py
+myhand/plugins/send email.py
+myhand/plugins/simplified Chinese to traditional Chinese.py
+myhand/plugins/bibleTools/bibleData/Readme.md
+myhand/plugins/bibleTools/bibleData/bibles/KJV.bible
+myhand/plugins/bibleTools/bibleData/bibles/NET.bible
+myhand/plugins/bibleTools/utils/BibleBooks.py
+myhand/plugins/bibleTools/utils/TextUtil.py
+myhand/temp/Readme.md
+myhand/utils/assistant.py
+myhand/utils/configDefault.py
+myhand/utils/file_utils.py
+myhand/utils/get_path_prompt.py
+myhand/utils/install.py
+myhand/utils/promptValidator.py
+myhand/utils/prompt_multiline_shared_key_bindings.py
+myhand/utils/prompt_shared_key_bindings.py
+myhand/utils/prompts.py
+myhand/utils/shared_utils.py
+myhand/utils/shortcuts.py
+myhand/utils/terminal_mode_dialogs.py
+myhand/utils/terminal_system_command_prompt.py
+myhand/utils/ttsLanguages.py
+myhand/utils/tts_utils.py
+myhand/utils/vlc_utils.py

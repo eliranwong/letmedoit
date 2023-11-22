@@ -36,6 +36,12 @@ I am an advanced AI assistant uniquely equipped with direct execution capabiliti
 
 # Recent Additions
 
+MyHand Bot just got smarter with memory retention!
+
+[Plugin - memory](https://github.com/eliranwong/myhand/blob/main/pip/myhand/plugins/memory.py)
+
+![memory_after_restarted](https://github.com/eliranwong/myhand/assets/25262722/6bd4a839-89fe-4691-b7af-8150209f082b)
+
 [Plugin - anaylze images](https://github.com/eliranwong/myhand/wiki/Plugins-%E2%80%90-Analyze-Images)
 
 ![analyze_image_demo](https://github.com/eliranwong/myhand/assets/25262722/e8767d02-bcc7-47f7-8169-29a0325e9ef9)
