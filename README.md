@@ -70,7 +70,7 @@ TaskWiz AI just got smarter with memory retention!
 
 # Examples of Plugin Features (selective only):
 
-Latest TaskWiz Plugins allow you to:
+Latest TaskWiz Plugins allow you to acheive variety of tasks with natural language:
 
 * execute python codes with auto-healing feature and risk assessment
 
