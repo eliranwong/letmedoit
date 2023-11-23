@@ -56,6 +56,10 @@ TaskWiz AI just got smarter with memory retention!
 
 # Examples of TaskWiz Built-in Features (selective only):
 
+* enhanced screen for task execution
+
+* risk assessment of code execution
+
 * support latest OpenAI models, [GPT-4 and GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo), [GPT-3.5](https://platform.openai.com/docs/models/gpt-3-5), [DALL·E](https://platform.openai.com/docs/models/dall-e), etc.
 
 * Support predefined contexts and instructions
