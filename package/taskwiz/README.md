@@ -1,14 +1,6 @@
-# Rename "TaskWiz Bot" to "TaskWiz AI"
-
-"TaskWiz Bot" is renamed to "TaskWiz AI".
-
-Please find further updates at:
-
-https://pypi.org/project/taskwiz/
-
 # TaskWiz AI
 
-TaskWiz AI is an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.
+TaskWiz AI, formerly known as MyHand Bot, is an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.
 
 Website: https://TaskWiz.ai
 
@@ -49,6 +41,10 @@ TaskWiz AI just got smarter with memory retention!
 [Plugin - memory](https://github.com/eliranwong/taskwiz/blob/main/pip/taskwiz/plugins/memory.py)
 
 ![memory_after_restarted](https://github.com/eliranwong/taskwiz/assets/25262722/6bd4a839-89fe-4691-b7af-8150209f082b)
+
+[Plugin - create statistical graphics](https://github.com/eliranwong/taskwiz/wiki/Create-Statistical-Graphics)
+
+![create_statistical_graphics](https://github.com/eliranwong/taskwiz/assets/25262722/3b7337ad-5eba-4761-8037-b245b9d78311)
 
 [Plugin - anaylze images](https://github.com/eliranwong/taskwiz/wiki/Plugins-%E2%80%90-Analyze-Images)
 

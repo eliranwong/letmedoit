@@ -1,0 +1,73 @@
+setup.py
+taskwiz/README.md
+taskwiz/__init__.py
+taskwiz/autogen_assistant.py
+taskwiz/autogen_math.py
+taskwiz/autogen_retriever.py
+taskwiz/autogen_teachable.py
+taskwiz/cli.py
+taskwiz/config.py
+taskwiz/eTextEdit.py
+taskwiz/main.py
+taskwiz/requirements.txt
+taskwiz.egg-info/PKG-INFO
+taskwiz.egg-info/SOURCES.txt
+taskwiz.egg-info/dependency_links.txt
+taskwiz.egg-info/entry_points.txt
+taskwiz.egg-info/requires.txt
+taskwiz.egg-info/top_level.txt
+taskwiz/files/Readme.md
+taskwiz/history/Readme.md
+taskwiz/icons/MyHand.png
+taskwiz/icons/TaskWiz.ico
+taskwiz/icons/TaskWiz.png
+taskwiz/plugins/Readme.md
+taskwiz/plugins/add calendar event.py
+taskwiz/plugins/aliases.py
+taskwiz/plugins/analyze files.py
+taskwiz/plugins/analyze images.py
+taskwiz/plugins/auto heal python code.py
+taskwiz/plugins/awesome prompts.py
+taskwiz/plugins/bible studies.py
+taskwiz/plugins/bible.py
+taskwiz/plugins/biblical counselling.py
+taskwiz/plugins/character analysis.py
+taskwiz/plugins/counselling.py
+taskwiz/plugins/create images.py
+taskwiz/plugins/create maps.py
+taskwiz/plugins/create statistical graphics.py
+taskwiz/plugins/dates and times.py
+taskwiz/plugins/download youtube media.py
+taskwiz/plugins/edit text.py
+taskwiz/plugins/global finance.py
+taskwiz/plugins/improve British English.py
+taskwiz/plugins/input suggestions.py
+taskwiz/plugins/instructions.py
+taskwiz/plugins/integrate google searches.py
+taskwiz/plugins/memory.py
+taskwiz/plugins/pastoral care.py
+taskwiz/plugins/pronunce words.py
+taskwiz/plugins/send email.py
+taskwiz/plugins/simplified Chinese to traditional Chinese.py
+taskwiz/plugins/bibleTools/bibleData/Readme.md
+taskwiz/plugins/bibleTools/bibleData/bibles/KJV.bible
+taskwiz/plugins/bibleTools/bibleData/bibles/NET.bible
+taskwiz/plugins/bibleTools/utils/BibleBooks.py
+taskwiz/plugins/bibleTools/utils/TextUtil.py
+taskwiz/temp/Readme.md
+taskwiz/utils/assistant.py
+taskwiz/utils/configDefault.py
+taskwiz/utils/file_utils.py
+taskwiz/utils/get_path_prompt.py
+taskwiz/utils/install.py
+taskwiz/utils/promptValidator.py
+taskwiz/utils/prompt_multiline_shared_key_bindings.py
+taskwiz/utils/prompt_shared_key_bindings.py
+taskwiz/utils/prompts.py
+taskwiz/utils/shared_utils.py
+taskwiz/utils/shortcuts.py
+taskwiz/utils/terminal_mode_dialogs.py
+taskwiz/utils/terminal_system_command_prompt.py
+taskwiz/utils/ttsLanguages.py
+taskwiz/utils/tts_utils.py
+taskwiz/utils/vlc_utils.py

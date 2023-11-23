@@ -23,12 +23,12 @@ with open(os.path.join("taskwiz", "config.py"), 'w'):
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name="taskwiz",
-    version="1.1.9",
+    version="1.2.4",
     python_requires=">=3.8, <3.12",
     description="TaskWiz AI, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,
     author="Eliran Wong",
-    author_email="support@taskwiz.bot",
+    author_email="support@taskwiz.ai",
     packages=[
         "taskwiz",
         "taskwiz.files",
@@ -69,5 +69,30 @@ setup(
         "Tracker": "https://github.com/eliranwong/taskwiz/issues",
         "Documentation": "https://github.com/eliranwong/taskwiz/wiki",
         "Funding": "https://www.paypal.me/MarvelBible",
-},
+    },
+    classifiers=[
+        # Reference: https://pypi.org/classifiers/
+
+        # How mature is this project? Common values are
+        #   3 - Alpha
+        #   4 - Beta
+        #   5 - Production/Stable
+        'Development Status :: 5 - Production/Stable',
+
+        # Indicate who your project is intended for
+        'Intended Audience :: End Users/Desktop',
+        'Topic :: Utilities',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Topic :: Software Development :: Build Tools',
+
+        # Pick your license as you wish (should match "license" above)
+        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+
+        # Specify the Python versions you support here. In particular, ensure
+        # that you indicate whether you support Python 2, Python 3 or both.
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+    ],
 )
