@@ -1,6 +1,6 @@
-# Rename "MyHand Bot" to "TaskWiz AI"
+# Rename "TaskWiz Bot" to "TaskWiz AI"
 
-"MyHand Bot" is renamed to "TaskWiz AI".
+"TaskWiz Bot" is renamed to "TaskWiz AI".
 
 Please find further updates at:
 
