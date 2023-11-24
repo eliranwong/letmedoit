@@ -36,6 +36,10 @@ I am an advanced AI assistant uniquely equipped with direct execution capabiliti
 
 # Recent Additions
 
+[Cutomize Assistant Names](https://github.com/eliranwong/taskwiz/wiki/Change-Assistant-Name)
+
+![different_memore_stores](https://github.com/eliranwong/taskwiz/assets/25262722/fba1a351-18f6-4f13-9f43-b954fff081b2)
+
 TaskWiz AI just got smarter with memory retention!
 
 [Plugin - memory](https://github.com/eliranwong/taskwiz/blob/main/pip/taskwiz/plugins/memory.py)
