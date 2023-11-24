@@ -61,6 +61,8 @@ import traceback
 from taskwiz import config
 from pathlib import Path
 
+if not hasattr(config, "taskWizName") or not config.taskWizName:
+    config.taskWizName = "TaskWiz AI"
 config.taskWizFile = taskWizFile
 config.taskWizAIFolder = taskWizAIFolder
 
@@ -74,7 +76,7 @@ def getPreferredDir():
 config.getPreferredDir = getPreferredDir
 
 def restartApp():
-    print("Restarting TaskWiz AI ...")
+    print(f"Restarting {config.taskWizName} ...")
     os.system(f"{sys.executable} {config.taskWizFile}")
     exit(0)
 config.restartApp = restartApp
@@ -82,31 +84,38 @@ config.restartApp = restartApp
 from taskwiz.utils.configDefault import *
 from taskwiz.utils.shared_utils import SharedUtil
 
+# package name
+with open(os.path.join(config.taskWizAIFolder, "package_name"), "r", encoding="utf-8") as fileObj:
+    package = fileObj.read()
+
 # automatic update
 config.pipIsUpdated = False
-print("Checking TaskWiz AI version ...")
-installed_version = SharedUtil.getPackageInstalledVersion("taskwiz")
-print(f"Installed version: {installed_version}")
-latest_version = SharedUtil.getPackageLatestVersion("taskwiz")
+print(f"Checking '{package}' version ...")
+installed_version = SharedUtil.getPackageInstalledVersion(package)
+if installed_version is None:
+    print("Installed version information is not accessible!")
+else:
+    print(f"Installed version: {installed_version}")
+latest_version = SharedUtil.getPackageLatestVersion(package)
 if latest_version is None:
     print("Latest version information is not accessible at the moment!")
-else:
+elif installed_version is not None:
     print(f"Latest version: {latest_version}")
     if config.autoUpgrade and (latest_version > installed_version):
         from taskwiz.utils.install import *
         try:
             # delete old shortcut files
-            appName = "TaskWiz"
+            appName = config.taskWizName.split()[0]
             shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop")
             for shortcutFile in shortcutFiles:
                 shortcut = os.path.join(config.taskWizAIFolder, shortcutFile)
                 if os.path.isfile(shortcut):
                     os.remove(shortcut)
             # upgrade package
-            installmodule(f"--upgrade taskwiz")
+            installmodule(f"--upgrade {package}")
             restartApp()
         except:
-            print("Failed to upgrade TaskWiz AI!")
+            print(f"Failed to upgrade '{package}'!")
 
 # old update method with git pull
 #if config.autoUpgrade:
@@ -244,7 +253,7 @@ def set_log_file_max_lines(log_file, max_lines):
             print(f"{num_lines_to_delete} old lines deleted from log file '{filename}'.")
 
 def main(default="", run=False):
-    set_title("TaskWiz AI")
+    set_title(config.taskWizName)
     setOsOpenCmd()
     createShortcuts()
     config.excludeConfigList = []

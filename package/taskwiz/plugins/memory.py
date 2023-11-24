@@ -83,7 +83,7 @@ def query_vectors(collection, query, n):
 def retrieve_memories(function_args):
     query = function_args.get("query") # required
     collection = get_or_create_collection("memories")
-    res = query_vectors(collection, query, config.numberOfMemoryClosestMatches)
+    res = query_vectors(collection, query, config.memoryClosestMatchesNumber)
     if config.developer:
         config.print(config.divider)
         print(">>> retrieved memories: ") 

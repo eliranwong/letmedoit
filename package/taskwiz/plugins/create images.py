@@ -15,7 +15,6 @@ from openai import OpenAI
 from pathlib import Path
 
 def create_image(function_args):
-    #config.stopSpinning()
     prompt = function_args.get("prompt") # required
     dialogs = TerminalModeDialogs(None)
     # size selection
@@ -27,6 +26,7 @@ def create_image(function_args):
         text="Select size below:"
     )
     if not size:
+        config.stopSpinning()
         return "[INVALID]"
     # quality selection
     options = ("standard", "hd")
@@ -37,6 +37,7 @@ def create_image(function_args):
         text="Select quality below:"
     )
     if not quality:
+        config.stopSpinning()
         return "[INVALID]"
     try:
         # get responses
@@ -90,6 +91,7 @@ def create_image(function_args):
     #    config.print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
     except:
         SharedUtil.showErrors()
+    config.stopSpinning()
     return ""
 
 

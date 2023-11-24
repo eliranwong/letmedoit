@@ -4,12 +4,14 @@ import shutil
 
 def createShortcuts():
     thisOS = platform.system()
-    appName = "TaskWiz"
+    appName = config.taskWizName.split()[0]
     # Windows icon
     if thisOS == "Windows":
         myappid = "taskwiz.ai"
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         windowsIconPath = os.path.abspath(os.path.join(sys.path[0], "icons", f"{appName}.ico"))
+        if not os.path.isfile(windowsIconPath):
+            windowsIconPath = os.path.abspath(os.path.join(sys.path[0], "icons", "TaskWiz.ico"))
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(windowsIconPath)
 
     # Desktop shortcut
@@ -50,6 +52,8 @@ def createShortcuts():
     elif thisOS == "Linux":
         def desktopFileContent():
             iconPath = os.path.join(config.taskWizAIFolder, "icons", f"{appName}.png")
+            if not os.path.isfile(iconPath):
+                iconPath = os.path.join(config.taskWizAIFolder, "icons", "TaskWiz.png")
             return """#!/usr/bin/env xdg-open
 
 [Desktop Entry]
@@ -59,8 +63,8 @@ Terminal=true
 Path={0}
 Exec={1} {2}
 Icon={3}
-Name=TaskWiz AI
-""".format(config.taskWizAIFolder, sys.executable, config.taskWizFile, iconPath)
+Name={4}
+""".format(config.taskWizAIFolder, sys.executable, config.taskWizFile, iconPath, config.taskWizName)
 
         linuxDesktopFile = os.path.join(config.taskWizAIFolder, f"{appName}.desktop")
         if not os.path.exists(linuxDesktopFile):

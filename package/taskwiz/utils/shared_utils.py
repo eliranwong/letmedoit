@@ -25,7 +25,7 @@ class SharedUtil:
         #"gpt-3.5-turbo-instruct": 4097,
         "gpt-3.5-turbo": 4097,
         "gpt-3.5-turbo-16k": 16385,
-        "gpt-4-1106-preview": 8192, # official 128,000; but "This model supports at most 4096 completion tokens"; set 8192 here to work with TaskWiz AI dynamic token feature
+        "gpt-4-1106-preview": 128000, # official 128,000; but "This model supports at most 4096 completion tokens"; set 8192 here to work with TaskWiz AI dynamic token feature
         #"gpt-4-vision-preview": 128,000, # used in plugin "analyze images"
         "gpt-4": 8192,
         "gpt-4-32k": 32768,
@@ -189,7 +189,15 @@ class SharedUtil:
                 return json.dumps({"information": pythonFunctionResponse})
             else:
                 return ""
-        return "[INVALID]"
+        # ask if user want to manually edit the code
+        self.print(f"Failed to execute the code {(config.max_consecutive_auto_heal + 1)} times in a row!")
+        self.print("Do you want to manually edit it? [y]es / [N]o")
+        confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="N")
+        if not confirmation.lower() in ("y", "yes"):
+            config.config.defaultEntry = f"```python\n{code}\n```"
+            return ""
+        else:
+            return "[INVALID]"
 
     @staticmethod
     def fineTunePythonCode(code):

@@ -1,6 +1,10 @@
 from setuptools import setup
 import os, shutil
 
+# package name
+with open(os.path.join("taskwiz", "package_name"), "r", encoding="utf-8") as fileObj:
+    package = fileObj.read()
+
 # update package readme
 latest_readme = os.path.join("..", "README.md") # github repository readme
 package_readme = os.path.join("taskwiz", "README.md") # package readme
@@ -17,13 +21,14 @@ with open(os.path.join("taskwiz", "requirements.txt"), "r") as fileObj:
             install_requires.append(mod)
 
 # make sure config.py is empty
-with open(os.path.join("taskwiz", "config.py"), 'w'):
-    pass
+with open(os.path.join("taskwiz", "config.py"), "w") as fileObj:
+    if package == "myhand":
+        fileObj.write("taskWizName = 'MyHand Bot'")
 
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
-    name="taskwiz",
-    version="1.2.4",
+    name=package,
+    version="1.2.8",
     python_requires=">=3.8, <3.12",
     description="TaskWiz AI, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,
@@ -59,10 +64,10 @@ setup(
     install_requires=install_requires,
     entry_points={
         "console_scripts": [
-            "taskwiz=taskwiz.cli:cli",
+            f"{package}=taskwiz.cli:cli",
         ],
     },
-    keywords="ai openai chatgpt rag autogen open-interpreter auto-heal",
+    keywords="ai assistant openai chatgpt rag autogen interpreter auto-heal",
     url="https://taskwiz.ai",
     project_urls={
         "Source": "https://github.com/eliranwong/taskwiz",

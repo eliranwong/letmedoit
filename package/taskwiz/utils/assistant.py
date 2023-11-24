@@ -114,7 +114,7 @@ class TaskWizAI:
         self.isTtsAvailable()
 
     def getPreferredDir(self):
-        preferredDir = os.path.join(os.path.expanduser('~'), 'taskwiz')
+        preferredDir = os.path.join(os.path.expanduser('~'), config.taskWizName.split()[0].lower())
         try:
             Path(preferredDir).mkdir(parents=True, exist_ok=True)
         except:
@@ -169,6 +169,13 @@ class TaskWizAI:
         config.chatGPTApiFunctionSignatures = []
         config.chatGPTApiAvailableFunctions = {}
 
+        # built-in functions
+        config.pluginsWithFunctionCall.append("execute_python_code")
+        config.inputSuggestions.append("[CALL execute_python_code]")
+        if config.terminalEnableTermuxAPI:
+            config.pluginsWithFunctionCall.append("execute_termux_command")
+            config.inputSuggestions.append("[CALL execute_termux_command]")
+
         pluginFolder = os.path.join(config.taskWizAIFolder, "plugins")
         if self.preferredDir:
             customPluginFoler = os.path.join(self.preferredDir, "plugins")
@@ -196,9 +203,6 @@ class TaskWizAI:
         self.setupPythonExecution()
         if config.terminalEnableTermuxAPI:
             self.setupTermuxExecution()
-        config.inputSuggestions.append("execute_python_code")
-        if config.terminalEnableTermuxAPI:
-            config.inputSuggestions.append("execute_termux_command")
         for i in config.pluginsWithFunctionCall:
             config.inputSuggestions.append(f"[CALL {i}]")
 
@@ -649,6 +653,7 @@ Otherwise, answer "chat". Here is the request:"""
                     # get function response
                     func_response = self.getFunctionResponse(func_arguments, func_name)
 
+                    # "[INVALID]" practically mean that it ignores previously called function and continues chat without function calling
                     if not func_response == "[INVALID]":
                         # send the function call info and response to GPT
                         function_call_message = {
@@ -673,9 +678,12 @@ Otherwise, answer "chat". Here is the request:"""
 
                 self.functionJustCalled = True
 
-                if not config.chatAfterFunctionCalled or not func_responses:
+                if not config.passFunctionCallReturnToChatGPT or not func_responses:
                     if func_responses:
                         self.print(f"{config.divider}\n{func_responses}")
+                    # A break here means that no information from the called function is passed back to ChatGPT
+                    # 1. config.passFunctionCallReturnToChatGPT is set to True
+                    # 2. func_responses = "" or None; can be specified in plugins
                     break
             except:
                 SharedUtil.showErrors()
@@ -685,7 +693,7 @@ Otherwise, answer "chat". Here is the request:"""
 
     # reset message when a new chart is started or context is changed
     def resetMessages(self):
-        systemMessage = f"You’re TaskWiz AI, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.\nFind my device information below:\n```\n{SharedUtil.getDeviceInfo()}\n```\nYou have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python codes on my behalf."
+        systemMessage = f"You’re {config.taskWizName}, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.\nFind my device information below:\n```\n{SharedUtil.getDeviceInfo()}\n```\nYou have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python codes on my behalf."
         if config.chatGPTApiFunctionCall == "auto" and config.chatGPTApiFunctionSignatures:
             systemMessage += " Your functionality expands as I add more plugins to you. Only use the functions you have been provided with."
         messages = [
@@ -755,15 +763,18 @@ Otherwise, answer "chat". Here is the request:"""
             "change maximum response tokens",
             "change minimum response tokens",
             "change maximum consecutive auto-heal",
+            "change maximum memory matches",
             "change plugins",
             "change function call",
-            "change function response",
+            "change function call handling",
             "change online searches",
             "change execution mode [ctrl+e]",
             "change user confirmation",
             "change command display",
             "change pager view",
+            "change assistant name",
             "change startup directory",
+            "change custom text editor",
             "change Termux API integration",
             "change automatic upgrade",
             "change developer mode [ctrl+d]",
@@ -781,7 +792,7 @@ Otherwise, answer "chat". Here is the request:"""
         feature = self.dialogs.getValidOptions(
             options=features,
             descriptions=descriptions,
-            title="TaskWiz AI",
+            title=config.taskWizName,
             default=config.defaultBlankEntryAction,
             text="Select an action or make changes:",
         )
@@ -824,6 +835,12 @@ Otherwise, answer "chat". Here is the request:"""
                 self.setMaxTokens()
             elif feature == ".maxautoheal":
                 self.setMaxAutoHeal()
+            elif feature == ".maxmemorymatches":
+                self.setMemoryClosestMatchesNumber()
+            elif feature == ".assistantname":
+                self.setAssistantName()
+            elif feature == ".customtexteditor":
+                self.setCustomTextEditor()
             elif feature == ".temperature":
                 self.setTemperature()
             elif feature == ".changeapikey":
@@ -894,7 +911,7 @@ Otherwise, answer "chat". Here is the request:"""
             descriptions=descriptions,
             title="Latest Online Searches",
             default=config.loadingInternetSearches,
-            text="TaskWiz AI can perform online searches.\nHow do you want this feature?",
+            text=f"{config.taskWizName} can perform online searches.\nHow do you want this feature?",
         )
         if option:
             config.loadingInternetSearches = option
@@ -926,7 +943,7 @@ Otherwise, answer "chat". Here is the request:"""
             options=options,
             descriptions=descriptions,
             title="Command Execution Confirmation",
-            text="TaskWiz AI can execute commands on your behalf.\nWhen do you want confirmation\nbefore commands are executed:\n(caution: execute commands at your own risk)",
+            text=f"{config.taskWizName} can execute commands on your behalf.\nWhen do you want confirmation\nbefore commands are executed:\n(caution: execute commands at your own risk)",
             default=config.confirmExecution,
         )
         if option:
@@ -989,7 +1006,7 @@ Otherwise, answer "chat". Here is the request:"""
             options=options,
             title="Command Execution Mode",
             default="enhanced" if config.enhanceCommandExecution else "auto",
-            text="TaskWiz AI can execute commands\nto retrieve the requested information\nor perform tasks for users.\n(read https://github.com/eliranwong/taskwiz/wiki/Command-Execution)\nSelect a mode below:",
+            text=f"{config.taskWizName} can execute commands\nto retrieve the requested information\nor perform tasks for users.\n(read https://github.com/eliranwong/taskwiz/wiki/Command-Execution)\nSelect a mode below:",
         )
         if option:
             config.enhanceCommandExecution = (option == "enhanced")
@@ -1013,14 +1030,14 @@ Otherwise, answer "chat". Here is the request:"""
         calls = ("enable", "disable")
         call = self.dialogs.getValidOptions(
             options=calls,
-            title="Automatic Chat Generation with Function Response",
-            default="enable" if config.chatAfterFunctionCalled else "disable",
-            text="Enable this feature\nto generate further responses\naccording to function call results.\nDisable this feature allows\nperforming function calls\nwihtout generating further responses."
+            title="Pass Function Call Response to ChatGPT",
+            default="enable" if config.passFunctionCallReturnToChatGPT else "disable",
+            text="Enabling this feature allows\npassing function call responses, if any,\nto ChatGPT for further processing.\nDisabling this feature allows\nrunning function calls\nwithout generating further responses."
         )
         if call:
-            config.chatAfterFunctionCalled = (call == "enable")
+            config.passFunctionCallReturnToChatGPT = (call == "enable")
             config.saveConfig()
-            self.print(f"Automatic Chat Generation with Function Response: {'enabled' if config.chatAfterFunctionCalled else 'disabled'}!")
+            self.print(f"Automatic Chat Generation with Function Response: {'enabled' if config.passFunctionCallReturnToChatGPT else 'disabled'}!")
 
     def setTemperature(self):
         self.print("Enter a value between 0.0 and 2.0:")
@@ -1058,8 +1075,39 @@ Otherwise, answer "chat". Here is the request:"""
             config.saveConfig()
             self.print(f"Maximum response tokens set to {config.chatGPTApiMaxTokens}.")
 
+    def setAssistantName(self):
+        self.print("You may modify my name below:")
+        taskWizName = self.prompts.simplePrompt(default=config.taskWizName)
+        if taskWizName and not taskWizName.strip().lower() == config.exit_entry:
+            config.taskWizName = taskWizName
+            self.preferredDir = self.getPreferredDir()
+            config.saveConfig()
+            self.print(f"You have changed my name to: {config.taskWizName}")
+
+    def setCustomTextEditor(self):
+        self.print("Please specify custom text editor command below:")
+        self.print("e.g. 'micro -softwrap true -wordwrap true'")
+        self.print("Leave it blank to use our built-in text editor 'eTextEdit' by default.")
+        customTextEditor = self.prompts.simplePrompt(default=config.customTextEditor)
+        if customTextEditor and not customTextEditor.strip().lower() == config.exit_entry:
+            textEditor = re.sub(" .*?$", "", customTextEditor)
+            if not textEditor or not SharedUtil.isPackageInstalled(textEditor):
+                self.print("Command not found on your device!")
+            else:
+                config.customTextEditor = customTextEditor
+                config.saveConfig()
+                self.print(f"Custom text editor entered: {config.customTextEditor}")
+
+    def setMemoryClosestMatchesNumber(self):
+        self.print("Please specify the number of closest matches in each memory retrieval:")
+        memoryClosestMatchesNumber = self.prompts.simplePrompt(numberOnly=True, default=str(config.memoryClosestMatchesNumber))
+        if memoryClosestMatchesNumber and not memoryClosestMatchesNumber.strip().lower() == config.exit_entry and int(memoryClosestMatchesNumber) >= 0:
+            config.memoryClosestMatchesNumber = int(memoryClosestMatchesNumber)
+            config.saveConfig()
+            self.print(f"Number of memory closest matches entered: {config.memoryClosestMatchesNumber}")
+
     def setMaxAutoHeal(self):
-        self.print("The auto-heal feature enables TaskWiz AI to automatically fix broken Python code if it was not executed properly.")
+        self.print(f"The auto-heal feature enables {config.taskWizName} to automatically fix broken Python code if it was not executed properly.")
         self.print("Please specify maximum number of auto-heal attempts below:")
         self.print("(Remarks: Enter '0' if you want to disable auto-heal feature)")
         maxAutoHeal = self.prompts.simplePrompt(numberOnly=True, default=str(config.max_consecutive_auto_heal))
@@ -1079,29 +1127,29 @@ Otherwise, answer "chat". Here is the request:"""
             self.print(f"Minimum tokens entered: {config.chatGPTApiMinTokens}")
 
     def setMaxTokens(self):
+        contextWindowLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
         if tiktokenImported:
             functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
-            tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel] - functionTokens - config.chatGPTApiMinTokens
+            tokenLimit = contextWindowLimit - functionTokens - config.chatGPTApiMinTokens
         else:
-            tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
+            tokenLimit = contextWindowLimit
         if tiktokenImported and tokenLimit < config.chatGPTApiMinTokens:
             self.print(f"Availble functions have already taken up too many tokens [{functionTokens}] to work with selected model '{config.chatGPTApiModel}'. You may either changing to a model that supports more tokens or deactivating some of the plugins that you don't need to reduce the number of tokens in total.")
         else:
             self.print(self.divider)
-            if config.chatGPTApiModel == "gpt-4-1106-preview":
-                self.print(f"You are using ChatGPT model '{config.chatGPTApiModel}'. This model supports at most 4096 completion tokens. You can set at most {tokenLimit} maximum response token below.")
-            else:
-                self.print(f"You are using ChatGPT model '{config.chatGPTApiModel}', which allows no more than {tokenLimit} tokens, including both prompt and response")
-            self.print("(GPT and embeddings models process text in chunks called tokens. As a rough rule of thumb, 1 token is approximately 4 characters or 0.75 words for English text. One limitation to keep in mind is that for a GPT model the prompt and the generated output combined must be no more than the model's maximum context length.)")
+            self.print(f"You are now using ChatGPT model '{config.chatGPTApiModel}'. Its context window limit is {contextWindowLimit} tokens.")
             if tiktokenImported:
-                self.print(f"Remarks: The current available functions have already taken up {functionTokens} tokens.")
+                self.print(f"Current enabled functions have taken up {functionTokens} tokens.")
+            self.print(f"You can have no more than {tokenLimit} tokens, for both prompts and responses, in a single chain of messages.")
+            self.print("(GPT and embeddings models process text in chunks called tokens. As a rough rule of thumb, 1 token is approximately 4 characters or 0.75 words for English text. One limitation to keep in mind is that for a GPT model the prompt and the generated output combined must be no more than the model's maximum context length.)")
             self.print(self.divider)
             self.print("Please specify maximum response tokens below:")
+            self.print("(Remarks: If the entered value exceeds the maximum number of completion tokens allowed in your selected model, it will be modified.)")
             maxtokens = self.prompts.simplePrompt(numberOnly=True, default=str(config.chatGPTApiMaxTokens))
             if maxtokens and not maxtokens.strip().lower() == config.exit_entry and int(maxtokens) > 0:
                 config.chatGPTApiMaxTokens = int(maxtokens)
-                if config.chatGPTApiMaxTokens > tokenLimit:
-                    config.chatGPTApiMaxTokens = tokenLimit
+                if config.chatGPTApiMaxTokens > 8192 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit: # 'gpt-4-1106-preview' supports at most 4096 completion tokens
+                    config.chatGPTApiMaxTokens = 8192 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit
                 config.saveConfig()
                 self.print(f"Maximum tokens entered: {config.chatGPTApiMaxTokens}")
 
@@ -1304,20 +1352,19 @@ Otherwise, answer "chat". Here is the request:"""
             pass
 
     def showLogo(self):
+        appName = config.taskWizName.split()[0].upper()
         terminal_width = shutil.get_terminal_size().columns
         try:
             from art import text2art
-            #if terminal_width >= 50:
-            #    logo = text2art("TaskWiz AI", font="small")
             if terminal_width >= 32:
-                logo = text2art("TaskWiz", font="cybermedum")
+                logo = text2art(appName, font="cybermedum")
             elif terminal_width >= 20:
-                logo = text2art("T A S K W I Z  A I ", font="white_bubble")
+                logo = text2art(" ".join(appName) + " ", font="white_bubble")
             else:
-                logo = f"TaskWiz AI"
+                logo = config.taskWizName
             logo = logo[:-1] # remove the linebreak at the end
         except:
-            logo = f"TaskWiz AI"
+            logo = config.taskWizName
         print_formatted_text(HTML(f"<{config.terminalCommandEntryColor2}>{logo}</{config.terminalCommandEntryColor2}>"))
 
     def startChats(self):
@@ -1354,6 +1401,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".maxtokens",
             ".mintokens",
             ".maxautoheal",
+            ".maxmemorymatches",
             ".plugins",
             ".functioncall",
             ".functionresponse",
@@ -1362,7 +1410,9 @@ Otherwise, answer "chat". Here is the request:"""
             ".confirmexecution",
             ".codedisplay",
             ".pagerview",
+            ".assistantname",
             ".startupDirectory",
+            ".customtexteditor",
             ".termuxapi",
             ".autoupgrade",
             ".developer",
@@ -1473,6 +1523,10 @@ Otherwise, answer "chat". Here is the request:"""
                     if userInput and config.ttsInput:
                         TTSUtil.play(userInput)
                     # Feature: improve writing:
+                    specialEntryPattern = "\[CALL [^\[\]]*?\]|\[NO_FUNCTION_CALL\]|\[NO_SCREENING\]"
+                    specialEntry = re.search(specialEntryPattern, userInput)
+                    specialEntry = specialEntry.group(0) if specialEntry else ""
+                    userInput = re.sub(specialEntryPattern, "", userInput) # remove special entry temporarily
                     if userInput and config.displayImprovedWriting:
                         userInput = re.sub("\n\[Current time: [^\n]*?$", "", userInput)
                         improvedVersion = SharedUtil.getSingleChatResponse(f"""Improve the following writing, according to {config.improvedWritingSytle}
@@ -1485,13 +1539,17 @@ My writing:
                             userInput = improvedVersion[3:-3]
                             if config.ttsOutput:
                                 TTSUtil.play(userInput)
+                    if specialEntry:
+                        userInput = f"{userInput}{specialEntry}"
                     # refine messages before running completion
                     fineTunedUserInput = self.fineTuneUserInput(userInput)
                     noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.chatGPTApiPredefinedContext.startswith("Counselling - ") or config.chatGPTApiPredefinedContext.endswith("Counselling"))
                     noScreening = ("[NO_SCREENING]" in fineTunedUserInput)
                     checkCallSpecificFunction = re.search("\[CALL ([^\[\]]*?)\]", fineTunedUserInput)
                     config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
-                    fineTunedUserInput = re.sub("\[CALL [^\[\]]*?\]|\[NO_FUNCTION_CALL\]|\[NO_SCREENING\]", "", fineTunedUserInput)
+                    if config.developer:
+                        self.print(f"calling function '{config.runSpecificFuntion}'")
+                    fineTunedUserInput = re.sub(specialEntryPattern, "", fineTunedUserInput)
 
                     # python execution
                     self.screenAction = ""

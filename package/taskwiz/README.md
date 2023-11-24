@@ -1,6 +1,6 @@
 # TaskWiz AI
 
-TaskWiz AI, formerly known as MyHand Bot, is an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.
+TaskWiz AI, also known as MyHand Bot, is an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.
 
 Website: https://TaskWiz.ai
 
@@ -54,6 +54,70 @@ TaskWiz AI just got smarter with memory retention!
 
 ![integration_autogen_retriever](https://github.com/eliranwong/taskwiz/assets/25262722/0e31735c-5126-41ac-881c-eb8abce2aace)
 
+# Examples of TaskWiz Built-in Features (selective only):
+
+* enhanced screen for task execution
+
+* risk assessment of code execution
+
+* support latest OpenAI models, [GPT-4 and GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo), [GPT-3.5](https://platform.openai.com/docs/models/gpt-3-5), [DALL·E](https://platform.openai.com/docs/models/dall-e), etc.
+
+* higly customizable, e.g. changing assistant name
+
+* Support predefined contexts and instructions
+
+* [Audio Input and Output](https://github.com/eliranwong/taskwiz/wiki/TaskWiz-Speaks)
+
+* [Integrated System Command Prompt](https://github.com/eliranwong/taskwiz/wiki/Quick-Guide#run-system-command-directly)
+
+* Key bindings for quick actions
+
+* Highly customisable configurations
+
+# Examples of Plugin Features (selective only):
+
+Latest TaskWiz Plugins allow you to acheive variety of tasks with natural language:
+
+* execute python codes with auto-healing feature and risk assessment
+
+* execute system commands to achieve specific tasks
+
+* save and retrieve memory
+
+* search for online information when ChatGPT lacks information
+
+* add google or outlook calendar events
+
+* send google or outlook emails
+
+* analyze files
+
+* analyze images
+
+* create images
+
+* create maps
+
+* create statistical graphics
+
+* solve queries about dates and times
+
+* download Youtube video files
+
+* download Youtube audio files and convert them into mp3 format
+
+* edit text with built-in or custom text editors
+
+* improve language skills, e.g. British English trainer
+
+* search literature or database, e.g. bibles
+
+* convert text display, e.g. from simplified Chinese to traditional Chinese
+
+* create entry aliases, input suggestions, predefined contexts and instructions
+
+Read more about TaskWiz Plugins at https://github.com/eliranwong/taskwiz/wiki/Plugins-%E2%80%90-Overview
+
 # Documentation
 
 Read https://github.com/eliranwong/taskwiz/wiki
@@ -63,6 +127,14 @@ Read https://github.com/eliranwong/taskwiz/wiki
 > pip install --upgrade taskwiz
 
 > taskwiz
+
+Alternately, you may install "myhand" for a more friendly name:
+
+> pip install --upgrade myhand
+
+> myhand
+
+Tips: You can change the assistant's name regardless of the package you choose to install. For example, the "myhand" package is designed to showcase this flexibility.
 
 # Install with pip and venv (recommended)
 
