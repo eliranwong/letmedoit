@@ -6,7 +6,12 @@ with open(os.path.join("taskwiz", "package_name.txt"), "r", encoding="utf-8") as
     package = fileObj.read()
 
 # delete old shortcut files
-appName = "MyHand" if package == "myhand" else "TaskWiz"
+apps = {
+    "myhand": ("MyHand", "MyHand Bot"),
+    "taskwiz": ("TaskWiz", "TaskWiz AI"),
+    "cybertask": ("CyberTask", "CyberTask AI"),
+}
+appName = apps[package][0]
 shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop")
 for shortcutFile in shortcutFiles:
     shortcut = os.path.join("taskwiz", shortcutFile)
@@ -30,13 +35,13 @@ with open(os.path.join("taskwiz", "requirements.txt"), "r") as fileObj:
 
 # make sure config.py is empty
 with open(os.path.join("taskwiz", "config.py"), "w") as fileObj:
-    if package == "myhand":
-        fileObj.write("taskWizName = 'MyHand Bot'")
+    taskWizName = apps[package][-1]
+    fileObj.write(f"taskWizName = '{taskWizName}'")
 
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="1.3.0",
+    version="1.3.1",
     python_requires=">=3.8, <3.12",
     description="TaskWiz AI, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,

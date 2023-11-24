@@ -92,10 +92,11 @@ class TerminalModeDialogs:
             style=self.style,
         ).run()
         if result:
+            notice = f"You've chosen: {result}"
             if self.parent:
-                self.parent.print(result)
+                self.parent.print(notice)
             else:
-                print(result)
+                print(notice)
             return result
         return ""
 

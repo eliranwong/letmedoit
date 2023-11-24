@@ -589,7 +589,7 @@ Otherwise, answer "chat". Here is the request:"""
             self.print(self.divider)
             print(func_arguments)
             self.print(self.divider)
-            function_response = ""
+            function_response = "[INVALID]"
         else:
             fuction_to_call = config.chatGPTApiAvailableFunctions[function_name]
             # convert the arguments from json into a dict
