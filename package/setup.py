@@ -2,8 +2,16 @@ from setuptools import setup
 import os, shutil
 
 # package name
-with open(os.path.join("taskwiz", "package_name"), "r", encoding="utf-8") as fileObj:
+with open(os.path.join("taskwiz", "package_name.txt"), "r", encoding="utf-8") as fileObj:
     package = fileObj.read()
+
+# delete old shortcut files
+appName = "MyHand" if package == "myhand" else "TaskWiz"
+shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop")
+for shortcutFile in shortcutFiles:
+    shortcut = os.path.join("taskwiz", shortcutFile)
+    if os.path.isfile(shortcut):
+        os.remove(shortcut)
 
 # update package readme
 latest_readme = os.path.join("..", "README.md") # github repository readme
@@ -28,7 +36,7 @@ with open(os.path.join("taskwiz", "config.py"), "w") as fileObj:
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="1.2.8",
+    version="1.3.0",
     python_requires=">=3.8, <3.12",
     description="TaskWiz AI, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,

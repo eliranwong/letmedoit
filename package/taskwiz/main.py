@@ -85,7 +85,7 @@ from taskwiz.utils.configDefault import *
 from taskwiz.utils.shared_utils import SharedUtil
 
 # package name
-with open(os.path.join(config.taskWizAIFolder, "package_name"), "r", encoding="utf-8") as fileObj:
+with open(os.path.join(config.taskWizAIFolder, "package_name.txt"), "r", encoding="utf-8") as fileObj:
     package = fileObj.read()
 
 # automatic update
