@@ -97,7 +97,8 @@ def _(event):
     buffer = event.app.current_buffer
     buffer.reset()
 
-# open in text editor
+# open current input in built-in or custom text editor
+# place this method here so that terminal or other input can share this binding
 @prompt_shared_key_bindings.add("escape", "o")
 def _(event):
     customTextEditor = config.customTextEditor if config.customTextEditor else f"{sys.executable} {os.path.join(config.taskWizAIFolder, 'eTextEdit.py')}"

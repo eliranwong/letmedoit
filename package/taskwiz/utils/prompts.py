@@ -1,5 +1,5 @@
 from taskwiz import config
-import pydoc, textwrap
+import pydoc, textwrap, sys, os
 
 from prompt_toolkit import prompt
 from prompt_toolkit.application import run_in_terminal
@@ -17,13 +17,13 @@ class Prompts:
     def __init__(self):
         config.multilineInput = False
         config.clipboard = PyperclipClipboard()
-        self.promptStyle1 = Style.from_dict({
+        config.promptStyle1 = self.promptStyle1 = Style.from_dict({
             # User input (default text).
             "": config.terminalCommandEntryColor1,
             # Prompt.
             "indicator": config.terminalPromptIndicatorColor1,
         })
-        self.promptStyle2 = Style.from_dict({
+        config.promptStyle2 = self.promptStyle2 = Style.from_dict({
             # User input (default text).
             "": config.terminalCommandEntryColor2,
             # Prompt.
@@ -186,6 +186,11 @@ Available tokens: {estimatedAvailableTokens}
             config.mouseSupport = not config.mouseSupport
             config.saveConfig()
             run_in_terminal(lambda: config.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))
+        # edit the last response in built-in or custom text editor
+        @this_key_bindings.add("escape", "p")
+        def _(_):
+            customTextEditor = config.customTextEditor if config.customTextEditor else f"{sys.executable} {os.path.join(config.taskWizAIFolder, 'eTextEdit.py')}"
+            pydoc.pipepager(config.pagerContent, cmd=customTextEditor)
 
         conditional_prompt_multiline_shared_key_bindings = ConditionalKeyBindings(
             key_bindings=prompt_multiline_shared_key_bindings,
@@ -198,7 +203,7 @@ Available tokens: {estimatedAvailableTokens}
         ])
     def showKeyBindings(self):
         bindings = {
-            "ctrl+q": "exit",
+            "ctrl+q": "quit / exit current feature",
             "ctrl+z": "cancel",
             "ctrl+a": "select / unselect all",
             "ctrl+c": "copy [w/ mouse support]",
@@ -234,7 +239,8 @@ Available tokens: {estimatedAvailableTokens}
             "esc+r": "restart taskwiz",
         }
         textEditor = config.customTextEditor.split(" ", 1)[0]
-        bindings["esc+o"] = f"""open with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
+        bindings["esc+o"] = f"""edit current input with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
+        bindings["esc+p"] = f"""edit the last response with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
         multilineBindings = {
             "enter": "new line",
             "esc+enter": "complete entry",

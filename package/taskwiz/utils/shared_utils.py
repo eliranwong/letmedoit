@@ -8,6 +8,7 @@ from pygments.styles import get_style_by_name
 from prompt_toolkit.styles.pygments import style_from_pygments_cls
 from prompt_toolkit import print_formatted_text
 from prompt_toolkit.formatted_text import PygmentsTokens
+from prompt_toolkit import prompt
 try:
     import tiktoken
     tiktokenImported = True
@@ -190,11 +191,11 @@ class SharedUtil:
             else:
                 return ""
         # ask if user want to manually edit the code
-        self.print(f"Failed to execute the code {(config.max_consecutive_auto_heal + 1)} times in a row!")
-        self.print("Do you want to manually edit it? [y]es / [N]o")
-        confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="N")
-        if not confirmation.lower() in ("y", "yes"):
-            config.config.defaultEntry = f"```python\n{code}\n```"
+        config.print(f"Failed to execute the code {(config.max_consecutive_auto_heal + 1)} times in a row!")
+        config.print("Do you want to manually edit it? [y]es / [N]o")
+        confirmation = prompt(style=config.promptStyle2, default="N")
+        if confirmation.lower() in ("y", "yes"):
+            config.defaultEntry = f"```python\n{code}\n```"
             return ""
         else:
             return "[INVALID]"

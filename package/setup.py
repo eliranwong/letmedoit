@@ -41,7 +41,7 @@ with open(os.path.join("taskwiz", "config.py"), "w") as fileObj:
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="1.3.1",
+    version="1.3.3",
     python_requires=">=3.8, <3.12",
     description="TaskWiz AI, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,

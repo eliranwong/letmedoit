@@ -1,5 +1,5 @@
 from taskwiz import config
-import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, string, shutil
+import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, string, shutil, asyncio
 from openai import OpenAI
 try:
     import tiktoken
@@ -18,6 +18,8 @@ from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.shortcuts import clear
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit import print_formatted_text, HTML
+from prompt_toolkit.input import create_input
+from prompt_toolkit.keys import Keys
 from taskwiz.utils.terminal_mode_dialogs import TerminalModeDialogs
 from taskwiz.utils.prompts import Prompts
 from taskwiz.utils.promptValidator import FloatValidator, TokenValidator
@@ -112,6 +114,9 @@ class TaskWizAI:
         else:
             config.tts = True
         self.isTtsAvailable()
+
+        # check if text output streaming is finished
+        self.streaming_finished = False
 
     def getPreferredDir(self):
         preferredDir = os.path.join(os.path.expanduser('~'), config.taskWizName.split()[0].lower())
@@ -247,7 +252,7 @@ class TaskWizAI:
     def changeAPIkey(self):
         if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
             print("Enter your OpenAI API Key [required]:")
-            apikey = self.prompts.simplePrompt(default=config.openaiApiKey, is_password=True)
+            apikey = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.openaiApiKey, is_password=True)
             if apikey and not apikey.strip().lower() in (config.cancel_entry, config.exit_entry):
                 config.openaiApiKey = apikey
             #self.print("Enter your Organization ID [optional]:")
@@ -583,12 +588,17 @@ Otherwise, answer "chat". Here is the request:"""
             if function_response:
                 info = {"information": function_response}
                 function_response = json.dumps(info)
+        elif function_name in ("translate_text",):
+            # "translate_text" has two arguments, "text", "target_language"
+            # handle known and unwanted function
+            function_response = "[INVALID]" 
         elif not function_name in config.chatGPTApiAvailableFunctions:
             # handle unexpected function
-            self.print(f"Unexpected function: {function_name}")
-            self.print(self.divider)
-            print(func_arguments)
-            self.print(self.divider)
+            if config.developer:
+                self.print(f"Unexpected function: {function_name}")
+                self.print(self.divider)
+                print(func_arguments)
+                self.print(self.divider)
             function_response = "[INVALID]"
         else:
             fuction_to_call = config.chatGPTApiAvailableFunctions[function_name]
@@ -1042,7 +1052,7 @@ Otherwise, answer "chat". Here is the request:"""
     def setTemperature(self):
         self.print("Enter a value between 0.0 and 2.0:")
         self.print("(Lower values for temperature result in more consistent outputs, while higher values generate more diverse and creative results. Select a temperature value based on the desired trade-off between coherence and creativity for your specific application.)")
-        temperature = self.prompts.simplePrompt(validator=FloatValidator(), default=str(config.chatGPTApiTemperature))
+        temperature = self.prompts.simplePrompt(style=self.prompts.promptStyle2, validator=FloatValidator(), default=str(config.chatGPTApiTemperature))
         if temperature and not temperature.strip().lower() == config.exit_entry:
             temperature = float(temperature)
             if temperature < 0:
@@ -1077,7 +1087,7 @@ Otherwise, answer "chat". Here is the request:"""
 
     def setAssistantName(self):
         self.print("You may modify my name below:")
-        taskWizName = self.prompts.simplePrompt(default=config.taskWizName)
+        taskWizName = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.taskWizName)
         if taskWizName and not taskWizName.strip().lower() == config.exit_entry:
             config.taskWizName = taskWizName
             self.preferredDir = self.getPreferredDir()
@@ -1088,7 +1098,7 @@ Otherwise, answer "chat". Here is the request:"""
         self.print("Please specify custom text editor command below:")
         self.print("e.g. 'micro -softwrap true -wordwrap true'")
         self.print("Leave it blank to use our built-in text editor 'eTextEdit' by default.")
-        customTextEditor = self.prompts.simplePrompt(default=config.customTextEditor)
+        customTextEditor = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.customTextEditor)
         if customTextEditor and not customTextEditor.strip().lower() == config.exit_entry:
             textEditor = re.sub(" .*?$", "", customTextEditor)
             if not textEditor or not SharedUtil.isPackageInstalled(textEditor):
@@ -1100,7 +1110,7 @@ Otherwise, answer "chat". Here is the request:"""
 
     def setMemoryClosestMatchesNumber(self):
         self.print("Please specify the number of closest matches in each memory retrieval:")
-        memoryClosestMatchesNumber = self.prompts.simplePrompt(numberOnly=True, default=str(config.memoryClosestMatchesNumber))
+        memoryClosestMatchesNumber = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.memoryClosestMatchesNumber))
         if memoryClosestMatchesNumber and not memoryClosestMatchesNumber.strip().lower() == config.exit_entry and int(memoryClosestMatchesNumber) >= 0:
             config.memoryClosestMatchesNumber = int(memoryClosestMatchesNumber)
             config.saveConfig()
@@ -1110,7 +1120,7 @@ Otherwise, answer "chat". Here is the request:"""
         self.print(f"The auto-heal feature enables {config.taskWizName} to automatically fix broken Python code if it was not executed properly.")
         self.print("Please specify maximum number of auto-heal attempts below:")
         self.print("(Remarks: Enter '0' if you want to disable auto-heal feature)")
-        maxAutoHeal = self.prompts.simplePrompt(numberOnly=True, default=str(config.max_consecutive_auto_heal))
+        maxAutoHeal = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.max_consecutive_auto_heal))
         if maxAutoHeal and not maxAutoHeal.strip().lower() == config.exit_entry and int(maxAutoHeal) >= 0:
             config.max_consecutive_auto_heal = int(maxAutoHeal)
             config.saveConfig()
@@ -1118,7 +1128,7 @@ Otherwise, answer "chat". Here is the request:"""
 
     def setMinTokens(self):
         self.print("Please specify minimum response tokens below:")
-        mintokens = self.prompts.simplePrompt(numberOnly=True, default=str(config.chatGPTApiMinTokens))
+        mintokens = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.chatGPTApiMinTokens))
         if mintokens and not mintokens.strip().lower() == config.exit_entry and int(mintokens) > 0:
             config.chatGPTApiMinTokens = int(mintokens)
             if config.chatGPTApiMinTokens > config.chatGPTApiMaxTokens:
@@ -1145,7 +1155,7 @@ Otherwise, answer "chat". Here is the request:"""
             self.print(self.divider)
             self.print("Please specify maximum response tokens below:")
             self.print("(Remarks: If the entered value exceeds the maximum number of completion tokens allowed in your selected model, it will be modified.)")
-            maxtokens = self.prompts.simplePrompt(numberOnly=True, default=str(config.chatGPTApiMaxTokens))
+            maxtokens = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.chatGPTApiMaxTokens))
             if maxtokens and not maxtokens.strip().lower() == config.exit_entry and int(maxtokens) > 0:
                 config.chatGPTApiMaxTokens = int(maxtokens)
                 if config.chatGPTApiMaxTokens > 8192 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit: # 'gpt-4-1106-preview' supports at most 4096 completion tokens
@@ -1300,7 +1310,7 @@ Otherwise, answer "chat". Here is the request:"""
             config.chatGPTApiPredefinedContext = predefinedContext
             if config.chatGPTApiPredefinedContext == "[custom]":
                 self.print("Edit custom context below:")
-                customContext = self.prompts.simplePrompt(default=config.chatGPTApiCustomContext)
+                customContext = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.chatGPTApiCustomContext)
                 if customContext and not customContext.strip().lower() == config.exit_entry:
                     config.chatGPTApiCustomContext = customContext.strip()
             self.showCurrentContext()
@@ -1379,14 +1389,14 @@ Otherwise, answer "chat". Here is the request:"""
             # go to startup directory
             startupdirectory = self.getFiles()
             os.chdir(startupdirectory)
-            config.currentMessages = messages = self.resetMessages()
+            messages = self.resetMessages()
             #self.print(f"startup directory:\n{startupdirectory}")
             print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Directory:</{config.terminalPromptIndicatorColor2}> {startupdirectory}"))
             self.print(self.divider)
 
             config.conversationStarted = False
             return (startupdirectory, messages)
-        startupdirectory, messages = startChat()
+        startupdirectory, config.currentMessages = startChat()
         config.multilineInput = False
         features = (
             ".new",
@@ -1484,7 +1494,7 @@ Otherwise, answer "chat". Here is the request:"""
                 userInput = re.sub("```python", "```", userInput)
                 self.runPythonScript(userInput)
             elif userInputLower == config.exit_entry:
-                self.saveChat(messages)
+                self.saveChat(config.currentMessages)
                 return self.exitAction()
             elif userInputLower == config.cancel_entry:
                 pass
@@ -1511,13 +1521,13 @@ Otherwise, answer "chat". Here is the request:"""
             elif userInputLower == ".context":
                 self.changeContext()
                 if not config.chatGPTApiContextInAllInputs and config.conversationStarted:
-                    self.saveChat(messages)
-                    startupdirectory, messages = startChat()
+                    self.saveChat(config.currentMessages)
+                    startupdirectory, config.currentMessages = startChat()
             elif userInputLower == ".new" and config.conversationStarted:
-                self.saveChat(messages)
-                startupdirectory, messages = startChat()
+                self.saveChat(config.currentMessages)
+                startupdirectory, config.currentMessages = startChat()
             elif userInputLower in (".share", ".save") and config.conversationStarted:
-                self.saveChat(messages, openFile=True)
+                self.saveChat(config.currentMessages, openFile=True)
             elif userInput and not userInputLower in featuresLower:
                 try:
                     if userInput and config.ttsInput:
@@ -1554,9 +1564,9 @@ My writing:
                     # python execution
                     self.screenAction = ""
                     if config.enhanceCommandExecution and not noScreening and not noFunctionCall:
-                        messages = self.screening(messages, fineTunedUserInput)
+                        config.currentMessages = self.screening(config.currentMessages, fineTunedUserInput)
                     else:
-                        messages.append({"role": "user", "content": fineTunedUserInput})
+                        config.currentMessages.append({"role": "user", "content": fineTunedUserInput})
 
                     # start spinning
                     config.stop_event = threading.Event()
@@ -1566,7 +1576,7 @@ My writing:
                     # force loading internet searches
                     if config.loadingInternetSearches == "always" and not self.screenAction in ("termux", "python", "web", "system"):
                         try:
-                            messages = self.runFunction(messages, config.integrate_google_searches_signature, "integrate_google_searches")
+                            config.currentMessages = self.runFunction(config.currentMessages, config.integrate_google_searches_signature, "integrate_google_searches")
                         except:
                             self.print("Unable to load internet resources.")
                             SharedUtil.showErrors()
@@ -1575,68 +1585,24 @@ My writing:
                     self.addPagerContent = True
 
                     if config.conversationStarted:
-                        messages = self.moveForwardSystemMessage(messages)
-                    completion = self.runCompletion(messages, noFunctionCall)
+                        config.currentMessages = self.moveForwardSystemMessage(config.currentMessages)
+                    completion = self.runCompletion(config.currentMessages, noFunctionCall)
                     # stop spinning
                     self.runPython = True
                     self.stopSpinning()
 
-                    chat_response = ""
-                    terminal_width = shutil.get_terminal_size().columns
-                    self.lineWidth = 0
-                    blockStart = False
-                    wrapWords = config.wrapWords
-                    for event in completion:
-                        # RETRIEVE THE TEXT FROM THE RESPONSE
-                        #event_text = dict(event.choices[0].delta) # EVENT DELTA RESPONSE
-                        #answer = event_text.get("content", "") # RETRIEVE CONTENT
-                        answer = event.choices[0].delta.content
-                        answer = SharedUtil.transformText(answer)
-                        # STREAM THE ANSWER
-                        if answer is not None:
-                            # display the chunk
-                            chat_response += answer
-                            # word wrap
-                            if answer in ("```", "``"):
-                                blockStart = not blockStart
-                                if blockStart:
-                                    config.wrapWords = False
-                                else:
-                                    config.wrapWords = wrapWords
-                            if config.wrapWords:
-                                if "\n" in answer:
-                                    lines = answer.split("\n")
-                                    for index, line in enumerate(lines):
-                                        isLastLine = (len(lines) - index == 1)
-                                        self.wrapStreamWords(line, terminal_width)
-                                        if not isLastLine:
-                                            print("\n", end='', flush=True)
-                                            self.lineWidth = 0
-                                else:
-                                    self.wrapStreamWords(answer, terminal_width)
-                            else:
-                                print(answer, end='', flush=True) # Print the response
-                            # speak streaming words
-                            self.readAnswer(answer)
-                    config.wrapWords = wrapWords
-                    # reset config.tempChunk
-                    config.tempChunk = ""
-                    print("\n")
+                    # Create a new thread for the streaming task
+                    self.streaming_finished = False
+                    streaming_event = threading.Event()
+                    self.streaming_thread = threading.Thread(target=self.streamOutputs, args=(streaming_event, completion,))
+                    # Start the streaming thread
+                    self.streaming_thread.start()
 
-                    # optional
-                    # remove predefined context to reduce token size and cost
-                    #messages[-1] = {"role": "user", "content": userInput}
+                    # wait while text output is steaming; capture key combo 'ctrl+q' to stop the streaming
+                    self.ctrlQToStopStreaming(streaming_event)
 
-                    messages.append({"role": "assistant", "content": chat_response})
-                    config.currentMessages = messages
-
-                    # auto pager feature
-                    config.pagerContent += self.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
-                    self.addPagerContent = False
-                    if config.pagerView:
-                        self.launchPager(config.pagerContent)
-
-                    config.conversationStarted = True
+                    # when streaming is done or when user press "ctrl+q"
+                    self.streaming_thread.join()
 
                 # error codes: https://platform.openai.com/docs/guides/error-codes/python-library-error-types
                 except openai.APIError as e:
@@ -1665,8 +1631,94 @@ My writing:
 
                     config.defaultEntry = userInput
                     self.print("starting a new chat!")
-                    self.saveChat(messages)
-                    startupdirectory, messages = startChat()
+                    self.saveChat(config.currentMessages)
+                    startupdirectory, config.currentMessages = startChat()
+
+    def ctrlQToStopStreaming(self, streaming_event):
+        async def readKeys() -> None:
+            done = False
+            input = create_input()
+
+            def keys_ready():
+                nonlocal done
+                for key_press in input.read_keys():
+                    #print(key_press)
+                    if key_press.key == Keys.ControlQ:
+                        print("\n")
+                        done = True
+                        streaming_event.set()
+
+            with input.raw_mode():
+                with input.attach(keys_ready):
+                    while not done:
+                        if self.streaming_finished:
+                            break
+                        await asyncio.sleep(0.1)
+
+        asyncio.run(readKeys())
+
+    def streamOutputs(self, streaming_event, completion):
+        chat_response = ""
+        terminal_width = shutil.get_terminal_size().columns
+        self.lineWidth = 0
+        blockStart = False
+        wrapWords = config.wrapWords
+        for event in completion:
+            if not streaming_event.is_set():
+                # RETRIEVE THE TEXT FROM THE RESPONSE
+                answer = event.choices[0].delta.content
+                answer = SharedUtil.transformText(answer)
+                # STREAM THE ANSWER
+                if answer is not None:
+                    # display the chunk
+                    chat_response += answer
+                    # word wrap
+                    if answer in ("```", "``"):
+                        blockStart = not blockStart
+                        if blockStart:
+                            config.wrapWords = False
+                        else:
+                            config.wrapWords = wrapWords
+                    if config.wrapWords:
+                        if "\n" in answer:
+                            lines = answer.split("\n")
+                            for index, line in enumerate(lines):
+                                isLastLine = (len(lines) - index == 1)
+                                self.wrapStreamWords(line, terminal_width)
+                                if not isLastLine:
+                                    print("\n", end='', flush=True)
+                                    self.lineWidth = 0
+                        else:
+                            self.wrapStreamWords(answer, terminal_width)
+                    else:
+                        print(answer, end='', flush=True) # Print the response
+                    # speak streaming words
+                    self.readAnswer(answer)
+            else:
+                self.addPagerContent = False
+                self.streaming_finished = True
+                return None
+        
+        config.wrapWords = wrapWords
+        # reset config.tempChunk
+        config.tempChunk = ""
+        print("\n")
+
+        # optional
+        # remove predefined context to reduce token size and cost
+        #messages[-1] = {"role": "user", "content": userInput}
+
+        config.currentMessages.append({"role": "assistant", "content": chat_response})
+
+        # auto pager feature
+        config.pagerContent += self.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
+        self.addPagerContent = False
+        if config.pagerView:
+            self.launchPager(config.pagerContent)
+
+        config.conversationStarted = True
+
+        self.streaming_finished = True
 
     def addPagerText(self, text, wrapWords=False):
         if wrapWords:

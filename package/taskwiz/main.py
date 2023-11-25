@@ -165,6 +165,8 @@ def saveConfig():
     with open(configFile, "w", encoding="utf-8") as fileObj:
         for name in dir(config):
             excludeConfigList = [
+                "promptStyle1",
+                "promptStyle2",
                 "runSpecificFuntion",
                 "pluginsWithFunctionCall",
                 "restartApp",
