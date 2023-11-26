@@ -119,5 +119,8 @@ class AutoGenRetriever:
         
         self.print(f"\n\n<{config.terminalCommandEntryColor1}>AutoGen Retriever closed!</{config.terminalCommandEntryColor1}>")
 
-if __name__ == '__main__':
+def main():
     AutoGenRetriever().run()
+
+if __name__ == '__main__':
+    main()

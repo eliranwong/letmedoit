@@ -104,5 +104,8 @@ Below is my message:
                 break
         self.print(f"<{config.terminalCommandEntryColor1}>\n\nAutoGen Assistant closed!</{config.terminalCommandEntryColor1}>")
 
-if __name__ == '__main__':
+def main():
     AutoGenAssistant().run()
+
+if __name__ == '__main__':
+    main()

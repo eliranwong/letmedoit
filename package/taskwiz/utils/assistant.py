@@ -147,10 +147,10 @@ class TaskWizAI:
 
     def execPythonFile(self, script="", content=""):
         if script or content:
-            def runCode(text):
-                code = compile(text, script, 'exec')
-                exec(code, globals())
             try:
+                def runCode(text):
+                    code = compile(text, script, 'exec')
+                    exec(code, globals())
                 if content:
                     runCode(content)
                 else:
@@ -1555,7 +1555,7 @@ My writing:
                     fineTunedUserInput = self.fineTuneUserInput(userInput)
                     noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.chatGPTApiPredefinedContext.startswith("Counselling - ") or config.chatGPTApiPredefinedContext.endswith("Counselling"))
                     noScreening = ("[NO_SCREENING]" in fineTunedUserInput)
-                    checkCallSpecificFunction = re.search("\[CALL ([^\[\]]*?)\]", fineTunedUserInput)
+                    checkCallSpecificFunction = re.search("\[CALL ([^\[\]]+?)\]", fineTunedUserInput)
                     config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
                     if config.developer:
                         self.print(f"calling function '{config.runSpecificFuntion}'")
@@ -1598,8 +1598,8 @@ My writing:
                     # Start the streaming thread
                     self.streaming_thread.start()
 
-                    # wait while text output is steaming; capture key combo 'ctrl+q' to stop the streaming
-                    self.ctrlQToStopStreaming(streaming_event)
+                    # wait while text output is steaming; capture key combo 'ctrl+q' or 'ctrl+z' to stop the streaming
+                    self.keyToStopStreaming(streaming_event)
 
                     # when streaming is done or when user press "ctrl+q"
                     self.streaming_thread.join()
@@ -1634,7 +1634,7 @@ My writing:
                     self.saveChat(config.currentMessages)
                     startupdirectory, config.currentMessages = startChat()
 
-    def ctrlQToStopStreaming(self, streaming_event):
+    def keyToStopStreaming(self, streaming_event):
         async def readKeys() -> None:
             done = False
             input = create_input()
@@ -1643,7 +1643,7 @@ My writing:
                 nonlocal done
                 for key_press in input.read_keys():
                     #print(key_press)
-                    if key_press.key == Keys.ControlQ:
+                    if key_press.key in (Keys.ControlQ, Keys.ControlZ):
                         print("\n")
                         done = True
                         streaming_event.set()

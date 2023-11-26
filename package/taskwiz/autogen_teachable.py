@@ -78,5 +78,8 @@ class AutoGenTeachable:
         
         self.print(f"\n\n<{config.terminalCommandEntryColor1}>AutoGen Teachable closed!</{config.terminalCommandEntryColor1}>")
 
-if __name__ == '__main__':
+def main():
     AutoGenTeachable().run()
+
+if __name__ == '__main__':
+    main()

@@ -1,4 +1,4 @@
-import os, sys, platform, shutil
+import os, sys, platform, shutil, argparse
 
 # requires python 3.8+; required by package 'tiktoken'
 pythonVersion = sys.version_info
@@ -254,27 +254,7 @@ def set_log_file_max_lines(log_file, max_lines):
             filename = os.path.basename(log_file)
             print(f"{num_lines_to_delete} old lines deleted from log file '{filename}'.")
 
-def main(default="", run=False):
-    set_title(config.taskWizName)
-    setOsOpenCmd()
-    createShortcuts()
-    config.excludeConfigList = []
-    config.isVlcPlayerInstalled = VlcUtil.isVlcPlayerInstalled()
-    # check log files; remove old lines if more than 3000 lines is found in a log file
-    for i in ("chats", "paths", "commands"):
-        filepath = os.path.join(config.historyParentFolder if config.historyParentFolder else config.taskWizAIFolder, "history", i)
-        set_log_file_max_lines(filepath, 3000)
-    config.defaultEntry = default
-    config.accept_default = run
-    TaskWizAI().startChats()
-    saveConfig()
-    preferredDir = getPreferredDir()
-    if os.path.isdir(preferredDir):
-        shutil.copy(configFile, os.path.join(preferredDir, "config_backup.py"))
-    clear_title()
-
-if __name__ == "__main__":
-    import argparse
+def main():
     # Create the parser
     parser = argparse.ArgumentParser(description="Process some inputs.")
     # Add arguments
@@ -284,8 +264,30 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # Check what kind of arguments were provided and perform actions accordingly
     if args.run:
-        main(args.run, True)
+        config.defaultEntry = args.run
+        config.accept_default = True
     elif args.default:
-        main(args.default)
+        config.defaultEntry = args.default
+        config.accept_default = False
     else:
-        main()
+        config.defaultEntry = ""
+        config.accept_default = False
+
+    set_title(config.taskWizName)
+    setOsOpenCmd()
+    createShortcuts()
+    config.excludeConfigList = []
+    config.isVlcPlayerInstalled = VlcUtil.isVlcPlayerInstalled()
+    # check log files; remove old lines if more than 3000 lines is found in a log file
+    for i in ("chats", "paths", "commands"):
+        filepath = os.path.join(config.historyParentFolder if config.historyParentFolder else config.taskWizAIFolder, "history", i)
+        set_log_file_max_lines(filepath, 3000)
+    TaskWizAI().startChats()
+    saveConfig()
+    preferredDir = getPreferredDir()
+    if os.path.isdir(preferredDir):
+        shutil.copy(configFile, os.path.join(preferredDir, "config_backup.py"))
+    clear_title()
+
+if __name__ == "__main__":
+    main()

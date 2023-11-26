@@ -87,6 +87,8 @@ class AutoGenMath:
                 break
         self.print(f"<{config.terminalCommandEntryColor1}>\n\nAutoGen Math closed!</{config.terminalCommandEntryColor1}>")
 
+def main():
+    AutoGenMath().run()
 
 if __name__ == '__main__':
-    AutoGenMath().run()
+    main()

@@ -1,0 +1,1 @@
+taskWizName = 'MyHand Bot'

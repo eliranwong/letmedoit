@@ -41,7 +41,7 @@ with open(os.path.join("taskwiz", "config.py"), "w") as fileObj:
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="1.3.3",
+    version="1.3.4",
     python_requires=">=3.8, <3.12",
     description="TaskWiz AI, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,
@@ -77,7 +77,8 @@ setup(
     install_requires=install_requires,
     entry_points={
         "console_scripts": [
-            f"{package}=taskwiz.cli:cli",
+            f"{package}=taskwiz.main:main",
+            "etextedit=taskwiz.eTextEdit:main",
         ],
     },
     keywords="ai assistant openai chatgpt rag autogen interpreter auto-heal",
