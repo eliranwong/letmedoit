@@ -1,0 +1,1 @@
+letMeDoItName = 'LetMeDoIt AI'

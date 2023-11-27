@@ -2,91 +2,95 @@ from setuptools import setup
 import os, shutil
 
 # package name
-with open(os.path.join("taskwiz", "package_name.txt"), "r", encoding="utf-8") as fileObj:
+package_name_0 = os.path.join("package_name.txt")
+with open(package_name_0, "r", encoding="utf-8") as fileObj:
     package = fileObj.read()
+package_name_1 = os.path.join(package, "package_name.txt") # package readme
+shutil.copy(package_name_0, package_name_1)
 
 # delete old shortcut files
 apps = {
     "myhand": ("MyHand", "MyHand Bot"),
+    "letmedoit": ("LetMeDoIt", "LetMeDoIt AI"),
     "taskwiz": ("TaskWiz", "TaskWiz AI"),
     "cybertask": ("CyberTask", "CyberTask AI"),
 }
 appName = apps[package][0]
 shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop")
 for shortcutFile in shortcutFiles:
-    shortcut = os.path.join("taskwiz", shortcutFile)
+    shortcut = os.path.join(package, shortcutFile)
     if os.path.isfile(shortcut):
         os.remove(shortcut)
 
 # update package readme
 latest_readme = os.path.join("..", "README.md") # github repository readme
-package_readme = os.path.join("taskwiz", "README.md") # package readme
+package_readme = os.path.join(package, "README.md") # package readme
 shutil.copy(latest_readme, package_readme)
 with open(package_readme, "r", encoding="utf-8") as fileObj:
     long_description = fileObj.read()
 
 # get required packages
 install_requires = []
-with open(os.path.join("taskwiz", "requirements.txt"), "r") as fileObj:
+with open(os.path.join(package, "requirements.txt"), "r") as fileObj:
     for line in fileObj.readlines():
         mod = line.strip()
         if mod:
             install_requires.append(mod)
 
 # make sure config.py is empty
-with open(os.path.join("taskwiz", "config.py"), "w") as fileObj:
-    taskWizName = apps[package][-1]
-    fileObj.write(f"taskWizName = '{taskWizName}'")
+with open(os.path.join(package, "config.py"), "w") as fileObj:
+    letMeDoItName = apps[package][-1]
+    fileObj.write(f"letMeDoItName = '{letMeDoItName}'")
 
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="1.3.4",
+    version="1.3.7",
     python_requires=">=3.8, <3.12",
-    description="TaskWiz AI, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
+    description="LetMeDoIt AI, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,
     author="Eliran Wong",
-    author_email="support@taskwiz.ai",
+    author_email="support@letmedoit.ai",
     packages=[
-        "taskwiz",
-        "taskwiz.files",
-        "taskwiz.history",
-        "taskwiz.icons",
-        "taskwiz.plugins",
-        "taskwiz.plugins.bibleTools.",
-        "taskwiz.plugins.bibleTools.bibleData.bibles",
-        "taskwiz.plugins.bibleTools.bibleData.",
-        "taskwiz.plugins.bibleTools.utils",
-        "taskwiz.temp",
-        "taskwiz.utils",
+        package,
+        f"{package}.files",
+        f"{package}.history",
+        f"{package}.icons",
+        f"{package}.plugins",
+        f"{package}.plugins.bibleTools.",
+        f"{package}.plugins.bibleTools.bibleData.bibles",
+        f"{package}.plugins.bibleTools.bibleData.",
+        f"{package}.plugins.bibleTools.utils",
+        f"{package}.temp",
+        f"{package}.utils",
     ],
     package_data={
-        "taskwiz": ["*.*"],
-        "taskwiz.files": ["*.*"],
-        "taskwiz.history": ["*.*"],
-        "taskwiz.icons": ["*.*"],
-        "taskwiz.plugins": ["*.*"],
-        "taskwiz.plugins.bibleTools.": ["*.*"],
-        "taskwiz.plugins.bibleTools.bibleData.bibles": ["*.*"],
-        "taskwiz.plugins.bibleTools.bibleData.": ["*.*"],
-        "taskwiz.plugins.bibleTools.utils": ["*.*"],
-        "taskwiz.temp": ["*.*"],
-        "taskwiz.utils": ["*.*"],
+        package: ["*.*"],
+        f"{package}.files": ["*.*"],
+        f"{package}.history": ["*.*"],
+        f"{package}.icons": ["*.*"],
+        f"{package}.plugins": ["*.*"],
+        f"{package}.plugins.bibleTools.": ["*.*"],
+        f"{package}.plugins.bibleTools.bibleData.bibles": ["*.*"],
+        f"{package}.plugins.bibleTools.bibleData.": ["*.*"],
+        f"{package}.plugins.bibleTools.utils": ["*.*"],
+        f"{package}.temp": ["*.*"],
+        f"{package}.utils": ["*.*"],
     },
     license="GNU General Public License (GPL)",
     install_requires=install_requires,
     entry_points={
         "console_scripts": [
-            f"{package}=taskwiz.main:main",
-            "etextedit=taskwiz.eTextEdit:main",
+            f"{package}=letmedoit.main:main",
+            "etextedit=letmedoit.eTextEdit:main",
         ],
     },
     keywords="ai assistant openai chatgpt rag autogen interpreter auto-heal",
-    url="https://taskwiz.ai",
+    url="https://letmedoit.ai",
     project_urls={
-        "Source": "https://github.com/eliranwong/taskwiz",
-        "Tracker": "https://github.com/eliranwong/taskwiz/issues",
-        "Documentation": "https://github.com/eliranwong/taskwiz/wiki",
+        "Source": "https://github.com/eliranwong/letmedoit",
+        "Tracker": "https://github.com/eliranwong/letmedoit/issues",
+        "Documentation": "https://github.com/eliranwong/letmedoit/wiki",
         "Funding": "https://www.paypal.me/MarvelBible",
     },
     classifiers=[
