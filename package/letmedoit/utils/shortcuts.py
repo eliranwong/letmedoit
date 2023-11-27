@@ -91,7 +91,9 @@ Name={4}
     #createAppAlias()
 
 def createAppAlias():
-    alias = "letmedoit"
+    with open(os.path.join(config.letMeDoItAIFolder, "package_name.txt"), "r", encoding="utf-8") as fileObj:
+        package = fileObj.read()
+    alias = package
     target = f"{sys.executable} {config.letMeDoItFile}"
 
     findAlias = "/bin/bash -ic 'alias letmedoit'" # -c alone does not work

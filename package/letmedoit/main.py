@@ -57,17 +57,29 @@ if not os.path.isfile(configFile):
     open(configFile, "a", encoding="utf-8").close()
 
 # import config and setup default
-import traceback
+#import traceback
 from letmedoit import config
 from pathlib import Path
 
+apps = {
+    "myhand": ("MyHand", "MyHand Bot"),
+    "letmedoit": ("LetMeDoIt", "LetMeDoIt AI"),
+    "taskwiz": ("TaskWiz", "TaskWiz AI"),
+    "cybertask": ("CyberTask", "CyberTask AI"),
+}
+
+basename = os.path.basename(letMeDoItAIFolder)
 if not hasattr(config, "letMeDoItName") or not config.letMeDoItName:
-    config.letMeDoItName = "LetMeDoIt AI"
+    config.letMeDoItName = apps[basename][-1] if basename in apps else "LetMeDoIt AI"
 config.letMeDoItFile = letMeDoItFile
 config.letMeDoItAIFolder = letMeDoItAIFolder
 
+# package name
+with open(os.path.join(config.letMeDoItAIFolder, "package_name.txt"), "r", encoding="utf-8") as fileObj:
+    package = fileObj.read()
+
 def getPreferredDir():
-    preferredDir = os.path.join(os.path.expanduser('~'), 'letmedoit')
+    preferredDir = os.path.join(os.path.expanduser('~'), package)
     try:
         Path(preferredDir).mkdir(parents=True, exist_ok=True)
     except:
@@ -83,10 +95,6 @@ config.restartApp = restartApp
 
 from letmedoit.utils.configDefault import *
 from letmedoit.utils.shared_utils import SharedUtil
-
-# package name
-with open(os.path.join(config.letMeDoItAIFolder, "package_name.txt"), "r", encoding="utf-8") as fileObj:
-    package = fileObj.read()
 
 # automatic update
 config.pipIsUpdated = False

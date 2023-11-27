@@ -1,1 +1,0 @@
-letMeDoItName = 'LetMeDoIt AI'

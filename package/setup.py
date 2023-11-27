@@ -38,14 +38,12 @@ with open(os.path.join(package, "requirements.txt"), "r") as fileObj:
             install_requires.append(mod)
 
 # make sure config.py is empty
-with open(os.path.join(package, "config.py"), "w") as fileObj:
-    letMeDoItName = apps[package][-1]
-    fileObj.write(f"letMeDoItName = '{letMeDoItName}'")
+open(os.path.join(package, "config.py"), "w").close()
 
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="1.3.7",
+    version="1.4.1",
     python_requires=">=3.8, <3.12",
     description="LetMeDoIt AI, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,
