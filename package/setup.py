@@ -15,7 +15,7 @@ apps = {
     "taskwiz": ("TaskWiz", "TaskWiz AI"),
     "cybertask": ("CyberTask", "CyberTask AI"),
 }
-appName = apps[package][0]
+appName, appFullName = apps[package]
 shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop")
 for shortcutFile in shortcutFiles:
     shortcut = os.path.join(package, shortcutFile)
@@ -43,9 +43,9 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="1.4.1",
+    version="1.4.2",
     python_requires=">=3.8, <3.12",
-    description="LetMeDoIt AI, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
+    description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,
     author="Eliran Wong",
     author_email="support@letmedoit.ai",
@@ -79,8 +79,8 @@ setup(
     install_requires=install_requires,
     entry_points={
         "console_scripts": [
-            f"{package}=letmedoit.main:main",
-            "etextedit=letmedoit.eTextEdit:main",
+            f"{package}={package}.main:main",
+            f"etextedit={package}.eTextEdit:main",
         ],
     },
     keywords="ai assistant openai chatgpt rag autogen interpreter auto-heal",
