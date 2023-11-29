@@ -789,6 +789,7 @@ Otherwise, answer "chat". Here is the request:"""
             "change user confirmation",
             "change command display",
             "change pager view",
+            "change embedding model",
             "change assistant name",
             "change startup directory",
             "change custom text editor",
@@ -815,7 +816,9 @@ Otherwise, answer "chat". Here is the request:"""
         )
         if feature:
             if feature == ".chatgptmodel":
-                self.setModel()
+                self.setLlmModel()
+            elif feature == ".embeddingmodel":
+                self.setEmbeddingModel()
             elif feature == ".latestSearches":
                 self.setLatestSearches()
             elif feature == ".startupDirectory":
@@ -1070,7 +1073,7 @@ Otherwise, answer "chat". Here is the request:"""
             config.saveConfig()
             self.print(f"ChatGPT Temperature entered: {temperature}")
 
-    def setModel(self):
+    def setLlmModel(self):
         model = self.dialogs.getValidOptions(
             options=self.models,
             title="ChatGPT model",
@@ -1091,6 +1094,39 @@ Otherwise, answer "chat". Here is the request:"""
             config.chatGPTApiMaxTokens = suggestedMaxToken
             config.saveConfig()
             self.print(f"Maximum response tokens set to {config.chatGPTApiMaxTokens}.")
+
+    def setEmbeddingModel(self):
+        oldEmbeddingModel = config.embeddingModel
+        model = self.dialogs.getValidOptions(
+            options=("text-embedding-ada-002", "all-mpnet-base-v2", "all-MiniLM-L6-v2", "custom"),
+            title="Embedding model",
+            default=config.embeddingModel,
+            text="Select an embedding model:",
+        )
+        if model:
+            if model == "custom":
+                self.print("Enter OpenAI or Sentence Transformer Embedding model:")
+                customModel = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.embeddingModel)
+                if customModel and not customModel.strip().lower() == config.exit_entry:
+                    config.embeddingModel = customModel 
+            else:
+                config.embeddingModel = model
+            self.print(f"Embedding model selected: {model}")
+        if not oldEmbeddingModel == config.embeddingModel:
+            self.print(f"You've change the embedding model from '{oldEmbeddingModel}' to '{config.embeddingModel}'.")
+            self.print("To work with the newly selected model, previous memory store and retrieved collections need to be deleted.")
+            self.print("Do you want to delete them now? [y]es / [N]o")
+            confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="yes")
+            if not confirmation.lower() in ("y", "yes"):
+                memory_store = os.path.join(config.getFiles(), "memory")
+                retrieved_collections = os.path.join(config.getFiles(), "autogen", "retriever")
+                for folder in (memory_store, retrieved_collections):
+                    shutil.rmtree(folder, ignore_errors=True)
+            else:
+                self.print(f"Do you want to change back the embedding model from '{config.embeddingModel}' to '{oldEmbeddingModel}'? [y]es / [N]o")
+                confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="yes")
+                if not confirmation.lower() in ("y", "yes"):
+                    config.embeddingModel = oldEmbeddingModel
 
     def setAssistantName(self):
         self.print("You may modify my name below:")
@@ -1427,6 +1463,7 @@ Otherwise, answer "chat". Here is the request:"""
             ".confirmexecution",
             ".codedisplay",
             ".pagerview",
+            ".embeddingmodel",
             ".assistantname",
             ".startupDirectory",
             ".customtexteditor",

@@ -9,7 +9,7 @@ modified from source: https://medium.com/@simon_attard/building-a-memory-layer-f
 """
 
 from letmedoit import config
-#from letmedoit.utils.shared_utils import SharedUtil
+from letmedoit.health_check import HealthCheck
 import numpy as np
 from numpy.linalg import norm
 import uuid, os, chromadb, getpass, geocoder, datetime, json
@@ -26,7 +26,11 @@ def cosine_similarity(A, B):
     return cosine
 
 def get_or_create_collection(collection_name):
-    collection = chroma_client.get_or_create_collection(name=collection_name, metadata={"hnsw:space": "cosine"})
+    collection = chroma_client.get_or_create_collection(
+        name=collection_name,
+        metadata={"hnsw:space": "cosine"},
+        embedding_function=HealthCheck.getEmbeddingFunction(),
+    )
     return collection
 
 def get_embedding(text, model="text-embedding-ada-002"):
@@ -38,9 +42,9 @@ def get_embedding(text, model="text-embedding-ada-002"):
 
 def add_vector(collection, text, metadata):
     id = str(uuid.uuid4())
-    embedding = get_embedding(text)
+    #embedding = get_embedding(text)
     collection.add(
-        embeddings = [embedding],
+        #embeddings = [embedding],
         documents = [text],
         metadatas = [metadata],
         ids = [id]
@@ -74,10 +78,11 @@ def save_memory(function_args):
     return "I saved it in my memory!"
 
 def query_vectors(collection, query, n):
-    query_embedding = get_embedding(query)
+    #query_embedding = get_embedding(query)
     return collection.query(
-        query_embeddings = [query_embedding],
-        n_results = n
+        #query_embeddings = [query_embedding],
+        query_texts=[query],
+        n_results = n,
     )
 
 def retrieve_memories(function_args):

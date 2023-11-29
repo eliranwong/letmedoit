@@ -87,7 +87,8 @@ class AutoGenRetriever:
                 "chunk_token_size": 2000, # the chunk token size for the retrieve chat. If key not provided, a default size max_tokens * 0.4 will be used.
                 "model": config_list[0]["model"],
                 "client": chromadb.PersistentClient(path=db),
-                "embedding_model": "all-mpnet-base-v2", # the embedding model to use for the retrieve chat. If key not provided, a default model all-MiniLM-L6-v2 will be used. All available models can be found at https://www.sbert.net/docs/pretrained_models.html. The default model is a fast model. If you want to use a high performance model, all-mpnet-base-v2 is recommended.
+                "embedding_function": HealthCheck.getEmbeddingFunction(),
+                #"embedding_model": "all-mpnet-base-v2", # the embedding model to use for the retrieve chat. If key not provided, a default model all-MiniLM-L6-v2 will be used. All available models can be found at https://www.sbert.net/docs/pretrained_models.html. The default model is a fast model. If you want to use a high performance model, all-mpnet-base-v2 is recommended.
                 "get_or_create": True,  # set to False if you don't want to reuse an existing collection, but you'll need to remove the collection manually
             },
         )

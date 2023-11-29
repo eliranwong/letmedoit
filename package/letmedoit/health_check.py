@@ -1,6 +1,7 @@
 from openai import OpenAI
 from prompt_toolkit import prompt
 import os, openai, traceback, json, pprint
+from chromadb.utils import embedding_functions
 
 thisFile = os.path.realpath(__file__)
 packageFolder = os.path.dirname(thisFile)
@@ -31,6 +32,13 @@ class HealthCheck:
         config.terminalResourceLinkColor = "ansiyellow"
         config.terminalHeadingTextColor = "ansigreen"
         config.mouseSupport = False
+        config.embeddingModel = "text-embedding-ada-002"
+
+    @staticmethod
+    def getEmbeddingFunction():
+        if config.embeddingModel == "text-embedding-ada-002":
+            return embedding_functions.OpenAIEmbeddingFunction(api_key=config.openaiApiKey, model_name="text-embedding-ada-002")
+        return embedding_functions.SentenceTransformerEmbeddingFunction(model_name=config.embeddingModel) # support custom Sentence Transformer Embedding models by modifying config.embeddingModel
 
     @staticmethod
     def changeAPIkey():
