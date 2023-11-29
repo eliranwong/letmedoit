@@ -1601,7 +1601,7 @@ My writing:
                     noScreening = ("[NO_SCREENING]" in fineTunedUserInput)
                     checkCallSpecificFunction = re.search("\[CALL ([^\[\]]+?)\]", fineTunedUserInput)
                     config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
-                    if config.developer:
+                    if config.developer and config.runSpecificFuntion:
                         self.print(f"calling function '{config.runSpecificFuntion}'")
                     fineTunedUserInput = re.sub(specialEntryPattern, "", fineTunedUserInput)
 
