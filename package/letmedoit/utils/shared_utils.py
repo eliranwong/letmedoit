@@ -477,3 +477,20 @@ City: {g.city}"""
             SharedUtil.runSystemCommand(command)
         else:
             webbrowser.open(url)
+
+    @staticmethod
+    def getPreferredDir():
+        preferredDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
+        try:
+            Path(preferredDir).mkdir(parents=True, exist_ok=True)
+        except:
+            pass
+        return preferredDir if os.path.isdir(preferredDir) else ""
+
+    @staticmethod
+    def getFiles():
+        preferredDir = SharedUtil.getPreferredDir()
+        if config.startupdirectory and not os.path.isdir(config.startupdirectory):
+            config.startupdirectory = ""
+        preferredDir = preferredDir if preferredDir else os.path.join(config.letMeDoItAIFolder, "files")
+        return config.startupdirectory if config.startupdirectory else preferredDir

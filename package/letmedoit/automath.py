@@ -1,4 +1,22 @@
+import os
+thisFile = os.path.realpath(__file__)
+packageFolder = os.path.dirname(thisFile)
+package = os.path.basename(packageFolder)
+if os.getcwd() != packageFolder:
+    os.chdir(packageFolder)
+configFile = os.path.join(packageFolder, "config.py")
+if not os.path.isfile(configFile):
+    open(configFile, "a", encoding="utf-8").close()
 from letmedoit import config
+
+from letmedoit.health_check import HealthCheck
+if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
+    HealthCheck.setBasicConfig()
+    HealthCheck.changeAPIkey()
+    HealthCheck.saveConfig()
+    print("Updated!")
+HealthCheck.checkCompletion()
+
 import autogen, os, json, traceback
 from pathlib import Path
 from letmedoit.utils.prompts import Prompts
@@ -22,12 +40,6 @@ class AutoGenMath:
         os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
 
     def getResponse(self, math_problem):
-        this_file = os.path.realpath(__file__)
-        currentFolder = os.path.dirname(this_file)
-        folder = config.startupdirectory if config.startupdirectory else os.path.join(currentFolder, "files")
-        db = os.path.join(folder, "autogen", "teachable")
-        Path(db).mkdir(parents=True, exist_ok=True)
-
         config_list = autogen.config_list_from_json(
             env_or_file="OAI_CONFIG_LIST",  # or OAI_CONFIG_LIST.json if file extension is added
             filter_dict={
@@ -77,6 +89,7 @@ class AutoGenMath:
         while True:
             self.print(f"<{config.terminalCommandEntryColor1}>New session started!</{config.terminalCommandEntryColor1}>")
             self.print(f"<{config.terminalCommandEntryColor1}>Enter a math problem below:</{config.terminalCommandEntryColor1}>")
+            self.print("[press 'ctrl+q' to exit]")
             math_problem = prompts.simplePrompt(style=promptStyle)
             if math_problem == config.exit_entry:
                 break

@@ -43,7 +43,7 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="1.4.2",
+    version="1.4.3",
     python_requires=">=3.8, <3.12",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,
@@ -81,6 +81,10 @@ setup(
         "console_scripts": [
             f"{package}={package}.main:main",
             f"etextedit={package}.eTextEdit:main",
+            f"autoassist={package}.autoassist:main",
+            f"autoretriever={package}.autoretriever:main",
+            f"automath={package}.automath:main",
+            f"autoteachable={package}.autoteachable:main",
         ],
     },
     keywords="ai assistant openai chatgpt rag autogen interpreter auto-heal",

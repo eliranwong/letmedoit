@@ -1,4 +1,22 @@
+import os
+thisFile = os.path.realpath(__file__)
+packageFolder = os.path.dirname(thisFile)
+package = os.path.basename(packageFolder)
+if os.getcwd() != packageFolder:
+    os.chdir(packageFolder)
+configFile = os.path.join(packageFolder, "config.py")
+if not os.path.isfile(configFile):
+    open(configFile, "a", encoding="utf-8").close()
 from letmedoit import config
+
+from letmedoit.health_check import HealthCheck
+if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
+    HealthCheck.setBasicConfig()
+    HealthCheck.changeAPIkey()
+    HealthCheck.saveConfig()
+    print("Updated!")
+HealthCheck.checkCompletion()
+
 import autogen, os, json
 from pathlib import Path
 from letmedoit.utils.terminal_mode_dialogs import TerminalModeDialogs
@@ -21,9 +39,14 @@ class AutoGenTeachable:
         os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
 
     def getResponse(self, verbosity):
-        this_file = os.path.realpath(__file__)
-        currentFolder = os.path.dirname(this_file)
-        folder = config.startupdirectory if config.startupdirectory else os.path.join(currentFolder, "files")
+        package = os.path.basename(packageFolder)
+        preferredDir = os.path.join(os.path.expanduser('~'), package)
+        if os.path.isdir(preferredDir):
+            folder = preferredDir
+        elif config.startupdirectory:
+            folder = config.startupdirectory
+        else:
+            folder = os.path.join(packageFolder, "files")
         db = os.path.join(folder, "autogen", "teachable")
         Path(db).mkdir(parents=True, exist_ok=True)
 

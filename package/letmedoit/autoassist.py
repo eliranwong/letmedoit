@@ -1,4 +1,22 @@
+import os
+thisFile = os.path.realpath(__file__)
+packageFolder = os.path.dirname(thisFile)
+package = os.path.basename(packageFolder)
+if os.getcwd() != packageFolder:
+    os.chdir(packageFolder)
+configFile = os.path.join(packageFolder, "config.py")
+if not os.path.isfile(configFile):
+    open(configFile, "a", encoding="utf-8").close()
 from letmedoit import config
+
+from letmedoit.health_check import HealthCheck
+if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
+    HealthCheck.setBasicConfig()
+    HealthCheck.changeAPIkey()
+    HealthCheck.saveConfig()
+    print("Updated!")
+HealthCheck.checkCompletion()
+
 import autogen, os, json, traceback
 from letmedoit.utils.prompts import Prompts
 from letmedoit.utils.shared_utils import SharedUtil
