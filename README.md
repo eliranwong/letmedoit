@@ -38,7 +38,7 @@ I am an advanced AI assistant uniquely equipped with direct execution capabiliti
 
 [You can name your assistants!](https://github.com/eliranwong/letmedoit/wiki/Change-Assistant-Name)
 
-![different_memore_stores](https://github.com/eliranwong/letmedoit/assets/25262722/fba1a351-18f6-4f13-9f43-b954fff081b2)
+![letmedoit_assistants](https://github.com/eliranwong/letmedoit/assets/25262722/f0362159-4e3a-4b93-bf9d-77040fec988c)
 
 LetMeDoIt AI just got smarter with memory retention!
 
