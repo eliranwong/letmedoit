@@ -9,7 +9,7 @@ analyze files with "AutoGen Retriever"
 
 from letmedoit import config
 import os
-from letmedoit.autogen_retriever import AutoGenRetriever
+from letmedoit.autoretriever import AutoGenRetriever
 
 def analyze_files(function_args):
     query = function_args.get("query") # required

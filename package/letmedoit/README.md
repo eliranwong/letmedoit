@@ -134,11 +134,15 @@ Read https://github.com/eliranwong/letmedoit/wiki
 
 > letmedoit
 
-Alternately, you may install "myhand" for a more friendly name:
+Alternately, you may install "myhand", "cybertask" and "taskwiz":
 
-> pip install --upgrade myhand
+> pip install --upgrade myhand cybertask taskwiz
 
 > myhand
+
+> cybertask
+
+> taskwiz
 
 Tips: You can change the assistant's name regardless of the package you choose to install. For example, the "myhand" package is designed to showcase this flexibility.
 
@@ -164,6 +168,8 @@ Tips: You can change the assistant's name regardless of the package you choose t
 
 > letmedoit
 
+Read more at: https://github.com/eliranwong/letmedoit/wiki/Installation
+
 # Usage
 
 > letmedoit # launch LetMeDoIt AI assistant
@@ -171,6 +177,12 @@ Tips: You can change the assistant's name regardless of the package you choose t
 > letmedoit 'Hi!' # launch LetMeDoIt AI assistant with default entry 'Hi!'
 
 > letmedoit -r 'Hi!' # launch LetMeDoIt AI assistant and run default entry 'Hi!'
+
+Read more at: https://github.com/eliranwong/letmedoit/wiki/Installation
+
+# Command Line Interface
+
+https://github.com/eliranwong/letmedoit/wiki/Installation#command-line-interface-cli
 
 # Setup of Multiple Assistants
 
