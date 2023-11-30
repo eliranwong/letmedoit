@@ -38,7 +38,7 @@ I am an advanced AI assistant uniquely equipped with direct execution capabiliti
 
 [You can name your assistants!](https://github.com/eliranwong/letmedoit/wiki/Change-Assistant-Name)
 
-![different_memore_stores](https://github.com/eliranwong/letmedoit/assets/25262722/fba1a351-18f6-4f13-9f43-b954fff081b2)
+![letmedoit_assistants](https://github.com/eliranwong/letmedoit/assets/25262722/f0362159-4e3a-4b93-bf9d-77040fec988c)
 
 LetMeDoIt AI just got smarter with memory retention!
 
@@ -84,43 +84,100 @@ LetMeDoIt AI just got smarter with memory retention!
 
 Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural language:
 
-* execute python codes with auto-healing feature and risk assessment
+* execute python codes with auto-healing feature and risk assessment, e.g.
 
-* execute system commands to achieve specific tasks
+> Convert "Hello.docx" into pdf format
 
-* save and retrieve memory
+* execute system commands to achieve specific tasks, e.g.
 
-* search for online information when ChatGPT lacks information
+> Launch VLC player
 
-* add google or outlook calendar events
+* save memory, e.g.
 
-* send google or outlook emails
+> Remember, my birthday is January 1st.
 
-* analyze files
+* retrieve memory, e.g.
 
-* analyze images
+> When is my birthday?
 
-* create images
+* search for online information when ChatGPT lacks information, e.g.
 
-* create maps
+> Tell me somtheing about LetMeDoIt AI?
 
-* create statistical graphics
+* add google or outlook calendar events, e.g.
 
-* solve queries about dates and times
+> I am going to London on Friday. Add it to my outlook calendar
 
-* download Youtube video files
+* send google or outlook emails, e.g.
 
-* download Youtube audio files and convert them into mp3 format
+> Email an appreciation letter to someone@someone.com
 
-* edit text with built-in or custom text editors
+* analyze files, e.g.
 
-* improve language skills, e.g. British English trainer
+> Summarize 'Hello_World.docx'
+
+* analyze images, e.g.
+
+> Compare images 'Hello.png' and 'World.png'
+
+* analyze web content, e.g.
+
+> Give me a summary on https://assets.publishing.service.gov.uk/government/upl
+oads/system/uploads/attachment_data/file/1171397/CC3_feb20.pdf 
+
+* create images, e.g.
+
+> Create an app icon for "LetMeDoIt AI"
+
+* create maps, e.g.
+
+> Show me a map with Hype Park Corner and Victoria stations pinned
+
+* create statistical graphics, e.g.
+
+> Create a bar chart that illustrates the correlation between each of the 12 months and their respective number of days
+
+* solve queries about dates and times, e.g.
+
+> What is the current time in Hong Kong?
+
+* pronounce words in different dialects, e.g.
+
+> read tomato in American English
+
+> read tomato in British English
+
+> read 中文 in Mandarin
+
+> read 中文 in Cantonese
+
+* download Youtube video files, e.g.
+
+> Download https://www.youtube.com/watch?v=CDdvReNKKuk
+
+* download Youtube audio files and convert them into mp3 format, e.g.
+
+> Download https://www.youtube.com/watch?v=CDdvReNKKuk and convert it into mp3
+
+* edit text with built-in or custom text editors, e.g.
+
+> Edit README.md
+
+* improve language skills, e.g. British English trainer, e.g.
+
+> Improve my writing according to British English style
 
 * search literature or database, e.g. bibles
 
-* convert text display, e.g. from simplified Chinese to traditional Chinese
+> Search for bible verses that contain both 'Jesus' and 'love'
 
-* create entry aliases, input suggestions, predefined contexts and instructions
+* convert text display, e.g. from simplified Chinese to traditional Chinese, e.g.
+
+> Translate your last response into Chinese
+
+* create entry aliases, input suggestions, predefined contexts and instructions, e.g.
+
+> !
 
 Read more about LetMeDoIt Plugins at https://github.com/eliranwong/letmedoit/wiki/Plugins-%E2%80%90-Overview
 
@@ -262,7 +319,7 @@ Command execution helps:
 
 > open Siri
 
-> !autogen_teachable
+> !autoretriever
 
 > !interpreter
 

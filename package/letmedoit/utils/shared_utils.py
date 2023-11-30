@@ -16,6 +16,8 @@ except:
     tiktokenImported = False
 from openai import OpenAI
 from PIL import Image
+from urllib.parse import quote
+from autogen.retrieve_utils import TEXT_FORMATS
 
 
 class SharedUtil:
@@ -66,9 +68,34 @@ class SharedUtil:
         print(trace if config.developer else "Error encountered!")
         return trace
 
+    @staticmethod
     def addTimeStamp(content):
         time = re.sub("\.[^\.]+?$", "", str(datetime.datetime.now()))
         return f"{content}\n[Current time: {time}]"
+
+    @staticmethod
+    def downloadWebContent(url):
+        supported_formats = TEXT_FORMATS[:]
+        supported_formats.remove("org")
+        hasExt = re.search("\.([^\.]+?)$", url)
+        timeout = 60
+        try:
+            filename = quote(url, safe="")
+            if hasExt and hasExt.group(1) in supported_formats:
+                response = requests.get(url, timeout=timeout)
+                filename = os.path.join(config.letMeDoItAIFolder, "temp", filename)
+                with open(filename, "wb") as fileObj:
+                    fileObj.write(response.content)
+            else:
+                # handle content as text
+                response = requests.get(url, timeout=timeout)
+                # Save the content to a html file
+                filename = os.path.join(config.letMeDoItAIFolder, "temp", f"{filename}.html")
+                with open(filename, "w", encoding="utf-8") as fileObj:
+                    fileObj.write(response.text)
+            return filename
+        except:
+            return ""
 
     @staticmethod
     def is_valid_url(url):

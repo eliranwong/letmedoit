@@ -291,10 +291,20 @@ def main():
         filepath = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", i)
         set_log_file_max_lines(filepath, 3000)
     LetMeDoItAI().startChats()
+    # Do the following tasks before exit
+    # backup configurations
     saveConfig()
     preferredDir = getPreferredDir()
     if os.path.isdir(preferredDir):
         shutil.copy(configFile, os.path.join(preferredDir, "config_backup.py"))
+    # delete temporary content
+    try:
+        tempFolder = os.path.join(config.letMeDoItAIFolder, "temp")
+        shutil.rmtree(tempFolder, ignore_errors=True)
+        Path(tempFolder).mkdir(parents=True, exist_ok=True)
+    except:
+        pass
+    # clear title
     clear_title()
 
 if __name__ == "__main__":

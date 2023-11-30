@@ -554,8 +554,12 @@ Otherwise, answer "chat". Here is the request:"""
         return function_call_message_mini, function_call_response
 
     def getFunctionResponse(self, func_arguments, function_name):
+        def notifyDeveloper(func_name):
+            if config.developer:
+                self.print(f"running function '{func_name}' ...")
         # ChatGPT's built-in function named "python"
         if function_name == "python":
+            notifyDeveloper(function_name)
             python_code = textwrap.dedent(func_arguments)
             refinedCode = SharedUtil.fineTunePythonCode(python_code)
 
@@ -595,12 +599,13 @@ Otherwise, answer "chat". Here is the request:"""
             if function_response:
                 info = {"information": function_response}
                 function_response = json.dumps(info)
+        # known unwanted functions are handled here
         elif function_name in ("translate_text",):
             # "translate_text" has two arguments, "text", "target_language"
             # handle known and unwanted function
             function_response = "[INVALID]" 
+        # handle unexpected function
         elif not function_name in config.chatGPTApiAvailableFunctions:
-            # handle unexpected function
             if config.developer:
                 self.print(f"Unexpected function: {function_name}")
                 self.print(self.divider)
@@ -608,6 +613,7 @@ Otherwise, answer "chat". Here is the request:"""
                 self.print(self.divider)
             function_response = "[INVALID]"
         else:
+            notifyDeveloper(function_name)
             fuction_to_call = config.chatGPTApiAvailableFunctions[function_name]
             # convert the arguments from json into a dict
             function_args = json.loads(func_arguments)
@@ -1602,7 +1608,7 @@ My writing:
                     checkCallSpecificFunction = re.search("\[CALL ([^\[\]]+?)\]", fineTunedUserInput)
                     config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
                     if config.developer and config.runSpecificFuntion:
-                        self.print(f"calling function '{config.runSpecificFuntion}'")
+                        self.print(f"calling function '{config.runSpecificFuntion}' ...")
                     fineTunedUserInput = re.sub(specialEntryPattern, "", fineTunedUserInput)
 
                     # python execution
