@@ -122,8 +122,7 @@ Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural lang
 
 * analyze web content, e.g.
 
-> Give me a summary on https://assets.publishing.service.gov.uk/government/upl
-oads/system/uploads/attachment_data/file/1171397/CC3_feb20.pdf 
+> Give me a summary on https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1171397/CC3_feb20.pdf 
 
 * create images, e.g.
 
@@ -234,6 +233,10 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki/Installation
 > letmedoit 'Hi!' # launch LetMeDoIt AI assistant with default entry 'Hi!'
 
 > letmedoit -r 'Hi!' # launch LetMeDoIt AI assistant and run default entry 'Hi!'
+
+> letmedoit -f 'test.txt' # read file 'test.txt' as default entry
+
+> letmedoit -rf 'test.txt' # read file 'test.txt' as default entry and run
 
 Read more at: https://github.com/eliranwong/letmedoit/wiki/Installation
 

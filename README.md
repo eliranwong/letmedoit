@@ -234,6 +234,10 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki/Installation
 
 > letmedoit -r 'Hi!' # launch LetMeDoIt AI assistant and run default entry 'Hi!'
 
+> letmedoit -f 'test.txt' # read file 'test.txt' as default entry
+
+> letmedoit -rf 'test.txt' # read file 'test.txt' as default entry and run
+
 Read more at: https://github.com/eliranwong/letmedoit/wiki/Installation
 
 # Command Line Interface

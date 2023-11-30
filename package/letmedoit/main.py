@@ -266,16 +266,30 @@ def main():
     # Create the parser
     parser = argparse.ArgumentParser(description="Process some inputs.")
     # Add arguments
-    parser.add_argument("default", nargs="?", default=None, help="enter default entry")
+    parser.add_argument("default", nargs="?", default=None, help="default entry")
     parser.add_argument('-r', '--run', action='store', dest='run', help="run default entry with -r flag")
+    parser.add_argument('-f', '--file', action='store', dest='file', help="read file text as default entry with -f flag")
+    parser.add_argument('-rf', '--runfile', action='store', dest='runfile', help="read file text as default entry and run with -f flag")
     # Parse arguments
     args = parser.parse_args()
     # Check what kind of arguments were provided and perform actions accordingly
-    if args.run:
-        config.defaultEntry = args.run
+    if args.runfile or args.file:
+        try:
+            filename = args.runfile if args.runfile else args.file
+            if os.path.isfile(filename):
+                with open(filename, "r", encoding="utf-8") as fileObj:
+                    config.defaultEntry = fileObj.read().strip()
+            else:
+                print(f"'{filename}' does not exist!")
+                config.defaultEntry = ""
+        except:
+            config.defaultEntry = ""
+        config.accept_default = True if args.runfile else False
+    elif args.run:
+        config.defaultEntry = args.run.strip()
         config.accept_default = True
     elif args.default:
-        config.defaultEntry = args.default
+        config.defaultEntry = args.default.strip()
         config.accept_default = False
     else:
         config.defaultEntry = ""
