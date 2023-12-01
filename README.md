@@ -36,6 +36,14 @@ I am an advanced AI assistant uniquely equipped with direct execution capabiliti
 
 # Recent Additions
 
+[Modify your images with simple words](https://github.com/eliranwong/letmedoit/wiki/Modify-your-images-with-simple-words)
+
+![Modify images](https://github.com/eliranwong/letmedoit/assets/25262722/0aff4481-9f72-41db-865f-36dc7fcc46ae)
+
+[Create a map anytime](https://github.com/eliranwong/letmedoit/wiki/Create-Maps)
+
+![Map Creation](https://github.com/eliranwong/letmedoit/assets/25262722/90971eef-4943-4ef2-8f2b-34e80ee1fd0e)
+
 [You can name your assistants!](https://github.com/eliranwong/letmedoit/wiki/Change-Assistant-Name)
 
 ![letmedoit_assistants](https://github.com/eliranwong/letmedoit/assets/25262722/f0362159-4e3a-4b93-bf9d-77040fec988c)
@@ -58,6 +66,10 @@ LetMeDoIt AI just got smarter with memory retention!
 
 ![integration_autogen_retriever](https://github.com/eliranwong/letmedoit/assets/25262722/0e31735c-5126-41ac-881c-eb8abce2aace)
 
+[Execute code with auto-healing and risk assessment](https://github.com/eliranwong/letmedoit/wiki/Command-Execution)
+
+![code_management](https://github.com/eliranwong/myhand/assets/25262722/fc6c4527-cf0b-47fe-b1e6-3047baf4eb86)
+
 # Examples of LetMeDoIt Built-in Features (selective only):
 
 * enhanced screening for task execution
@@ -74,9 +86,13 @@ LetMeDoIt AI just got smarter with memory retention!
 
 * [Integrated System Command Prompt](https://github.com/eliranwong/letmedoit/wiki/Quick-Guide#run-system-command-directly)
 
-* Key bindings for quick actions
+* Key bindings for quick actions - press ctrl+k to display a full list of key bindings
 
 * Integrated text editor for prompt editing
+
+* [Work with text selection in third-party applications](https://github.com/eliranwong/letmedoit/wiki/Work-with-Text-Selection)
+
+* [Work with file selection in third-party applications](https://github.com/eliranwong/letmedoit/wiki/Work-with-File-Selection)
 
 * developer mode available
 
