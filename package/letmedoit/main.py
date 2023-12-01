@@ -276,15 +276,33 @@ def main():
     if args.runfile or args.file:
         try:
             filename = args.runfile if args.runfile else args.file
+            filename = os.path.expanduser(filename)
+            config.defaultEntry = ""
             if os.path.isfile(filename):
-                with open(filename, "r", encoding="utf-8") as fileObj:
-                    config.defaultEntry = fileObj.read().strip()
+                if os.path.basename(filename) == "selected_files.txt":
+                    dirNo = 1
+                    fileNo = 1
+                    with open(filename, "r", encoding="utf-8") as fileObj:
+                        for line in fileObj.readlines():
+                            strippedLine = line.strip()
+                            if os.path.isdir(strippedLine):
+                                config.defaultEntry += f'''Folder {dirNo}: "{strippedLine}"\n'''
+                                dirNo += 1
+                            elif os.path.isfile(strippedLine):
+                                config.defaultEntry += f'''File {fileNo}: "{strippedLine}"\n'''
+                                fileNo += 1
+                            elif strippedLine:
+                                config.defaultEntry += line
+                else:
+                    with open(filename, "r", encoding="utf-8") as fileObj:
+                        config.defaultEntry = fileObj.read()
             else:
                 print(f"'{filename}' does not exist!")
-                config.defaultEntry = ""
         except:
             config.defaultEntry = ""
         config.accept_default = True if args.runfile else False
+        for i in ("selected_files", "selected_text"):
+            shutil.rmtree(os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower(), f"{i}.txt"), ignore_errors=True)
     elif args.run:
         config.defaultEntry = args.run.strip()
         config.accept_default = True

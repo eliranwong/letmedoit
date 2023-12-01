@@ -61,14 +61,14 @@
 					<key>COMMAND_STRING</key>
 					<string>mkdir -p ~/letmedoit
 echo "$1" &gt; ~/letmedoit/selected_text.txt
-osascript -e 'tell application "Terminal" to do script "~/apps/letmedoit/bin/python3 ~/apps/letmedoit/lib/python3.10/site-packages/letmedoit/main.py -f ~/letmedoit/selected_text.txt"' in window 1
+osascript -e 'tell application "Terminal" to do script "[LETMEDOIT_PATH] -f ~/letmedoit/selected_text.txt"' in window 1
 osascript -e 'tell application "Terminal" to activate'</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>
 					<integer>1</integer>
 					<key>shell</key>
-					<string>/bin/zsh</string>
+					<string>/bin/bash</string>
 					<key>source</key>
 					<string></string>
 				</dict>

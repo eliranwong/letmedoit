@@ -1502,6 +1502,10 @@ Otherwise, answer "chat". Here is the request:"""
             accept_default = config.accept_default
             config.accept_default = False
             defaultEntry = config.defaultEntry
+            if os.path.isfile(defaultEntry):
+                defaultEntry = f'File: "{defaultEntry}"\n'
+            elif os.path.isdir(defaultEntry):
+                defaultEntry = f'Folder: "{defaultEntry}"\n'
             config.defaultEntry = ""
             # input suggestions
             inputSuggestions = config.inputSuggestions[:] + self.getDirectoryList() if config.developer else config.inputSuggestions

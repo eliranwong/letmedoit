@@ -9,7 +9,6 @@ analyze web content with "AutoGen Retriever"
 
 from letmedoit import config
 from letmedoit.utils.shared_utils import SharedUtil
-import os
 from letmedoit.autoretriever import AutoGenRetriever
 
 def analyze_web_content(function_args):

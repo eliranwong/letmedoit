@@ -116,17 +116,23 @@ Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural lang
 
 > Summarize 'Hello_World.docx'
 
-* analyze images, e.g.
-
-> Compare images 'Hello.png' and 'World.png'
-
 * analyze web content, e.g.
 
 > Give me a summary on https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1171397/CC3_feb20.pdf 
 
+* analyze images, e.g.
+
+> Describe the image 'Hello.png' in details
+
+> Compare images insider folder 'images'
+
 * create images, e.g.
 
 > Create an app icon for "LetMeDoIt AI"
+
+* modify images, e.g.
+
+> Change image "CyberTask.png" into an app icon
 
 * create maps, e.g.
 

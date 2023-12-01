@@ -29,7 +29,7 @@ functionSignature = {
         "properties": {
             "query": {
                 "type": "string",
-                "description": "Questions that users ask about the given files",
+                "description": "Detailed queries about the given files",
             },
             "files": {
                 "type": "string",

@@ -103,7 +103,7 @@ functionSignature = {
         "properties": {
             "prompt": {
                 "type": "string",
-                "description": "description about the image, as detailed as possible",
+                "description": "Description of the image in as much detail as possible",
             },
         },
         "required": ["prompt"],

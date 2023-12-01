@@ -9,8 +9,8 @@ reference: https://platform.openai.com/docs/guides/vision
 """
 
 from letmedoit import config
-import openai
 from letmedoit.utils.shared_utils import SharedUtil
+import openai, os
 from openai import OpenAI
 
 def analyze_images(function_args):
@@ -21,6 +21,15 @@ def analyze_images(function_args):
         if not files.startswith("["):
             files = f'["{files}"]'
         files = eval(files)
+
+    filesCopy = files[:]
+    for item in filesCopy:
+        if os.path.isdir(item):
+            for root, _, allfiles in os.walk(item):
+                for file in allfiles:
+                    file_path = os.path.join(root, file)
+                    files.append(file_path)
+            files.remove(item)
 
     content = []
     # valid image paths
@@ -42,7 +51,7 @@ def analyze_images(function_args):
                     "content": content,
                     }
                 ],
-                max_tokens=300,
+                max_tokens=4096,
             )
             answer = response.choices[0].message.content
             #print(answer)
@@ -96,3 +105,4 @@ functionSignature = {
 config.pluginsWithFunctionCall.append("analyze_images")
 config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["analyze_images"] = analyze_images
+config.inputSuggestions.append("Describe this image in detail: ")
