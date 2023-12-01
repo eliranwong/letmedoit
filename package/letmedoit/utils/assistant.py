@@ -1096,8 +1096,7 @@ Otherwise, answer "chat". Here is the request:"""
             else:
                 tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
             suggestedMaxToken = int(tokenLimit / 2)
-            #if config.chatGPTApiMaxTokens > suggestedMaxToken:
-            config.chatGPTApiMaxTokens = suggestedMaxToken
+            config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else suggestedMaxToken # 'gpt-4-1106-preview' supports at most 4096 completion tokens
             config.saveConfig()
             self.print(f"Maximum response tokens set to {config.chatGPTApiMaxTokens}.")
 
@@ -1207,8 +1206,8 @@ Otherwise, answer "chat". Here is the request:"""
             maxtokens = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.chatGPTApiMaxTokens))
             if maxtokens and not maxtokens.strip().lower() == config.exit_entry and int(maxtokens) > 0:
                 config.chatGPTApiMaxTokens = int(maxtokens)
-                if config.chatGPTApiMaxTokens > 8192 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit: # 'gpt-4-1106-preview' supports at most 4096 completion tokens
-                    config.chatGPTApiMaxTokens = 8192 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit
+                if config.chatGPTApiMaxTokens > 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit: # 'gpt-4-1106-preview' supports at most 4096 completion tokens
+                    config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit
                 config.saveConfig()
                 self.print(f"Maximum tokens entered: {config.chatGPTApiMaxTokens}")
 

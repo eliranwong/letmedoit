@@ -169,6 +169,9 @@ echo "$path" > {storage}/selected_files.txt
         if os.path.isdir(folder2_dest):
             shutil.rmtree(folder2_dest, ignore_errors=True)
         shutil.copytree(folder2, folder2_dest)
+        folder3 = os.path.join(config.letMeDoItAIFolder, "icons")
+        folder3_dest = os.path.join(storage, "icons")
+        shutil.copytree(folder3, folder3_dest)
 
 def createAppAlias():
     with open(os.path.join(config.letMeDoItAIFolder, "package_name.txt"), "r", encoding="utf-8") as fileObj:
