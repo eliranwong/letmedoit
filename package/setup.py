@@ -1,6 +1,11 @@
 from setuptools import setup
 import os, shutil
 
+# Notes: Steps to change package name
+# 1. change folder name "letmedoit" to <pacakge_name>
+# 2. edit package/package_name.txt and change its content to <pacakge_name>
+# 3. search for "from letmedoit" and replace with "from <package_name>"
+
 # package name
 package_name_0 = os.path.join("package_name.txt")
 with open(package_name_0, "r", encoding="utf-8") as fileObj:
@@ -43,7 +48,7 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="1.6.0",
+    version="1.6.1",
     python_requires=">=3.8, <3.12",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,

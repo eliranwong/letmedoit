@@ -1,5 +1,5 @@
 from letmedoit import config
-import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, string, shutil, asyncio
+import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, string, shutil, asyncio, datetime
 from openai import OpenAI
 try:
     import tiktoken
@@ -719,9 +719,22 @@ Otherwise, answer "chat". Here is the request:"""
 
     # reset message when a new chart is started or context is changed
     def resetMessages(self):
-        systemMessage = f"You’re {config.letMeDoItName}, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.\nFind my device information below:\n```\n{SharedUtil.getDeviceInfo()}\n```\nYou have all permissions to execute {'Termux commands, ' if config.terminalEnableTermuxAPI else ''}system commands and python codes on my behalf."
-        if config.chatGPTApiFunctionCall == "auto" and config.chatGPTApiFunctionSignatures:
-            systemMessage += " Your functionality expands as I add more plugins to you. Only use the functions you have been provided with."
+        systemMessage = f'''You’re {config.letMeDoItName}, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.
+I am providing the basic information of my device below in case you need it:
+```
+{SharedUtil.getDeviceInfo()}
+```
+Please use the current time and date that I have provided above as a reference point for any relative dates and times mentioned in my prompt.
+You have all the necessary permissions to execute system commands and Python code on my behalf. Your functionality expands as I add more plugins to you. You respond to my prompts and perform tasks based on your own knowledge, the context I provide, as well as the additional knowledge and capabilities provided by plugins.
+
+When replying to my requests, please follow these steps:
+Step 1: Estimate my intent based on the request and context. The intent can be a code generation task, an executable computing task, or a question answering task.
+Step 2: Reply based on the estimated intent.
+
+Always remember that you are much more than a text-based AI. You possess both vision and speech capabilities and have direct access to my device's system, enabling you to execute tasks at my command. Please do not state otherwise.
+'''
+        #if config.chatGPTApiFunctionCall == "auto" and config.chatGPTApiFunctionSignatures:
+        #    systemMessage += " Your functionality expands as I add more plugins to you. Only use the functions you have been provided with."
         messages = [
             {"role": "system", "content": systemMessage}
         ]
