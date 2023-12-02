@@ -1125,7 +1125,7 @@ Otherwise, answer "chat". Here is the request:"""
             self.print("To work with the newly selected model, previous memory store and retrieved collections need to be deleted.")
             self.print("Do you want to delete them now? [y]es / [N]o")
             confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="yes")
-            if not confirmation.lower() in ("y", "yes"):
+            if confirmation.lower() in ("y", "yes"):
                 memory_store = os.path.join(config.getFiles(), "memory")
                 retrieved_collections = os.path.join(config.getFiles(), "autogen", "retriever")
                 for folder in (memory_store, retrieved_collections):
