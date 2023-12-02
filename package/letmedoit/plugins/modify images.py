@@ -16,7 +16,7 @@ from base64 import b64decode
 from urllib.parse import quote
 
 def modify_images(function_args):
-    query = function_args.get("query") # required
+    changes = function_args.get("changes") # required
     files = function_args.get("files") # required
     #print(files)
     if isinstance(files, str):
@@ -38,12 +38,16 @@ def modify_images(function_args):
     for i in files:
         description, filename = get_description(i)
         if description:
-            if query:
-                description = f"""Original description of the image:
+            if changes:
+                description = f"""Description of the original image:
 {description}
 
-The changes that I want to make:
-{query}"""
+Make the following changes:
+{changes}"""
+            else:
+                description = f"Image description:\n{description}"
+            if config.developer:
+                config.print(description)
             response = create_image(description, filename)
             if response == "[INVALID]" and len(files) == 1:
                 return response
@@ -59,7 +63,7 @@ def get_description(filename):
         content.append({"type": "image_url", "image_url": SharedUtil.encode_image(filename),})
 
     if content:
-        content.insert(0, {"type": "text", "text": "Describe this image in as much detail as possible",})
+        content.insert(0, {"type": "text", "text": "Describe this image in as much detail as possible, including color patterns, positions and orientations of all objects and backgrounds in the image",})
         #print(content)
         try:
             response = OpenAI().chat.completions.create(
@@ -185,20 +189,19 @@ functionSignature = {
     "parameters": {
         "type": "object",
         "properties": {
-            "query": {
+            "changes": {
                 "type": "string",
-                "description": "The changes that I want to make. Return an empty string '' if changes are not specified.",
+                "description": "The requested changes in as much detail as possible. Return an empty string '' if changes are not specified.",
             },
             "files": {
                 "type": "string",
                 "description": """Return a list of image paths, e.g. '["image1.png", "/tmp/image2.png"]'. Return '[]' if image path is not provided.""",
             },
         },
-        "required": ["query", "files"],
+        "required": ["changes", "files"],
     },
 }
 
 config.pluginsWithFunctionCall.append("modify_images")
 config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["modify_images"] = modify_images
-config.inputSuggestions.append("Describe this image in detail: ")

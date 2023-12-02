@@ -14,7 +14,7 @@ config.aliases["!autoretriever"] = f"!{sys.executable} {os.path.join(config.letM
 config.aliases["!autoteachable"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autoteachable.py')}"
 config.aliases["!etextedit"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
 
-config.inputSuggestions += ["!autoassist", "!automath", "!autoretriever", "!autoteachable", "!etextedit"]
+config.inputSuggestions += ["!autoassist", "!automath", "!autoretriever", "!autoteachable", "!etextedit", "autoassist", "automath", "autoretriever", "autoteachable", "etextedit"]
 
 # Example to set an alias to open-interpreter
 #config.aliases["!interpreter"] = f"!env OPENAI_API_KEY={config.openaiApiKey} ~/open-interpreter/venv/bin/interpreter"

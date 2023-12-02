@@ -176,10 +176,10 @@ class LetMeDoItAI:
 
         # built-in functions
         config.pluginsWithFunctionCall.append("execute_python_code")
-        config.inputSuggestions.append("[CALL execute_python_code]")
+        config.inputSuggestions.append("[CALL_execute_python_code]")
         if config.terminalEnableTermuxAPI:
             config.pluginsWithFunctionCall.append("execute_termux_command")
-            config.inputSuggestions.append("[CALL execute_termux_command]")
+            config.inputSuggestions.append("[CALL_execute_termux_command]")
 
         pluginFolder = os.path.join(config.letMeDoItAIFolder, "plugins")
         if self.preferredDir:
@@ -209,7 +209,8 @@ class LetMeDoItAI:
         if config.terminalEnableTermuxAPI:
             self.setupTermuxExecution()
         for i in config.pluginsWithFunctionCall:
-            config.inputSuggestions.append(f"[CALL {i}]")
+            config.inputSuggestions.append(f"[CALL_{i}]")
+            config.inputSuggestions.append(f"CALL_{i}]")
 
     def selectPlugins(self):
         plugins = []
@@ -1588,7 +1589,7 @@ Otherwise, answer "chat". Here is the request:"""
                     if userInput and config.ttsInput:
                         TTSUtil.play(userInput)
                     # Feature: improve writing:
-                    specialEntryPattern = "\[CALL [^\[\]]*?\]|\[NO_FUNCTION_CALL\]|\[NO_SCREENING\]"
+                    specialEntryPattern = "\[CALL_[^\[\]]*?\]|\[NO_FUNCTION_CALL\]|\[NO_SCREENING\]"
                     specialEntry = re.search(specialEntryPattern, userInput)
                     specialEntry = specialEntry.group(0) if specialEntry else ""
                     userInput = re.sub(specialEntryPattern, "", userInput) # remove special entry temporarily
@@ -1610,7 +1611,7 @@ My writing:
                     fineTunedUserInput = self.fineTuneUserInput(userInput)
                     noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.chatGPTApiPredefinedContext.startswith("Counselling - ") or config.chatGPTApiPredefinedContext.endswith("Counselling"))
                     noScreening = ("[NO_SCREENING]" in fineTunedUserInput)
-                    checkCallSpecificFunction = re.search("\[CALL ([^\[\]]+?)\]", fineTunedUserInput)
+                    checkCallSpecificFunction = re.search("\[CALL_([^\[\]]+?)\]", fineTunedUserInput)
                     config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
                     if config.developer and config.runSpecificFuntion:
                         #self.print(f"calling function '{config.runSpecificFuntion}' ...")
