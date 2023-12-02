@@ -54,8 +54,9 @@ def analyze_images(function_args):
                 max_tokens=4096,
             )
             answer = response.choices[0].message.content
-            #print(answer)
-            return answer
+            config.print(answer)
+            config.tempContent = answer
+            return ""
 
         except openai.APIError as e:
             config.print("Error: Issue on OpenAI side.")

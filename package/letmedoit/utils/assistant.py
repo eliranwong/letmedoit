@@ -556,7 +556,8 @@ Otherwise, answer "chat". Here is the request:"""
     def getFunctionResponse(self, func_arguments, function_name):
         def notifyDeveloper(func_name):
             if config.developer:
-                self.print(f"running function '{func_name}' ...")
+                #self.print(f"running function '{func_name}' ...")
+                print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Running function</{config.terminalPromptIndicatorColor2}> <{config.terminalCommandEntryColor2}>'{func_name}'</{config.terminalCommandEntryColor2}> <{config.terminalPromptIndicatorColor2}>...</{config.terminalPromptIndicatorColor2}>"))
         # ChatGPT's built-in function named "python"
         if function_name == "python":
             notifyDeveloper(function_name)
@@ -693,9 +694,10 @@ Otherwise, answer "chat". Here is the request:"""
                                 "tool_call_id": func_id,
                                 "role": "function",
                                 "name": func_name,
-                                "content": func_response if func_response else "",
+                                "content": func_response if func_response else config.tempContent,
                             }
                         )  # extend conversation with function response
+                        config.tempContent = ""
                         if func_response:
                             func_responses += f"\n{func_response}\n{config.divider}"
 
@@ -1611,7 +1613,8 @@ My writing:
                     checkCallSpecificFunction = re.search("\[CALL ([^\[\]]+?)\]", fineTunedUserInput)
                     config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
                     if config.developer and config.runSpecificFuntion:
-                        self.print(f"calling function '{config.runSpecificFuntion}' ...")
+                        #self.print(f"calling function '{config.runSpecificFuntion}' ...")
+                        print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Calling function</{config.terminalPromptIndicatorColor2}> <{config.terminalCommandEntryColor2}>'{config.runSpecificFuntion}'</{config.terminalCommandEntryColor2}> <{config.terminalPromptIndicatorColor2}>...</{config.terminalPromptIndicatorColor2}>"))
                     fineTunedUserInput = re.sub(specialEntryPattern, "", fineTunedUserInput)
 
                     # python execution
