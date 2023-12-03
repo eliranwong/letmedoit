@@ -6,6 +6,7 @@ from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.styles import Style
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings, ConditionalKeyBindings
+from prompt_toolkit.shortcuts import set_title
 from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
 from letmedoit.utils.prompt_multiline_shared_key_bindings import prompt_multiline_shared_key_bindings
 from letmedoit.utils.promptValidator import NumberValidator
@@ -134,12 +135,12 @@ Available tokens: {estimatedAvailableTokens}
         def _(_):
             config.developer = not config.developer
             config.saveConfig()
-            run_in_terminal(lambda: config.print(f"Developer mode {'enabled' if config.developer else 'disabled'}!"))
+            run_in_terminal(lambda: config.print3(f"Developer mode: {'enabled' if config.developer else 'disabled'}!"))
         @this_key_bindings.add("c-e")
         def _(_):
             config.enhanceCommandExecution = not config.enhanceCommandExecution
             config.saveConfig()
-            run_in_terminal(lambda: config.print(f"Command execution mode changed to '{'enhanced' if config.enhanceCommandExecution else 'auto'}'!"))
+            run_in_terminal(lambda: config.print3(f"Command execution mode: '{'enhanced' if config.enhanceCommandExecution else 'auto'}'!"))
         @this_key_bindings.add("c-l")
         def _(_):
             config.toggleMultiline()
@@ -160,13 +161,13 @@ Available tokens: {estimatedAvailableTokens}
             if config.tts:
                 config.ttsInput = not config.ttsInput
                 config.saveConfig()
-                run_in_terminal(lambda: config.print(f"Input Audio '{'enabled' if config.ttsInput else 'disabled'}'!"))
+                run_in_terminal(lambda: config.print3(f"Input Audio: '{'enabled' if config.ttsInput else 'disabled'}'!"))
         @this_key_bindings.add("c-p")
         def _(_):
             if config.tts:
                 config.ttsOutput = not config.ttsOutput
                 config.saveConfig()
-                run_in_terminal(lambda: config.print(f"Response Audio '{'enabled' if config.ttsOutput else 'disabled'}'!"))
+                run_in_terminal(lambda: config.print3(f"Response Audio: '{'enabled' if config.ttsOutput else 'disabled'}'!"))
         @this_key_bindings.add("escape", "r")
         def _(_):
             print("Restarting LetMeDoIt AI ...")
@@ -175,22 +176,23 @@ Available tokens: {estimatedAvailableTokens}
         def _(_):
             config.displayImprovedWriting = not config.displayImprovedWriting
             config.saveConfig()
-            run_in_terminal(lambda: config.print(f"Improved Writing Display '{'enabled' if config.displayImprovedWriting else 'disabled'}'!"))
+            run_in_terminal(lambda: config.print3(f"Improved Writing Display: '{'enabled' if config.displayImprovedWriting else 'disabled'}'!"))
         @this_key_bindings.add("c-w")
         def _(_):
             config.wrapWords = not config.wrapWords
             config.saveConfig()
-            run_in_terminal(lambda: config.print(f"Word Wrap '{'enabled' if config.wrapWords else 'disabled'}'!"))
+            run_in_terminal(lambda: config.print3(f"Word Wrap: '{'enabled' if config.wrapWords else 'disabled'}'!"))
         @this_key_bindings.add("escape", "m")
         def _(_):
             config.mouseSupport = not config.mouseSupport
             config.saveConfig()
-            run_in_terminal(lambda: config.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))
+            run_in_terminal(lambda: config.print3(f"Entry Mouse Support: '{'enabled' if config.mouseSupport else 'disabled'}'!"))
         # edit the last response in built-in or custom text editor
         @this_key_bindings.add("escape", "p")
         def _(_):
             customTextEditor = config.customTextEditor if config.customTextEditor else f"{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
             pydoc.pipepager(config.pagerContent, cmd=customTextEditor)
+            set_title(config.letMeDoItName)
 
         conditional_prompt_multiline_shared_key_bindings = ConditionalKeyBindings(
             key_bindings=prompt_multiline_shared_key_bindings,

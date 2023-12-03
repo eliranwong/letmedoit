@@ -1,6 +1,7 @@
 from letmedoit import config
 import pydoc, os, re, sys
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.shortcuts import set_title
 from letmedoit.utils.shared_utils import SharedUtil
 
 prompt_shared_key_bindings = KeyBindings()
@@ -113,6 +114,7 @@ def _(event):
     editedText = re.sub("\n$", "", editedText)
     current_buffer.text = editedText
     current_buffer.cursor_position = len(editedText)
+    set_title(config.letMeDoItName)
 
 # swap color theme
 @prompt_shared_key_bindings.add("escape", "s")

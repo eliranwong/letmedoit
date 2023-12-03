@@ -1,5 +1,5 @@
 from letmedoit import config
-import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, string, shutil, asyncio, datetime
+import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, string, shutil, asyncio, datetime, pprint
 from openai import OpenAI
 try:
     import tiktoken
@@ -60,12 +60,16 @@ class LetMeDoItAI:
         config.stopSpinning = self.stopSpinning
         config.toggleMultiline = self.toggleMultiline
         config.print = self.print
+        config.print2 = self.print2
+        config.print3 = self.print3
         config.getWrappedHTMLText = self.getWrappedHTMLText
         config.fineTuneUserInput = self.fineTuneUserInput
         config.launchPager = self.launchPager
         config.addPagerText = self.addPagerText
         config.getFunctionMessageAndResponse = self.getFunctionMessageAndResponse
         config.runSpecificFuntion = ""
+        # env variables
+        os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = config.env_QT_QPA_PLATFORM_PLUGIN_PATH
 
         # get path
         config.addPathAt = None
@@ -95,8 +99,8 @@ class LetMeDoItAI:
             self.changeAPIkey()
 
         if not config.openaiApiKey:
-            print("ChatGPT API key not found!")
-            print("Read https://github.com/eliranwong/letmedoit/wiki/ChatGPT-API-Key")
+            self.print2("ChatGPT API key not found!")
+            self.print3("Read: https://github.com/eliranwong/letmedoit/wiki/ChatGPT-API-Key")
             exit(0)
 
         # required
@@ -269,11 +273,11 @@ class LetMeDoItAI:
             #    config.openaiApiOrganization = oid
             self.checkCompletion()
             config.saveConfig()
-            print("Updated!")
+            self.print2("Updated!")
 
     def exitAction(self):
         message = "closing ..."
-        self.print(message)
+        self.print2(message)
         self.print(self.divider)
         return ""
 
@@ -291,6 +295,13 @@ class LetMeDoItAI:
             # pydoc.pipepager(f"{content}\n", cmd=f"fmt -w {terminal_width}")
         else:
             print(content)
+
+    def print2(self, content):
+        print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>{content}</{config.terminalPromptIndicatorColor2}>"))
+
+    def print3(self, content):
+        key, value = content.split(": ", 1)
+        print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>{key}:</{config.terminalPromptIndicatorColor2}> {value}"))
 
     def spinning_animation(self, stop_event):
         while not stop_event.is_set():
@@ -719,7 +730,7 @@ Otherwise, answer "chat". Here is the request:"""
 
     # reset message when a new chart is started or context is changed
     def resetMessages(self):
-        systemMessage = f'''You’re {config.letMeDoItName}, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.
+        systemMessage = config.customSystemMessage if config.customSystemMessage else f'''You’re {config.letMeDoItName}, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.
 I am providing the basic information of my device below in case you need it:
 ```
 {SharedUtil.getDeviceInfo()}
@@ -728,13 +739,11 @@ Please use the current time and date that I have provided above as a reference p
 You have all the necessary permissions to execute system commands and Python code on my behalf. Your functionality expands as I add more plugins to you. You respond to my prompts and perform tasks based on your own knowledge, the context I provide, as well as the additional knowledge and capabilities provided by plugins.
 
 When replying to my requests, please follow these steps:
-Step 1: Estimate my intent based on the request and context. The intent can be a code generation task, an executable computing task, or a question answering task.
+Step 1: Estimate my intent based on the request and context. The intent can be a code generation task, an executable computing task, a translation task, or a question answering task.
 Step 2: Reply based on the estimated intent.
 
 Always remember that you are much more than a text-based AI. You possess both vision and speech capabilities and have direct access to my device's system, enabling you to execute tasks at my command. Please do not state otherwise.
 '''
-        #if config.chatGPTApiFunctionCall == "auto" and config.chatGPTApiFunctionSignatures:
-        #    systemMessage += " Your functionality expands as I add more plugins to you. Only use the functions you have been provided with."
         messages = [
             {"role": "system", "content": systemMessage}
         ]
@@ -805,11 +814,11 @@ Always remember that you are much more than a text-based AI. You possess both vi
             "change maximum memory matches",
             "change plugins",
             "change function call",
-            "change function call handling",
+            "change function call response integration",
             "change online searches",
-            "change execution mode [ctrl+e]",
-            "change user confirmation",
-            "change command display",
+            "change code execution mode [ctrl+e]",
+            "change code confirmation protocol",
+            "change code display",
             "change pager view",
             "change embedding model",
             "change assistant name",
@@ -902,20 +911,20 @@ Always remember that you are much more than a text-based AI. You possess both vi
         if option:
             config.autoUpgrade = (option == "enable")
             config.saveConfig()
-            self.print(f"Automatic Upgrade: {option}d!")
+            self.print3(f"Automatic Upgrade: {option}d!")
 
     def setCodeDisplay(self):
         options = ("enable", "disable")
         option = self.dialogs.getValidOptions(
             options=options,
-            title="Command / Code Display",
+            title="Code Display",
             default="enable" if config.codeDisplay else "disable",
-            text="Options to display commands / codes before execution:"
+            text="Options to display programming code before execution:"
         )
         if option:
             config.codeDisplay = (option == "enable")
             config.saveConfig()
-            self.print(f"Command / Code display: {option}d!")
+            self.print3(f"Code display: {option}d!")
 
     def setContextInclusion(self):
         options = ("the first input only", "all inputs")
@@ -928,18 +937,18 @@ Always remember that you are much more than a text-based AI. You possess both vi
         if option:
             config.chatGPTApiContextInAllInputs = True if option == "all inputs" else False
             config.saveConfig()
-            self.print(f"Predefined Context Inclusion: {option}!")
+            self.print3(f"Predefined Context Inclusion: {option}!")
 
     def setStartupDirectory(self):
         try:
             folder = self.getFolderPath()
         except:
-            self.print(f"Given path not accessible!")
+            self.print2(f"Given path not accessible!")
             folder = ""
         if folder and os.path.isdir(folder):
             config.startupdirectory = folder
             config.saveConfig()
-            self.print(f"Startup directory changed to:\n{folder}")
+            self.print3(f"Startup directory:\n{folder}")
 
     def setLatestSearches(self):
         options = ("always", "auto", "none")
@@ -969,7 +978,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.runPlugins()
             # notify
             config.saveConfig()
-            self.print(f"Latest Online Searches: {option}")
+            self.print3(f"Latest Online Searches: {option}")
 
     def setUserConfirmation(self):
         options = ("always", "medium_risk_or_above", "high_risk_only", "none")
@@ -984,14 +993,14 @@ Always remember that you are much more than a text-based AI. You possess both vi
         option = self.dialogs.getValidOptions(
             options=options,
             descriptions=descriptions,
-            title="Command Execution Confirmation",
-            text=f"{config.letMeDoItName} can execute commands on your behalf.\nWhen do you want confirmation\nbefore commands are executed:\n(caution: execute commands at your own risk)",
+            title="Command Confirmation Protocol",
+            text=f"{config.letMeDoItName} is designed to execute commands on your behalf.\nPlease specify when you would prefer\nto receive a confirmation\nbefore commands are executed:\n(Note: Execute commands at your own risk.)",
             default=config.confirmExecution,
         )
         if option:
             config.confirmExecution = option
             config.saveConfig()
-            self.print(f"Command execution confirmation: {option}")
+            self.print3(f"Command Confirmation Protocol: {option}")
 
     def setPagerView(self):
         options = ("auto", "manual [ctrl+g]")
@@ -1003,7 +1012,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
         if option:
             config.pagerView = (option == "auto")
             config.saveConfig()
-            self.print(f"Pager View: {option}!")
+            self.print3(f"Pager View: {option}!")
 
     def setDeveloperMode(self):
         options = ("enable", "disable")
@@ -1016,7 +1025,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
         if option:
             config.developer = (option == "enable")
             config.saveConfig()
-            self.print(f"Developer Mode: {option}d!")
+            self.print3(f"Developer Mode: {option}d!")
 
     def setTermuxApi(self):
         options = ("enable", "disable")
@@ -1040,20 +1049,20 @@ Always remember that you are much more than a text-based AI. You possess both vi
             # reset plugins
             self.runPlugins()
             config.saveConfig()
-            self.print(f"""Termux API Integration: {"enable" if config.terminalEnableTermuxAPI else "disable"}d!""")
+            self.print3(f"""Termux API Integration: {"enable" if config.terminalEnableTermuxAPI else "disable"}d!""")
 
     def setCommandExecutionMode(self):
         options = ("enhanced", "auto")
         option = self.dialogs.getValidOptions(
             options=options,
-            title="Command Execution Mode",
+            title="Code Execution Mode",
             default="enhanced" if config.enhanceCommandExecution else "auto",
             text=f"{config.letMeDoItName} can execute commands\nto retrieve the requested information\nor perform tasks for users.\n(read https://github.com/eliranwong/letmedoit/wiki/Command-Execution)\nSelect a mode below:",
         )
         if option:
             config.enhanceCommandExecution = (option == "enhanced")
             config.saveConfig()
-            self.print(f"Command Execution Mode: {option}")
+            self.print3(f"Code Execution Mode: {option}")
 
     def setFunctionCall(self):
         calls = ("auto", "none")
@@ -1061,12 +1070,12 @@ Always remember that you are much more than a text-based AI. You possess both vi
             options=calls,
             title="ChatGPT Function Call",
             default=config.chatGPTApiFunctionCall,
-            text="Enabling function call\nallows online searches\nor other third-party features\nto extend ChatGPT capabilities.\nEnable / Disable this feature below:",
+            text="Enabling function call\nto extend ChatGPT capabilities.\nEnable / Disable this feature below:",
         )
         if call:
             config.chatGPTApiFunctionCall = call
             config.saveConfig()
-            self.print(f"ChaptGPT function call: {'enabled' if config.chatGPTApiFunctionCall == 'auto' else 'disabled'}!")
+            self.print3(f"ChaptGPT function call: {'enabled' if config.chatGPTApiFunctionCall == 'auto' else 'disabled'}!")
 
     def setFunctionResponse(self):
         calls = ("enable", "disable")
@@ -1074,12 +1083,12 @@ Always remember that you are much more than a text-based AI. You possess both vi
             options=calls,
             title="Pass Function Call Response to ChatGPT",
             default="enable" if config.passFunctionCallReturnToChatGPT else "disable",
-            text="Enabling this feature allows\npassing function call responses, if any,\nto ChatGPT for further processing.\nDisabling this feature allows\nrunning function calls\nwithout generating further responses."
+            text="Enabling this feature allows\npassing function call responses, if any,\nto extend conversation with ChatGPT.\nDisabling this feature allows\nrunning function calls\nwithout generating further responses."
         )
         if call:
             config.passFunctionCallReturnToChatGPT = (call == "enable")
             config.saveConfig()
-            self.print(f"Automatic Chat Generation with Function Response: {'enabled' if config.passFunctionCallReturnToChatGPT else 'disabled'}!")
+            self.print3(f"Pass Function Call Response to ChatGPT: {'enabled' if config.passFunctionCallReturnToChatGPT else 'disabled'}!")
 
     def setTemperature(self):
         self.print("Enter a value between 0.0 and 2.0:")
@@ -1093,7 +1102,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 temperature = 2
             config.chatGPTApiTemperature = round(temperature, 1)
             config.saveConfig()
-            self.print(f"ChatGPT Temperature entered: {temperature}")
+            self.print3(f"ChatGPT Temperature: {temperature}")
 
     def setLlmModel(self):
         model = self.dialogs.getValidOptions(
@@ -1104,7 +1113,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
         )
         if model:
             config.chatGPTApiModel = model
-            self.print(f"ChatGPT model selected: {model}")
+            self.print3(f"ChatGPT model: {model}")
             # handle max tokens
             if tiktokenImported:
                 functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
@@ -1114,7 +1123,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             suggestedMaxToken = int(tokenLimit / 2)
             config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else suggestedMaxToken # 'gpt-4-1106-preview' supports at most 4096 completion tokens
             config.saveConfig()
-            self.print(f"Maximum response tokens set to {config.chatGPTApiMaxTokens}.")
+            self.print3(f"Maximum response tokens: {config.chatGPTApiMaxTokens}.")
 
     def setEmbeddingModel(self):
         oldEmbeddingModel = config.embeddingModel
@@ -1132,7 +1141,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                     config.embeddingModel = customModel 
             else:
                 config.embeddingModel = model
-            self.print(f"Embedding model selected: {model}")
+            self.print3(f"Embedding model: {model}")
         if not oldEmbeddingModel == config.embeddingModel:
             self.print(f"You've change the embedding model from '{oldEmbeddingModel}' to '{config.embeddingModel}'.")
             self.print("To work with the newly selected model, previous memory store and retrieved collections need to be deleted.")
@@ -1148,6 +1157,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="yes")
                 if not confirmation.lower() in ("y", "yes"):
                     config.embeddingModel = oldEmbeddingModel
+                    self.print3(f"Embedding model: {oldEmbeddingModel}")
 
     def setAssistantName(self):
         self.print("You may modify my name below:")
@@ -1156,7 +1166,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.letMeDoItName = letMeDoItName
             self.preferredDir = self.getPreferredDir()
             config.saveConfig()
-            self.print(f"You have changed my name to: {config.letMeDoItName}")
+            self.print3(f"You have changed my name to: {config.letMeDoItName}")
 
     def setCustomTextEditor(self):
         self.print("Please specify custom text editor command below:")
@@ -1166,11 +1176,11 @@ Always remember that you are much more than a text-based AI. You possess both vi
         if customTextEditor and not customTextEditor.strip().lower() == config.exit_entry:
             textEditor = re.sub(" .*?$", "", customTextEditor)
             if not textEditor or not SharedUtil.isPackageInstalled(textEditor):
-                self.print("Command not found on your device!")
+                self.print2("Command not found on your device!")
             else:
                 config.customTextEditor = customTextEditor
                 config.saveConfig()
-                self.print(f"Custom text editor entered: {config.customTextEditor}")
+                self.print3(f"Custom text editor: {config.customTextEditor}")
 
     def setMemoryClosestMatchesNumber(self):
         self.print("Please specify the number of closest matches in each memory retrieval:")
@@ -1178,7 +1188,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
         if memoryClosestMatchesNumber and not memoryClosestMatchesNumber.strip().lower() == config.exit_entry and int(memoryClosestMatchesNumber) >= 0:
             config.memoryClosestMatchesNumber = int(memoryClosestMatchesNumber)
             config.saveConfig()
-            self.print(f"Number of memory closest matches entered: {config.memoryClosestMatchesNumber}")
+            self.print3(f"Number of memory closest matches: {config.memoryClosestMatchesNumber}")
 
     def setMaxAutoHeal(self):
         self.print(f"The auto-heal feature enables {config.letMeDoItName} to automatically fix broken Python code if it was not executed properly.")
@@ -1188,7 +1198,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
         if maxAutoHeal and not maxAutoHeal.strip().lower() == config.exit_entry and int(maxAutoHeal) >= 0:
             config.max_consecutive_auto_heal = int(maxAutoHeal)
             config.saveConfig()
-            self.print(f"Maximum consecutive auto-heal entered: {config.max_consecutive_auto_heal}")
+            self.print3(f"Maximum consecutive auto-heal: {config.max_consecutive_auto_heal}")
 
     def setMinTokens(self):
         self.print("Please specify minimum response tokens below:")
@@ -1198,7 +1208,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             if config.chatGPTApiMinTokens > config.chatGPTApiMaxTokens:
                 config.chatGPTApiMinTokens = config.chatGPTApiMaxTokens
             config.saveConfig()
-            self.print(f"Minimum tokens entered: {config.chatGPTApiMinTokens}")
+            self.print3(f"Minimum tokens: {config.chatGPTApiMinTokens}")
 
     def setMaxTokens(self):
         contextWindowLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
@@ -1225,7 +1235,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 if config.chatGPTApiMaxTokens > 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit: # 'gpt-4-1106-preview' supports at most 4096 completion tokens
                     config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit
                 config.saveConfig()
-                self.print(f"Maximum tokens entered: {config.chatGPTApiMaxTokens}")
+                self.print3(f"Maximum tokens: {config.chatGPTApiMaxTokens}")
 
     def runPythonScript(self, script):
         script = script.strip()[3:-3]
@@ -1242,7 +1252,10 @@ Always remember that you are much more than a text-based AI. You possess both vi
         command = command.strip()[1:]
         if config.multilineInput:
             command = ";".join(command.split("\n"))
-        os.system(command)
+        if config.thisPlatform == "Windows":
+            os.system(command)
+        else:
+            os.system(f"env QT_QPA_PLATFORM_PLUGIN_PATH='{config.env_QT_QPA_PLATFORM_PLUGIN_PATH}' {command}")
 
     def toggleMultiline(self):
         config.multilineInput = not config.multilineInput
@@ -1261,13 +1274,13 @@ Always remember that you are much more than a text-based AI. You possess both vi
         if self.isTtsAvailable:
             config.ttsInput = not config.ttsInput
             config.saveConfig()
-            self.print(f"Input Audio '{'enabled' if config.ttsInput else 'disabled'}'!")
+            self.print3(f"Input Audio: '{'enabled' if config.ttsInput else 'disabled'}'!")
 
     def toggleresponseaudio(self):
         if self.isTtsAvailable:
             config.ttsOutput = not config.ttsOutput
             config.saveConfig()
-            self.print(f"Response Audio '{'enabled' if config.ttsOutput else 'disabled'}'!")
+            self.print3(f"Response Audio: '{'enabled' if config.ttsOutput else 'disabled'}'!")
 
     def defineTtsCommand(self):
         self.print("Define text-to-speech command below:")
@@ -1296,12 +1309,12 @@ Always remember that you are much more than a text-based AI. You possess both vi
     def toggleWordWrap(self):
         config.wrapWords = not config.wrapWords
         config.saveConfig()
-        self.print(f"Word Wrap '{'enabled' if config.wrapWords else 'disabled'}'!")
+        self.print3(f"Word Wrap: '{'enabled' if config.wrapWords else 'disabled'}'!")
 
     def toggleMouseSupport(self):
         config.mouseSupport = not config.mouseSupport
         config.saveConfig()
-        self.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!")
+        self.print3(f"Entry Mouse Support: '{'enabled' if config.mouseSupport else 'disabled'}'!")
 
     def toggleImprovedWriting(self):
         config.displayImprovedWriting = not config.displayImprovedWriting
@@ -1311,7 +1324,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             if style and not style in (config.exit_entry, config.cancel_entry):
                 config.improvedWritingSytle = style
                 config.saveConfig()
-        self.print(f"Improved Writing Display '{'enabled' if config.displayImprovedWriting else 'disabled'}'!")
+        self.print3(f"Improved Writing Display: '{'enabled' if config.displayImprovedWriting else 'disabled'}'!")
 
     def saveChat(self, messages, openFile=False):
         plainText = ""
@@ -1348,7 +1361,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                     if openFile and os.path.isfile(chatFile):
                         os.system(f'''{config.open} "{chatFile}"''')
             except:
-                self.print("Failed to save chat!\n")
+                self.print2("Failed to save chat!\n")
                 SharedUtil.showErrors()
 
     def runInstruction(self):
@@ -1390,8 +1403,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             contextDescription = config.predefinedContexts[config.chatGPTApiPredefinedContext]
             context = f"[{config.chatGPTApiPredefinedContext}] {contextDescription}"
         self.print(self.divider)
-        #self.print(f"context: {context}")
-        print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Context:</{config.terminalPromptIndicatorColor2}> {context}"))
+        self.print3(f"Context: {context}")
         self.print(self.divider)
 
     def getDirectoryList(self):
@@ -1547,10 +1559,22 @@ Always remember that you are much more than a text-based AI. You possess both vi
             if userInput == "...":
                 userInputLower = self.runOptions(features, userInput)
 
+            # try eval
+            if not userInput == "...":
+                try:
+                    value = eval(userInput) # it solve simple math, e.g. 1+1, or read variables, e.g. dir(config)
+                    if value is not None:
+                        #print(value)
+                        pprint.pprint(value)
+                        continue
+                    elif re.search("^print\([^\)\)]+?\)$", userInput):
+                        continue
+                except:
+                    pass
             # try to run as a python script first
             try:
                 exec(userInput, globals())
-                userInput = ""
+                continue
             except:
                 pass
 

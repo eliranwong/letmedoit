@@ -142,6 +142,7 @@ elif installed_version is not None:
 #                installmodule(f"--upgrade {mod}")
 
 # import other libraries
+import pprint
 from letmedoit.utils.shortcuts import *
 from letmedoit.utils.assistant import LetMeDoItAI
 from letmedoit.utils.vlc_utils import VlcUtil
@@ -229,6 +230,8 @@ def saveConfig():
                 "stopSpinning",
                 "toggleMultiline",
                 "print",
+                "print2",
+                "print3",
                 "getWrappedHTMLText",
                 "fineTuneUserInput",
                 "launchPager",
