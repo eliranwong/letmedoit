@@ -18,7 +18,7 @@ class HealthCheck:
     models = ("gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4-1106-preview", "gpt-4", "gpt-4-32k")
 
     @staticmethod
-    def setBasicConfig():
+    def setBasicConfig(): # minimum config to work with standalone scripts built with AutoGen
         config.openaiApiKey = ''
         config.chatGPTApiModel = 'gpt-3.5-turbo'
         config.chatGPTApiTemperature = 0.8
@@ -33,6 +33,9 @@ class HealthCheck:
         config.terminalHeadingTextColor = "ansigreen"
         config.mouseSupport = False
         config.embeddingModel = "text-embedding-ada-002"
+        config.max_agents = 5
+        config.max_group_chat_round = 12
+        config.max_consecutive_auto_reply = 10
 
     @staticmethod
     def getEmbeddingFunction():

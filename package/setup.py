@@ -104,6 +104,7 @@ setup(
             f"autoretriever={package}.autoretriever:main",
             f"automath={package}.automath:main",
             f"autoteachable={package}.autoteachable:main",
+            f"autobuilder={package}.autobuilder:main",
         ],
     },
     keywords="ai assistant openai chatgpt rag autogen interpreter auto-heal",
