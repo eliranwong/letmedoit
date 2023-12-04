@@ -116,7 +116,7 @@ class AutoGenBuilder:
         if max_group_chat_round and int(max_group_chat_round) > 1:
             config.max_group_chat_round = int(max_group_chat_round)
 
-        self.print(f"<{config.terminalCommandEntryColor1}>AutoGen Builder launched!</{config.terminalCommandEntryColor1}>")
+        self.print(f"<{config.terminalCommandEntryColor1}>AutoGen Agent Builder launched!</{config.terminalCommandEntryColor1}>")
         self.print("[press 'ctrl+q' to exit]")
         while True:
             self.print(f"<{config.terminalCommandEntryColor1}>Hi! I am ready for a new task.</{config.terminalCommandEntryColor1}>")
@@ -129,7 +129,7 @@ class AutoGenBuilder:
             except:
                 self.print(traceback.format_exc())
                 break
-        self.print(f"<{config.terminalCommandEntryColor1}>\n\nAutoGen Builder closed!</{config.terminalCommandEntryColor1}>")
+        self.print(f"<{config.terminalCommandEntryColor1}>\n\nAutoGen Agent Builder closed!</{config.terminalCommandEntryColor1}>")
 
 
     def print(self, message):
