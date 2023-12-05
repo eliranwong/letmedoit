@@ -7,6 +7,8 @@ try:
 except:
     pass
 try:
+    # hide pygame welcome message
+    os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
     import pygame
 except:
     config.usePygame = False

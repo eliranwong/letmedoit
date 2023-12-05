@@ -8,6 +8,8 @@ configFile = os.path.join(packageFolder, "config.py")
 if not os.path.isfile(configFile):
     open(configFile, "a", encoding="utf-8").close()
 from letmedoit import config
+if not hasattr(config, "max_consecutive_auto_reply"):
+    config.max_consecutive_auto_reply = 10
 
 from letmedoit.health_check import HealthCheck
 if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:

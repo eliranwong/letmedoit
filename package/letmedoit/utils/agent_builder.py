@@ -3,6 +3,7 @@ Modifed from source: https://github.com/microsoft/autogen/blob/main/autogen/agen
 At the time of writing, the script above is not available via "pip install pyautogen==0.2.0
 
 Changes made:
+* max_tokens changed to 4096
 * customisable max_agents
 """
 

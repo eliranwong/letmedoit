@@ -267,7 +267,7 @@ def set_log_file_max_lines(log_file, max_lines):
 
 def main():
     # Create the parser
-    parser = argparse.ArgumentParser(description="Process some inputs.")
+    parser = argparse.ArgumentParser(description="LetMeDoIt AI cli options")
     # Add arguments
     parser.add_argument("default", nargs="?", default=None, help="default entry")
     parser.add_argument('-r', '--run', action='store', dest='run', help="run default entry with -r flag")

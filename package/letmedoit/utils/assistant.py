@@ -30,6 +30,7 @@ from letmedoit.utils.terminal_system_command_prompt import SystemCommandPrompt
 from letmedoit.utils.shared_utils import SharedUtil
 from letmedoit.utils.tts_utils import TTSUtil
 from letmedoit.plugins.bibleTools.utils.TextUtil import TextUtil
+from letmedoit.autobuilder import AutoGenBuilder
 
 
 class LetMeDoItAI:
@@ -823,6 +824,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             "change embedding model",
             "change assistant name",
             "change startup directory",
+            "change auto builder config",
             "change custom text editor",
             "change Termux API integration",
             "change automatic upgrade",
@@ -862,6 +864,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 self.setUserConfirmation()
             elif feature == ".plugins":
                 self.selectPlugins()
+            elif feature == ".autobuilderconfig":
+                AutoGenBuilder().promptConfig()
             elif feature == ".keys":
                 config.showKeyBindings()
             elif feature == ".help":
@@ -1499,6 +1503,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             ".embeddingmodel",
             ".assistantname",
             ".startupDirectory",
+            ".autobuilderconfig",
             ".customtexteditor",
             ".termuxapi",
             ".autoupgrade",
@@ -1578,8 +1583,11 @@ Always remember that you are much more than a text-based AI. You possess both vi
             except:
                 pass
 
-            if userInput in config.aliases:
-                userInput = config.aliases[userInput]
+            #if userInput in config.aliases:
+            #    userInput = config.aliases[userInput]
+            # replace alias, if any with full entry
+            for alias, fullEntry in config.aliases:
+                userInput = re.sub(alias, fullEntry, userInput)
 
             if userInput.startswith("!"):
                 self.runSystemCommand(userInput)

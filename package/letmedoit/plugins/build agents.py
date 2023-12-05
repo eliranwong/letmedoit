@@ -15,6 +15,8 @@ def build_agents(function_args):
     task = function_args.get("task") # required
     title = function_args.get("title") # required
     config.print2("AutoGen Agent Builder launched!")
+    config.print3(f"Title: {title}")
+    config.print3(f"Description: {task}")
     AutoGenBuilder().getResponse(task, title)
     config.print2("\n\nAutoGen Agent Builder closed!")
     return ""

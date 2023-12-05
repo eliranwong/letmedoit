@@ -8,6 +8,12 @@ configFile = os.path.join(packageFolder, "config.py")
 if not os.path.isfile(configFile):
     open(configFile, "a", encoding="utf-8").close()
 from letmedoit import config
+if not hasattr(config, "max_agents"):
+    config.max_agents = 5
+if not hasattr(config, "max_group_chat_round"):
+    config.max_group_chat_round = 12
+if not hasattr(config, "use_oai_assistant"):
+    config.use_oai_assistant = False
 
 from letmedoit.health_check import HealthCheck
 if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
@@ -19,7 +25,7 @@ HealthCheck.checkCompletion()
 
 #from autogen.agentchat.contrib.agent_builder import AgentBuilder
 from letmedoit.utils.agent_builder import AgentBuilder
-import autogen, os, json, traceback, re, datetime
+import autogen, os, json, traceback, re, datetime, argparse
 from pathlib import Path
 from urllib.parse import quote
 from letmedoit.utils.prompts import Prompts
@@ -42,7 +48,16 @@ class AutoGenBuilder:
         for model in ("gpt-4-1106-preview", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k"):
             oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
         os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
+        # assign ChatGPT4 to run the builder
         self.chatGPTmodel = "gpt-4-1106-preview"
+        # prompt style
+        self.promptStyle = Style.from_dict({
+            # User input (default text).
+            "": config.terminalCommandEntryColor2,
+            # Prompt.
+            "indicator": config.terminalPromptIndicatorColor2,
+        })
+        self.prompts = Prompts()
 
     def getSavePath(self, title=""):
         package = os.path.basename(packageFolder)
@@ -60,7 +75,9 @@ class AutoGenBuilder:
         currentTime = re.sub("[\. :]", "_", str(datetime.datetime.now()))
         return os.path.join(folder, f"{currentTime}{title}.json")
 
-    def getResponse(self, task, title=""):
+    def getResponse(self, task, title="", load_path=""):
+
+        building_task = execution_task = task
 
         config_list = autogen.config_list_from_json(
             env_or_file="OAI_CONFIG_LIST",  # or OAI_CONFIG_LIST.json if file extension is added
@@ -78,17 +95,20 @@ class AutoGenBuilder:
         }  # configuration for autogen's enhanced inference API which is compatible with OpenAI API
 
         builder = AgentBuilder(
-            #config_path=config_path,
+            #config_path=config_path, # use default
             builder_model=self.chatGPTmodel,
             agent_model=self.chatGPTmodel,
         )
 
+        # e.g.
         #building_task = "Find a paper on arxiv by programming, and analysis its application in some domain. For example, find a latest paper about gpt-4 on arxiv and find its potential applications in software."
         #execution_task="Find a recent paper about gpt-4 on arxiv and find its potential applications in software."
         #agent_list, agent_configs = builder.build(building_task, llm_config, coding=True)
         
-        building_task = execution_task = task
-        agent_list, _ = builder.build(building_task, llm_config, coding=True)
+        if load_path:
+            agent_list, _ = builder.load(load_path)
+        else:
+            agent_list, _ = builder.build(building_task, llm_config, coding=True, use_oai_assistant=config.use_oai_assistant)
 
         group_chat = autogen.GroupChat(agents=agent_list, messages=[], max_round=config.max_group_chat_round)
         manager = autogen.GroupChatManager(
@@ -98,30 +118,36 @@ class AutoGenBuilder:
         agent_list[0].initiate_chat(manager, message=execution_task)
 
         # save building config
-        builder.save(self.getSavePath(title))
+        if not load_path:
+            builder.save(self.getSavePath(title))
         #clear all agents
         builder.clear_all_agents(recycle_endpoint=True)
 
-    def run(self):
-        promptStyle = Style.from_dict({
-            # User input (default text).
-            "": config.terminalCommandEntryColor2,
-            # Prompt.
-            "indicator": config.terminalPromptIndicatorColor2,
-        })
-        prompts = Prompts()
-
-        self.print("Enter maximum consecutive auto-reply below:")
-        max_group_chat_round = prompts.simplePrompt(numberOnly=True, style=promptStyle, default=str(config.max_group_chat_round),)
+    def promptConfig(self):
+        self.print("Enter maximum number of agents:")
+        max_agents = self.prompts.simplePrompt(numberOnly=True, style=self.promptStyle, default=str(config.max_agents),)
+        if max_agents and int(max_agents) > 1:
+            config.max_agents = int(max_agents)
+        
+        self.print("Enter maximum round of group chat:")
+        max_group_chat_round = self.prompts.simplePrompt(numberOnly=True, style=self.promptStyle, default=str(config.max_group_chat_round),)
         if max_group_chat_round and int(max_group_chat_round) > 1:
             config.max_group_chat_round = int(max_group_chat_round)
+
+        self.print("Do you want to support OpenAI Assistant API (y/yes/N/NO)?")
+        userInput = self.prompts.simplePrompt(style=self.promptStyle, default="y" if config.use_oai_assistant else "NO")
+        if userInput:
+            config.use_oai_assistant = True if userInput.strip().lower() in ("y", "yes") else False
+
+    def run(self):
+        self.promptConfig()
 
         self.print(f"<{config.terminalCommandEntryColor1}>AutoGen Agent Builder launched!</{config.terminalCommandEntryColor1}>")
         self.print("[press 'ctrl+q' to exit]")
         while True:
             self.print(f"<{config.terminalCommandEntryColor1}>Hi! I am ready for a new task.</{config.terminalCommandEntryColor1}>")
             self.print(f"<{config.terminalCommandEntryColor1}>Please specify a task below:</{config.terminalCommandEntryColor1}>")
-            task = prompts.simplePrompt(style=promptStyle)
+            task = self.prompts.simplePrompt(style=self.promptStyle)
             if task == config.exit_entry:
                 break
             try:
@@ -137,7 +163,43 @@ class AutoGenBuilder:
         print_formatted_text(HTML(message))
 
 def main():
-    AutoGenBuilder().run()
+    parser = argparse.ArgumentParser(description="AutoGen Agent Builder cli options")
+    # Add arguments
+    parser.add_argument("default", nargs="?", default=None, help="execution task")
+    parser.add_argument('-c', '--config', action='store', dest='config', help="load building config file")
+    parser.add_argument('-a', '--agents', action='store', dest='agents', help="maximum number of agents")
+    parser.add_argument('-r', '--round', action='store', dest='round', help="maximum round of group chat")
+    parser.add_argument('-o', '--oaiassistant', action='store', dest='oaiassistant', help="support OpenAI Assistant API (true/false)")
+    # Parse arguments
+    args = parser.parse_args()
+
+    builder = AutoGenBuilder()
+
+    if args.agents:
+        try:
+            config.max_agents = int(args.agents)
+        except:
+            config.print2("Integer required for setting number of agents!")
+
+    if args.round:
+        try:
+            config.max_group_chat_round = int(args.round)
+        except:
+            config.print2("Integer required for setting round of group chat!")
+
+    if args.oaiassistant:
+        config.use_oai_assistant = True if args.oaiassistant.lower() == "true" else False
+
+    if args.config and not os.path.isfile(args.config):
+        config.print2(f"'{args.config}' does not exist!")
+
+    if args.config and os.path.isfile(args.config):
+        task = args.default if args.default else ""
+        builder.getResponse(task=task, load_path=args.config)
+    elif args.default:
+        builder.getResponse(task=args.default)
+    else:
+        builder.run()
 
 if __name__ == '__main__':
     main()

@@ -12,6 +12,7 @@ config.aliases["!autoassist"] = f"!{sys.executable} {os.path.join(config.letMeDo
 config.aliases["!automath"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'automath.py')}"
 config.aliases["!autoretriever"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autoretriever.py')}"
 config.aliases["!autoteachable"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autoteachable.py')}"
+config.aliases["!autobuilder"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autobuilder.py')}"
 config.aliases["!etextedit"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
 
 config.inputSuggestions += ["!autoassist", "!automath", "!autoretriever", "!autoteachable", "!etextedit", "autoassist", "automath", "autoretriever", "autoteachable", "etextedit"]
