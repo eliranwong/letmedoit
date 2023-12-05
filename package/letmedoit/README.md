@@ -384,7 +384,7 @@ However, LetMeDoIt AI offers additional advantages, particularly in terms of [cu
 
 One key advantage of LetMeDoIt AI is the seamless integration with the Open Interpreter. You can conveniently launch the Open Interpreter directly from LetMeDoIt AI by running the command "!interpreter" [[read more](https://github.com/eliranwong/letmedoit/assets/25262722/4233b3c8-364e-466b-8218-c2dca7c134e5)]. This integration eliminates the need to choose between the two platforms; you can utilize both simultaneously.
 
-Additionally, LetMeDoIt integrates [AutoGen Assistant and Retriever](https://github.com/eliranwong/letmedoit/wiki/Integration-with-AutoGen), making it convenient to have all these powerful tools in one place.
+Additionally, LetMeDoIt integrates [AutoGen Assistants and Builder](https://github.com/eliranwong/letmedoit/wiki/Integration-with-AutoGen), making it convenient to have all these powerful tools in one place.
 
 # Comparison with Siri and Others
 

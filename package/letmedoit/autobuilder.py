@@ -122,6 +122,10 @@ class AutoGenBuilder:
         #clear all agents
         builder.clear_all_agents(recycle_endpoint=True)
 
+    def promptTask(self):
+        self.print(f"<{config.terminalCommandEntryColor1}>Please specify a task below:</{config.terminalCommandEntryColor1}>")
+        return self.prompts.simplePrompt(style=self.promptStyle)
+
     def promptConfig(self):
         self.print("Enter maximum number of agents:")
         max_agents = self.prompts.simplePrompt(numberOnly=True, style=self.promptStyle, default=str(config.max_agents),)
@@ -145,8 +149,7 @@ class AutoGenBuilder:
         self.print("[press 'ctrl+q' to exit]")
         while True:
             self.print(f"<{config.terminalCommandEntryColor1}>Hi! I am ready for a new task.</{config.terminalCommandEntryColor1}>")
-            self.print(f"<{config.terminalCommandEntryColor1}>Please specify a task below:</{config.terminalCommandEntryColor1}>")
-            task = self.prompts.simplePrompt(style=self.promptStyle)
+            task = self.promptTask()
             if task == config.exit_entry:
                 break
             try:
@@ -194,7 +197,12 @@ def main():
 
     if args.config and os.path.isfile(args.config):
         task = args.default if args.default else ""
-        builder.getResponse(task=task, load_path=args.config)
+        if not task:
+            task = self.promptTask()
+        if task.strip():
+            builder.getResponse(task=task.strip(), load_path=args.config)
+        else:
+            config.print2("Task not specified!")
     elif args.default:
         builder.getResponse(task=args.default)
     else:

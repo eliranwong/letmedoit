@@ -1586,7 +1586,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             #if userInput in config.aliases:
             #    userInput = config.aliases[userInput]
             # replace alias, if any with full entry
-            for alias, fullEntry in config.aliases:
+            for alias, fullEntry in config.aliases.items():
                 userInput = re.sub(alias, fullEntry, userInput)
 
             if userInput.startswith("!"):
