@@ -29,7 +29,6 @@ import autogen, os, json, traceback, re, datetime, argparse
 from pathlib import Path
 from urllib.parse import quote
 from letmedoit.utils.prompts import Prompts
-from letmedoit.utils.shared_utils import SharedUtil
 from prompt_toolkit import print_formatted_text, HTML
 from prompt_toolkit.styles import Style
 #from prompt_toolkit import PromptSession
