@@ -120,7 +120,11 @@ class AutoGenRetriever:
         except:
             pass
         client.delete_collection(name="autogen-docs")
-        return assistant.last_message()
+        try:
+            last_message = assistant.last_message()
+        except:
+            last_message = []
+        return last_message
 
     def print(self, message):
         #print(message)

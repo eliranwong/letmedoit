@@ -78,8 +78,8 @@ class LetMeDoItAI:
             cancel_entry="",
             promptIndicatorColor=config.terminalPromptIndicatorColor2,
             promptEntryColor=config.terminalCommandEntryColor2,
-            subHeadingColor=config.terminalHeadingTextColor,
-            itemColor=config.terminalResourceLinkColor,
+            subHeadingColor=config.terminalColors[config.terminalPromptIndicatorColor2],
+            itemColor=config.terminalColors[config.terminalCommandEntryColor2],
         )
 
         self.preferredDir = self.getPreferredDir()
@@ -1531,7 +1531,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             currentDirectory = os.getcwd()
             if not currentDirectory == startupdirectory:
                 self.print(self.divider)
-                self.print(f"current directory:\n{currentDirectory}")
+                self.print3(f"Current directory: {currentDirectory}")
                 self.print(self.divider)
                 startupdirectory = currentDirectory
             # default input entry
@@ -1570,6 +1570,24 @@ Always remember that you are much more than a text-based AI. You possess both vi
             if userInput == "...":
                 userInputLower = self.runOptions(features, userInput)
 
+            # replace alias, if any with full entry
+            for alias, fullEntry in config.aliases.items():
+                userInput = re.sub(alias, fullEntry, userInput)
+
+            # open file / directory directly
+            docs_path = SharedUtil.isExistingPath(userInput)
+            if os.path.isfile(docs_path):
+                os.system(f"{config.open} {docs_path}")
+                continue
+            elif os.path.isdir(docs_path):
+                try:
+                    os.chdir(docs_path)
+                    self.print3(f"Directory changed to: {docs_path}")
+                    self.getPath.displayDirectoryContent()
+                    continue
+                except:
+                    pass
+
             # try eval
             if not userInput == "...":
                 try:
@@ -1588,12 +1606,6 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 continue
             except:
                 pass
-
-            #if userInput in config.aliases:
-            #    userInput = config.aliases[userInput]
-            # replace alias, if any with full entry
-            for alias, fullEntry in config.aliases.items():
-                userInput = re.sub(alias, fullEntry, userInput)
 
             if userInput.startswith("!"):
                 self.runSystemCommand(userInput)

@@ -206,7 +206,7 @@ class GetPath:
                     completer=completer,
                     bottom_toolbar=bottom_toolbar,
                     mouse_support=Condition(lambda: config.mouseSupport),
-                    swap_light_and_dark_colors=True,
+                    swap_light_and_dark_colors=Condition(lambda: not config.terminalResourceLinkColor.startswith("ansibright")),
                 ).strip()
                 default = ""
             except:

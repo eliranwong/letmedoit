@@ -21,8 +21,8 @@ class SystemCommandPrompt:
             cancel_entry="",
             promptIndicatorColor=config.terminalPromptIndicatorColor2,
             promptEntryColor=config.terminalCommandEntryColor2,
-            subHeadingColor=config.terminalHeadingTextColor,
-            itemColor=config.terminalResourceLinkColor,
+            subHeadingColor=config.terminalColors[config.terminalPromptIndicatorColor2],
+            itemColor=config.terminalColors[config.terminalCommandEntryColor2],
         )
         self.promptStyle = Style.from_dict({
             # User input (default text).

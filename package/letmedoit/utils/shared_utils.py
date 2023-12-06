@@ -18,6 +18,7 @@ from openai import OpenAI
 from PIL import Image
 from urllib.parse import quote
 from autogen.retrieve_utils import TEXT_FORMATS
+from pathlib import Path
 
 
 class SharedUtil:
@@ -56,6 +57,25 @@ class SharedUtil:
         latest_version = SharedUtil.getPackageLatestVersion(package)
         installed_version = SharedUtil.getPackageInstalledVersion(package)
         return (latest_version > installed_version)
+
+    # handle document path dragged to the terminal
+    @staticmethod
+    def isExistingPath(docs_path):
+        docs_path = docs_path.strip()
+        search_replace = (
+            ("^'(.*?)'$", r"\1"),
+            ('^(File|Folder): "(.*?)"$', r"\2"),
+        )
+        for search, replace in search_replace:
+            docs_path = re.sub(search, replace, docs_path)
+        if "\\ " in docs_path or "\(" in docs_path:
+            search_replace = (
+                ("\\ ", " "),
+                ("\(", "("),
+            )
+            for search, replace in search_replace:
+                docs_path = docs_path.replace(search, replace)
+        return docs_path if os.path.exists(docs_path) else ""
 
     @staticmethod
     def getCurrentDateTime():
