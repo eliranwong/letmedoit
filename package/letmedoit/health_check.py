@@ -2,6 +2,7 @@ from openai import OpenAI
 from prompt_toolkit import prompt
 import os, openai, traceback, json, pprint
 from chromadb.utils import embedding_functions
+from prompt_toolkit import print_formatted_text, HTML
 
 thisFile = os.path.realpath(__file__)
 packageFolder = os.path.dirname(thisFile)
@@ -36,6 +37,27 @@ class HealthCheck:
         config.max_agents = 5
         config.max_group_chat_round = 12
         config.max_consecutive_auto_reply = 10
+        HealthCheck.setPrint()
+    
+    @staticmethod
+    def setPrint():
+        if not hasattr(config, "print2"):
+            config.print2 = HealthCheck.print2
+        if not hasattr(config, "print3"):
+            config.print3 = HealthCheck.print3
+
+    @staticmethod
+    def print2(content):
+        print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>{content}</{config.terminalPromptIndicatorColor2}>"))
+
+    @staticmethod
+    def print3(content):
+        splittedContent = content.split(": ", 1)
+        if len(splittedContent) == 2:
+            key, value = splittedContent
+            print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>{key}:</{config.terminalPromptIndicatorColor2}> {value}"))
+        else:
+            self.print2(splittedContent)
 
     @staticmethod
     def getEmbeddingFunction():

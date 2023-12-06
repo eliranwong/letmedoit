@@ -22,6 +22,7 @@ if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
     HealthCheck.saveConfig()
     print("Updated!")
 HealthCheck.checkCompletion()
+HealthCheck.setPrint()
 
 #from autogen.agentchat.contrib.agent_builder import AgentBuilder
 from letmedoit.utils.agent_builder import AgentBuilder

@@ -18,6 +18,7 @@ if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
     HealthCheck.saveConfig()
     print("Updated!")
 HealthCheck.checkCompletion()
+HealthCheck.setPrint()
 
 import autogen, os, json, traceback, chromadb, re, zipfile, datetime
 from pathlib import Path
@@ -43,6 +44,10 @@ class AutoGenRetriever:
         os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
 
     def getResponse(self, docs_path, message, auto=False):
+        if not os.path.exists(docs_path):
+            config.print2("Invalid path!")
+            return None
+
         package = os.path.basename(packageFolder)
         preferredDir = os.path.join(os.path.expanduser('~'), package)
         if os.path.isdir(preferredDir):
@@ -54,8 +59,9 @@ class AutoGenRetriever:
         db = os.path.join(folder, "autogen", "retriever")
         Path(db).mkdir(parents=True, exist_ok=True)
 
+        _, file_extension = os.path.splitext(docs_path)
         # support zip file; unzip zip file, if any
-        if zipfile.is_zipfile(docs_path):
+        if file_extension.lower() == ".zip":
             currentTime = re.sub("[\. :]", "_", str(datetime.datetime.now()))
             extract_to_path = os.path.join(db, "unpacked", currentTime)
             config.print3(f"Unpacking content to: {extract_to_path}")
@@ -64,6 +70,11 @@ class AutoGenRetriever:
             with zipfile.ZipFile(docs_path) as zip_ref:
                 zip_ref.extractall(extract_to_path)
             docs_path = extract_to_path
+        # check if file format is supported
+        if os.path.isfile(docs_path):
+            if not file_extension[1:] in TEXT_FORMATS:
+                config.print2("File format not supported!")
+                return None
 
         config_list = autogen.config_list_from_json(
             env_or_file="OAI_CONFIG_LIST",  # or OAI_CONFIG_LIST.json if file extension is added
@@ -86,29 +97,42 @@ class AutoGenRetriever:
             },  # configuration for autogen's enhanced inference API which is compatible with OpenAI API
         )
 
-        # https://microsoft.github.io/autogen/docs/reference/agentchat/contrib/retrieve_user_proxy_agent
-        ragproxyagent = RetrieveUserProxyAgent(
-            name="ragproxyagent",
-            human_input_mode="NEVER" if auto else "ALWAYS",
-            max_consecutive_auto_reply=config.max_consecutive_auto_reply,
-            retrieve_config={
-                #"task": "qa", # the task of the retrieve chat. Possible values are "code", "qa" and "default". System prompt will be different for different tasks. The default value is default, which supports both code and qa.
-                "docs_path": docs_path,
-                "chunk_token_size": 2000, # the chunk token size for the retrieve chat. If key not provided, a default size max_tokens * 0.4 will be used.
-                "model": config_list[0]["model"],
-                "client": chromadb.PersistentClient(path=db),
-                "embedding_function": HealthCheck.getEmbeddingFunction(),
-                #"embedding_model": "all-mpnet-base-v2", # the embedding model to use for the retrieve chat. If key not provided, a default model all-MiniLM-L6-v2 will be used. All available models can be found at https://www.sbert.net/docs/pretrained_models.html. The default model is a fast model. If you want to use a high performance model, all-mpnet-base-v2 is recommended.
-                "get_or_create": True,  # set to False if you don't want to reuse an existing collection, but you'll need to remove the collection manually
-                "must_break_at_empty_line": False, # (Optional, bool): chunk will only break at empty line if True. Default is True. If chunk_mode is "one_line", this parameter will be ignored.
-            },
-        )
+        client = chromadb.PersistentClient(path=db)
+        try:
+            # https://microsoft.github.io/autogen/docs/reference/agentchat/contrib/retrieve_user_proxy_agent
+            ragproxyagent = RetrieveUserProxyAgent(
+                name="ragproxyagent",
+                human_input_mode="NEVER" if auto else "ALWAYS",
+                max_consecutive_auto_reply=config.max_consecutive_auto_reply,
+                retrieve_config={
+                    #"task": "qa", # the task of the retrieve chat. Possible values are "code", "qa" and "default". System prompt will be different for different tasks. The default value is default, which supports both code and qa.
+                    "docs_path": docs_path,
+                    "chunk_token_size": 2000, # the chunk token size for the retrieve chat. If key not provided, a default size max_tokens * 0.4 will be used.
+                    "model": config_list[0]["model"],
+                    "client": client,
+                    "embedding_function": HealthCheck.getEmbeddingFunction(),
+                    #"embedding_model": "all-mpnet-base-v2", # the embedding model to use for the retrieve chat. If key not provided, a default model all-MiniLM-L6-v2 will be used. All available models can be found at https://www.sbert.net/docs/pretrained_models.html. The default model is a fast model. If you want to use a high performance model, all-mpnet-base-v2 is recommended.
+                    "get_or_create": False,  # set to False if you don't want to reuse an existing collection, but you'll need to remove the collection manually
+                    "must_break_at_empty_line": False, # (Optional, bool): chunk will only break at empty line if True. Default is True. If chunk_mode is "one_line", this parameter will be ignored.
+                },
+            )
+            ragproxyagent.initiate_chat(assistant, problem=message)
+        except:
+            pass
+        client.delete_collection(name="autogen-docs")
 
-        ragproxyagent.initiate_chat(assistant, problem=message)
 
     def print(self, message):
         #print(message)
         print_formatted_text(HTML(message))
+
+    def refinePath(self, docs_path):
+        docs_path = docs_path.strip()
+        docs_path = re.sub("^'(.*?)'$", r"\1", docs_path)
+        if "\\ " in docs_path or "\(" in docs_path:
+            docs_path = docs_path.replace("\\ ", " ")
+            docs_path = docs_path.replace("\(", "(")
+        return docs_path
 
     def run(self):
         promptStyle = Style.from_dict({
@@ -133,14 +157,11 @@ class AutoGenRetriever:
         self.print("[press 'ctrl+q' to exit]")
         
         self.print(f"<{config.terminalCommandEntryColor1}>Enter your document path below (file / folder):</{config.terminalCommandEntryColor1}>")
-        self.print(f"""Supported formats: *.{", *.".join(TEXT_FORMATS)}""")
+        self.print(f"""Supported formats: *.{", *.".join(TEXT_FORMATS)}""" + ", *.zip")
         docs_path = prompts.simplePrompt(style=promptStyle)
 
         # handle path dragged to terminal
-        docs_path = docs_path.strip()
-        docs_path = re.sub("^'(.*?)'$", r"\1", docs_path)
-        if not os.path.isdir(docs_path) and "\\ " in docs_path:
-            docs_path = docs_path.replace("\\ ", " ")
+        docs_path = self.refinePath(docs_path)
 
         if docs_path and os.path.exists(docs_path):
             self.print("Enter your query below:")
