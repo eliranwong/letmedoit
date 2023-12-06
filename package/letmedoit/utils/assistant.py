@@ -1560,6 +1560,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
                     prefix = ""
                 suffix = userInput[config.addPathAt:]
                 config.addPathAt = None
+                if not default:
+                    default = os.getcwd()
                 userPath = self.getPath.getPath(message=f"{prefix}<{config.terminalCommandEntryColor2}>[add a path here]</{config.terminalCommandEntryColor2}>{suffix}", promptIndicator=">>> ", empty_to_cancel=True, default=default)
                 config.defaultEntry = f"{prefix}{userPath}{suffix}"
                 userInput = ""

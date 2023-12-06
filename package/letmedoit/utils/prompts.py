@@ -307,4 +307,5 @@ Available tokens: {estimatedAvailableTokens}
             mouse_support=Condition(lambda: config.mouseSupport),
             clipboard=config.clipboard,
         )
-        return textwrap.dedent(userInput).strip() # dedent to work with code block
+        userInput = textwrap.dedent(userInput) # dedent to work with code block
+        return userInput if hasattr(config, "addPathAt") and config.addPathAt else userInput.strip()

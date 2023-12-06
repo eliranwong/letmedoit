@@ -19,8 +19,7 @@ if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
     print("Updated!")
 HealthCheck.checkCompletion()
 
-from letmedoit.utils.shared_utils import SharedUtil
-import autogen, os, json, traceback, chromadb, re
+import autogen, os, json, traceback, chromadb, re, zipfile, datetime
 from pathlib import Path
 from letmedoit.utils.prompts import Prompts
 from prompt_toolkit import print_formatted_text, HTML
@@ -54,6 +53,17 @@ class AutoGenRetriever:
             folder = os.path.join(packageFolder, "files")
         db = os.path.join(folder, "autogen", "retriever")
         Path(db).mkdir(parents=True, exist_ok=True)
+
+        # support zip file; unzip zip file, if any
+        if zipfile.is_zipfile(docs_path):
+            currentTime = re.sub("[\. :]", "_", str(datetime.datetime.now()))
+            extract_to_path = os.path.join(db, "unpacked", currentTime)
+            config.print3(f"Unpacking content to: {extract_to_path}")
+            if not os.path.isdir(extract_to_path):
+                Path(db).mkdir(parents=True, exist_ok=True)
+            with zipfile.ZipFile(docs_path) as zip_ref:
+                zip_ref.extractall(extract_to_path)
+            docs_path = extract_to_path
 
         config_list = autogen.config_list_from_json(
             env_or_file="OAI_CONFIG_LIST",  # or OAI_CONFIG_LIST.json if file extension is added
