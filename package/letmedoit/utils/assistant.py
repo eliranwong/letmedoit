@@ -1814,7 +1814,8 @@ My writing:
         # remove predefined context to reduce token size and cost
         #messages[-1] = {"role": "user", "content": userInput}
 
-        config.currentMessages.append({"role": "assistant", "content": chat_response})
+        if chat_response:
+            config.currentMessages.append({"role": "assistant", "content": chat_response})
 
         # auto pager feature
         config.pagerContent += self.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
