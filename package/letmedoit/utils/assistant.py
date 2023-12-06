@@ -301,8 +301,12 @@ class LetMeDoItAI:
         print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>{content}</{config.terminalPromptIndicatorColor2}>"))
 
     def print3(self, content):
-        key, value = content.split(": ", 1)
-        print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>{key}:</{config.terminalPromptIndicatorColor2}> {value}"))
+        splittedContent = content.split(": ", 1)
+        if len(splittedContent) == 2:
+            key, value = splittedContent
+            print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>{key}:</{config.terminalPromptIndicatorColor2}> {value}"))
+        else:
+            self.print2(splittedContent)
 
     def spinning_animation(self, stop_event):
         while not stop_event.is_set():
@@ -691,7 +695,7 @@ Otherwise, answer "chat". Here is the request:"""
                     func_response = self.getFunctionResponse(func_arguments, func_name)
 
                     # "[INVALID]" practically mean that it ignores previously called function and continues chat without function calling
-                    if not func_response == "[INVALID]":
+                    if (func_response and not func_response == "[INVALID]") or config.tempContent:
                         # send the function call info and response to GPT
                         function_call_message = {
                             "role": "assistant",

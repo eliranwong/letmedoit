@@ -17,8 +17,12 @@ def build_agents(function_args):
     config.print2("AutoGen Agent Builder launched!")
     config.print3(f"Title: {title}")
     config.print3(f"Description: {task}")
-    AutoGenBuilder().getResponse(task, title)
-    config.print2("\n\nAutoGen Agent Builder closed!")
+    messages = AutoGenBuilder().getResponse(task, title)
+    if not messages[-1]["content"]:
+        del messages[-1]
+    # add context to the message chain
+    config.currentMessages += messages
+    config.print2("\nAutoGen Agent Builder closed!")
     return ""
 
 functionSignature = {

@@ -111,6 +111,12 @@ class AgentBuilder:
         except OSError:
             return False
 
+    def print(self, content):
+        if hasattr(config, "print3"):
+            config.print3(content)
+        else:
+            print(content)
+
     def _create_agent(
         self,
         agent_name: str,
@@ -196,7 +202,7 @@ class AgentBuilder:
 
             config_list[0]["base_url"] = f"http://{self.host}:{port}/v1"
 
-        print(llm_config)
+        #print(llm_config)
         #llm_config = llm_config[0]
         current_config = llm_config.copy()
         current_config.update(
@@ -238,7 +244,7 @@ class AgentBuilder:
                         return
                 self.agent_procs[server_id][0].terminate()
                 self.open_ports.append(server_id.split("_")[-1])
-        print(f"Agent {agent_name} has been cleared.")
+        self.print(f"Agent {agent_name} has been cleared.")
 
     def clear_all_agents(self, recycle_endpoint: Optional[bool] = True):
         """
@@ -246,7 +252,7 @@ class AgentBuilder:
         """
         for agent_name in [agent_name for agent_name in self.agent_procs_assign.keys()]:
             self.clear_agent(agent_name, recycle_endpoint)
-        print("All agents have been cleared.")
+        self.print("All agents have been cleared.")
 
     def build(
         self,
@@ -293,7 +299,7 @@ class AgentBuilder:
         build_manager = autogen.OpenAIWrapper(config_list=config_list)
 
         if use_api:
-            print("Generating agents...")
+            self.print("Generating agents...")
             resp_agent_name = (
                 build_manager.create(
                     messages=[
@@ -362,7 +368,7 @@ class AgentBuilder:
             agent_list = [
                 autogen.UserProxyAgent(
                     name="User_console_and_Python_code_interpreter",
-                    is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
+                    is_termination_msg=lambda x: "TERMINATE" in x.get("content") or not x.get("content"),
                     system_message="User console with a python code interpreter interface.",
                     code_execution_config=code_execution_config,
                     human_input_mode="NEVER",
@@ -396,7 +402,7 @@ class AgentBuilder:
             filepath = f'./save_config_{hashlib.md5(self.building_task.encode("utf-8")).hexdigest()}.json'
         with open(filepath, "w") as save_file:
             json.dump(self.cached_configs, save_file, indent=4)
-        print(f"Building config saved to {filepath}")
+        self.print(f"Building config saved to: {filepath}")
 
         return filepath
 
@@ -412,7 +418,7 @@ class AgentBuilder:
             filepath: filepath for the save config.
         """
         try:
-            print(f"Loding config from {filepath}")
+            self.print(f"Loding config from: {filepath}")
             cached_configs = json.load(open(filepath))
         except FileNotFoundError:
             raise FileNotFoundError(f"Config file {filepath} does not exist.")

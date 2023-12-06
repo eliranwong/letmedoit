@@ -107,7 +107,7 @@ class AutoGenBuilder:
         if load_path:
             agent_list, _ = builder.load(load_path)
         else:
-            agent_list, _ = builder.build(building_task, llm_config, coding=True, use_oai_assistant=config.use_oai_assistant)
+            agent_list, _ = builder.build(building_task, llm_config, use_oai_assistant=config.use_oai_assistant) # Coding=None; determined by CODING_PROMPT
 
         group_chat = autogen.GroupChat(agents=agent_list, messages=[], max_round=config.max_group_chat_round)
         manager = autogen.GroupChatManager(
@@ -122,6 +122,8 @@ class AutoGenBuilder:
         #clear all agents
         builder.clear_all_agents(recycle_endpoint=True)
 
+        return group_chat.messages
+
     def promptTask(self):
         self.print(f"<{config.terminalCommandEntryColor1}>Please specify a task below:</{config.terminalCommandEntryColor1}>")
         return self.prompts.simplePrompt(style=self.promptStyle)
@@ -131,16 +133,15 @@ class AutoGenBuilder:
         max_agents = self.prompts.simplePrompt(numberOnly=True, style=self.promptStyle, default=str(config.max_agents),)
         if max_agents and int(max_agents) > 1:
             config.max_agents = int(max_agents)
-        
         self.print("Enter maximum round of group chat:")
         max_group_chat_round = self.prompts.simplePrompt(numberOnly=True, style=self.promptStyle, default=str(config.max_group_chat_round),)
         if max_group_chat_round and int(max_group_chat_round) > 1:
             config.max_group_chat_round = int(max_group_chat_round)
-
         self.print("Do you want to support OpenAI Assistant API (y/yes/N/NO)?")
         userInput = self.prompts.simplePrompt(style=self.promptStyle, default="y" if config.use_oai_assistant else "NO")
         if userInput:
             config.use_oai_assistant = True if userInput.strip().lower() in ("y", "yes") else False
+        HealthCheck.saveConfig()
 
     def run(self):
         self.promptConfig()
@@ -157,7 +158,7 @@ class AutoGenBuilder:
             except:
                 self.print(traceback.format_exc())
                 break
-        self.print(f"<{config.terminalCommandEntryColor1}>\n\nAutoGen Agent Builder closed!</{config.terminalCommandEntryColor1}>")
+        self.print(f"\n\n<{config.terminalCommandEntryColor1}>AutoGen Agent Builder closed!</{config.terminalCommandEntryColor1}>")
 
 
     def print(self, message):
