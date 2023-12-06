@@ -200,7 +200,7 @@ def main():
     if args.config and os.path.isfile(args.config):
         task = args.default if args.default else ""
         if not task:
-            task = self.promptTask()
+            task = builder.promptTask()
         if task.strip():
             builder.getResponse(task=task.strip(), load_path=args.config)
         else:

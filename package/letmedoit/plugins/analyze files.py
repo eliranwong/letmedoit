@@ -16,7 +16,10 @@ def analyze_files(function_args):
     files = function_args.get("files") # required
     if os.path.exists(files):
         config.stopSpinning()
-        AutoGenRetriever().getResponse(files, query)
+        config.print2("AutoGen Retriever launched!")
+        last_message = AutoGenRetriever().getResponse(files, query)
+        config.currentMessages += last_message
+        config.print2("AutoGen Retriever closed!")
         return ""
 
     return "[INVALID]"
