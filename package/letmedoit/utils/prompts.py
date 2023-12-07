@@ -81,11 +81,11 @@ class Prompts:
         @this_key_bindings.add("c-y")
         def _(event):
             buffer = event.app.current_buffer
-            config.chatGPTApiPredefinedContextTemp = config.chatGPTApiPredefinedContext
-            config.chatGPTApiPredefinedContext = "[none]"
+            config.predefinedContextTemp = config.predefinedContext
+            config.predefinedContext = "[none]"
             buffer.text = ".new"
             buffer.validate_and_handle()
-            run_in_terminal(lambda: config.print("Predefined context is now temporarily changed to '[none]'."))
+            run_in_terminal(lambda: config.print3("Predefined context temporarily changed to: [none]"))
         @this_key_bindings.add("c-s")
         def _(event):
             buffer = event.app.current_buffer

@@ -15,6 +15,7 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
                 config.thisTranslation[i] = thisTranslation[i]
 
 defaultSettings = (
+    ('realTimeTokenCount', True),
     ('use_oai_assistant', False), # support OpenAI Assistants API in AutoGen Agent Builder
     ('max_agents', 5), # maximum number of agents build manager can create.
     ('max_group_chat_round', 12), # AutoGen group chat maximum round
@@ -29,8 +30,6 @@ defaultSettings = (
     ('mouseSupport', False),
     ('autoUpgrade', True),
     ('chatGPTApiModel', 'gpt-3.5-turbo'),
-    ('chatGPTApiPredefinedContext', '[none]'),
-    ('chatGPTApiCustomContext', ''),
     ('chatGPTApiMaxTokens', 2000),
     ('chatGPTApiMinTokens', 256),
     #('chatGPTApiNoOfChoices', 1),
@@ -44,9 +43,11 @@ defaultSettings = (
     ('openaiApiOrganization', ''),
     ('loadingInternetSearches', "auto"),
     ('maximumInternetSearchResults', 5),
-    ('chatGPTApiContextInAllInputs', False),
+    ('predefinedContext', '[none]'),
+    ('customPredefinedContext', ''),
+    ('applyPredefinedContextAlways', False), # True: apply predefined context with all use inputs; False: apply predefined context only in the beginning of the conversation
     ('thisTranslation', {}),
-    ('chatGPTPluginExcludeList', ["bible", "bible studies", "biblical counselling", "counselling", "edit text", "simplified Chinese to traditional Chinese"]),
+    ('chatGPTPluginExcludeList', ["awesome prompts", "bible", "bible studies", "biblical counselling", "counselling", "edit text", "simplified Chinese to traditional Chinese"]),
     ('terminalEnableTermuxAPI', False),
     ('terminalEnableTermuxAPIToast', False),
     ('cancel_entry', '.cancel'),

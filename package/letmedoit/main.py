@@ -94,52 +94,37 @@ def restartApp():
 config.restartApp = restartApp
 
 from letmedoit.utils.configDefault import *
+from letmedoit.utils.install import *
 from letmedoit.utils.shared_utils import SharedUtil
 
 # automatic update
 config.pipIsUpdated = False
-print(f"Checking '{package}' version ...")
-installed_version = SharedUtil.getPackageInstalledVersion(package)
-if installed_version is None:
-    print("Installed version information is not accessible!")
-else:
-    print(f"Installed version: {installed_version}")
-latest_version = SharedUtil.getPackageLatestVersion(package)
-if latest_version is None:
-    print("Latest version information is not accessible at the moment!")
-elif installed_version is not None:
-    print(f"Latest version: {latest_version}")
-    if config.autoUpgrade and (latest_version > installed_version):
-        from letmedoit.utils.install import *
-        try:
-            # delete old shortcut files
-            appName = config.letMeDoItName.split()[0]
-            shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop")
-            for shortcutFile in shortcutFiles:
-                shortcut = os.path.join(config.letMeDoItAIFolder, shortcutFile)
-                if os.path.isfile(shortcut):
-                    os.remove(shortcut)
-            # upgrade package
-            installmodule(f"--upgrade {package}")
-            restartApp()
-        except:
-            print(f"Failed to upgrade '{package}'!")
-
-# old update method with git pull
-#if config.autoUpgrade:
-#    # update to the latest codes
-#    try:
-#        os.system("git pull")
-#        print("You are running the latest version.")
-#    except:
-#        print(traceback.format_exc() if config.developer else "Error encountered!")
-#    # upgrade python packages
-#    from letmedoit.utils.install import *
-#    with open("requirements.txt", "r") as fileObj:
-#        for line in fileObj.readlines():
-#            mod = line.strip()
-#            if mod:
-#                installmodule(f"--upgrade {mod}")
+def updateApp():
+    print(f"Checking '{package}' version ...")
+    installed_version = SharedUtil.getPackageInstalledVersion(package)
+    if installed_version is None:
+        print("Installed version information is not accessible!")
+    else:
+        print(f"Installed version: {installed_version}")
+    latest_version = SharedUtil.getPackageLatestVersion(package)
+    if latest_version is None:
+        print("Latest version information is not accessible at the moment!")
+    elif installed_version is not None:
+        print(f"Latest version: {latest_version}")
+        if latest_version > installed_version:
+            try:
+                # delete old shortcut files
+                appName = config.letMeDoItName.split()[0]
+                shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop")
+                for shortcutFile in shortcutFiles:
+                    shortcut = os.path.join(config.letMeDoItAIFolder, shortcutFile)
+                    if os.path.isfile(shortcut):
+                        os.remove(shortcut)
+                # upgrade package
+                installmodule(f"--upgrade {package}")
+                restartApp()
+            except:
+                print(f"Failed to upgrade '{package}'!")
 
 # import other libraries
 import pprint
@@ -174,6 +159,7 @@ def saveConfig():
     with open(configFile, "w", encoding="utf-8") as fileObj:
         for name in dir(config):
             excludeConfigList = [
+                "initialCompletionCheck",
                 "promptStyle1",
                 "promptStyle2",
                 "runSpecificFuntion",
@@ -206,7 +192,7 @@ def saveConfig():
                 "excludeConfigList",
                 "tempContent",
                 "tempChunk",
-                "chatGPTApiPredefinedContextTemp",
+                "predefinedContextTemp",
                 "thisPlatform",
                 "letMeDoItAI",
                 "terminalColors",
@@ -270,12 +256,32 @@ def main():
     parser = argparse.ArgumentParser(description="LetMeDoIt AI cli options")
     # Add arguments
     parser.add_argument("default", nargs="?", default=None, help="default entry")
-    parser.add_argument('-r', '--run', action='store', dest='run', help="run default entry with -r flag")
+    parser.add_argument('-c', '--context', action='store', dest='context', help="specify pre-defined context with -r flag")
     parser.add_argument('-f', '--file', action='store', dest='file', help="read file text as default entry with -f flag")
+    parser.add_argument('-n', '--nocheck', action='store', dest='nocheck', help="set 'true' to bypass completion check at startup with -n flag")
+    parser.add_argument('-r', '--run', action='store', dest='run', help="run default entry with -r flag")
     parser.add_argument('-rf', '--runfile', action='store', dest='runfile', help="read file text as default entry and run with -f flag")
+    parser.add_argument('-u', '--update', action='store', dest='update', help="set 'true' to force or 'false' to bypass automatic update with -u flag")
     # Parse arguments
     args = parser.parse_args()
     # Check what kind of arguments were provided and perform actions accordingly
+
+    # update to the latest version
+    if args.update:
+        if args.update.lower() == "true":
+            updateApp()
+    # determined by config.autoUpgrade if -u flag is not used
+    elif config.autoUpgrade:
+        updateApp()
+
+    # initial completion check at startup
+    config.initialCompletionCheck = False if args.nocheck and args.nocheck.lower() == "true" else True
+
+    # specify pre-defined context
+    if args.context:
+        config.predefinedContextTemp = config.predefinedContext
+        config.predefinedContext = args.context
+
     if args.runfile or args.file:
         try:
             filename = args.runfile if args.runfile else args.file

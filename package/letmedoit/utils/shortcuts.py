@@ -111,6 +111,8 @@ Start-Process "{sys.executable} {config.letMeDoItFile} $selected_text"'''
             fileObj.write(work_with_text_script)
     elif thisOS == "Linux":
         # work with text selection
+        # Install xsel
+        # > apt install xsel
         # To use this script, users need to:
         # 1. Launch "Settings"
         # 2. Go to "Keyboard" > "Keyboard Shortcuts" > "View and Customise Shortcuts" > "Custom Shortcuts"
@@ -118,11 +120,33 @@ Start-Process "{sys.executable} {config.letMeDoItFile} $selected_text"'''
         # Name: LetMeDoIt AI
         # Command: /usr/bin/gnome-terminal --command ~/letmedoit/letmedoit.sh
         # Shortcut: Ctrl + Alt + L
+        # get selected text
         work_with_text_script = f'''#!/usr/bin/env bash
 selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
-{sys.executable} {config.letMeDoItFile} "$selected_text"'''
+{sys.executable} {config.letMeDoItFile} -u false -n true "$selected_text"'''
         work_with_text_script_path = os.path.join(storage, first_name)
         with open(work_with_text_script_path, "w", encoding="utf-8") as fileObj:
+            fileObj.write(work_with_text_script)
+        # summarise selected text
+        work_with_text_script = f'''#!/usr/bin/env bash
+selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
+{sys.executable} {config.letMeDoItFile} -u false -n true -c "Let me Summarize" -r "$selected_text"'''
+        work_with_summary_script_path = os.path.join(storage, f"{first_name}_Summary")
+        with open(work_with_summary_script_path, "w", encoding="utf-8") as fileObj:
+            fileObj.write(work_with_text_script)
+        # explain selected text
+        work_with_text_script = f'''#!/usr/bin/env bash
+selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
+{sys.executable} {config.letMeDoItFile} -u false -n true -c "Let me Explain" -r "$selected_text"'''
+        work_with_explanation_script_path = os.path.join(storage, f"{first_name}_Explanation")
+        with open(work_with_explanation_script_path, "w", encoding="utf-8") as fileObj:
+            fileObj.write(work_with_text_script)
+        # translate selected text
+        work_with_text_script = f'''#!/usr/bin/env bash
+selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
+{sys.executable} {config.letMeDoItFile} -u false -n true -c "Let me Translate" -r "$selected_text"'''
+        work_with_translation_script_path = os.path.join(storage, f"{first_name}_Translation")
+        with open(work_with_translation_script_path, "w", encoding="utf-8") as fileObj:
             fileObj.write(work_with_text_script)
         # work with files or folders selection via NAUTILUS; right-click > scripts > LetMeDoIt
         work_with_files_script = f'''#!/usr/bin/env bash
@@ -135,12 +159,21 @@ echo "$path" > {storage}/selected_files.txt
         with open(work_with_files_script_path, "w", encoding="utf-8") as fileObj:
             fileObj.write(work_with_files_script)
         # make script files executable
-        for i in (work_with_text_script_path, work_with_files_script_path):
+        for i in (
+            work_with_translation_script_path,
+            work_with_explanation_script_path,
+            work_with_summary_script_path,
+            work_with_text_script_path,
+            work_with_files_script_path,
+        ):
             os.chmod(i, 0o755)
     elif thisOS == "Darwin":
         file1 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Text_workflow/Contents/document.wflow")
         file2 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Files_workflow/Contents/document.wflow")
-        for i in (file1, file2):
+        file3 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Explanation_workflow/Contents/document.wflow")
+        file4 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Translation_workflow/Contents/document.wflow")
+        file5 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Summary_workflow/Contents/document.wflow")
+        for i in (file1, file2, file3, file4, file5):
             with open(i, "r", encoding="utf-8") as fileObj:
                 content = fileObj.read()
             search_replace = (
@@ -153,7 +186,10 @@ echo "$path" > {storage}/selected_files.txt
                 fileObj.write(content)
         file1 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Files_workflow/Contents/Info.plist")
         file2 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Text_workflow/Contents/Info.plist")
-        for i in (file1, file2):
+        file3 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Explanation_workflow/Contents/Info.plist")
+        file4 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Translation_workflow/Contents/Info.plist")
+        file5 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Summary_workflow/Contents/Info.plist")
+        for i in (file1, file2, file3, file4, file5):
             with open(i, "r", encoding="utf-8") as fileObj:
                 content = fileObj.read()
             content = re.sub("LetMeDoIt", first_name, content)
@@ -161,14 +197,25 @@ echo "$path" > {storage}/selected_files.txt
                 fileObj.write(content)
         folder1 = os.path.join(config.letMeDoItAIFolder, "macOS_service", "LetMeDoIt_Files_workflow")
         folder1_dest = os.path.join(os.path.expanduser("~/Library/Services"), f"{first_name} Files.workflow")
-        if os.path.isdir(folder1_dest):
-            shutil.rmtree(folder1_dest, ignore_errors=True)
-        shutil.copytree(folder1, folder1_dest)
         folder2 = os.path.join(config.letMeDoItAIFolder, "macOS_service", "LetMeDoIt_Text_workflow")
         folder2_dest = os.path.join(os.path.expanduser("~/Library/Services"), f"{first_name} Text.workflow")
-        if os.path.isdir(folder2_dest):
-            shutil.rmtree(folder2_dest, ignore_errors=True)
-        shutil.copytree(folder2, folder2_dest)
+        folder3 = os.path.join(config.letMeDoItAIFolder, "macOS_service", "LetMeDoIt_Explanation_workflow")
+        folder3_dest = os.path.join(os.path.expanduser("~/Library/Services"), f"{first_name} Explanation.workflow")
+        folder4 = os.path.join(config.letMeDoItAIFolder, "macOS_service", "LetMeDoIt_Summary_workflow")
+        folder4_dest = os.path.join(os.path.expanduser("~/Library/Services"), f"{first_name} Summary.workflow")
+        folder5 = os.path.join(config.letMeDoItAIFolder, "macOS_service", "LetMeDoIt_Translation_workflow")
+        folder5_dest = os.path.join(os.path.expanduser("~/Library/Services"), f"{first_name} Translation.workflow")
+        folders = (
+            (folder1, folder1_dest),
+            (folder2, folder2_dest),
+            (folder3, folder3_dest),
+            (folder4, folder4_dest),
+            (folder5, folder5_dest),
+        )
+        for folder, folder_dest in folders:
+            if os.path.isdir(folder_dest):
+                shutil.rmtree(folder_dest, ignore_errors=True)
+            shutil.copytree(folder, folder_dest)
         folder3 = os.path.join(config.letMeDoItAIFolder, "icons")
         folder3_dest = os.path.join(storage, "icons")
         if not os.path.isdir(folder3_dest):

@@ -75,7 +75,7 @@ class SharedUtil:
             )
             for search, replace in search_replace:
                 docs_path = docs_path.replace(search, replace)
-        return docs_path if os.path.exists(docs_path) else ""
+        return docs_path if os.path.exists(os.path.expanduser(docs_path)) else ""
 
     @staticmethod
     def getCurrentDateTime():

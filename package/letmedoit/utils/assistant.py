@@ -52,7 +52,8 @@ class LetMeDoItAI:
             config.defaultEntry = ""
         config.tempContent = ""
         config.tempChunk = ""
-        config.chatGPTApiPredefinedContextTemp = ""
+        if not hasattr(config, "predefinedContextTemp"):
+            config.predefinedContextTemp = ""
         config.systemCommandPromptEntry = ""
         config.pagerContent = ""
         self.addPagerContent = False
@@ -104,12 +105,12 @@ class LetMeDoItAI:
             self.print3("Read: https://github.com/eliranwong/letmedoit/wiki/ChatGPT-API-Key")
             exit(0)
 
-        # required
-        self.checkCompletion()
-        # optional
-        #if config.openaiApiOrganization:
-        #    raise Exception("The 'openai.organization' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(organization=config.openaiApiOrganization)'")
-        # chat records
+        # initial completion check at startup
+        if config.initialCompletionCheck:
+            self.checkCompletion()
+        else:
+            self.setAPIkey()
+
         chat_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "chats")
         self.terminal_chat_session = PromptSession(history=FileHistory(chat_history))
 
@@ -261,6 +262,16 @@ class LetMeDoItAI:
             return True if output["auth_result"] == "AUTH_RESULT_SUCCESS" else False
         except:
             return False
+
+    def setAPIkey(self):
+        # instantiate a client that can shared with plugins
+        os.environ["OPENAI_API_KEY"] = config.openaiApiKey
+        self.client = OpenAI()
+        # set variable 'OAI_CONFIG_LIST' to work with pyautogen
+        oai_config_list = []
+        for model in self.models:
+            oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
+        os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
 
     def changeAPIkey(self):
         if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
@@ -776,30 +787,37 @@ Always remember that you are much more than a text-based AI. You possess both vi
         return messages
 
     def getCurrentContext(self):
-        if not config.chatGPTApiPredefinedContext in config.predefinedContexts:
-            config.chatGPTApiPredefinedContext = "[none]"
-        if config.chatGPTApiPredefinedContext == "[none]":
+        if not config.predefinedContext in config.predefinedContexts:
+            self.print2(f"'{config.predefinedContext}' not defined!")
+            config.predefinedContext = config.predefinedContextTemp if config.predefinedContextTemp and config.predefinedContextTemp in config.predefinedContexts else "[none]"
+            self.print3(f"Predefined context changed to: {config.predefinedContext}")
+        if config.predefinedContext == "[none]":
             # no context
             context = ""
-        elif config.chatGPTApiPredefinedContext == "[custom]":
+        elif config.predefinedContext == "[custom]":
             # custom input in the settings dialog
-            context = config.chatGPTApiCustomContext
+            context = config.customPredefinedContext
         else:
             # users can modify config.predefinedContexts via plugins
-            context = config.predefinedContexts[config.chatGPTApiPredefinedContext]
+            context = config.predefinedContexts[config.predefinedContext]
         return context
+
+    def showCurrentContext(self):
+        description = self.getCurrentContext()
+        if description:
+            description = f"\n{description}"
+        self.print(self.divider)
+        self.print3(f"Context: {config.predefinedContext}{description}")
+        self.print(self.divider)
 
     def fineTuneUserInput(self, userInput):
         # customise chat context
         context = self.getCurrentContext()
-        if context and (not config.conversationStarted or (config.conversationStarted and config.chatGPTApiContextInAllInputs)):
+        if context and (not config.conversationStarted or (config.conversationStarted and config.applyPredefinedContextAlways)):
             # context may start with "You will be provided with my input delimited with a pair of XML tags, <input> and </input>. ...
             userInput = re.sub("<content>|<content [^<>]*?>|</content>", "", userInput)
             userInput = f"{context}\n<content>{userInput}</content>" if userInput.strip() else context
         #userInput = SharedUtil.addTimeStamp(userInput)
-        if config.chatGPTApiPredefinedContextTemp:
-            config.chatGPTApiPredefinedContext = config.chatGPTApiPredefinedContextTemp
-            config.chatGPTApiPredefinedContextTemp = ""
         return userInput
 
     def runOptions(self, features, userInput):
@@ -939,11 +957,11 @@ Always remember that you are much more than a text-based AI. You possess both vi
         option = self.dialogs.getValidOptions(
             options=options,
             title="Predefined Context Inclusion",
-            default="all inputs" if config.chatGPTApiContextInAllInputs else "the first input only",
+            default="all inputs" if config.applyPredefinedContextAlways else "the first input only",
             text="Define below how you want to include predefined context\nwith your inputs.\nApply predefined context in ...",
         )
         if option:
-            config.chatGPTApiContextInAllInputs = True if option == "all inputs" else False
+            config.applyPredefinedContextAlways = True if option == "all inputs" else False
             config.saveConfig()
             self.print3(f"Predefined Context Inclusion: {option}!")
 
@@ -1358,7 +1376,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             pydoc.pipepager(plainText, cmd="termux-share -a send")
         else:
             try:
-                #filename = re.sub('[\\\/\:\*\?\"\<\>\|]', "", messages[2 if config.chatGPTApiCustomContext.strip() else 1]["content"])[:40].strip()
+                #filename = re.sub('[\\\/\:\*\?\"\<\>\|]', "", messages[2 if config.customPredefinedContext.strip() else 1]["content"])[:40].strip()
                 filename = SharedUtil.getCurrentDateTime()
                 foldername = os.path.join(self.getFiles(), "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", filename))
                 Path(foldername).mkdir(parents=True, exist_ok=True)
@@ -1388,31 +1406,17 @@ Always remember that you are much more than a text-based AI. You possess both vi
         predefinedContext = self.dialogs.getValidOptions(
             options=contexts,
             title="Predefined Contexts",
-            default=config.chatGPTApiPredefinedContext,
+            default=config.predefinedContext,
             text="Select a context:",
         )
         if predefinedContext:
-            config.chatGPTApiPredefinedContext = predefinedContext
-            if config.chatGPTApiPredefinedContext == "[custom]":
+            config.predefinedContext = predefinedContext
+            if config.predefinedContext == "[custom]":
                 self.print("Edit custom context below:")
-                customContext = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.chatGPTApiCustomContext)
+                customContext = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.customPredefinedContext)
                 if customContext and not customContext.strip().lower() == config.exit_entry:
-                    config.chatGPTApiCustomContext = customContext.strip()
+                    config.customPredefinedContext = customContext.strip()
             self.showCurrentContext()
-
-    def showCurrentContext(self):
-        if not config.chatGPTApiPredefinedContext in config.predefinedContexts:
-            config.chatGPTApiPredefinedContext = "[none]"
-        if config.chatGPTApiPredefinedContext == "[none]":
-            context = "[none]"
-        elif config.chatGPTApiPredefinedContext == "[custom]":
-            context = f"[custom] {config.chatGPTApiCustomContext}"
-        else:
-            contextDescription = config.predefinedContexts[config.chatGPTApiPredefinedContext]
-            context = f"[{config.chatGPTApiPredefinedContext}] {contextDescription}"
-        self.print(self.divider)
-        self.print3(f"Context: {context}")
-        self.print(self.divider)
 
     def getDirectoryList(self):
         directoryList = []
@@ -1639,7 +1643,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 self.runInstruction()
             elif userInputLower == ".context":
                 self.changeContext()
-                if not config.chatGPTApiContextInAllInputs and config.conversationStarted:
+                if not config.applyPredefinedContextAlways and config.conversationStarted:
                     self.saveChat(config.currentMessages)
                     startupdirectory, config.currentMessages = startChat()
             elif userInputLower == ".new" and config.conversationStarted:
@@ -1672,7 +1676,12 @@ My writing:
                         userInput = f"{userInput}{specialEntry}"
                     # refine messages before running completion
                     fineTunedUserInput = self.fineTuneUserInput(userInput)
-                    noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.chatGPTApiPredefinedContext.startswith("Counselling - ") or config.chatGPTApiPredefinedContext.endswith("Counselling"))
+                    # clear config.predefinedContextTemp if any
+                    if config.predefinedContextTemp:
+                        config.predefinedContext = config.predefinedContextTemp
+                        config.predefinedContextTemp = ""
+                    # check special entries
+                    noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.predefinedContext.startswith("Counselling - ") or config.predefinedContext.endswith("Counselling"))
                     noScreening = ("[NO_SCREENING]" in fineTunedUserInput)
                     checkCallSpecificFunction = re.search("\[CALL_([^\[\]]+?)\]", fineTunedUserInput)
                     config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
@@ -1976,9 +1985,7 @@ My writing:
         return self.wrappedText
 
     def checkCompletion(self):
-        # instantiate a client that can shared with plugins
-        os.environ["OPENAI_API_KEY"] = config.openaiApiKey
-        self.client = OpenAI()
+        self.setAPIkey()
         try:
             self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -1986,11 +1993,6 @@ My writing:
                 n=1,
                 max_tokens=10,
             )
-            # set variable 'OAI_CONFIG_LIST' to work with pyautogen
-            oai_config_list = []
-            for model in self.models:
-                oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
-            os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
         except openai.APIError as e:
             self.print("Error: Issue on OpenAI side.")
             self.print("Solution: Retry your request after a brief wait and contact us if the issue persists.")

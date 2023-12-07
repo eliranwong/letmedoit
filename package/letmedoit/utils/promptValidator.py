@@ -14,7 +14,7 @@ class TokenValidator(Validator):
     def validate(self, document):
         #current_buffer = get_app().current_buffer
         currentInput = document.text
-        if currentInput.lower() in (config.exit_entry, config.cancel_entry, ".new", ".share", ".save", ""):
+        if not config.realTimeTokenCount or not currentInput or currentInput.lower() in (config.exit_entry, config.cancel_entry, ".new", ".share", ".save"):
             pass
         elif tiktokenImported:
             try:
@@ -41,7 +41,6 @@ class TokenValidator(Validator):
                 raise ValidationError(message='Token limit reached!', cursor_position=document.cursor_position)
         else:
             pass
-
 
 class NumberValidator(Validator):
     def validate(self, document):
