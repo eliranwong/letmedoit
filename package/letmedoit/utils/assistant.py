@@ -1417,6 +1417,9 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 if customContext and not customContext.strip().lower() == config.exit_entry:
                     config.customPredefinedContext = customContext.strip()
             self.showCurrentContext()
+        else:
+            # a way to quickly clean up context
+            config.predefinedContext = "[none]"
 
     def getDirectoryList(self):
         directoryList = []
@@ -1676,6 +1679,15 @@ My writing:
                         userInput = f"{userInput}{specialEntry}"
                     # refine messages before running completion
                     fineTunedUserInput = self.fineTuneUserInput(userInput)
+                    # in case of translation
+                    if config.predefinedContext == "Let me Translate" and fineTunedUserInput.startswith(config.predefinedContexts[config.predefinedContext]):
+                        self.print("Please specify below the language you would like the content to be translated into:")
+                        language = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.translateToLanguage)
+                        if language and not language.strip().lower() in (config.cancel_entry, config.exit_entry):
+                            fineTunedUserInput = f"{fineTunedUserInput}\n\nPlease translate the content into <language>{language}</language>."
+                            config.translateToLanguage = language
+                        else:
+                            continue
                     # clear config.predefinedContextTemp if any
                     if config.predefinedContextTemp:
                         config.predefinedContext = config.predefinedContextTemp

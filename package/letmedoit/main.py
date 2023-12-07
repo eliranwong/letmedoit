@@ -252,6 +252,8 @@ def set_log_file_max_lines(log_file, max_lines):
             print(f"{num_lines_to_delete} old lines deleted from log file '{filename}'.")
 
 def main():
+    print(f"launching {config.letMeDoItName} ...")
+
     # Create the parser
     parser = argparse.ArgumentParser(description="LetMeDoIt AI cli options")
     # Add arguments
@@ -260,7 +262,7 @@ def main():
     parser.add_argument('-f', '--file', action='store', dest='file', help="read file text as default entry with -f flag")
     parser.add_argument('-n', '--nocheck', action='store', dest='nocheck', help="set 'true' to bypass completion check at startup with -n flag")
     parser.add_argument('-r', '--run', action='store', dest='run', help="run default entry with -r flag")
-    parser.add_argument('-rf', '--runfile', action='store', dest='runfile', help="read file text as default entry and run with -f flag")
+    parser.add_argument('-rf', '--runfile', action='store', dest='runfile', help="read file text as default entry and run with -rf flag")
     parser.add_argument('-u', '--update', action='store', dest='update', help="set 'true' to force or 'false' to bypass automatic update with -u flag")
     # Parse arguments
     args = parser.parse_args()

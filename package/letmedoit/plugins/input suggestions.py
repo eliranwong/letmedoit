@@ -24,7 +24,7 @@ config.inputSuggestions += [
         f"Improve the following content according to {config.improvedWritingSytle}:\n[NO_FUNCTION_CALL]\n",
     ]
 
-config.inputSuggestions.append("""Translate Content. Assist me by acting as a translator. Once I have provided you with the content, you should inquire about the language I need it translated into. After I inform you of the desired language, proceed with the translation without function call.
+config.inputSuggestions.append("""Translate Content. Assist me by acting as a translator. Once I have provided you with the content, you should inquire about the language I need it translated into. After I inform you of the desired language, proceed with the translation.
 [NO_FUNCTION_CALL]
 Please translate the content below:
 """)
