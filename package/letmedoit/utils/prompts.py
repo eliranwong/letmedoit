@@ -146,6 +146,8 @@ Available tokens: {estimatedAvailableTokens}
             config.toggleMultiline()
         @this_key_bindings.add("c-o")
         def _(event):
+            buffer = event.app.current_buffer
+            config.defaultEntry = buffer.text
             event.app.current_buffer.text = ".context"
             event.app.current_buffer.validate_and_handle()
         @this_key_bindings.add("escape", "!")

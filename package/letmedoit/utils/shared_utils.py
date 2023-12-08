@@ -413,9 +413,12 @@ Acess the risk level of this Python code:
 
     @staticmethod
     def get_wan_ip():
-        response = requests.get('https://api.ipify.org?format=json')
-        data = response.json()
-        return data['ip']
+        try:
+            response = requests.get('https://api.ipify.org?format=json', timeout=5)
+            data = response.json()
+            return data['ip']
+        except:
+            return ""
 
     @staticmethod
     def get_local_ip():

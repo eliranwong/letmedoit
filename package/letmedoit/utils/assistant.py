@@ -780,7 +780,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
                         item["content"],
                         flags=re.M,
                     )
-                    messages.append(item)
+                    #messages.append(item)
+                    messages.insert(len(messages) - 1, item)
                     break
             except:
                 pass
@@ -1579,7 +1580,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
 
             # replace alias, if any with full entry
             for alias, fullEntry in config.aliases.items():
-                userInput = re.sub(alias, fullEntry, userInput)
+                #userInput = re.sub(alias, fullEntry, userInput) # error on Windows coz of Windows path
+                userInput = userInput.replace(alias, fullEntry)
 
             # open file / directory directly
             docs_path = SharedUtil.isExistingPath(userInput)
