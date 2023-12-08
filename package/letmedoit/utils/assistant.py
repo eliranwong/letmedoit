@@ -846,6 +846,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
             "change pager view",
             "change embedding model",
             "change assistant name",
+            "change custom system message",
+            "change ip information inclusion",
             "change startup directory",
             "change auto builder config",
             "change custom text editor",
@@ -889,6 +891,10 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 self.selectPlugins()
             elif feature == ".autobuilderconfig":
                 AutoGenBuilder().promptConfig()
+            elif feature == ".systemmessage":
+                self.setCustomSystemMessage()
+            elif feature == ".ipinfo":
+                self.setIncludeIpInSystemMessage()
             elif feature == ".keys":
                 config.showKeyBindings()
             elif feature == ".help":
@@ -939,6 +945,19 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.autoUpgrade = (option == "enable")
             config.saveConfig()
             self.print3(f"Automatic Upgrade: {option}d!")
+
+    def setIncludeIpInSystemMessage(self):
+        options = ("enable", "disable")
+        option = self.dialogs.getValidOptions(
+            options=options,
+            title="Include IP information",
+            default="enable" if config.includeIpInSystemMessage else "disable",
+            text="Include IP information in system message\ncan enhance response about locations.\nSelect an option below:"
+        )
+        if option:
+            config.includeIpInSystemMessage = (option == "enable")
+            config.saveConfig()
+            self.print3(f"Include IP information: {option}d!")
 
     def setCodeDisplay(self):
         options = ("enable", "disable")
@@ -1194,6 +1213,17 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.preferredDir = self.getPreferredDir()
             config.saveConfig()
             self.print3(f"You have changed my name to: {config.letMeDoItName}")
+
+    def setCustomSystemMessage(self):
+        self.print("You can modify the system message to furnish me with details about my capabilities, constraints, or any pertinent context that may inform our interactions. This will guide me in managing and responding to your requests appropriately.")
+        self.print("Please note that altering my system message directly affects my functionality. Handle with care.")
+        self.print("Enter custom system message below:")
+        self.print(f"(Keep it blank to use {config.letMeDoItName} default system message.)")
+        message = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.customSystemMessage)
+        if message and not message.strip().lower() == config.exit_entry:
+            config.customSystemMessage = message
+            config.saveConfig()
+            self.print3(f"Custom system message: {config.letMeDoItName}")
 
     def setCustomTextEditor(self):
         self.print("Please specify custom text editor command below:")
@@ -1514,6 +1544,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
             ".pagerview",
             ".embeddingmodel",
             ".assistantname",
+            ".systemmessage",
+            ".ipinfo",
             ".startupDirectory",
             ".autobuilderconfig",
             ".customtexteditor",

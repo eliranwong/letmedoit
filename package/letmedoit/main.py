@@ -112,7 +112,7 @@ def updateApp():
     elif installed_version is not None:
         print(f"Latest version: {latest_version}")
         if latest_version > installed_version:
-            if config.thisPlatform == "Windows":
+            if thisPlatform == "Windows":
                 print("Automatic upgrade feature is yet to be supported on Windows!")
                 print(f"Run 'pip install --upgrade {package}' to manually upgrade this app!")
             else:
@@ -163,6 +163,7 @@ def saveConfig():
     with open(configFile, "w", encoding="utf-8") as fileObj:
         for name in dir(config):
             excludeConfigList = [
+                "includeIpInSystemMessageTemp",
                 "initialCompletionCheck",
                 "promptStyle1",
                 "promptStyle2",
@@ -264,6 +265,7 @@ def main():
     parser.add_argument("default", nargs="?", default=None, help="default entry")
     parser.add_argument('-c', '--context', action='store', dest='context', help="specify pre-defined context with -r flag")
     parser.add_argument('-f', '--file', action='store', dest='file', help="read file text as default entry with -f flag")
+    parser.add_argument('-i', '--ip', action='store', dest='ip', help="set 'true' to include or 'false' to exclude ip in system message with -i flag")
     parser.add_argument('-n', '--nocheck', action='store', dest='nocheck', help="set 'true' to bypass completion check at startup with -n flag")
     parser.add_argument('-r', '--run', action='store', dest='run', help="run default entry with -r flag")
     parser.add_argument('-rf', '--runfile', action='store', dest='runfile', help="read file text as default entry and run with -rf flag")
@@ -282,6 +284,9 @@ def main():
 
     # initial completion check at startup
     config.initialCompletionCheck = False if args.nocheck and args.nocheck.lower() == "true" else True
+
+    # include ip in system message
+    config.includeIpInSystemMessageTemp = True if args.ip and args.ip.lower() == "true" else False
 
     # specify pre-defined context
     if args.context:

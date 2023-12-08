@@ -437,7 +437,7 @@ Acess the risk level of this Python code:
         return now.format('dddd')
 
     @staticmethod
-    def getDeviceInfo():
+    def getDeviceInfo(includeIp=False):
         g = geocoder.ip('me')
         if hasattr(config, "thisPlatform"):
             thisPlatform = config.thisPlatform
@@ -445,8 +445,14 @@ Acess the risk level of this Python code:
             thisPlatform = platform.system()
             if thisPlatform == "Darwin":
                 thisPlatform = "macOS"
-        wan_ip = SharedUtil.get_wan_ip()
-        local_ip = SharedUtil.get_local_ip()
+        if config.includeIpInSystemMessageTemp or includeIp or (config.includeIpInSystemMessage and config.includeIpInSystemMessageTemp):
+            wan_ip = SharedUtil.get_wan_ip()
+            local_ip = SharedUtil.get_local_ip()
+            ipInfo = f'''Wan ip: {wan_ip}
+Local ip: {local_ip}
+'''
+        else:
+            ipInfo = ""
         dayOfWeek = SharedUtil.getDayOfWeek()
         return f"""Operating system: {thisPlatform}
 Version: {platform.version()}
@@ -460,9 +466,7 @@ Python implementation: {platform.python_implementation()}
 Current directory: {os.getcwd()}
 Current time: {str(datetime.datetime.now())}
 Current day of the week: {dayOfWeek}
-Wan ip: {wan_ip}
-Local ip: {local_ip}
-Latitude & longitude: {g.latlng}
+{ipInfo}Latitude & longitude: {g.latlng}
 Country: {g.country}
 State: {g.state}
 City: {g.city}"""

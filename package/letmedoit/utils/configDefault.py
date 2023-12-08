@@ -15,6 +15,7 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
                 config.thisTranslation[i] = thisTranslation[i]
 
 defaultSettings = (
+    ('includeIpInSystemMessage', False),
     ('translateToLanguage', ''),
     ('realTimeTokenCount', True),
     ('use_oai_assistant', False), # support OpenAI Assistants API in AutoGen Agent Builder

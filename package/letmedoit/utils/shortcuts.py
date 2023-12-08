@@ -22,13 +22,7 @@ def createShortcuts():
         desktopShortcut1 = os.path.join(os.path.expanduser('~'), 'Desktop', f"{appName}.bat")
         desktopShortcut2 = os.path.join(os.path.expanduser('~'), 'OneDrive', 'Desktop', f"{appName}.bat")
         sendToShortcut = os.path.join(os.path.expanduser('~'), os.environ["APPDATA"], 'Microsoft\Windows\SendTo', f"{appName}.bat")
-        #shortcutCommand1 = f'''powershell.exe -NoExit -Command "{sys.executable} '{config.letMeDoItFile}' -f %1"'''
-        shortcutCommand1 = f'''IF "%~1"=="" (
-    powershell.exe -NoExit -Command "{sys.executable} '{config.letMeDoItFile}'"
-) ELSE (
-    powershell.exe -NoExit -Command "{sys.executable} '{config.letMeDoItFile}' %1"
-)
-'''
+        shortcutCommand1 = f'''powershell.exe -NoExit -Command "{sys.executable} '{config.letMeDoItFile}' \"%1\""'''
         # Create .bat for application shortcuts
         if not os.path.exists(shortcutBat1):
             for i in (shortcutBat1, desktopShortcut1, desktopShortcut2, sendToShortcut):
@@ -130,28 +124,28 @@ Start-Process "{sys.executable} {config.letMeDoItFile} $selected_text"'''
         # get selected text
         work_with_text_script = f'''#!/usr/bin/env bash
 selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
-{sys.executable} {config.letMeDoItFile} -u false -n true "$selected_text"'''
+{sys.executable} {config.letMeDoItFile} -u false -n true -i false "$selected_text"'''
         work_with_text_script_path = os.path.join(storage, first_name)
         with open(work_with_text_script_path, "w", encoding="utf-8") as fileObj:
             fileObj.write(work_with_text_script)
         # summarise selected text
         work_with_text_script = f'''#!/usr/bin/env bash
 selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
-{sys.executable} {config.letMeDoItFile} -u false -n true -c "Let me Summarize" -r "$selected_text"'''
+{sys.executable} {config.letMeDoItFile} -u false -n true -i false -c "Let me Summarize" -r "$selected_text"'''
         work_with_summary_script_path = os.path.join(storage, f"{first_name}_Summary")
         with open(work_with_summary_script_path, "w", encoding="utf-8") as fileObj:
             fileObj.write(work_with_text_script)
         # explain selected text
         work_with_text_script = f'''#!/usr/bin/env bash
 selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
-{sys.executable} {config.letMeDoItFile} -u false -n true -c "Let me Explain" -r "$selected_text"'''
+{sys.executable} {config.letMeDoItFile} -u false -n true -i false -c "Let me Explain" -r "$selected_text"'''
         work_with_explanation_script_path = os.path.join(storage, f"{first_name}_Explanation")
         with open(work_with_explanation_script_path, "w", encoding="utf-8") as fileObj:
             fileObj.write(work_with_text_script)
         # translate selected text
         work_with_text_script = f'''#!/usr/bin/env bash
 selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
-{sys.executable} {config.letMeDoItFile} -u false -n true -c "Let me Translate" -r "$selected_text"'''
+{sys.executable} {config.letMeDoItFile} -u false -n true -i false -c "Let me Translate" -r "$selected_text"'''
         work_with_translation_script_path = os.path.join(storage, f"{first_name}_Translation")
         with open(work_with_translation_script_path, "w", encoding="utf-8") as fileObj:
             fileObj.write(work_with_text_script)
@@ -161,7 +155,7 @@ mkdir -p {storage}
 # Get the selected file or folder path
 path="$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS"
 echo "$path" > {storage}/selected_files.txt
-/usr/bin/gnome-terminal --command "{sys.executable} {config.letMeDoItFile} -f {storage}/selected_files.txt"'''
+/usr/bin/gnome-terminal --command "{sys.executable} {config.letMeDoItFile} -u false -n true -i false -f {storage}/selected_files.txt"'''
         work_with_files_script_path = os.path.expanduser(f"~/.local/share/nautilus/scripts/{first_name}")
         with open(work_with_files_script_path, "w", encoding="utf-8") as fileObj:
             fileObj.write(work_with_files_script)

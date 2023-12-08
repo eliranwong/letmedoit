@@ -37,6 +37,7 @@ class HealthCheck:
         config.max_agents = 5
         config.max_group_chat_round = 12
         config.max_consecutive_auto_reply = 10
+        config.includeIpInSystemMessage = False
         HealthCheck.setPrint()
     
     @staticmethod

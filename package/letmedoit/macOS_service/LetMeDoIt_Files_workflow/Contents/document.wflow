@@ -61,7 +61,7 @@
 					<key>COMMAND_STRING</key>
 					<string>mkdir -p ~/letmedoit
 echo "$1" &gt; ~/letmedoit/selected_files.txt
-osascript -e 'tell application "Terminal" to do script "[LETMEDOIT_PATH] -u false -n true -f ~/letmedoit/selected_files.txt"'
+osascript -e 'tell application "Terminal" to do script "[LETMEDOIT_PATH] -u false -n true -i false -f ~/letmedoit/selected_files.txt"'
 osascript -e 'tell application "Terminal" to activate'</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>

@@ -93,7 +93,7 @@ class Prompts:
             buffer.validate_and_handle()
         @this_key_bindings.add("escape", "f")
         def _(_):
-            run_in_terminal(lambda: print(SharedUtil.getDeviceInfo()))
+            run_in_terminal(lambda: print(SharedUtil.getDeviceInfo(True)))
         @this_key_bindings.add("escape", "c")
         def _(event):
             try:
