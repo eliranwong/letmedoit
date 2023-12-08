@@ -112,19 +112,23 @@ def updateApp():
     elif installed_version is not None:
         print(f"Latest version: {latest_version}")
         if latest_version > installed_version:
-            try:
-                # delete old shortcut files
-                appName = config.letMeDoItName.split()[0]
-                shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop")
-                for shortcutFile in shortcutFiles:
-                    shortcut = os.path.join(config.letMeDoItAIFolder, shortcutFile)
-                    if os.path.isfile(shortcut):
-                        os.remove(shortcut)
-                # upgrade package
-                installmodule(f"--upgrade {package}")
-                restartApp()
-            except:
-                print(f"Failed to upgrade '{package}'!")
+            if config.thisPlatform == "Windows":
+                print("Automatic upgrade feature is yet to be supported on Windows!")
+                print(f"Run 'pip install --upgrade {package}' to manually upgrade this app!")
+            else:
+                try:
+                    # delete old shortcut files
+                    appName = config.letMeDoItName.split()[0]
+                    shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop")
+                    for shortcutFile in shortcutFiles:
+                        shortcut = os.path.join(config.letMeDoItAIFolder, shortcutFile)
+                        if os.path.isfile(shortcut):
+                            os.remove(shortcut)
+                    # upgrade package
+                    installmodule(f"--upgrade {package}")
+                    restartApp()
+                except:
+                    print(f"Failed to upgrade '{package}'!")
 
 # import other libraries
 import pprint

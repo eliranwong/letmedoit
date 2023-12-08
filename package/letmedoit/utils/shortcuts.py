@@ -18,20 +18,27 @@ def createShortcuts():
     # Desktop shortcut
     # on Windows
     if thisOS == "Windows":
-        desktopPath = os.path.join(os.path.expanduser('~'), 'Desktop')
         shortcutBat1 = os.path.join(config.letMeDoItAIFolder, f"{appName}.bat")
-        shortcutCommand1 = f'''powershell.exe -NoExit -Command "{sys.executable} '{config.letMeDoItFile} -f %1'"'''
+        desktopShortcut1 = os.path.join(os.path.expanduser('~'), 'Desktop', f"{appName}.bat")
+        desktopShortcut2 = os.path.join(os.path.expanduser('~'), 'OneDrive', 'Desktop', f"{appName}.bat")
+        sendToShortcut = os.path.join(os.path.expanduser('~'), os.environ["APPDATA"], 'Microsoft\Windows\SendTo', f"{appName}.bat")
+        #shortcutCommand1 = f'''powershell.exe -NoExit -Command "{sys.executable} '{config.letMeDoItFile}' -f %1"'''
+        shortcutCommand1 = f'''IF "%~1"=="" (
+    powershell.exe -NoExit -Command "{sys.executable} '{config.letMeDoItFile}'"
+) ELSE (
+    powershell.exe -NoExit -Command "{sys.executable} '{config.letMeDoItFile}' %1"
+)
+'''
         # Create .bat for application shortcuts
         if not os.path.exists(shortcutBat1):
-            try:
-                print("creating shortcut ...")
-                with open(shortcutBat1, "w") as fileObj:
-                    fileObj.write(shortcutCommand1)
-                print(f"Created: {shortcutBat1}")
-                shutil.copy(shortcutBat1, desktopPath) # overwrites older version
-                print("Copied to Desktop!")
-            except:
-                pass
+            for i in (shortcutBat1, desktopShortcut1, desktopShortcut2, sendToShortcut):
+                try:
+                    print("creating shortcuts ...")
+                    with open(i, "w") as fileObj:
+                        fileObj.write(shortcutCommand1)
+                    print(f"Created: {shortcutBat1}")
+                except:
+                    pass
     # on macOS
     # on iOS a-Shell app, ~/Desktop/ is invalid
     elif thisOS == "Darwin":

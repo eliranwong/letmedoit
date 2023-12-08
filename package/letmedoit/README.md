@@ -280,7 +280,7 @@ You can manually upgrade by running:
 
 > pip install --upgrade letmedoit
 
-You can also enable [Automatic Upgrade Option](https://github.com/eliranwong/letmedoit/wiki/Automatic-Upgrade-Option)
+You can also enable [Automatic Upgrade Option](https://github.com/eliranwong/letmedoit/wiki/Automatic-Upgrade-Option) on macOS and Linux.
 
 # Features
 
