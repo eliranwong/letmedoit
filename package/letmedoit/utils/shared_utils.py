@@ -1,5 +1,6 @@
 from letmedoit import config
 from packaging import version
+from bs4 import BeautifulSoup
 import platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback
 import datetime, requests, netifaces, textwrap, json, geocoder, base64, getpass, pendulum, pkg_resources
 import pygments
@@ -94,28 +95,42 @@ class SharedUtil:
         return f"{content}\n[Current time: {time}]"
 
     @staticmethod
-    def downloadWebContent(url):
-        supported_formats = TEXT_FORMATS[:]
-        supported_formats.remove("org")
-        hasExt = re.search("\.([^\.]+?)$", url)
-        timeout = 60
-        try:
-            filename = quote(url, safe="")
-            if hasExt and hasExt.group(1) in supported_formats:
-                response = requests.get(url, timeout=timeout)
-                filename = os.path.join(config.letMeDoItAIFolder, "temp", filename)
-                with open(filename, "wb") as fileObj:
-                    fileObj.write(response.content)
-            else:
-                # handle content as text
-                response = requests.get(url, timeout=timeout)
-                # Save the content to a html file
-                filename = os.path.join(config.letMeDoItAIFolder, "temp", f"{filename}.html")
-                with open(filename, "w", encoding="utf-8") as fileObj:
-                    fileObj.write(response.text)
+    def downloadWebContent(url, timeout=60, folder="", ignoreKind=False):
+        config.print2("Downloading web content ...")
+        hasExt = re.search("\.([^\./]+?)$", url)
+        supported_documents = TEXT_FORMATS[:]
+        supported_documents.remove("org")
+
+        response = requests.get(url, timeout=timeout)
+        folder = folder if folder and os.path.isdir(folder) else os.path.join(config.letMeDoItAIFolder, "temp")
+        filename = quote(url, safe="")
+        def downloadBinary(filename=filename):
+            filename = os.path.join(folder, filename)
+            with open(filename, "wb") as fileObj:
+                fileObj.write(response.content)
             return filename
+        def downloadHTML(filename=filename):
+            filename = os.path.join(folder, f"{filename}.html")
+            with open(filename, "w", encoding="utf-8") as fileObj:
+                fileObj.write(response.text)
+            return filename
+
+        try:
+            if ignoreKind:
+                filename = downloadBinary()
+                config.print3(f"Downloaded at: {filename}")
+                return ("any", filename)
+            elif hasExt and hasExt.group(1) in supported_documents:
+                return ("document", downloadBinary())
+            elif SharedUtil.is_valid_image_url(url):
+                return ("image", downloadBinary())
+            else:
+                # download content as text
+                # Save the content to a html file
+                return ("text", downloadHTML())
         except:
-            return ""
+            SharedUtil.showErrors()
+            return ("", "")
 
     @staticmethod
     def is_valid_url(url):
@@ -132,7 +147,7 @@ class SharedUtil:
     @staticmethod
     def is_valid_image_url(url): 
         try: 
-            response = requests.head(url) 
+            response = requests.head(url, timeout=30)
             content_type = response.headers['content-type'] 
             if 'image' in content_type: 
                 return True 
@@ -161,6 +176,15 @@ class SharedUtil:
         os.path.splitext(os.path.basename(image_path))[1]
         return f"data:image/png;base64,{base64_image}"
 
+    def getWebText(url):
+        try:
+            # Download webpage content
+            response = requests.get(url, timeout=30)
+            # Parse the HTML content to extract text
+            soup = BeautifulSoup(response.text, 'html.parser')
+            return soup.get_text()
+        except:
+            return ""
 
     @staticmethod
     def transformText(text):

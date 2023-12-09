@@ -814,6 +814,10 @@ Always remember that you are much more than a text-based AI. You possess both vi
     def fineTuneUserInput(self, userInput):
         # customise chat context
         context = self.getCurrentContext()
+        if SharedUtil.is_valid_url(userInput) and config.predefinedContext in ("Let me Summarize", "Let me Explain"):
+            context = context.replace("the following content:\n[NO_FUNCTION_CALL]", "the content in the this web url:\n")
+        elif SharedUtil.is_valid_url(userInput) and config.predefinedContext == "Let me Translate":
+            userInput = SharedUtil.getWebText(userInput)
         if context and (not config.conversationStarted or (config.conversationStarted and config.applyPredefinedContextAlways)):
             # context may start with "You will be provided with my input delimited with a pair of XML tags, <input> and </input>. ...
             userInput = re.sub("<content>|<content [^<>]*?>|</content>", "", userInput)
@@ -1587,7 +1591,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             # display current directory if changed
             currentDirectory = os.getcwd()
             if not currentDirectory == startupdirectory:
-                self.print(self.divider)
+                #self.print(self.divider)
                 self.print3(f"Current directory: {currentDirectory}")
                 self.print(self.divider)
                 startupdirectory = currentDirectory
@@ -1731,7 +1735,7 @@ My writing:
                     # refine messages before running completion
                     fineTunedUserInput = self.fineTuneUserInput(userInput)
                     # in case of translation
-                    if config.predefinedContext == "Let me Translate" and fineTunedUserInput.startswith(config.predefinedContexts[config.predefinedContext]):
+                    if config.predefinedContext == "Let me Translate" and fineTunedUserInput.startswith("Assist me by acting as a translator.\nPlease translate"):
                         self.print("Please specify below the language you would like the content to be translated into:")
                         language = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.translateToLanguage)
                         if language and not language.strip().lower() in (config.cancel_entry, config.exit_entry):

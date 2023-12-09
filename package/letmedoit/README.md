@@ -36,6 +36,10 @@ I am an advanced AI assistant uniquely equipped with direct execution capabiliti
 
 # Recent Additions
 
+[Work with text selection in third-party applications](https://github.com/eliranwong/letmedoit/wiki/Work-with-Text-Selection)
+
+<img width="1432" alt="download_youtube_video" src="https://github.com/eliranwong/letmedoit/assets/25262722/89a556ce-f524-44b5-b143-85a48e81f20e">
+
 [Modify your images with simple words](https://github.com/eliranwong/letmedoit/wiki/Modify-your-images-with-simple-words)
 
 ![Modify images](https://github.com/eliranwong/letmedoit/assets/25262722/0aff4481-9f72-41db-865f-36dc7fcc46ae)

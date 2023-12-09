@@ -18,8 +18,24 @@ def analyze_web_content(function_args):
         config.print(f"'{url}' is not a valid url" if url else "No url is provided!")
         return "[INVALID]"
     config.stopSpinning()
-    filename = SharedUtil.downloadWebContent(url)
-    AutoGenRetriever().getResponse(filename, query)
+    kind, filename = SharedUtil.downloadWebContent(url)
+    if not filename:
+        return "[INVALID]"
+    elif kind == "image":
+        # call function "analyze image" instead if it is an image
+        function_args = {
+            "query": query,
+            "files": [filename],
+        }
+        config.print3("Running function: 'analyze_images'")
+        return config.chatGPTApiAvailableFunctions["analyze_images"](function_args)
+
+    # process with AutoGen Retriever
+    config.print2("AutoGen Retriever launched!")
+    last_message = AutoGenRetriever().getResponse(filename, query)
+    config.currentMessages += last_message
+    config.print2("AutoGen Retriever closed!")
+
     return ""
 
 functionSignature = {

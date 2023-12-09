@@ -135,6 +135,27 @@ selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
         work_with_summary_script_path = os.path.join(storage, f"{first_name}_Summary")
         with open(work_with_summary_script_path, "w", encoding="utf-8") as fileObj:
             fileObj.write(work_with_text_script)
+        # download selected url
+        work_with_text_script = f'''#!/usr/bin/env bash
+selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
+{sys.executable} {config.letMeDoItFile} -u false -n true -i false -c "Let me Download" -r "$selected_text"'''
+        work_with_download_script_path = os.path.join(storage, f"{first_name}_Summary")
+        with open(work_with_download_script_path, "w", encoding="utf-8") as fileObj:
+            fileObj.write(work_with_text_script)
+        # download selected Youtube url into mp3
+        work_with_text_script = f'''#!/usr/bin/env bash
+selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
+{sys.executable} {config.letMeDoItFile} -u false -n true -i false -c "Let me Download Youtube MP3" -r "$selected_text"'''
+        work_with_downloadmp3_script_path = os.path.join(storage, f"{first_name}_Download")
+        with open(work_with_downloadmp3_script_path, "w", encoding="utf-8") as fileObj:
+            fileObj.write(work_with_text_script)
+        # pronounce selected text
+        work_with_text_script = f'''#!/usr/bin/env bash
+selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
+{sys.executable} {config.letMeDoItFile} -u false -n true -i false -c "Let me Pronounce" -r "$selected_text"'''
+        work_with_pronunciation_script_path = os.path.join(storage, f"{first_name}_Pronunciation")
+        with open(work_with_pronunciation_script_path, "w", encoding="utf-8") as fileObj:
+            fileObj.write(work_with_text_script)
         # explain selected text
         work_with_text_script = f'''#!/usr/bin/env bash
 selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
@@ -166,6 +187,9 @@ echo "$path" > {storage}/selected_files.txt
             work_with_summary_script_path,
             work_with_text_script_path,
             work_with_files_script_path,
+            work_with_pronunciation_script_path,
+            work_with_downloadmp3_script_path,
+            work_with_download_script_path,
         ):
             os.chmod(i, 0o755)
     elif thisOS == "Darwin":
@@ -174,7 +198,10 @@ echo "$path" > {storage}/selected_files.txt
         file3 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Explanation_workflow/Contents/document.wflow")
         file4 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Translation_workflow/Contents/document.wflow")
         file5 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Summary_workflow/Contents/document.wflow")
-        for i in (file1, file2, file3, file4, file5):
+        file6 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Pronounce_workflow/Contents/document.wflow")
+        file7 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_YoutubeMP3_workflow/Contents/document.wflow")
+        file8 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Download_workflow/Contents/document.wflow")
+        for i in (file1, file2, file3, file4, file5, file6, file7, file8):
             with open(i, "r", encoding="utf-8") as fileObj:
                 content = fileObj.read()
             search_replace = (
@@ -190,7 +217,10 @@ echo "$path" > {storage}/selected_files.txt
         file3 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Explanation_workflow/Contents/Info.plist")
         file4 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Translation_workflow/Contents/Info.plist")
         file5 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Summary_workflow/Contents/Info.plist")
-        for i in (file1, file2, file3, file4, file5):
+        file6 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Pronounce_workflow/Contents/Info.plist")
+        file7 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_YoutubeMP3_workflow/Contents/Info.plist")
+        file8 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Download_workflow/Contents/Info.plist")
+        for i in (file1, file2, file3, file4, file5, file6, file7, file8):
             with open(i, "r", encoding="utf-8") as fileObj:
                 content = fileObj.read()
             content = re.sub("LetMeDoIt", first_name, content)
@@ -206,12 +236,21 @@ echo "$path" > {storage}/selected_files.txt
         folder4_dest = os.path.join(os.path.expanduser("~/Library/Services"), f"{first_name} Summary.workflow")
         folder5 = os.path.join(config.letMeDoItAIFolder, "macOS_service", "LetMeDoIt_Translation_workflow")
         folder5_dest = os.path.join(os.path.expanduser("~/Library/Services"), f"{first_name} Translation.workflow")
+        folder6 = os.path.join(config.letMeDoItAIFolder, "macOS_service", "LetMeDoIt_Pronounce_workflow")
+        folder6_dest = os.path.join(os.path.expanduser("~/Library/Services"), f"{first_name} Pronunciation.workflow")
+        folder7 = os.path.join(config.letMeDoItAIFolder, "macOS_service", "LetMeDoIt_YoutubeMP3_workflow")
+        folder7_dest = os.path.join(os.path.expanduser("~/Library/Services"), f"{first_name} Youtube MP3.workflow")
+        folder8 = os.path.join(config.letMeDoItAIFolder, "macOS_service", "LetMeDoIt_Download_workflow")
+        folder8_dest = os.path.join(os.path.expanduser("~/Library/Services"), f"{first_name} Download.workflow")
         folders = (
             (folder1, folder1_dest),
             (folder2, folder2_dest),
             (folder3, folder3_dest),
             (folder4, folder4_dest),
             (folder5, folder5_dest),
+            (folder6, folder6_dest),
+            (folder7, folder7_dest),
+            (folder8, folder8_dest),
         )
         for folder, folder_dest in folders:
             if os.path.isdir(folder_dest):

@@ -20,7 +20,7 @@ if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
 HealthCheck.checkCompletion()
 HealthCheck.setPrint()
 
-import autogen, os, json, traceback, chromadb, re, zipfile, datetime
+import autogen, os, json, traceback, chromadb, re, zipfile, datetime, traceback
 from pathlib import Path
 from letmedoit.utils.prompts import Prompts
 from prompt_toolkit import print_formatted_text, HTML
@@ -99,6 +99,10 @@ class AutoGenRetriever:
 
         client = chromadb.PersistentClient(path=db)
         try:
+            client.delete_collection(name="autogen-docs")
+        except:
+            pass
+        try:
             # https://microsoft.github.io/autogen/docs/reference/agentchat/contrib/retrieve_user_proxy_agent
             ragproxyagent = RetrieveUserProxyAgent(
                 name="ragproxyagent",
@@ -118,8 +122,8 @@ class AutoGenRetriever:
             )
             ragproxyagent.initiate_chat(assistant, problem=message)
         except:
-            pass
-        client.delete_collection(name="autogen-docs")
+            print(traceback.format_exc())
+        #client.delete_collection(name="autogen-docs")
         try:
             last_message = assistant.last_message()
         except:

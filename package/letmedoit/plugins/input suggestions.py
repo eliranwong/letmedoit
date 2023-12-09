@@ -19,6 +19,7 @@ config.inputSuggestions += [
         "open ",
         "read ",
         "search ",
+        "analyze ",
         "tell me about ",
         "Craft a prompt for ChatGPT that outlines the necessary steps it should take to complete the following task at hand:\n[NO_FUNCTION_CALL]\n",
         f"Improve the following content according to {config.improvedWritingSytle}:\n[NO_FUNCTION_CALL]\n",
