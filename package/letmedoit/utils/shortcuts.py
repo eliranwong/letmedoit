@@ -139,14 +139,14 @@ selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
         work_with_text_script = f'''#!/usr/bin/env bash
 selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
 {sys.executable} {config.letMeDoItFile} -u false -n true -i false -c "Let me Download" -r "$selected_text"'''
-        work_with_download_script_path = os.path.join(storage, f"{first_name}_Summary")
+        work_with_download_script_path = os.path.join(storage, f"{first_name}_Download")
         with open(work_with_download_script_path, "w", encoding="utf-8") as fileObj:
             fileObj.write(work_with_text_script)
         # download selected Youtube url into mp3
         work_with_text_script = f'''#!/usr/bin/env bash
 selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
 {sys.executable} {config.letMeDoItFile} -u false -n true -i false -c "Let me Download Youtube MP3" -r "$selected_text"'''
-        work_with_downloadmp3_script_path = os.path.join(storage, f"{first_name}_Download")
+        work_with_downloadmp3_script_path = os.path.join(storage, f"{first_name}_YoutubeMP3")
         with open(work_with_downloadmp3_script_path, "w", encoding="utf-8") as fileObj:
             fileObj.write(work_with_text_script)
         # pronounce selected text
