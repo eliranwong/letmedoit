@@ -28,7 +28,7 @@ def create_statistical_graphics(function_args):
 
 functionSignature = {
     "name": "create_statistical_graphics",
-    "description": f'''Create statistical plots, such as pie charts or pie charts, to visualize statistical data''',
+    "description": f'''Create statistical plots, such as pie charts or bar charts, to visualize statistical data''',
     "parameters": {
         "type": "object",
         "properties": {

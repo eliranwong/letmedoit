@@ -17,7 +17,7 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
 defaultSettings = (
     ('includeIpInSystemMessage', False),
     ('translateToLanguage', ''),
-    ('realTimeTokenCount', True),
+    ('dynamicTokenCount', True),
     ('use_oai_assistant', False), # support OpenAI Assistants API in AutoGen Agent Builder
     ('max_agents', 5), # maximum number of agents build manager can create.
     ('max_group_chat_round', 12), # AutoGen group chat maximum round

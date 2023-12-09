@@ -834,6 +834,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             "change ChatGPT temperature",
             "change maximum response tokens",
             "change minimum response tokens",
+            "change dynamic token count",
             "change maximum consecutive auto-heal",
             "change maximum memory matches",
             "change plugins",
@@ -895,6 +896,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 self.setCustomSystemMessage()
             elif feature == ".ipinfo":
                 self.setIncludeIpInSystemMessage()
+            elif feature == ".dynamictokencount":
+                self.setDynamicTokenCount()
             elif feature == ".keys":
                 config.showKeyBindings()
             elif feature == ".help":
@@ -945,6 +948,19 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.autoUpgrade = (option == "enable")
             config.saveConfig()
             self.print3(f"Automatic Upgrade: {option}d!")
+
+    def setDynamicTokenCount(self):
+        options = ("enable", "disable")
+        option = self.dialogs.getValidOptions(
+            options=options,
+            title="Dynamic Token Count",
+            default="enable" if config.dynamicTokenCount else "disable",
+            text="Perform token count as users type.\nSelect an option below:"
+        )
+        if option:
+            config.dynamicTokenCount = (option == "enable")
+            config.saveConfig()
+            self.print3(f"Dynamic token count: {option}d!")
 
     def setIncludeIpInSystemMessage(self):
         options = ("enable", "disable")
@@ -1532,6 +1548,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             ".temperature",
             ".maxtokens",
             ".mintokens",
+            ".dynamictokencount",
             ".maxautoheal",
             ".maxmemorymatches",
             ".plugins",
