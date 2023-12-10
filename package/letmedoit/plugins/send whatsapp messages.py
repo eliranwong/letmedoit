@@ -12,12 +12,12 @@ import re, pywhatkit
 def send_whatsapp(function_args):
     recipient = function_args.get("recipient") # required
     message = function_args.get("message") # required
-    print(recipient, message)
+    config.stopSpinning()
     if re.search("^[\+\(\)0-9]+?$", recipient):
         pywhatkit.sendwhatmsg_instantly(recipient, message)
     else:
         pywhatkit.sendwhatmsg_to_group_instantly(recipient, message)
-    return ""
+    return "Done!"
 
 functionSignature = {
     "name": "send_whatsapp",
