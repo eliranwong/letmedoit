@@ -765,23 +765,25 @@ Always remember that you are much more than a text-based AI. You possess both vi
         ]
         return messages
 
-    # in a long conversation, ChatGPT often forgets its system message
-    # enhance system message by moving it forward
-    def moveForwardSystemMessage(self, messages):
+    # update system message
+    def updateSystemMessage(self, messages):
         for index, message in enumerate(messages):
             try:
                 if message.get("role", "") == "system":
                     # update system mess
                     dayOfWeek = SharedUtil.getDayOfWeek()
-                    item = messages.pop(index)
-                    item["content"] = re.sub(
+                    message["content"] = re.sub(
                         """^Current directory: .*?\nCurrent time: .*?\nCurrent day of the week: .*?$""",
                         f"""Current directory: {os.getcwd()}\nCurrent time: {str(datetime.datetime.now())}\nCurrent day of the week: {dayOfWeek}""",
-                        item["content"],
+                        message["content"],
                         flags=re.M,
                     )
-                    #messages.append(item)
-                    messages.insert(len(messages) - 1, item)
+                    messages[index] = message
+                    # in a long conversation, ChatGPT often forgets its system message
+                    # move forward if conversation have started, to enhance system message
+                    if config.conversationStarted and not index == len(messages) - 1:
+                        item = messages.pop(index)
+                        messages.append(item)
                     break
             except:
                 pass
@@ -1608,6 +1610,10 @@ Always remember that you are much more than a text-based AI. You possess both vi
             inputSuggestions = config.inputSuggestions[:] + self.getDirectoryList() if config.developer else config.inputSuggestions
             completer = WordCompleter(inputSuggestions, ignore_case=True) if inputSuggestions else None
             userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, completer=completer, default=defaultEntry, accept_default=accept_default, validator=tokenValidator, bottom_toolbar=getDynamicToolBar)
+            
+            # update system message when user enter a new input
+            config.currentMessages = self.updateSystemMessage(config.currentMessages)
+            
             # display options when empty string is entered
             userInputLower = userInput.lower()
             if config.addPathAt is not None:
@@ -1780,8 +1786,8 @@ My writing:
                     config.pagerContent = ""
                     self.addPagerContent = True
 
-                    if config.conversationStarted:
-                        config.currentMessages = self.moveForwardSystemMessage(config.currentMessages)
+                    #if config.conversationStarted:
+                    #    config.currentMessages = self.moveForwardSystemMessage(config.currentMessages)
                     completion = self.runCompletion(config.currentMessages, noFunctionCall)
                     # stop spinning
                     self.runPython = True
@@ -1799,6 +1805,8 @@ My writing:
 
                     # when streaming is done or when user press "ctrl+q"
                     self.streaming_thread.join()
+
+                    #print(config.currentMessages)
 
                 # error codes: https://platform.openai.com/docs/guides/error-codes/python-library-error-types
                 except openai.APIError as e:

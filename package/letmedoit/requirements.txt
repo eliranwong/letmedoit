@@ -15,6 +15,7 @@ art
 apsw
 gTTS
 google-cloud-texttospeech
+pywhatkit
 yt-dlp
 pyperclip
 colorama
