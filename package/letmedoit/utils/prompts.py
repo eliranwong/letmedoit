@@ -136,11 +136,11 @@ Available tokens: {estimatedAvailableTokens}
             config.developer = not config.developer
             config.saveConfig()
             run_in_terminal(lambda: config.print3(f"Developer mode: {'enabled' if config.developer else 'disabled'}!"))
-        @this_key_bindings.add("c-e")
-        def _(_):
-            config.enhanceCommandExecution = not config.enhanceCommandExecution
-            config.saveConfig()
-            run_in_terminal(lambda: config.print3(f"Command execution mode: '{'enhanced' if config.enhanceCommandExecution else 'auto'}'!"))
+        #@this_key_bindings.add("c-e")
+        #def _(_):
+        #    config.enhanceCommandExecution = not config.enhanceCommandExecution
+        #    config.saveConfig()
+        #    run_in_terminal(lambda: config.print3(f"Command execution mode: '{'enhanced' if config.enhanceCommandExecution else 'auto'}'!"))
         @this_key_bindings.add("c-l")
         def _(_):
             config.toggleMultiline()
@@ -220,7 +220,7 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+g": "pager view",
             "ctrl+d": "forward delete",
             "ctrl+h": "backspace",
-            "ctrl+e": "swap command execution mode",
+            #"ctrl+e": "swap command execution mode",
             "ctrl+k": "show key bindings",
             "ctrl+l": "toggle multi-line entry",
             "ctrl+b": "toggle input audio",
@@ -243,8 +243,8 @@ Available tokens: {estimatedAvailableTokens}
             "esc+r": "restart letmedoit",
         }
         textEditor = config.customTextEditor.split(" ", 1)[0]
-        bindings["esc+o"] = f"""edit current input with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
-        bindings["esc+p"] = f"""edit the last response with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
+        bindings["ctrl+e"] = f"""edit current input with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
+        bindings["esc+p"] = f"""edit the previous response with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
         multilineBindings = {
             "enter": "new line",
             "esc+enter": "complete entry",

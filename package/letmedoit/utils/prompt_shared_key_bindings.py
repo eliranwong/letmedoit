@@ -100,7 +100,8 @@ def _(event):
 
 # open current input in built-in or custom text editor
 # place this method here so that terminal or other input can share this binding
-@prompt_shared_key_bindings.add("escape", "o")
+#@prompt_shared_key_bindings.add("escape", "o")
+@prompt_shared_key_bindings.add("c-e")
 def _(event):
     customTextEditor = config.customTextEditor if config.customTextEditor else f"{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
     current_buffer = event.app.current_buffer

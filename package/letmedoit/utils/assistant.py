@@ -124,6 +124,51 @@ class LetMeDoItAI:
         # check if text output streaming is finished
         self.streaming_finished = False
 
+        self.actions = {
+            '.new': 'start a new chat [ctrl+n]',
+            '.save': 'save content [ctrl+s]',
+            '.swaptextbrightness': 'swap text brightness [esc+s]',
+            '.instruction': 'run an instruction',
+            '.context': 'change chat context [ctrl+o]',
+            '.contextinclusion': 'change chat context inclusion',
+            '.changeapikey': 'change API key',
+            '.chatgptmodel': 'change ChatGPT model',
+            '.temperature': 'change ChatGPT temperature',
+            '.maxtokens': 'change maximum response tokens',
+            '.mintokens': 'change minimum response tokens',
+            '.dynamictokencount': 'change dynamic token count',
+            '.maxautoheal': 'change maximum consecutive auto-heal',
+            '.maxmemorymatches': 'change maximum memory matches',
+            '.plugins': 'change plugins',
+            '.functioncall': 'change function call',
+            '.functionresponse': 'change function call response integration',
+            '.latestSearches': 'change online searches',
+            #'.enhanceexecution': 'change code execution mode [ctrl+e]',
+            '.confirmexecution': 'change code confirmation protocol',
+            '.codedisplay': 'change code display',
+            '.pagerview': 'change pager view',
+            '.embeddingmodel': 'change embedding model',
+            '.assistantname': 'change assistant name',
+            '.systemmessage': 'change custom system message',
+            '.ipinfo': 'change ip information inclusion',
+            '.startupDirectory': 'change startup directory',
+            '.autobuilderconfig': 'change auto builder config',
+            '.customtexteditor': 'change custom text editor',
+            '.termuxapi': 'change Termux API integration',
+            '.autoupgrade': 'change automatic upgrade',
+            '.developer': 'change developer mode [ctrl+d]',
+            '.togglemultiline': 'toggle multi-line input [ctrl+l]',
+            '.togglemousesupport': 'toogle mouse support [esc+m]',
+            '.togglewordwrap': 'toggle word wrap [ctrl+w]',
+            '.toggleimprovedwriting': 'toggle improved writing [esc+i]',
+            '.toggleinputaudio': 'toggle input audio [ctrl+b]',
+            '.toggleresponseaudio': 'toggle response audio [ctrl+p]',
+            '.ttscommand': 'configure text-to-speech command',
+            '.system': 'open system command prompt',
+            '.help': 'open LetMeDoIt wiki',
+            '.keys': 'display key bindings',
+        }
+
     def getPreferredDir(self):
         preferredDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
         try:
@@ -836,51 +881,9 @@ Always remember that you are much more than a text-based AI. You possess both vi
         #userInput = SharedUtil.addTimeStamp(userInput)
         return userInput
 
-    def runOptions(self, features, userInput):
-        descriptions = (
-            "start a new chat [ctrl+n]",
-            "share content [ctrl+s]" if config.terminalEnableTermuxAPI else "save content [ctrl+s]",
-            "swap text brightness [esc+s]",
-            "run an instruction",
-            "change chat context [ctrl+o]",
-            "change chat context inclusion",
-            "change API key",
-            "change ChatGPT model",
-            "change ChatGPT temperature",
-            "change maximum response tokens",
-            "change minimum response tokens",
-            "change dynamic token count",
-            "change maximum consecutive auto-heal",
-            "change maximum memory matches",
-            "change plugins",
-            "change function call",
-            "change function call response integration",
-            "change online searches",
-            "change code execution mode [ctrl+e]",
-            "change code confirmation protocol",
-            "change code display",
-            "change pager view",
-            "change embedding model",
-            "change assistant name",
-            "change custom system message",
-            "change ip information inclusion",
-            "change startup directory",
-            "change auto builder config",
-            "change custom text editor",
-            "change Termux API integration",
-            "change automatic upgrade",
-            "change developer mode [ctrl+d]",
-            "toggle multi-line input [ctrl+l]",
-            "toogle mouse support [esc+m]",
-            "toggle word wrap [ctrl+w]",
-            "toggle improved writing [esc+i]",
-            "toggle input audio [ctrl+b]",
-            "toggle response audio [ctrl+p]",
-            "configure text-to-speech command",
-            "open system command prompt",
-            "open LetMeDoIt wiki",
-            "display key bindings",
-        )
+    def runOptions(self, userInput):
+        features = tuple(self.actions.keys())
+        descriptions = tuple(self.actions.values())
         feature = self.dialogs.getValidOptions(
             options=features,
             descriptions=descriptions,
@@ -1551,51 +1554,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             return (startupdirectory, messages)
         startupdirectory, config.currentMessages = startChat()
         config.multilineInput = False
-        features = (
-            ".new",
-            ".share" if config.terminalEnableTermuxAPI else ".save",
-            ".swaptextbrightness",
-            ".instruction",
-            ".context",
-            ".contextinclusion",
-            ".changeapikey",
-            ".chatgptmodel",
-            ".temperature",
-            ".maxtokens",
-            ".mintokens",
-            ".dynamictokencount",
-            ".maxautoheal",
-            ".maxmemorymatches",
-            ".plugins",
-            ".functioncall",
-            ".functionresponse",
-            ".latestSearches",
-            ".enhanceexecution",
-            ".confirmexecution",
-            ".codedisplay",
-            ".pagerview",
-            ".embeddingmodel",
-            ".assistantname",
-            ".systemmessage",
-            ".ipinfo",
-            ".startupDirectory",
-            ".autobuilderconfig",
-            ".customtexteditor",
-            ".termuxapi",
-            ".autoupgrade",
-            ".developer",
-            ".togglemultiline",
-            ".togglemousesupport",
-            ".togglewordwrap",
-            ".toggleimprovedwriting",
-            ".toggleinputaudio",
-            ".toggleresponseaudio",
-            ".ttscommand",
-            ".system",
-            ".help",
-            ".keys",
-        )
-        featuresLower = [i.lower() for i in features] + ["...", ".save", ".share"]
+        featuresLower = [i.lower() for i in self.actions] + ["...", ".save", ".share"]
         while True:
             # default toolbar text
             config.dynamicToolBarText = " [ctrl+q] exit [ctrl+k] shortcut keys "
@@ -1644,7 +1603,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             elif not userInputLower:
                 userInput = config.blankEntryAction
             if userInput == "...":
-                userInputLower = self.runOptions(features, userInput)
+                userInputLower = self.runOptions(userInput)
 
             # replace alias, if any with full entry
             for alias, fullEntry in config.aliases.items():
@@ -1772,12 +1731,14 @@ My writing:
                         print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Calling function</{config.terminalPromptIndicatorColor2}> <{config.terminalCommandEntryColor2}>'{config.runSpecificFuntion}'</{config.terminalCommandEntryColor2}> <{config.terminalPromptIndicatorColor2}>...</{config.terminalPromptIndicatorColor2}>"))
                     fineTunedUserInput = re.sub(specialEntryPattern, "", fineTunedUserInput)
 
+                    # remove enhanced screening option from v2.0.1 as handling of function calls improved
                     # python execution
-                    self.screenAction = ""
-                    if config.enhanceCommandExecution and not noScreening and not noFunctionCall:
-                        config.currentMessages = self.screening(config.currentMessages, fineTunedUserInput)
-                    else:
-                        config.currentMessages.append({"role": "user", "content": fineTunedUserInput})
+                    #self.screenAction = ""
+                    #if config.enhanceCommandExecution and not noScreening and not noFunctionCall:
+                    #    config.currentMessages = self.screening(config.currentMessages, fineTunedUserInput)
+                    #else:
+                    #    config.currentMessages.append({"role": "user", "content": fineTunedUserInput})
+                    config.currentMessages.append({"role": "user", "content": fineTunedUserInput})
 
                     # start spinning
                     config.stop_event = threading.Event()
@@ -1785,7 +1746,8 @@ My writing:
                     config.spinner_thread.start()
 
                     # force loading internet searches
-                    if config.loadingInternetSearches == "always" and not self.screenAction in ("termux", "python", "web", "system"):
+                    #if config.loadingInternetSearches == "always" and not self.screenAction in ("termux", "python", "web", "system"):
+                    if config.loadingInternetSearches == "always":
                         try:
                             config.currentMessages = self.runFunction(config.currentMessages, config.integrate_google_searches_signature, "integrate_google_searches")
                         except:
@@ -1871,8 +1833,26 @@ My writing:
         asyncio.run(readKeys())
 
     def streamOutputs(self, streaming_event, completion):
-        chat_response = ""
         terminal_width = shutil.get_terminal_size().columns
+
+        def finishOutputs(wrapWords, chat_response, terminal_width=terminal_width):
+            config.wrapWords = wrapWords
+            # reset config.tempChunk
+            config.tempChunk = ""
+            print("\n")
+            # add chat response to messages
+            if chat_response:
+                config.currentMessages.append({"role": "assistant", "content": chat_response})
+            # auto pager feature
+            config.pagerContent += self.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
+            self.addPagerContent = False
+            if config.pagerView:
+                self.launchPager(config.pagerContent)
+            # finishing
+            config.conversationStarted = True
+            self.streaming_finished = True
+
+        chat_response = ""
         self.lineWidth = 0
         blockStart = False
         wrapWords = config.wrapWords
@@ -1908,31 +1888,10 @@ My writing:
                     # speak streaming words
                     self.readAnswer(answer)
             else:
-                self.addPagerContent = False
-                self.streaming_finished = True
+                finishOutputs(wrapWords, chat_response)
                 return None
         
-        config.wrapWords = wrapWords
-        # reset config.tempChunk
-        config.tempChunk = ""
-        print("\n")
-
-        # optional
-        # remove predefined context to reduce token size and cost
-        #messages[-1] = {"role": "user", "content": userInput}
-
-        if chat_response:
-            config.currentMessages.append({"role": "assistant", "content": chat_response})
-
-        # auto pager feature
-        config.pagerContent += self.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
-        self.addPagerContent = False
-        if config.pagerView:
-            self.launchPager(config.pagerContent)
-
-        config.conversationStarted = True
-
-        self.streaming_finished = True
+        finishOutputs(wrapWords, chat_response)
 
     def addPagerText(self, text, wrapWords=False):
         if wrapWords:

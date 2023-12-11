@@ -64,7 +64,7 @@ defaultSettings = (
     ('terminalSearchHighlightForeground', 'ansidefault'),
     ('pygments_style', ''),
     ('developer', False),
-    ('enhanceCommandExecution', False),
+    #('enhanceCommandExecution', False),
     ('confirmExecution', "always"), # 'always', 'high_risk_only', 'medium_risk_or_above', 'none'
     ('codeDisplay', False),
     ('autoUpdate', True),

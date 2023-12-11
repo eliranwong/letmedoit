@@ -218,7 +218,7 @@ Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural lang
 
 * create entry aliases, input suggestions, predefined contexts and instructions, e.g.
 
-> !
+> !auto
 
 Read more about LetMeDoIt Plugins at https://github.com/eliranwong/letmedoit/wiki/Plugins-%E2%80%90-Overview
 
@@ -268,23 +268,9 @@ Tips: You can change the assistant's name regardless of the package you choose t
 
 Read more at: https://github.com/eliranwong/letmedoit/wiki/Installation
 
-# Usage
+# Usage and Options
 
-> letmedoit # launch LetMeDoIt AI assistant
-
-> letmedoit 'Hi!' # launch LetMeDoIt AI assistant with default entry 'Hi!'
-
-> letmedoit -r 'Hi!' # launch LetMeDoIt AI assistant and run default entry 'Hi!'
-
-> letmedoit -f 'test.txt' # read file 'test.txt' as default entry
-
-> letmedoit -rf 'test.txt' # read file 'test.txt' as default entry and run
-
-Read more at: https://github.com/eliranwong/letmedoit/wiki/Installation
-
-# Command Line Interface
-
-https://github.com/eliranwong/letmedoit/wiki/Installation#command-line-interface-cli
+https://github.com/eliranwong/letmedoit/wiki/Command-Line-Interface-Options
 
 # Setup of Multiple Assistants
 
@@ -336,43 +322,14 @@ Check our built-in plugins at: https://github.com/eliranwong/letmedoit/tree/main
 
 Latest: LetMeDoIt AI is now equipped with an [auto-healing feature for Python code](https://github.com/eliranwong/letmedoit/wiki/Python-Code-Auto%E2%80%90heal-Feature).
 
+Overview: Command execution enables you to:
+
+1. Retrieve the requested information from your device.
+2. Perform computing tasks on your device.
+3. Interact with third-party applications.
+4. Construct anything that system commands and Python libraries are capable of executing.
+
 LetMeDoIt goes beyond just being a chatbot by offering a unique and powerful capability - the ability to execute commands and perform computing tasks on your behalf. Unlike a mere chatbot, LetMeDoIt can interact with your computer system and carry out specific commands to accomplish various computing tasks. This feature allows you to leverage the expertise and efficiency of LetMeDoIt to automate processes, streamline workflows, and perform complex tasks with ease. However, it is essential to remember that with great power comes great responsibility, and users should exercise caution and use this feature at their own risk.
-
-Command execution helps:
-
-1. to get the requested information, e.g.
-
-> tell me the current time
-
-2. to execute computing tasks on local device, e.g.
-
-> go to my Desktop
-
-> list all files with names started with "Screenshot"
-
-> delete them
-
-> convert music.wav into music.mp3
-
-3. to interact with third-party applications, e.g.
-
-> open "my_music.mp3" with VLC player
-
-> open Safari and search for "ChatGPT"
-
-4. to interact with other assistants, e.g.
-
-> open Siri
-
-> !autoretriever
-
-> !interpreter
-
-[Enhanced Mode](https://github.com/eliranwong/letmedoit/wiki/Command-Execution#two-command-execution-mode)
-
-## Tips! Quick Swap between "Enhanced" and "Auto" Modes
-
-You can use keyboard shortcuts, "ctrl + e", to quickly swap between the "enhanced" and the "auto modes.
 
 [Disclaimer](https://github.com/eliranwong/letmedoit/wiki/Command-Execution#disclaimer)
 
