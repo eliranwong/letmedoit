@@ -455,13 +455,13 @@ class LetMeDoItAI:
 
         functionSignature = {
             "name": "execute_python_code",
-            "description": "Execute python code",
+            "description": "Execute python code to resolve a computing task",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "code": {
                         "type": "string",
-                        "description": "python code, e.g. print('Hello world')",
+                        "description": "Python code that integrates any relevant packages to resolve my request",
                     },
                     "title": {
                         "type": "string",
@@ -683,7 +683,7 @@ Otherwise, answer "chat". Here is the request:"""
                     if first_delta.tool_calls: # a tool is called
                         function_calls = [i for i in first_delta.tool_calls if i.type == "function"]
                         # non_function_calls = [i for i in first_delta.tool_calls if not i.type == "function"]
-                    else: # no tool is called; same treatment as tool calls are finished
+                    else: # no tool is called; same handling as tools finished calling; which break the loop later
                         self.functionJustCalled = True
                     # consume the first delta only at this point
                     break
@@ -695,6 +695,7 @@ Otherwise, answer "chat". Here is the request:"""
                 toolArguments = SharedUtil.getToolArgumentsFromStreams(completion)
 
                 func_responses = ""
+                bypassFunctionCall = False
                 # handle function calls
                 for func in function_calls:
                     func_index = func.index
@@ -706,7 +707,9 @@ Otherwise, answer "chat". Here is the request:"""
                     func_response = self.getFunctionResponse(func_arguments, func_name)
 
                     # "[INVALID]" practically mean that it ignores previously called function and continues chat without function calling
-                    if (func_response and not func_response == "[INVALID]") or config.tempContent:
+                    if func_response == "[INVALID]":
+                        bypassFunctionCall = True
+                    elif func_response or config.tempContent:
                         # send the function call info and response to GPT
                         function_call_message = {
                             "role": "assistant",
@@ -731,7 +734,13 @@ Otherwise, answer "chat". Here is the request:"""
 
                 self.functionJustCalled = True
 
-                if not config.passFunctionCallReturnToChatGPT or not func_responses:
+                # bypassFunctionCall is set to True, usually when a function is called by mistake
+                if bypassFunctionCall:
+                    pass
+                # two cases that breaks the loop at this point
+                # 1. func_responses == ""
+                # 2. config.passFunctionCallReturnToChatGPT = False
+                elif not config.passFunctionCallReturnToChatGPT or not func_responses:
                     if func_responses:
                         self.print(f"{config.divider}\n{func_responses}")
                     # A break here means that no information from the called function is passed back to ChatGPT

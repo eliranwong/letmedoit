@@ -31,6 +31,8 @@ def search_bible(function_args):
     terminal_width = shutil.get_terminal_size().columns
     # get the sql query statement
     query = function_args.get("query") # required
+    if not query.startswith("SELECT "):
+        query = f"SELECT * FROM Verses WHERE {query}"
     version = function_args.get("version") # required
     allVersions = getBibleList(version)
     # exclude mainText from allVersions
@@ -236,3 +238,29 @@ Give me only the sql query statement, starting with "SELECT * FROM Verses WHERE 
 config.pluginsWithFunctionCall.append("search_bible")
 config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["search_bible"] = search_bible
+
+##############################
+
+# a dummy function to pass back the original query to ChatGPT without function call
+# this function was created to help ChatGPT to distinguish between different requests described in plugins "search_bible" and "bible_qa"
+def bible_qa(function_args):
+    return "[INVALID]"
+
+functionSignature = {
+    "name": "bible_qa",
+    "description": f'''Answer questions or provide information about the bible''',
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "qa": {
+                "type": "string",
+                "description": "empty string ''",
+            },
+        },
+        "required": ["qa"],
+    },
+}
+
+config.pluginsWithFunctionCall.append("bible_qa")
+config.chatGPTApiFunctionSignatures.append(functionSignature)
+config.chatGPTApiAvailableFunctions["bible_qa"] = bible_qa

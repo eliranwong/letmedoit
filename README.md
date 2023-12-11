@@ -104,17 +104,33 @@ LetMeDoIt AI just got smarter with memory retention!
 
 Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural language:
 
+* [NEW] create ai assistants based on the requested task, e.g.
+
+> create a team of AI assistants to write a Christmas drama
+
+> create a team of AI assistants to build a scalable and customisable python application to remove image noise
+
 * execute python codes with auto-healing feature and risk assessment, e.g.
 
-> Convert "Hello.docx" into pdf format
+> join "01.mp3" and "02.mp3" into a single file
 
 * execute system commands to achieve specific tasks, e.g.
 
-> Launch VLC player
+> Launch VLC player and play music in folder "music_folder"
+
+* manipulate files, e.g.
+
+> remove all desktop files with names starting with "Screenshot"
+
+> zip "folder1"
 
 * save memory, e.g.
 
 > Remember, my birthday is January 1st.
+
+* send Whatsapp messages, e.g.
+
+> send Whatsapp message "come to office 9am tomorrow" to "staff" group
 
 * retrieve memory, e.g.
 
