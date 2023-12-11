@@ -123,9 +123,15 @@ class AutoGenRetriever:
             ragproxyagent.initiate_chat(assistant, problem=message)
         except:
             print(traceback.format_exc())
-        #client.delete_collection(name="autogen-docs")
+
         try:
             last_message = assistant.last_message()
+            if type(last_message) == list:
+                last_message = last_message[:1]
+            elif type(last_message) == dict:
+                last_message = [last_message]
+            else:
+                last_message = []
         except:
             last_message = []
         return last_message

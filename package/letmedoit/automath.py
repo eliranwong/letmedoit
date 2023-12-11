@@ -72,6 +72,18 @@ class AutoGenMath:
 
         mathproxyagent.initiate_chat(assistant, problem=math_problem)
 
+        try:
+            last_message = assistant.last_message()
+            if type(last_message) == list:
+                last_message = last_message[:1]
+            elif type(last_message) == dict:
+                last_message = [last_message]
+            else:
+                last_message = []
+        except:
+            last_message = []
+        return last_message
+
     def print(self, message):
         #print(message)
         print_formatted_text(HTML(message))
@@ -84,7 +96,7 @@ class AutoGenMath:
             "indicator": config.terminalPromptIndicatorColor2,
         })
         prompts = Prompts()
-        self.print(f"<{config.terminalCommandEntryColor1}>AutoGen Math launched!</{config.terminalCommandEntryColor1}>")
+        self.print(f"<{config.terminalCommandEntryColor1}>AutoGen Math Solver launched!</{config.terminalCommandEntryColor1}>")
         self.print("[press 'ctrl+q' to exit]")
         while True:
             self.print(f"<{config.terminalCommandEntryColor1}>New session started!</{config.terminalCommandEntryColor1}>")
@@ -98,7 +110,7 @@ class AutoGenMath:
             except:
                 self.print(traceback.format_exc())
                 break
-        self.print(f"<{config.terminalCommandEntryColor1}>\n\nAutoGen Math closed!</{config.terminalCommandEntryColor1}>")
+        self.print(f"<{config.terminalCommandEntryColor1}>\n\nAutoGen Math Solver closed!</{config.terminalCommandEntryColor1}>")
 
 def main():
     AutoGenMath().run()

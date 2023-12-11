@@ -54,7 +54,7 @@ functionSignature = {
 # configs particular to this plugin
 # persistent
 persistentConfigs = (
-    ("max_consecutive_auto_heal", 3),
+    ("max_consecutive_auto_heal", 5),
 )
 config.setConfig(persistentConfigs)
 

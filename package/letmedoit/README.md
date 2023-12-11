@@ -168,7 +168,15 @@ Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural lang
 
 * modify images, e.g.
 
-> Change image "CyberTask.png" into an app icon
+> Make a cartoon verion of image "my_photo.png"
+
+* remove image background, e.g.
+
+> Remove image background of "my_photo.png"
+
+* create qrcode, e.g.
+
+> Create a QR code for the website: https://letmedoit.ai
 
 * create maps, e.g.
 
@@ -178,9 +186,15 @@ Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural lang
 
 > Create a bar chart that illustrates the correlation between each of the 12 months and their respective number of days
 
+> Create a pie chart: Mary £10, Peter 8£, John £15
+
 * solve queries about dates and times, e.g.
 
 > What is the current time in Hong Kong?
+
+* solve math problem, e.g.
+
+> You have a standard deck of 52 playing cards, which is composed of 4 suits: hearts, diamonds, clubs, and spades. Each suit has 13 cards: Ace through 10, and the face cards Jack, Queen, and King. If you draw 5 cards from the deck, in how many ways can you draw exactly 3 cards of one suit and exactly 2 cards of another suit?  
 
 * pronounce words in different dialects, e.g.
 

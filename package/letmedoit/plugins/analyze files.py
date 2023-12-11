@@ -1,7 +1,7 @@
 """
 LetMeDoIt AI Plugin - analyze files
 
-analyze files with "AutoGen Retriever"
+analyze files with integrated "AutoGen Retriever"
 
 [FUNCTION_CALL]
 """

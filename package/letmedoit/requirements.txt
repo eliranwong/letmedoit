@@ -4,6 +4,7 @@ argparse
 pendulum
 folium
 seaborn[stats]
+sympy
 numpy
 prompt_toolkit
 Pygments
@@ -17,6 +18,8 @@ gTTS
 google-cloud-texttospeech
 pywhatkit
 yt-dlp
+rembg
+qrcode
 pyperclip
 colorama
 pillow

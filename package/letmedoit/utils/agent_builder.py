@@ -419,7 +419,7 @@ class AgentBuilder:
         """
         try:
             self.print(f"Loding config from: {filepath}")
-            cached_configs = json.load(open(filepath))
+            cached_configs = json.loads(open(filepath))
         except FileNotFoundError:
             raise FileNotFoundError(f"Config file {filepath} does not exist.")
 

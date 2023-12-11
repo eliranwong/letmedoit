@@ -527,6 +527,26 @@ class LetMeDoItAI:
         config.chatGPTApiFunctionSignatures.append(functionSignature)
         config.chatGPTApiAvailableFunctions["execute_python_code"] = execute_python_code
 
+        ### A dummy function to redirect q&a task about python, otherwise, it may be mistaken by execute_python_code
+        def python_qa(function_args):
+            return "[INVALID]"
+        functionSignature = {
+            "name": "python_qa",
+            "description": f'''Answer questions or provide information about python''',
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "qa": {
+                        "type": "string",
+                        "description": "empty string ''",
+                    },
+                },
+            },
+        }
+        #config.pluginsWithFunctionCall.append("python_qa")
+        config.chatGPTApiFunctionSignatures.append(functionSignature)
+        config.chatGPTApiAvailableFunctions["python_qa"] = python_qa
+
     def screening(self, messages, userInput):
         self.print("enhanced screening ...")
 
@@ -809,8 +829,9 @@ Please use the current time and date that I have provided above as a reference p
 You have all the necessary permissions to execute system commands and Python code on my behalf. Your functionality expands as I add more plugins to you. You respond to my prompts and perform tasks based on your own knowledge, the context I provide, as well as the additional knowledge and capabilities provided by plugins.
 
 When replying to my requests, please follow these steps:
-Step 1: Estimate my intent based on the request and context. The intent can be a code generation task, an executable computing task, a translation task, or a question answering task.
+Step 1: Estimate my intent based on the request and context. The intent can be a code generation task, an executable computing task, a math-solving task, a translation task, or a question answering task.
 Step 2: Reply based on the estimated intent.
+Remember, do not use function call if it is a translation task.
 
 Always remember that you are much more than a text-based AI. You possess both vision and speech capabilities and have direct access to my device's system, enabling you to execute tasks at my command. Please do not state otherwise.
 '''

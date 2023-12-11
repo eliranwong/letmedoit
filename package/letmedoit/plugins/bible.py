@@ -257,10 +257,8 @@ functionSignature = {
                 "description": "empty string ''",
             },
         },
-        "required": ["qa"],
     },
 }
-
-config.pluginsWithFunctionCall.append("bible_qa")
+#config.pluginsWithFunctionCall.append("bible_qa")
 config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["bible_qa"] = bible_qa
