@@ -1502,10 +1502,10 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 customContext = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.customPredefinedContext)
                 if customContext and not customContext.strip().lower() == config.exit_entry:
                     config.customPredefinedContext = customContext.strip()
-            self.showCurrentContext()
         else:
             # a way to quickly clean up context
             config.predefinedContext = "[none]"
+        self.showCurrentContext()
 
     def getDirectoryList(self):
         directoryList = []
@@ -1696,8 +1696,9 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 self.runInstruction()
             elif userInputLower == ".context":
                 self.changeContext()
-                if not config.applyPredefinedContextAlways and config.conversationStarted:
-                    self.saveChat(config.currentMessages)
+                if not config.applyPredefinedContextAlways:
+                    if config.conversationStarted:
+                        self.saveChat(config.currentMessages)
                     storagedirectory, config.currentMessages = startChat()
             elif userInputLower == ".new" and config.conversationStarted:
                 self.saveChat(config.currentMessages)
