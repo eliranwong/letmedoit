@@ -139,7 +139,7 @@ functionSignature = {
             },
             "description": {
                 "type": "string",
-                "description": "The description of the event.",
+                "description": "The detailed description of the event, including the people involved and their roles.",
             },
             "url": {
                 "type": "string",
