@@ -49,11 +49,11 @@ class AutoGenRetriever:
             return None
 
         package = os.path.basename(packageFolder)
-        preferredDir = os.path.join(os.path.expanduser('~'), package)
-        if os.path.isdir(preferredDir):
-            folder = preferredDir
-        elif config.startupdirectory:
-            folder = config.startupdirectory
+        storageDir = os.path.join(os.path.expanduser('~'), package)
+        if os.path.isdir(storageDir):
+            folder = storageDir
+        elif config.storagedirectory:
+            folder = config.storagedirectory
         else:
             folder = os.path.join(packageFolder, "files")
         db = os.path.join(folder, "autogen", "retriever")

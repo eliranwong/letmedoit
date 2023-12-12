@@ -557,18 +557,18 @@ City: {g.city}"""
             webbrowser.open(url)
 
     @staticmethod
-    def getPreferredDir():
-        preferredDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
+    def getStorageDir():
+        storageDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
         try:
-            Path(preferredDir).mkdir(parents=True, exist_ok=True)
+            Path(storageDir).mkdir(parents=True, exist_ok=True)
         except:
             pass
-        return preferredDir if os.path.isdir(preferredDir) else ""
+        return storageDir if os.path.isdir(storageDir) else ""
 
     @staticmethod
     def getFiles():
-        preferredDir = SharedUtil.getPreferredDir()
-        if config.startupdirectory and not os.path.isdir(config.startupdirectory):
-            config.startupdirectory = ""
-        preferredDir = preferredDir if preferredDir else os.path.join(config.letMeDoItAIFolder, "files")
-        return config.startupdirectory if config.startupdirectory else preferredDir
+        storageDir = SharedUtil.getStorageDir()
+        if config.storagedirectory and not os.path.isdir(config.storagedirectory):
+            config.storagedirectory = ""
+        storageDir = storageDir if storageDir else os.path.join(config.letMeDoItAIFolder, "files")
+        return config.storagedirectory if config.storagedirectory else storageDir

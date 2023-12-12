@@ -72,7 +72,7 @@ defaultSettings = (
     ('terminalEditorTabText', "    "),
     ('blankEntryAction', "..."),
     ('defaultBlankEntryAction', ".context"),
-    ('startupdirectory', ""),
+    ('storagedirectory', ""),
     ('suggestSystemCommand', True),
     ('displayImprovedWriting', False),
     ('improvedWritingSytle', 'standard English'), # e.g. British spoken English
@@ -89,11 +89,11 @@ defaultSettings = (
     ("ttsLanguagesCommandMap", {"en": "", "en-gb": "", "en-us": "", "zh": "", "yue": "", "el": "",}), # advanced users need to edit this item manually to support different voices with customised tts command, e.g. ttsCommand set to "say -r 200 -v Daniel" and ttsLanguagesCommandMap set to {"en": "Daniel", "en-gb": "Daniel", "en-us": "", "zh": "", "yue": "", "el": "",}
 )
 
-preferredDir = config.getPreferredDir()
-if os.path.isdir(preferredDir):
+storageDir = config.getStorageDir()
+if os.path.isdir(storageDir):
     configFile = os.path.join(config.letMeDoItAIFolder, "config.py")
     if os.path.getsize(configFile) == 0:
-        backupFile = os.path.join(preferredDir, "config_backup.py")
+        backupFile = os.path.join(storageDir, "config_backup.py")
         if os.path.isfile(backupFile):
             restore_backup = yes_no_dialog(
                 title="Configuration Backup Found",

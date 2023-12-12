@@ -78,14 +78,14 @@ config.letMeDoItAIFolder = letMeDoItAIFolder
 with open(os.path.join(config.letMeDoItAIFolder, "package_name.txt"), "r", encoding="utf-8") as fileObj:
     package = fileObj.read()
 
-def getPreferredDir():
-    preferredDir = os.path.join(os.path.expanduser('~'), package)
+def getStorageDir():
+    storageDir = os.path.join(os.path.expanduser('~'), package)
     try:
-        Path(preferredDir).mkdir(parents=True, exist_ok=True)
+        Path(storageDir).mkdir(parents=True, exist_ok=True)
     except:
         pass
-    return preferredDir if os.path.isdir(preferredDir) else ""
-config.getPreferredDir = getPreferredDir
+    return storageDir if os.path.isdir(storageDir) else ""
+config.getStorageDir = getStorageDir
 
 def restartApp():
     print(f"Restarting {config.letMeDoItName} ...")
@@ -170,7 +170,7 @@ def saveConfig():
                 "runSpecificFuntion",
                 "pluginsWithFunctionCall",
                 "restartApp",
-                "getPreferredDir",
+                "getStorageDir",
                 "saveConfig",
                 "aliases",
                 "addPathAt",
@@ -346,9 +346,9 @@ def main():
     # Do the following tasks before exit
     # backup configurations
     saveConfig()
-    preferredDir = getPreferredDir()
-    if os.path.isdir(preferredDir):
-        shutil.copy(configFile, os.path.join(preferredDir, "config_backup.py"))
+    storageDir = getStorageDir()
+    if os.path.isdir(storageDir):
+        shutil.copy(configFile, os.path.join(storageDir, "config_backup.py"))
     # delete temporary content
     try:
         tempFolder = os.path.join(config.letMeDoItAIFolder, "temp")

@@ -83,16 +83,16 @@ class LetMeDoItAI:
             itemColor=config.terminalColors[config.terminalCommandEntryColor2],
         )
 
-        self.preferredDir = self.getPreferredDir()
-        if (not config.historyParentFolder or not os.path.isdir(config.historyParentFolder)) and self.preferredDir:
+        self.storageDir = self.getStorageDir()
+        if (not config.historyParentFolder or not os.path.isdir(config.historyParentFolder)) and self.storageDir:
             try:
-                historyParentFolder = os.path.join(self.preferredDir, "history")
+                historyParentFolder = os.path.join(self.storageDir, "history")
                 Path(historyParentFolder).mkdir(parents=True, exist_ok=True)
                 for i in ("chats", "paths", "commands"):
                     historyFile = os.path.join(historyParentFolder, i)
                     if not os.path.isfile(historyFile):
                         open(historyFile, "a", encoding="utf-8").close()
-                config.historyParentFolder = self.preferredDir
+                config.historyParentFolder = self.storageDir
             except:
                 config.historyParentFolder = ""
             config.saveConfig()
@@ -151,7 +151,7 @@ class LetMeDoItAI:
             '.assistantname': 'change assistant name',
             '.systemmessage': 'change custom system message',
             '.ipinfo': 'change ip information inclusion',
-            '.startupDirectory': 'change startup directory',
+            '.storagedirectory': 'change storage directory',
             '.autobuilderconfig': 'change auto builder config',
             '.customtexteditor': 'change custom text editor',
             '.termuxapi': 'change Termux API integration',
@@ -169,19 +169,19 @@ class LetMeDoItAI:
             '.keys': 'display key bindings',
         }
 
-    def getPreferredDir(self):
-        preferredDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
+    def getStorageDir(self):
+        storageDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
         try:
-            Path(preferredDir).mkdir(parents=True, exist_ok=True)
+            Path(storageDir).mkdir(parents=True, exist_ok=True)
         except:
             pass
-        return preferredDir if os.path.isdir(preferredDir) else ""
+        return storageDir if os.path.isdir(storageDir) else ""
 
     def getFiles(self):
-        if config.startupdirectory and not os.path.isdir(config.startupdirectory):
-            config.startupdirectory = ""
-        preferredDir = self.preferredDir if self.preferredDir else os.path.join(config.letMeDoItAIFolder, "files")
-        return config.startupdirectory if config.startupdirectory else preferredDir
+        if config.storagedirectory and not os.path.isdir(config.storagedirectory):
+            config.storagedirectory = ""
+        storageDir = self.storageDir if self.storageDir else os.path.join(config.letMeDoItAIFolder, "files")
+        return config.storagedirectory if config.storagedirectory else storageDir
 
     def getFolderPath(self):
         return self.getPath.getFolderPath(
@@ -233,8 +233,8 @@ class LetMeDoItAI:
             config.inputSuggestions.append("[CALL_execute_termux_command]")
 
         pluginFolder = os.path.join(config.letMeDoItAIFolder, "plugins")
-        if self.preferredDir:
-            customPluginFoler = os.path.join(self.preferredDir, "plugins")
+        if self.storageDir:
+            customPluginFoler = os.path.join(self.storageDir, "plugins")
             Path(customPluginFoler).mkdir(parents=True, exist_ok=True)
             pluginFolders = (pluginFolder, customPluginFoler)
         else:
@@ -267,8 +267,8 @@ class LetMeDoItAI:
         plugins = []
         enabledPlugins = []
         pluginFolder = os.path.join(config.letMeDoItAIFolder, "plugins")
-        if self.preferredDir:
-            customPluginFoler = os.path.join(self.preferredDir, "plugins")
+        if self.storageDir:
+            customPluginFoler = os.path.join(self.storageDir, "plugins")
             Path(customPluginFoler).mkdir(parents=True, exist_ok=True)
             pluginFolders = (pluginFolder, customPluginFoler)
         else:
@@ -919,8 +919,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 self.setEmbeddingModel()
             elif feature == ".latestSearches":
                 self.setLatestSearches()
-            elif feature == ".startupDirectory":
-                self.setStartupDirectory()
+            elif feature == ".storagedirectory":
+                self.setStorageDirectory()
             elif feature == ".contextinclusion":
                 self.setContextInclusion()
             elif feature == ".codedisplay":
@@ -1040,14 +1040,14 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.saveConfig()
             self.print3(f"Predefined Context Inclusion: {option}!")
 
-    def setStartupDirectory(self):
+    def setStorageDirectory(self):
         try:
             folder = self.getFolderPath()
         except:
             self.print2(f"Given path not accessible!")
             folder = ""
         if folder and os.path.isdir(folder):
-            config.startupdirectory = folder
+            config.storagedirectory = folder
             config.saveConfig()
             self.print3(f"Startup directory:\n{folder}")
 
@@ -1265,7 +1265,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
         letMeDoItName = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.letMeDoItName)
         if letMeDoItName and not letMeDoItName.strip().lower() == config.exit_entry:
             config.letMeDoItName = letMeDoItName
-            self.preferredDir = self.getPreferredDir()
+            self.storageDir = self.getStorageDir()
             config.saveConfig()
             self.print3(f"You have changed my name to: {config.letMeDoItName}")
 
@@ -1564,16 +1564,16 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.showLogo()
             self.showCurrentContext()
             # go to startup directory
-            startupdirectory = self.getFiles()
-            os.chdir(startupdirectory)
+            storagedirectory = self.getFiles()
+            os.chdir(storagedirectory)
             messages = self.resetMessages()
-            #self.print(f"startup directory:\n{startupdirectory}")
-            print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Directory:</{config.terminalPromptIndicatorColor2}> {startupdirectory}"))
+            #self.print(f"startup directory:\n{storagedirectory}")
+            print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Directory:</{config.terminalPromptIndicatorColor2}> {storagedirectory}"))
             self.print(self.divider)
 
             config.conversationStarted = False
-            return (startupdirectory, messages)
-        startupdirectory, config.currentMessages = startChat()
+            return (storagedirectory, messages)
+        storagedirectory, config.currentMessages = startChat()
         config.multilineInput = False
         featuresLower = [i.lower() for i in self.actions] + ["...", ".save", ".share"]
         while True:
@@ -1581,11 +1581,11 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.dynamicToolBarText = " [ctrl+q] exit [ctrl+k] shortcut keys "
             # display current directory if changed
             currentDirectory = os.getcwd()
-            if not currentDirectory == startupdirectory:
+            if not currentDirectory == storagedirectory:
                 #self.print(self.divider)
                 self.print3(f"Current directory: {currentDirectory}")
                 self.print(self.divider)
-                startupdirectory = currentDirectory
+                storagedirectory = currentDirectory
             # default input entry
             accept_default = config.accept_default
             config.accept_default = False
@@ -1624,7 +1624,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             elif not userInputLower:
                 userInput = config.blankEntryAction
             if userInput == "...":
-                userInputLower = self.runOptions(userInput)
+                userInput = userInputLower = self.runOptions(userInput)
 
             # replace alias, if any with full entry
             for alias, fullEntry in config.aliases.items():
@@ -1698,10 +1698,10 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 self.changeContext()
                 if not config.applyPredefinedContextAlways and config.conversationStarted:
                     self.saveChat(config.currentMessages)
-                    startupdirectory, config.currentMessages = startChat()
+                    storagedirectory, config.currentMessages = startChat()
             elif userInputLower == ".new" and config.conversationStarted:
                 self.saveChat(config.currentMessages)
-                startupdirectory, config.currentMessages = startChat()
+                storagedirectory, config.currentMessages = startChat()
             elif userInputLower in (".share", ".save") and config.conversationStarted:
                 self.saveChat(config.currentMessages, openFile=True)
             elif userInput and not userInputLower in featuresLower:
@@ -1828,7 +1828,7 @@ My writing:
                     config.defaultEntry = userInput
                     self.print("starting a new chat!")
                     self.saveChat(config.currentMessages)
-                    startupdirectory, config.currentMessages = startChat()
+                    storagedirectory, config.currentMessages = startChat()
 
     def keyToStopStreaming(self, streaming_event):
         async def readKeys() -> None:
@@ -2058,26 +2058,26 @@ My writing:
                 max_tokens=10,
             )
         except openai.APIError as e:
-            self.print("Error: Issue on OpenAI side.")
-            self.print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
+            self.print3("Error: Issue on OpenAI side.")
+            self.print3("Solution: Retry your request after a brief wait and contact us if the issue persists.")
         #except openai.Timeout as e:
-        #    self.print("Error: Request timed out.")
-        #    self.print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
+        #    self.print3("Error: Request timed out.")
+        #    self.print3("Solution: Retry your request after a brief wait and contact us if the issue persists.")
         except openai.RateLimitError as e:
-            self.print("Error: You have hit your assigned rate limit.")
-            self.print("Solution: Pace your requests. Read more in OpenAI [Rate limit guide](https://platform.openai.com/docs/guides/rate-limits).")
+            self.print3("Error: You have hit your assigned rate limit.")
+            self.print3("Solution: Pace your requests. Read more in OpenAI [Rate limit guide](https://platform.openai.com/docs/guides/rate-limits).")
         except openai.APIConnectionError as e:
-            self.print("Error: Issue connecting to our services.")
-            self.print("Solution: Check your network settings, proxy configuration, SSL certificates, or firewall rules.")
+            self.print3("Error: Issue connecting to our services.")
+            self.print3("Solution: Check your network settings, proxy configuration, SSL certificates, or firewall rules.")
         #except openai.InvalidRequestError as e:
-        #    self.print("Error: Your request was malformed or missing some required parameters, such as a token or an input.")
-        #    self.print("Solution: The error message should advise you on the specific error made. Check the [documentation](https://platform.openai.com/docs/api-reference/) for the specific API method you are calling and make sure you are sending valid and complete parameters. You may also need to check the encoding, format, or size of your request data.")
+        #    self.print3("Error: Your request was malformed or missing some required parameters, such as a token or an input.")
+        #    self.print3("Solution: The error message should advise you on the specific error made. Check the [documentation](https://platform.openai.com/docs/api-reference/) for the specific API method you are calling and make sure you are sending valid and complete parameters. You may also need to check the encoding, format, or size of your request data.")
         except openai.AuthenticationError as e:
-            self.print("Error: Your API key or token was invalid, expired, or revoked.")
-            self.print("Solution: Check your API key or token and make sure it is correct and active. You may need to generate a new one from your account dashboard.")
+            self.print3("Error: Your API key or token was invalid, expired, or revoked.")
+            self.print3("Solution: Check your API key or token and make sure it is correct and active. You may need to generate a new one from your account dashboard.")
             self.changeAPIkey()
         #except openai.ServiceUnavailableError as e:
-        #    self.print("Error: Issue on OpenAI servers. ")
-        #    self.print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
+        #    self.print3("Error: Issue on OpenAI servers. ")
+        #    self.print3("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
         except:
             SharedUtil.showErrors()
