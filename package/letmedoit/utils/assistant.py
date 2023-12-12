@@ -1505,6 +1505,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
         else:
             # a way to quickly clean up context
             config.predefinedContext = "[none]"
+        config.saveConfig()
         self.showCurrentContext()
 
     def getDirectoryList(self):
