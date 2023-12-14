@@ -13,7 +13,6 @@ from letmedoit.health_check import HealthCheck
 import numpy as np
 from numpy.linalg import norm
 import uuid, os, chromadb, getpass, geocoder, datetime, json
-from openai import OpenAI
 #import tiktoken
 from pathlib import Path
 
@@ -21,9 +20,9 @@ memory_store = os.path.join(config.getFiles(), "memory")
 Path(memory_store).mkdir(parents=True, exist_ok=True)
 chroma_client = chromadb.PersistentClient(memory_store)
 
-def cosine_similarity(A, B):
-    cosine = np.dot(A, B) / (norm(A) * norm(B))
-    return cosine
+#def cosine_similarity(A, B):
+#    cosine = np.dot(A, B) / (norm(A) * norm(B))
+#    return cosine
 
 def get_or_create_collection(collection_name):
     collection = chroma_client.get_or_create_collection(
@@ -33,18 +32,9 @@ def get_or_create_collection(collection_name):
     )
     return collection
 
-def get_embedding(text, model="text-embedding-ada-002"):
-   text = text.replace("\n", " ")
-   #tokenizer = tiktoken.get_encoding("cl100k_base")
-   #tokens = tokenizer.encode(text)
-   #we can use tiktoken tokenizer to count tokens and ensure token limit is not exceeded.  In this case we will simply pass text to ada v2 model.
-   return OpenAI().embeddings.create(input = [text], model=model).data[0].embedding
-
 def add_vector(collection, text, metadata):
     id = str(uuid.uuid4())
-    #embedding = get_embedding(text)
     collection.add(
-        #embeddings = [embedding],
         documents = [text],
         metadatas = [metadata],
         ids = [id]

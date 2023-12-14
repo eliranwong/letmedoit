@@ -246,15 +246,15 @@ class LetMeDoItAI:
         # always include the following plugins
         requiredPlugins = ("auto heal python code",)
         for i in requiredPlugins:
-            if i in config.chatGPTPluginExcludeList:
-                config.chatGPTPluginExcludeList.remove(i)
+            if i in config.pluginExcludeList:
+                config.pluginExcludeList.remove(i)
         # execute enabled plugins
         for folder in pluginFolders:
             for plugin in FileUtil.fileNamesWithoutExtension(folder, "py"):
-                if not plugin in config.chatGPTPluginExcludeList:
+                if not plugin in config.pluginExcludeList:
                     script = os.path.join(folder, "{0}.py".format(plugin))
                     self.execPythonFile(script)
-        if internetSeraches in config.chatGPTPluginExcludeList:
+        if internetSeraches in config.pluginExcludeList:
             del config.chatGPTApiFunctionSignatures[0]
         self.setupPythonExecution()
         if config.terminalEnableTermuxAPI:
@@ -276,7 +276,7 @@ class LetMeDoItAI:
         for folder in pluginFolders:
             for plugin in FileUtil.fileNamesWithoutExtension(folder, "py"):
                 plugins.append(plugin)
-                if not plugin in config.chatGPTPluginExcludeList:
+                if not plugin in config.pluginExcludeList:
                     enabledPlugins.append(plugin)
         enabledPlugins = self.dialogs.getMultipleSelection(
             title="Enable / Disable Plugins",
@@ -286,10 +286,10 @@ class LetMeDoItAI:
         )
         if enabledPlugins is not None:
             for p in plugins:
-                if p in enabledPlugins and p in config.chatGPTPluginExcludeList:
-                    config.chatGPTPluginExcludeList.remove(p)
-                elif not p in enabledPlugins and not p in config.chatGPTPluginExcludeList:
-                    config.chatGPTPluginExcludeList.append(p)
+                if p in enabledPlugins and p in config.pluginExcludeList:
+                    config.pluginExcludeList.remove(p)
+                elif not p in enabledPlugins and not p in config.pluginExcludeList:
+                    config.pluginExcludeList.append(p)
             self.runPlugins()
             self.print("Plugin selection updated!")
 
@@ -1070,11 +1070,11 @@ Always remember that you are much more than a text-based AI. You possess both vi
             # fine tune
             if config.loadingInternetSearches == "auto":
                 config.chatGPTApiFunctionCall = "auto"
-                if "integrate google searches" in config.chatGPTPluginExcludeList:
-                    config.chatGPTPluginExcludeList.remove("integrate google searches")
+                if "integrate google searches" in config.pluginExcludeList:
+                    config.pluginExcludeList.remove("integrate google searches")
             elif config.loadingInternetSearches == "none":
-                if not "integrate google searches" in config.chatGPTPluginExcludeList:
-                    config.chatGPTPluginExcludeList.append("integrate google searches")
+                if not "integrate google searches" in config.pluginExcludeList:
+                    config.pluginExcludeList.append("integrate google searches")
             # reset plugins
             self.runPlugins()
             # notify

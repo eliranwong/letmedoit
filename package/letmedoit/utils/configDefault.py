@@ -23,7 +23,7 @@ defaultSettings = (
     ('max_group_chat_round', 12), # AutoGen group chat maximum round
     ('env_QT_QPA_PLATFORM_PLUGIN_PATH', ''), # e.g. # deal with error: qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "~/apps/letmedoit/lib/python3.10/site-packages/cv2/qt/plugins" even though it was found.
     ('customSystemMessage', ''),
-    ('embeddingModel', 'text-embedding-ada-002'),
+    ('embeddingModel', 'all-mpnet-base-v2'),
     ('historyParentFolder', ""),
     ('customTextEditor', ""), # e.g. 'micro -softwrap true -wordwrap true'; built-in text editor eTextEdit is used when it is not defined.
     ('pagerView', False),
@@ -49,7 +49,7 @@ defaultSettings = (
     ('customPredefinedContext', ''),
     ('applyPredefinedContextAlways', False), # True: apply predefined context with all use inputs; False: apply predefined context only in the beginning of the conversation
     ('thisTranslation', {}),
-    ('chatGPTPluginExcludeList', ["awesome prompts", "bible", "bible studies", "biblical counselling", "counselling", "edit text", "simplified Chinese to traditional Chinese"]),
+    ('pluginExcludeList', ["awesome prompts", "bible", "bible studies", "biblical counselling", "convert bible to chromadb", "counselling", "edit text", "simplified Chinese to traditional Chinese"]),
     ('terminalEnableTermuxAPI', False),
     ('terminalEnableTermuxAPIToast', False),
     ('cancel_entry', '.cancel'),

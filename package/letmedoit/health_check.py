@@ -58,13 +58,14 @@ class HealthCheck:
             key, value = splittedContent
             print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>{key}:</{config.terminalPromptIndicatorColor2}> {value}"))
         else:
-            self.print2(splittedContent)
+            config.print2(splittedContent)
 
     @staticmethod
-    def getEmbeddingFunction():
-        if config.embeddingModel == "text-embedding-ada-002":
+    def getEmbeddingFunction(embeddingModel=None):
+        embeddingModel = embeddingModel if embeddingModel is not None else config.embeddingModel
+        if embeddingModel == "text-embedding-ada-002":
             return embedding_functions.OpenAIEmbeddingFunction(api_key=config.openaiApiKey, model_name="text-embedding-ada-002")
-        return embedding_functions.SentenceTransformerEmbeddingFunction(model_name=config.embeddingModel) # support custom Sentence Transformer Embedding models by modifying config.embeddingModel
+        return embedding_functions.SentenceTransformerEmbeddingFunction(model_name=embeddingModel) # support custom Sentence Transformer Embedding models by modifying config.embeddingModel
 
     @staticmethod
     def changeAPIkey():
