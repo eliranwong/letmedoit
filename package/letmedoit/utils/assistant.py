@@ -1259,6 +1259,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 if not confirmation.lower() in ("y", "yes"):
                     config.embeddingModel = oldEmbeddingModel
                     self.print3(f"Embedding model: {oldEmbeddingModel}")
+        if not oldEmbeddingModel == config.embeddingModel:
+            config.saveConfig()
 
     def setAssistantName(self):
         self.print("You may modify my name below:")
