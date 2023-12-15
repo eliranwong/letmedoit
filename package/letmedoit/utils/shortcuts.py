@@ -256,10 +256,10 @@ echo "$path" > {storage}/selected_files.txt
             if os.path.isdir(folder_dest):
                 shutil.rmtree(folder_dest, ignore_errors=True)
             shutil.copytree(folder, folder_dest)
-        folder3 = os.path.join(config.letMeDoItAIFolder, "icons")
-        folder3_dest = os.path.join(storage, "icons")
-        if not os.path.isdir(folder3_dest):
-            shutil.copytree(folder3, folder3_dest)
+        iconFolder = os.path.join(config.letMeDoItAIFolder, "icons")
+        iconFolder_dest = os.path.join(storage, "icons")
+        if not os.path.isdir(iconFolder_dest):
+            shutil.copytree(iconFolder, iconFolder_dest)
 
 def createAppAlias():
     with open(os.path.join(config.letMeDoItAIFolder, "package_name.txt"), "r", encoding="utf-8") as fileObj:

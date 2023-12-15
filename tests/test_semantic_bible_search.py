@@ -1,35 +1,58 @@
 from letmedoit.health_check import HealthCheck
-import os, chromadb
+import os, chromadb, re
 
-if __name__ == '__main__':
-    # testing
-    
-    #dbpath
-    dbpath = os.path.join("/home/eliran/letmedoit", "bibles", "NET")
-    # client
-    chroma_client = chromadb.PersistentClient(dbpath)
-    # collection
-    collection = chroma_client.get_or_create_collection(
-        name="verses",
-        metadata={"hnsw:space": "cosine"},
-        embedding_function=HealthCheck.getEmbeddingFunction(),
-    )
 
-    query = ""
-    while not query == ".quit":
-        query = input("Enter your query: ")
-        if query == ".quit":
-            break
+# testing combined semantic and literal and regular expression searches
+
+def getAndItems(query):
+    splits = query.split("&&")
+    return {"$and": [{"$contains": i} for i in splits]} if len(splits) > 1 else {"$contains": query}
+
+#dbpath
+dbpath = os.path.join(os.path.expanduser("~/letmedoit"), "bibles", "NET")
+# client
+chroma_client = chromadb.PersistentClient(dbpath)
+# collection
+collection = chroma_client.get_or_create_collection(
+    name="verses",
+    metadata={"hnsw:space": "cosine"},
+    embedding_function=HealthCheck.getEmbeddingFunction(embeddingModel="all-mpnet-base-v2"),
+)
+
+meaning = ""
+while not meaning == ".quit":
+    # user input
+    meaning = input("Search for meaning: ")
+    if meaning == ".quit":
+        break
+    books = input("In books: ")
+    if books := books.strip():
+        splits = books.split("||")
+        books = {"$or": [{"book_abb": i.strip()} for i in splits]} if len(splits) > 1 else {"book_abb": books.strip()}
+    contains = input("In verses that literally contain: ")
+    if contains.strip():
+        splits = contains.split("||")
+        contains = {"$or": [getAndItems(i) for i in splits]} if len(splits) > 1 else getAndItems(contains)
+    else:
+        contains = ""
+    regex = input("With regular expression: ")
+    if meaning:
         res = collection.query(
-            include=["metadatas", "documents"],
-            query_texts=[query],
+            query_texts=[meaning],
             n_results = 10,
+            where=books if books else None,
+            where_document=contains if contains else None,
         )
-        print("--------------------")
-        print(">>> retrieved verses: \n")
-        refs = [i["book_abb"]+" "+str(i["chapter"])+":"+str(i["verse"]) for i in res["metadatas"][0]] 
-        for key, value in dict(zip(refs, res["documents"][0])).items():
+    else:
+        res = collection.get(
+            where=books if books else None,
+            where_document=contains if contains else None,
+        )
+    print("--------------------")
+    print(">>> retrieved verses: \n")
+    metadatas = res["metadatas"][0] if meaning else res["metadatas"]
+    refs = [f'''{i["book_abb"]} {i["chapter"]}:{i["verse"]}''' for i in metadatas]
+    for key, value in zip(refs, res["documents"][0] if meaning else res["documents"]):
+        if not regex or (regex and re.search(regex, value, flags=re.IGNORECASE)):
             print(f"({key}) {value}")
-        print("--------------------")
-
-
+    print("--------------------")
