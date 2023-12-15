@@ -60,10 +60,9 @@ def convert_bible(function_args):
     with ProgressBar() as pb:
         for book, chapter, verse, scripture in pb(getAllVerses()):
             abbrev = BibleBooks.abbrev["eng"]
-            book_abb, book_name = abbrev[str(book)]
+            book_abbr = abbrev[str(book)][0]
             metadata = {
-                "book_name": book_name,
-                "book_abb": book_abb,
+                "book_abbr": book_abbr,
                 "book": book,
                 "chapter": chapter,
                 "verse": verse,

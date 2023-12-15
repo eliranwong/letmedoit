@@ -28,7 +28,7 @@ while not meaning == ".quit":
     books = input("In books: ")
     if books := books.strip():
         splits = books.split("||")
-        books = {"$or": [{"book_abb": i.strip()} for i in splits]} if len(splits) > 1 else {"book_abb": books.strip()}
+        books = {"$or": [{"book_abbr": i.strip()} for i in splits]} if len(splits) > 1 else {"book_abbr": books.strip()}
     contains = input("In verses that literally contain: ")
     if contains.strip():
         splits = contains.split("||")
@@ -51,8 +51,9 @@ while not meaning == ".quit":
     print("--------------------")
     print(">>> retrieved verses: \n")
     metadatas = res["metadatas"][0] if meaning else res["metadatas"]
-    refs = [f'''{i["book_abb"]} {i["chapter"]}:{i["verse"]}''' for i in metadatas]
-    for key, value in zip(refs, res["documents"][0] if meaning else res["documents"]):
-        if not regex or (regex and re.search(regex, value, flags=re.IGNORECASE)):
-            print(f"({key}) {value}")
+    refs = [f'''{i["book_abbr"]} {i["chapter"]}:{i["verse"]}''' for i in metadatas]
+    # results = filter(lambda scripture: re.search(regex, scripture, flags=re.IGNORECASE), zip(refs, res["documents"][0] if meaning else res["documents"]))
+    for ref, scripture in zip(refs, res["documents"][0] if meaning else res["documents"]):
+        if not regex or (regex and re.search(regex, scripture, flags=re.IGNORECASE)):
+            print(f"({ref}) {scripture}")
     print("--------------------")
