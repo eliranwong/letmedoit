@@ -3,6 +3,8 @@ from prompt_toolkit import prompt
 import os, openai, traceback, json, pprint
 from chromadb.utils import embedding_functions
 from prompt_toolkit import print_formatted_text, HTML
+from pygments.styles import get_style_by_name
+from prompt_toolkit.styles.pygments import style_from_pygments_cls
 
 thisFile = os.path.realpath(__file__)
 packageFolder = os.path.dirname(thisFile)
@@ -40,6 +42,11 @@ class HealthCheck:
         config.max_consecutive_auto_reply = 10
         config.includeIpInSystemMessage = False
         HealthCheck.setPrint()
+
+    @staticmethod
+    def getPygmentsStyle():
+        theme = config.pygments_style if config.pygments_style else "stata-dark" if not config.terminalResourceLinkColor.startswith("ansibright") else "stata-light"
+        return style_from_pygments_cls(get_style_by_name(theme))
 
     @staticmethod
     def getFiles():
