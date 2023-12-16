@@ -50,7 +50,7 @@ class GeminiPro:
             print("Enter your prompt below:")
             if not prompt:
                 prompt = input(">>> ")
-                if prompt and not prompt in (".new", ".quit"):
+                if prompt and not prompt in (".new", ".quit") and hasattr(config, "currentMessages"):
                     config.currentMessages.append({"content": prompt, "role": "user"})
             else:
                 print(f">>> {prompt}")
