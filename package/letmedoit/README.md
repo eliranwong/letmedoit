@@ -158,7 +158,7 @@ Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural lang
 
 * analyze images, e.g.
 
-> Describe the image 'Hello.png' in details
+> Describe the image 'Hello.png' in detail
 
 > Compare images insider folder 'images'
 

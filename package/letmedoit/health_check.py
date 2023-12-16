@@ -13,6 +13,7 @@ configFile = os.path.join(packageFolder, "config.py")
 if not os.path.isfile(configFile):
     open(configFile, "a", encoding="utf-8").close()
 from letmedoit import config
+from pathlib import Path
 
 class HealthCheck:
 
@@ -39,7 +40,38 @@ class HealthCheck:
         config.max_consecutive_auto_reply = 10
         config.includeIpInSystemMessage = False
         HealthCheck.setPrint()
-    
+
+    @staticmethod
+    def getFiles():
+        apps = {
+            "myhand": ("MyHand", "MyHand Bot"),
+            "letmedoit": ("LetMeDoIt", "LetMeDoIt AI"),
+            "taskwiz": ("TaskWiz", "TaskWiz AI"),
+            "cybertask": ("CyberTask", "CyberTask AI"),
+        }
+
+        # config.letMeDoItName
+        package = os.path.basename(packageFolder)
+        if not hasattr(config, "letMeDoItName") or not config.letMeDoItName:
+            config.letMeDoItName = apps[package][-1] if package in apps else "LetMeDoIt AI"
+
+        # option 1: config.storagedirectory; user custom folder
+        if config.storagedirectory and not os.path.isdir(config.storagedirectory):
+            config.storagedirectory = ""
+        if config.storagedirectory:
+            return config.storagedirectory
+        # option 2: defaultStorageDir; located in user home directory
+        defaultStorageDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
+        try:
+            Path(defaultStorageDir).mkdir(parents=True, exist_ok=True)
+        except:
+            pass
+        if os.path.isdir(defaultStorageDir):
+            return defaultStorageDir
+        # option 3: directory "files" in app directory; to be deleted on every upgrade
+        else:
+            return os.path.join(packageFolder, "files")
+
     @staticmethod
     def setPrint():
         if not hasattr(config, "print2"):

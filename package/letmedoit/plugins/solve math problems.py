@@ -27,7 +27,7 @@ functionSignature = {
         "properties": {
             "query": {
                 "type": "string",
-                "description": "Math problem in details",
+                "description": "Math problem in detail",
             },
         },
         "required": ["query"],

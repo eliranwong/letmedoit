@@ -16,6 +16,7 @@ art
 apsw
 gTTS
 google-cloud-texttospeech
+google-cloud-aiplatform
 pywhatkit
 yt-dlp
 rembg
