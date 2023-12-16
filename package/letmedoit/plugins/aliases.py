@@ -13,6 +13,7 @@ config.aliases["!automath"] = f"!{sys.executable} {os.path.join(config.letMeDoIt
 config.aliases["!autoretriever"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autoretriever.py')}"
 config.aliases["!autoteachable"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autoteachable.py')}"
 config.aliases["!autobuilder"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autobuilder.py')}"
+config.aliases["!geminipro"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'geminipro.py')}"
 config.aliases["!etextedit"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
 
 config.inputSuggestions += ["!autoassist", "!autobuilder", "!automath", "!autoretriever", "!autoteachable", "!geminipro", "!etextedit", "autoassist", "autobuilder", "automath", "autoretriever", "autoteachable", "geminipro", "etextedit"]
