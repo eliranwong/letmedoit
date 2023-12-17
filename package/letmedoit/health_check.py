@@ -1,6 +1,6 @@
 from openai import OpenAI
 from prompt_toolkit import prompt
-import os, openai, traceback, json, pprint
+import os, openai, traceback, json, pprint, wcwidth
 from chromadb.utils import embedding_functions
 from prompt_toolkit import print_formatted_text, HTML
 from pygments.styles import get_style_by_name
@@ -41,7 +41,15 @@ class HealthCheck:
         config.max_group_chat_round = 12
         config.max_consecutive_auto_reply = 10
         config.includeIpInSystemMessage = False
+        config.wrapWords = True
         HealthCheck.setPrint()
+
+    @staticmethod
+    def getStringWidth(text):
+        width = 0
+        for character in text:
+            width += wcwidth.wcwidth(character)
+        return width
 
     @staticmethod
     def getPygmentsStyle():
@@ -63,7 +71,7 @@ class HealthCheck:
             config.letMeDoItName = apps[package][-1] if package in apps else "LetMeDoIt AI"
 
         # option 1: config.storagedirectory; user custom folder
-        if config.storagedirectory and not os.path.isdir(config.storagedirectory):
+        if not hasattr(config, "storagedirectory") or (config.storagedirectory and not os.path.isdir(config.storagedirectory)):
             config.storagedirectory = ""
         if config.storagedirectory:
             return config.storagedirectory
