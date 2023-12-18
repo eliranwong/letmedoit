@@ -1,10 +1,14 @@
+import os, traceback, json, pprint, wcwidth, textwrap
+import openai
 from openai import OpenAI
-from prompt_toolkit import prompt
-import os, openai, traceback, json, pprint, wcwidth
 from chromadb.utils import embedding_functions
-from prompt_toolkit import print_formatted_text, HTML
 from pygments.styles import get_style_by_name
 from prompt_toolkit.styles.pygments import style_from_pygments_cls
+from prompt_toolkit import print_formatted_text, HTML
+from prompt_toolkit import prompt
+from prompt_toolkit.filters import Condition
+from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
+from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
 
 thisFile = os.path.realpath(__file__)
 packageFolder = os.path.dirname(thisFile)
@@ -45,6 +49,50 @@ class HealthCheck:
         HealthCheck.setPrint()
 
     @staticmethod
+    def simplePrompt(inputIndicator="", validator=None, default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False, bottom_toolbar=None):
+        this_key_bindings = KeyBindings()
+        @this_key_bindings.add("c-q")
+        def _(event):
+            buffer = event.app.current_buffer
+            buffer.text = config.exit_entry
+            buffer.validate_and_handle()
+        @this_key_bindings.add("c-n")
+        def _(event):
+            buffer = event.app.current_buffer
+            config.defaultEntry = buffer.text
+            buffer.text = ".new"
+            buffer.validate_and_handle()
+        this_key_bindings = merge_key_bindings([
+            this_key_bindings,
+            prompt_shared_key_bindings,
+        ])
+
+        config.selectAll = False
+        inputPrompt = promptSession.prompt if promptSession is not None else prompt
+        if not inputIndicator:
+            inputIndicator = [
+                ("class:indicator", ">>> "),
+            ]
+        userInput = inputPrompt(
+            inputIndicator,
+            key_bindings=this_key_bindings,
+            bottom_toolbar=bottom_toolbar if bottom_toolbar is not None else f" [ctrl+q] {config.exit_entry}",
+            #enable_system_prompt=True,
+            swap_light_and_dark_colors=Condition(lambda: not config.terminalResourceLinkColor.startswith("ansibright")),
+            style=style,
+            validator=validator,
+            #multiline=Condition(lambda: config.multilineInput),
+            default=default,
+            accept_default=accept_default,
+            completer=completer,
+            is_password=is_password,
+            mouse_support=Condition(lambda: config.mouseSupport),
+            #clipboard=config.clipboard,
+        )
+        userInput = textwrap.dedent(userInput) # dedent to work with code block
+        return userInput if hasattr(config, "addPathAt") and config.addPathAt else userInput.strip()
+
+    @staticmethod
     def getStringWidth(text):
         width = 0
         for character in text:
@@ -63,6 +111,7 @@ class HealthCheck:
             "letmedoit": ("LetMeDoIt", "LetMeDoIt AI"),
             "taskwiz": ("TaskWiz", "TaskWiz AI"),
             "cybertask": ("CyberTask", "CyberTask AI"),
+            "googleaistudio": ("GoogleAI", "GoogleAI Studio"),
         }
 
         # config.letMeDoItName

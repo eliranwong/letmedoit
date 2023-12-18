@@ -172,7 +172,7 @@ Available tokens: {estimatedAvailableTokens}
                 run_in_terminal(lambda: config.print3(f"Response Audio: '{'enabled' if config.ttsOutput else 'disabled'}'!"))
         @this_key_bindings.add("escape", "r")
         def _(_):
-            print("Restarting LetMeDoIt AI ...")
+            print(f"Restarting {config.letMeDoItName} ...")
             config.restartApp()
         @this_key_bindings.add("escape", "i")
         def _(_):

@@ -1,14 +1,16 @@
-import vertexai, os
+import vertexai, os, traceback
 from vertexai.preview.generative_models import GenerativeModel
+from vertexai.generative_models._generative_models import (
+    GenerationConfig,
+    HarmCategory,
+    HarmBlockThreshold,
+)
 from letmedoit import config
 from letmedoit.health_check import HealthCheck
-from letmedoit.utils.prompts import Prompts
-if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
+if not hasattr(config, "exit_entry"):
     HealthCheck.setBasicConfig()
-    HealthCheck.changeAPIkey()
     HealthCheck.saveConfig()
     print("Updated!")
-HealthCheck.checkCompletion()
 HealthCheck.setPrint()
 #import pygments
 #from pygments.lexers.markup import MarkdownLexer
@@ -17,7 +19,11 @@ HealthCheck.setPrint()
 from prompt_toolkit.styles import Style
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.input import create_input
+from prompt_toolkit import PromptSession
+from prompt_toolkit.history import FileHistory
+from pathlib import Path
 import asyncio, threading, shutil, textwrap
+
 
 # Install google-cloud-aiplatform FIRST!
 #!pip install --upgrade google-cloud-aiplatform
@@ -121,7 +127,7 @@ class GeminiPro:
             if hasattr(config, "currentMessages") and chat_response:
                 config.currentMessages.append({"role": "assistant", "content": chat_response})
             # auto pager feature
-            if hasattr(config, "pagerContent"):
+            if hasattr(config, "pagerView"):
                 config.pagerContent += self.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
                 self.addPagerContent = False
                 if config.pagerView:
@@ -136,7 +142,7 @@ class GeminiPro:
         blockStart = False
         wrapWords = config.wrapWords
         for event in completion:
-            if not streaming_event.is_set():
+            if not streaming_event.is_set() and not self.streaming_finished:
                 # RETRIEVE THE TEXT FROM THE RESPONSE
                 answer = event.text
                 #answer = event.choices[0].delta.content
@@ -174,13 +180,17 @@ class GeminiPro:
         finishOutputs(wrapWords, chat_response)
 
     def run(self, prompt=""):
+        historyFolder = os.path.join(HealthCheck.getFiles(), "history")
+        Path(historyFolder).mkdir(parents=True, exist_ok=True)
+        chat_history = os.path.join(historyFolder, "geminipro")
+        chat_session = PromptSession(history=FileHistory(chat_history))
+
         promptStyle = Style.from_dict({
             # User input (default text).
             "": config.terminalCommandEntryColor2,
             # Prompt.
             "indicator": config.terminalPromptIndicatorColor2,
         })
-        prompts = Prompts()
 
         if not self.runnable:
             print("Gemini Pro is not running due to missing configurations!")
@@ -196,12 +206,12 @@ class GeminiPro:
             #print("Enter your prompt below:")
             if not prompt:
                 #prompt = input(">>> ")
-                prompt = prompts.simplePrompt(style=promptStyle)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session)
                 if prompt and not prompt in (".new", config.exit_entry) and hasattr(config, "currentMessages"):
                     config.currentMessages.append({"content": prompt, "role": "user"})
             else:
                 #print(f">>> {prompt}")
-                prompt = prompts.simplePrompt(style=promptStyle, default=prompt, accept_default=True)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, default=prompt, accept_default=True)
             #print("")
             if prompt == config.exit_entry:
                 break
@@ -212,24 +222,47 @@ class GeminiPro:
                 config.pagerContent = ""
                 self.addPagerContent = True
 
-                completion = chat.send_message(prompt, stream=True)
+                try:
+                    # https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini
+                    completion = chat.send_message(
+                        prompt,
+                        # Optional:
+                        generation_config=GenerationConfig(
+                            temperature=0.9, # 0.0-1.0; default 0.9
+                            max_output_tokens=8192, # default
+                            candidate_count=1,
+                        ),
+                        safety_settings={
+                            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+                            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                        },
+                        stream=True,
+                    )
 
-                # Create a new thread for the streaming task
-                self.streaming_finished = False
-                streaming_event = threading.Event()
-                self.streaming_thread = threading.Thread(target=self.streamOutputs, args=(streaming_event, completion,))
-                # Start the streaming thread
-                self.streaming_thread.start()
+                    # Create a new thread for the streaming task
+                    self.streaming_finished = False
+                    streaming_event = threading.Event()
+                    self.streaming_thread = threading.Thread(target=self.streamOutputs, args=(streaming_event, completion,))
+                    # Start the streaming thread
+                    self.streaming_thread.start()
 
-                # wait while text output is steaming; capture key combo 'ctrl+q' or 'ctrl+z' to stop the streaming
-                self.keyToStopStreaming(streaming_event)
+                    # wait while text output is steaming; capture key combo 'ctrl+q' or 'ctrl+z' to stop the streaming
+                    self.keyToStopStreaming(streaming_event)
 
-                # when streaming is done or when user press "ctrl+q"
-                self.streaming_thread.join()
+                    # when streaming is done or when user press "ctrl+q"
+                    self.streaming_thread.join()
 
-                # format response when streaming is not applied
-                #tokens = list(pygments.lex(fullContent, lexer=MarkdownLexer()))
-                #print_formatted_text(PygmentsTokens(tokens), style=HealthCheck.getPygmentsStyle())
+                    # format response when streaming is not applied
+                    #tokens = list(pygments.lex(fullContent, lexer=MarkdownLexer()))
+                    #print_formatted_text(PygmentsTokens(tokens), style=HealthCheck.getPygmentsStyle())
+
+                except:
+                    self.streaming_finished = True
+                    self.streaming_thread.join()
+                    HealthCheck.print2(traceback.format_exc())
+
             prompt = ""
             #print("")
         #print("------------------------------")
