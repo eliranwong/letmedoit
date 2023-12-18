@@ -56,8 +56,8 @@ class HealthCheck:
             for symbol in "|/-\\":
                 print(symbol, end="\r")
                 time.sleep(0.1)
-        print("\r", end="")
-        print(" ", end="")
+        #print("\r", end="")
+        #print(" ", end="")
 
     @staticmethod
     def startSpinning():

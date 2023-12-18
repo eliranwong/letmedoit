@@ -200,7 +200,7 @@ class GeminiPro:
             return None
         model = GenerativeModel("gemini-pro")
         chat = model.start_chat(
-            context=f"You're {self.name}, a helpful AI assistant.",
+            #context=f"You're {self.name}, a helpful AI assistant.",
         )
         HealthCheck.print2(f"\n{self.name} loaded!")
         print("(To start a new chart, enter '.new')")
