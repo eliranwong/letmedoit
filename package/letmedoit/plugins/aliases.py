@@ -17,6 +17,7 @@ config.aliases["!autobuilder"] = f"!{sys.executable} {os.path.join(config.letMeD
 # integrated Google AI tools
 config.aliases["!geminipro"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'geminipro.py')}"
 config.aliases["!palm2"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'palm2.py')}"
+config.aliases["!codey"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'codey.py')}"
 # integrated text editor
 config.aliases["!etextedit"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
 
@@ -28,6 +29,7 @@ config.inputSuggestions += [
     "!autoteachable",
     "!geminipro",
     "!palm2",
+    "!codey",
     "!etextedit",
     "autoassist",
     "autobuilder",
@@ -36,6 +38,7 @@ config.inputSuggestions += [
     "autoteachable",
     "geminipro",
     "palm2",
+    "codey",
     "etextedit",
 ]
 

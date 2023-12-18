@@ -35,9 +35,9 @@ defaultSettings = (
     ('chatGPTApiMaxTokens', 2000),
     ('chatGPTApiMinTokens', 256),
     #('chatGPTApiNoOfChoices', 1),
-    ('chatGPTApiTemperature', 0.8),
     ('chatGPTApiFunctionCall', "auto"),
     ('passFunctionCallReturnToChatGPT', True),
+    ('llmTemperature', 0.8),
     ('max_consecutive_auto_reply', 10), # work with pyautogen
     ('memoryClosestMatchesNumber', 5),
     ('runPythonScriptGlobally', False),

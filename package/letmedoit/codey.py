@@ -1,5 +1,5 @@
 import vertexai, os, traceback, argparse
-from vertexai.language_models import ChatModel
+from vertexai.language_models import CodeChatModel
 from letmedoit import config
 from letmedoit.health_check import HealthCheck
 if not hasattr(config, "exit_entry"):
@@ -22,9 +22,9 @@ from pathlib import Path
 #!pip install --upgrade google-cloud-aiplatform
 
 
-class VertexAIModel:
+class Codey:
 
-    def __init__(self, name="PaLM 2"):
+    def __init__(self, name="Codey"):
         # authentication
         authpath1 = os.path.join(HealthCheck.getFiles(), "credentials_googleaistudio.json")
         if os.path.isfile(authpath1):
@@ -38,7 +38,7 @@ class VertexAIModel:
         vertexai.init()
         self.name = name
 
-    def run(self, prompt="", model="chat-bison-32k", temperature=0.0, max_output_tokens=2048):
+    def run(self, prompt="", model="codechat-bison-32k", temperature=0.2, max_output_tokens=2048):
         historyFolder = os.path.join(HealthCheck.getFiles(), "history")
         Path(historyFolder).mkdir(parents=True, exist_ok=True)
         chat_history = os.path.join(historyFolder, self.name.replace(" ", "_"))
@@ -54,22 +54,14 @@ class VertexAIModel:
         if not self.runnable:
             print(f"{self.name} is not running due to missing configurations!")
             return None
-        model = ChatModel.from_pretrained(model)
-        # https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-chat
+        model = CodeChatModel.from_pretrained(model)
+        # https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/code-chat
         parameters = {
-            "temperature": temperature,  # Temperature controls the degree of randomness in token selection; 0.0–1.0; Default: 0.0
+            "temperature": temperature,  # Temperature controls the degree of randomness in token selection; 0.0–1.0; Default: 0.2
             "max_output_tokens": max_output_tokens,  # Token limit determines the maximum amount of text output; 1–2048; Default: 1024
-            "top_p": 0.95,  # Tokens are selected from most probable to least until the sum of their probabilities equals the top_p value; 0.0–1.0; Default: 0.95
-            "top_k": 40,  # A top_k of 1 means the selected token is the most probable among all tokens; 1-40; Default: 40
         }
         chat = model.start_chat(
-            context=f"You're {self.name}, a helpful AI assistant.",
-            #examples=[
-            #    InputOutputTextPair(
-            #        input_text="How many moons does Mars have?",
-            #        output_text="The planet Mars has two moons, Phobos and Deimos.",
-            #    ),
-            #],
+            context=f"You're {self.name}, an expert in coding.",
         )
         HealthCheck.print2(f"\n{self.name} loaded!")
         print("(To start a new chart, enter '.new')")
@@ -89,6 +81,7 @@ class VertexAIModel:
                 print("New chat started!")
             elif prompt := prompt.strip():
                 try:
+                    # https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-chat
                     response = chat.send_message(
                         prompt, **parameters
                     )
@@ -108,17 +101,17 @@ class VertexAIModel:
 
 def main():
     # Create the parser
-    parser = argparse.ArgumentParser(description="palm2 cli options")
+    parser = argparse.ArgumentParser(description="codey cli options")
     # Add arguments
     parser.add_argument("default", nargs="?", default=None, help="default entry")
-    parser.add_argument('-m', '--model', action='store', dest='model', help="specify language model with -m flag; default: chat-bison-32k")
+    parser.add_argument('-m', '--model', action='store', dest='model', help="specify language model with -m flag; default: codechat-bison-32k")
     parser.add_argument('-o', '--outputtokens', action='store', dest='outputtokens', help="specify maximum output tokens with -o flag; default: 2048")
-    parser.add_argument('-t', '--temperature', action='store', dest='temperature', help="specify temperature with -t flag; default: 0.0")
+    parser.add_argument('-t', '--temperature', action='store', dest='temperature', help="specify temperature with -t flag; default: 0.2")
     # Parse arguments
     args = parser.parse_args()
     # Get options
     prompt = args.default.strip() if args.default and args.default.strip() else ""
-    model = args.model.strip() if args.model and args.model.strip() else "chat-bison-32k"
+    model = args.model.strip() if args.model and args.model.strip() else "codechat-bison-32k"
     if args.outputtokens or args.outputtokens.strip():
         try:
             max_output_tokens = int(args.outputtokens.strip())
@@ -130,11 +123,11 @@ def main():
         try:
             temperature = float(args.temperature.strip())
         except:
-            temperature = 0.0
+            temperature = 0.2
     else:
-        temperature = 0.0
-    # Run chat bot
-    VertexAIModel().run(
+        temperature = 0.2
+
+    Codey().run(
         prompt=prompt,
         model=model,
         temperature=temperature,

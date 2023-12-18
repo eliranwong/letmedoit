@@ -65,7 +65,7 @@ class AutoGenTeachable:
             llm_config={
                 #"cache_seed": 42,  # seed for caching and reproducibility
                 "config_list": config_list,  # a list of OpenAI API configurations
-                "temperature": config.chatGPTApiTemperature,  # temperature for sampling
+                "temperature": config.llmTemperature,  # temperature for sampling
                 "timeout": 300,
             },  # configuration for autogen's enhanced inference API which is compatible with OpenAI API
             teach_config={

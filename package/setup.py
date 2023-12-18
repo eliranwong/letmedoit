@@ -48,7 +48,7 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="2.0.20",
+    version="2.0.24",
     python_requires=">=3.8, <3.12",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of ChatGPT API, Gemini Pro and AutoGen, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,
@@ -143,6 +143,7 @@ setup(
             f"autobuilder={package}.autobuilder:main",
             f"geminipro={package}.geminipro:main",
             f"palm2={package}.palm2:main",
+            f"codey={package}.codey:main",
         ],
     },
     keywords="ai assistant openai chatgpt gemini autogen rag interpreter auto-heal",

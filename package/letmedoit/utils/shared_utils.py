@@ -410,7 +410,7 @@ Acess the risk level of this Python code:
                 model=config.chatGPTApiModel,
                 messages=[{"role": "user", "content" : userInput}],
                 n=1,
-                temperature=temperature if temperature is not None else config.chatGPTApiTemperature,
+                temperature=temperature if temperature is not None else config.llmTemperature,
                 max_tokens=config.chatGPTApiMaxTokens,
             )
             return completion.choices[0].message.content

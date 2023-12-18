@@ -13,7 +13,7 @@ from letmedoit.geminipro import GeminiPro
 def ask_gemini_pro(function_args):
     query = function_args.get("query") # required
     config.stopSpinning()
-    GeminiPro().run(query)
+    GeminiPro().run(query, temperature=config.llmTemperature)
     return ""
 
 functionSignature = {

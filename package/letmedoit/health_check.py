@@ -30,7 +30,7 @@ class HealthCheck:
     def setBasicConfig(): # minimum config to work with standalone scripts built with AutoGen
         config.openaiApiKey = ''
         config.chatGPTApiModel = 'gpt-3.5-turbo'
-        config.chatGPTApiTemperature = 0.8
+        config.llmTemperature = 0.8
         config.max_consecutive_auto_reply = 10
         config.exit_entry = '.exit'
         config.cancel_entry = '.cancel'

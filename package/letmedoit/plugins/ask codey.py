@@ -1,7 +1,7 @@
 """
-LetMeDoIt AI Plugin - ask PaLM 2
+LetMeDoIt AI Plugin - ask Codey
 
-Ask Google PaLM 2 for information
+Ask Google Codey for information about coding
 
 [FUNCTION_CALL]
 """
@@ -10,15 +10,15 @@ Ask Google PaLM 2 for information
 from letmedoit import config
 from letmedoit.palm2 import VertexAIModel
 
-def ask_palm2(function_args):
+def ask_codey(function_args):
     query = function_args.get("query") # required
     config.stopSpinning()
     VertexAIModel().run(query, temperature=config.llmTemperature)
     return ""
 
 functionSignature = {
-    "name": "ask_palm2",
-    "description": "Ask PaLM 2 for information",
+    "name": "ask_codey",
+    "description": "Ask Codey for information about coding",
     "parameters": {
         "type": "object",
         "properties": {
@@ -31,6 +31,6 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("ask_palm2")
+config.pluginsWithFunctionCall.append("ask_codey")
 config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["ask_palm2"] = ask_palm2
+config.chatGPTApiAvailableFunctions["ask_codey"] = ask_codey

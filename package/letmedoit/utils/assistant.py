@@ -629,7 +629,7 @@ Otherwise, answer "chat". Here is the request:"""
             model=config.chatGPTApiModel,
             messages=messages,
             max_tokens=SharedUtil.getDynamicTokens(messages, functionSignatures),
-            temperature=temperature if temperature is not None else config.chatGPTApiTemperature,
+            temperature=temperature if temperature is not None else config.llmTemperature,
             n=1,
             tools=SharedUtil.convertFunctionSignaturesIntoTools(functionSignatures),
             tool_choice={"type": "function", "function": {"name": function_name}},
@@ -724,7 +724,7 @@ Otherwise, answer "chat". Here is the request:"""
                     model=config.chatGPTApiModel,
                     messages=thisThisMessage,
                     n=1,
-                    temperature=config.chatGPTApiTemperature,
+                    temperature=config.llmTemperature,
                     max_tokens=SharedUtil.getDynamicTokens(thisThisMessage, config.chatGPTApiFunctionSignatures),
                     tools=SharedUtil.convertFunctionSignaturesIntoTools(config.chatGPTApiFunctionSignatures),
                     tool_choice={"type": "function", "function": {"name": config.runSpecificFuntion}} if config.runSpecificFuntion else config.chatGPTApiFunctionCall,
@@ -734,7 +734,7 @@ Otherwise, answer "chat". Here is the request:"""
                 model=config.chatGPTApiModel,
                 messages=thisThisMessage,
                 n=1,
-                temperature=config.chatGPTApiTemperature,
+                temperature=config.llmTemperature,
                 max_tokens=SharedUtil.getDynamicTokens(thisThisMessage),
                 stream=True,
             )
@@ -1196,14 +1196,14 @@ Always remember that you are much more than a text-based AI. You possess both vi
     def setTemperature(self):
         self.print("Enter a value between 0.0 and 2.0:")
         self.print("(Lower values for temperature result in more consistent outputs, while higher values generate more diverse and creative results. Select a temperature value based on the desired trade-off between coherence and creativity for your specific application.)")
-        temperature = self.prompts.simplePrompt(style=self.prompts.promptStyle2, validator=FloatValidator(), default=str(config.chatGPTApiTemperature))
+        temperature = self.prompts.simplePrompt(style=self.prompts.promptStyle2, validator=FloatValidator(), default=str(config.llmTemperature))
         if temperature and not temperature.strip().lower() == config.exit_entry:
             temperature = float(temperature)
             if temperature < 0:
                 temperature = 0
             elif temperature > 2:
                 temperature = 2
-            config.chatGPTApiTemperature = round(temperature, 1)
+            config.llmTemperature = round(temperature, 1)
             config.saveConfig()
             self.print3(f"ChatGPT Temperature: {temperature}")
 
