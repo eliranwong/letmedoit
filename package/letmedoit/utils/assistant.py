@@ -366,9 +366,11 @@ class LetMeDoItAI:
 
     def spinning_animation(self, stop_event):
         while not stop_event.is_set():
-            for symbol in '|/-\\':
-                print(symbol, end='\r')
+            for symbol in "|/-\\":
+                print(symbol, end="\r")
                 time.sleep(0.1)
+        print("\r", end="")
+        print(" ", end="")
 
 #    def getChatResponse(self, completion):
 #        chat_response = completion["choices"][0]["message"]["content"]

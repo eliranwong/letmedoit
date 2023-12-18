@@ -8,15 +8,36 @@ from letmedoit import config
 import sys, os
 
 # add python python to work with virtual environment
+# integrated AutoGen agents
 config.aliases["!autoassist"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autoassist.py')}"
 config.aliases["!automath"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'automath.py')}"
 config.aliases["!autoretriever"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autoretriever.py')}"
 config.aliases["!autoteachable"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autoteachable.py')}"
 config.aliases["!autobuilder"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autobuilder.py')}"
+# integrated Google AI tools
 config.aliases["!geminipro"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'geminipro.py')}"
+config.aliases["!palm2"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'palm2.py')}"
+# integrated text editor
 config.aliases["!etextedit"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
 
-config.inputSuggestions += ["!autoassist", "!autobuilder", "!automath", "!autoretriever", "!autoteachable", "!geminipro", "!etextedit", "autoassist", "autobuilder", "automath", "autoretriever", "autoteachable", "geminipro", "etextedit"]
+config.inputSuggestions += [
+    "!autoassist",
+    "!autobuilder",
+    "!automath",
+    "!autoretriever",
+    "!autoteachable",
+    "!geminipro",
+    "!palm2",
+    "!etextedit",
+    "autoassist",
+    "autobuilder",
+    "automath",
+    "autoretriever",
+    "autoteachable",
+    "geminipro",
+    "palm2",
+    "etextedit",
+]
 
 # Example to set an alias to open-interpreter
 #config.aliases["!interpreter"] = f"!env OPENAI_API_KEY={config.openaiApiKey} ~/open-interpreter/venv/bin/interpreter"

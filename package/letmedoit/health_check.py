@@ -1,4 +1,4 @@
-import os, traceback, json, pprint, wcwidth, textwrap
+import os, traceback, json, pprint, wcwidth, textwrap, threading
 import openai
 from openai import OpenAI
 from chromadb.utils import embedding_functions
@@ -8,6 +8,7 @@ from prompt_toolkit import print_formatted_text, HTML
 from prompt_toolkit import prompt
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
+from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
 
 thisFile = os.path.realpath(__file__)
@@ -46,7 +47,31 @@ class HealthCheck:
         config.max_consecutive_auto_reply = 10
         config.includeIpInSystemMessage = False
         config.wrapWords = True
+        config.pygments_style = ""
         HealthCheck.setPrint()
+
+    @staticmethod
+    def spinning_animation(stop_event):
+        while not stop_event.is_set():
+            for symbol in "|/-\\":
+                print(symbol, end="\r")
+                time.sleep(0.1)
+        print("\r", end="")
+        print(" ", end="")
+
+    @staticmethod
+    def startSpinning():
+        config.stop_event = threading.Event()
+        config.spinner_thread = threading.Thread(target=HealthCheck.spinning_animation, args=(config.stop_event,))
+        config.spinner_thread.start()
+
+    @staticmethod
+    def stopSpinning():
+        try:
+            config.stop_event.set()
+            config.spinner_thread.join()
+        except:
+            pass
 
     @staticmethod
     def simplePrompt(inputIndicator="", validator=None, default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False, bottom_toolbar=None):
@@ -69,6 +94,8 @@ class HealthCheck:
 
         config.selectAll = False
         inputPrompt = promptSession.prompt if promptSession is not None else prompt
+        if not hasattr(config, "clipboard"):
+            config.clipboard = PyperclipClipboard()
         if not inputIndicator:
             inputIndicator = [
                 ("class:indicator", ">>> "),
@@ -87,7 +114,7 @@ class HealthCheck:
             completer=completer,
             is_password=is_password,
             mouse_support=Condition(lambda: config.mouseSupport),
-            #clipboard=config.clipboard,
+            clipboard=config.clipboard,
         )
         userInput = textwrap.dedent(userInput) # dedent to work with code block
         return userInput if hasattr(config, "addPathAt") and config.addPathAt else userInput.strip()
@@ -101,7 +128,7 @@ class HealthCheck:
 
     @staticmethod
     def getPygmentsStyle():
-        theme = config.pygments_style if config.pygments_style else "stata-dark" if not config.terminalResourceLinkColor.startswith("ansibright") else "stata-light"
+        theme = config.pygments_style if hasattr(config, "pygments_style") and config.pygments_style else "stata-dark" if not config.terminalResourceLinkColor.startswith("ansibright") else "stata-light"
         return style_from_pygments_cls(get_style_by_name(theme))
 
     @staticmethod
@@ -111,7 +138,7 @@ class HealthCheck:
             "letmedoit": ("LetMeDoIt", "LetMeDoIt AI"),
             "taskwiz": ("TaskWiz", "TaskWiz AI"),
             "cybertask": ("CyberTask", "CyberTask AI"),
-            "googleaistudio": ("GoogleAI", "GoogleAI Studio"),
+            "googleaistudio": ("GoogleAIStudio", "GoogleAIStudio"),
         }
 
         # config.letMeDoItName
@@ -223,6 +250,7 @@ class HealthCheck:
                 if not name.startswith("__") and not name in excludeConfigList:
                     try:
                         value = eval(f"config.{name}")
-                        fileObj.write("{0} = {1}\n".format(name, pprint.pformat(value)))
+                        if not callable(value):
+                            fileObj.write("{0} = {1}\n".format(name, pprint.pformat(value)))
                     except:
                         pass

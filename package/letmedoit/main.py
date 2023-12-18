@@ -233,7 +233,8 @@ def saveConfig():
             if not name.startswith("__") and not name in excludeConfigList:
                 try:
                     value = eval(f"config.{name}")
-                    fileObj.write("{0} = {1}\n".format(name, pprint.pformat(value)))
+                    if not callable(value):
+                        fileObj.write("{0} = {1}\n".format(name, pprint.pformat(value)))
                 except:
                     pass
 config.saveConfig = saveConfig

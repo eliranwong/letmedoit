@@ -37,7 +37,7 @@ import asyncio, threading, shutil, textwrap
 
 class GeminiPro:
 
-    def __init__(self):
+    def __init__(self, name="Gemini Pro"):
         # authentication
         authpath1 = os.path.join(HealthCheck.getFiles(), "credentials_googleaistudio.json")
         if os.path.isfile(authpath1):
@@ -49,6 +49,7 @@ class GeminiPro:
             self.runnable = False
         # initiation
         vertexai.init()
+        self.name = name
 
     def wrapText(self, content, terminal_width):
         return "\n".join([textwrap.fill(line, width=terminal_width) for line in content.split("\n")])
@@ -144,7 +145,9 @@ class GeminiPro:
         for event in completion:
             if not streaming_event.is_set() and not self.streaming_finished:
                 # RETRIEVE THE TEXT FROM THE RESPONSE
+                # vertex
                 answer = event.text
+                # openai
                 #answer = event.choices[0].delta.content
                 #answer = SharedUtil.transformText(answer)
                 # STREAM THE ANSWER
@@ -179,7 +182,7 @@ class GeminiPro:
         
         finishOutputs(wrapWords, chat_response)
 
-    def run(self, prompt=""):
+    def run(self, prompt="", temperature=0.9):
         historyFolder = os.path.join(HealthCheck.getFiles(), "history")
         Path(historyFolder).mkdir(parents=True, exist_ok=True)
         chat_history = os.path.join(historyFolder, "geminipro")
@@ -193,26 +196,22 @@ class GeminiPro:
         })
 
         if not self.runnable:
-            print("Gemini Pro is not running due to missing configurations!")
+            print(f"{self.name} is not running due to missing configurations!")
             return None
         model = GenerativeModel("gemini-pro")
-        chat = model.start_chat()
-        HealthCheck.print2("\nGemini Pro loaded!")
+        chat = model.start_chat(
+            context=f"You're {self.name}, a helpful AI assistant.",
+        )
+        HealthCheck.print2(f"\n{self.name} loaded!")
         print("(To start a new chart, enter '.new')")
         print(f"(To quit, enter '{config.exit_entry}')\n")
-        import re, time
         while True:
-            #print("------------------------------\n")
-            #print("Enter your prompt below:")
             if not prompt:
-                #prompt = input(">>> ")
                 prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session)
                 if prompt and not prompt in (".new", config.exit_entry) and hasattr(config, "currentMessages"):
                     config.currentMessages.append({"content": prompt, "role": "user"})
             else:
-                #print(f">>> {prompt}")
                 prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, default=prompt, accept_default=True)
-            #print("")
             if prompt == config.exit_entry:
                 break
             elif prompt == ".new":
@@ -228,7 +227,7 @@ class GeminiPro:
                         prompt,
                         # Optional:
                         generation_config=GenerationConfig(
-                            temperature=0.9, # 0.0-1.0; default 0.9
+                            temperature=temperature, # 0.0-1.0; default 0.9
                             max_output_tokens=8192, # default
                             candidate_count=1,
                         ),
@@ -264,9 +263,8 @@ class GeminiPro:
                     HealthCheck.print2(traceback.format_exc())
 
             prompt = ""
-            #print("")
-        #print("------------------------------")
-        HealthCheck.print2("\nGemini Pro closed!\n")
+
+        HealthCheck.print2(f"\n{self.name} closed!\n")
 
 def main():
     GeminiPro().run()
