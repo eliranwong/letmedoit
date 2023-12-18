@@ -1,6 +1,6 @@
 # LetMeDoIt AI
 
-LetMeDoIt AI (MyHand Bot / CyberTask AI / TaskWiz AI), is an advanced AI assistant, leveraging the capabilities of ChatGPT API, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.
+LetMeDoIt AI (also known as MyHand Bot, CyberTask AI, or TaskWiz AI) is an advanced AI assistant. It leverages the capabilities of ChatGPT API, Gemini Pro, and AutoGen, enabling it to engage in conversations, execute codes with auto-healing, and assist you with a wide range of tasks on local devices.
 
 Website: https://LetMeDoIt.ai
 
@@ -103,6 +103,10 @@ LetMeDoIt AI just got smarter with memory retention!
 # Examples of Plugin Features (selective only):
 
 Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural language:
+
+* [NEW] integrated Google Gemini Pro multiturn chat, e.g.
+
+> ask Gemini Pro to write an article about Google
 
 * [NEW] create ai assistants based on the requested task, e.g.
 
