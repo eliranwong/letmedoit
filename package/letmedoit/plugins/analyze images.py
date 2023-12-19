@@ -34,9 +34,9 @@ def analyze_images(function_args):
     content = []
     # valid image paths
     for i in files:
-        if SharedUtil.is_valid_image_url(i):
+        if SharedUtil.is_valid_url(i) and SharedUtil.is_valid_image_url(i):
             content.append({"type": "image_url", "image_url": {"url": i,},})
-        elif SharedUtil.is_valid_image_file(i):
+        elif os.path.isfile(i) and SharedUtil.is_valid_image_file(i):
             content.append({"type": "image_url", "image_url": SharedUtil.encode_image(i),})
 
     if content:
@@ -96,7 +96,7 @@ functionSignature = {
             },
             "files": {
                 "type": "string",
-                "description": """Return a list of image paths, e.g. '["image1.png", "/tmp/image2.png"]'. Return '[]' if image path is not provided.""",
+                "description": """Return a list of image paths or urls, e.g. '["image1.png", "/tmp/image2.png", "https://letmedoit.ai/image.png"]'. Return '[]' if image path is not provided.""",
             },
         },
         "required": ["query", "files"],

@@ -119,14 +119,14 @@ def main():
     # Get options
     prompt = args.default.strip() if args.default and args.default.strip() else ""
     model = args.model.strip() if args.model and args.model.strip() else "chat-bison-32k"
-    if args.outputtokens or args.outputtokens.strip():
+    if args.outputtokens and args.outputtokens.strip():
         try:
             max_output_tokens = int(args.outputtokens.strip())
         except:
             max_output_tokens = 2048
     else:
         max_output_tokens = 2048
-    if args.temperature or not args.temperature.strip():
+    if args.temperature and args.temperature.strip():
         try:
             temperature = float(args.temperature.strip())
         except:

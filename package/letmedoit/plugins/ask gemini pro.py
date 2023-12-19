@@ -11,20 +11,20 @@ from letmedoit import config
 from letmedoit.geminipro import GeminiPro
 
 def ask_gemini_pro(function_args):
-    query = function_args.get("query") # required
     config.stopSpinning()
-    GeminiPro().run(query, temperature=config.llmTemperature)
+    query = function_args.get("query") # required
+    GeminiPro(temperature=config.llmTemperature).run(query)
     return ""
 
 functionSignature = {
     "name": "ask_gemini_pro",
-    "description": "Ask Gemini Pro for information",
+    "description": "Ask Gemini Pro to provide information or analyze an image",
     "parameters": {
         "type": "object",
         "properties": {
             "query": {
                 "type": "string",
-                "description": "The request in detail",
+                "description": "The original request in detail, including all file paths or urls, if any.",
             },
         },
         "required": ["query"],
