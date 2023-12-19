@@ -35,11 +35,20 @@ with open(package_readme, "r", encoding="utf-8") as fileObj:
     long_description = fileObj.read()
 
 # get required packages
+if os.path.expanduser("~") == "/data/data/com.termux/files/home" or os.path.isdir("/data/data/com.termux/files/home"):
+    isTermux = True
+    print("Install packages on Termux")
+else:
+    isTermux = False
 install_requires = []
+exclude_from_termux = (
+    "google-cloud-aiplatform",
+    "pygame",
+)
 with open(os.path.join(package, "requirements.txt"), "r") as fileObj:
     for line in fileObj.readlines():
         mod = line.strip()
-        if mod:
+        if mod and (not isTermux or (isTermux and not mod in exclude_from_termux)):
             install_requires.append(mod)
 
 # make sure config.py is empty
@@ -48,7 +57,7 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="2.0.26",
+    version="2.0.29",
     python_requires=">=3.8, <3.12",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of ChatGPT API, Gemini Pro and AutoGen, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks.",
     long_description=long_description,
