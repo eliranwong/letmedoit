@@ -81,10 +81,11 @@ class Codey:
                 print("New chat started!")
             elif prompt := prompt.strip():
                 try:
-                    # https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-chat
+                    HealthCheck.startSpinning()
                     response = chat.send_message(
                         prompt, **parameters
                     )
+                    HealthCheck.stopSpinning()
                     config.pagerContent = response.text.strip()
                     # color response with markdown style
                     tokens = list(pygments.lex(config.pagerContent, lexer=MarkdownLexer()))
@@ -93,11 +94,12 @@ class Codey:
                     if hasattr(config, "currentMessages") and config.pagerContent:
                         config.currentMessages.append({"role": "assistant", "content": config.pagerContent})
                 except:
+                    HealthCheck.stopSpinning()
                     HealthCheck.print2(traceback.format_exc())
 
             prompt = ""
 
-        HealthCheck.print2(f"\n{self.name} closed!\n")
+        HealthCheck.print2(f"\n{self.name} closed!")
 
 def main():
     # Create the parser

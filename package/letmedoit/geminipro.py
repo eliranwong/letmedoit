@@ -21,6 +21,7 @@ from prompt_toolkit.keys import Keys
 from prompt_toolkit.input import create_input
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
+from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.shortcuts import clear
 from pathlib import Path
 import asyncio, threading, shutil, textwrap
@@ -63,13 +64,14 @@ class GeminiPro:
             temperature=temperature, # 0.0-1.0; default 0.9
             max_output_tokens=max_output_tokens, # default
             candidate_count=1,
-        ),
+        )
         self.safety_settings={
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-        },
+        }
+        self.defaultPrompt = ""
 
     def wrapText(self, content, terminal_width):
         return "\n".join([textwrap.fill(line, width=terminal_width) for line in content.split("\n")])
@@ -211,6 +213,8 @@ class GeminiPro:
         finishOutputs(wrapWords, chat_response)
 
     def run(self, prompt=""):
+        if self.defaultPrompt:
+            prompt, self.defaultPrompt = self.defaultPrompt, ""
         historyFolder = os.path.join(HealthCheck.getFiles(), "history")
         Path(historyFolder).mkdir(parents=True, exist_ok=True)
         chat_history = os.path.join(historyFolder, "geminipro")
@@ -222,6 +226,8 @@ class GeminiPro:
             # Prompt.
             "indicator": config.terminalPromptIndicatorColor2,
         })
+
+        completer = WordCompleter(["[", "[NO_FUNCTION_CALL]"], ignore_case=True)
 
         if not self.runnable:
             print(f"{self.name} is not running due to missing configurations!")
@@ -235,7 +241,7 @@ class GeminiPro:
         print(f"(To quit, enter '{config.exit_entry}')\n")
         while True:
             if not prompt:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, completer=completer,)
                 if prompt and not prompt in (".new", config.exit_entry) and hasattr(config, "currentMessages"):
                     config.currentMessages.append({"content": prompt, "role": "user"})
             else:
@@ -253,7 +259,7 @@ class GeminiPro:
                 # declare a function
                 get_vision_func = generative_models.FunctionDeclaration(
                     name="analyze_images",
-                    description="describe or analyze images",
+                    description="Describe or analyze images. Remember, use this function ONLY if I provide at least one image file path or image url.",
                     parameters={
                         "type": "object",
                         "properties": {
@@ -275,12 +281,17 @@ class GeminiPro:
 
                 try:
                     # https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini
+                    if "[NO_FUNCTION_CALL]" in prompt:
+                        allow_function_call = False
+                        prompt = prompt.replace("[NO_FUNCTION_CALL]", "")
+                    else:
+                        allow_function_call = True
                     completion = chat.send_message(
                         prompt,
                         # Optional:
                         generation_config=self.generation_config,
                         safety_settings=self.safety_settings,
-                        tools=[vision_tool],
+                        tools=[vision_tool] if allow_function_call else None,
                         stream=True,
                     )
 
@@ -308,7 +319,7 @@ class GeminiPro:
 
             prompt = ""
 
-        HealthCheck.print2(f"\n{self.name} closed!\n")
+        HealthCheck.print2(f"\n{self.name} closed!")
 
     def analyze_images(self, function_args):
         def is_valid_url(url: str) -> bool:
@@ -353,6 +364,9 @@ class GeminiPro:
 
         query = function_args.get("query") # required
         files = function_args.get("files") # required
+        if not files:
+            self.defaultPrompt = f"{query}\n[NO_FUNCTION_CALL]"
+            return None
         if isinstance(files, str):
             if not files.startswith("["):
                 files = f'["{files}"]'
@@ -394,20 +408,14 @@ class GeminiPro:
                 ),
                 safety_settings=self.safety_settings,
             )
+            if response:
+                chat_response = response.text.strip()
+                if chat_response:
+                    print(chat_response)
+                    if hasattr(config, "currentMessages"):
+                        config.currentMessages.append({"role": "assistant", "content": chat_response})
         else:
-            model = GenerativeModel("gemini-pro")
-            response = model.generate_content(
-                query,
-                generation_config=self.generation_config,
-                safety_settings=self.safety_settings,
-                #stream=True,
-            )
-        if response:
-            chat_response = response.text.strip()
-            if chat_response:
-                print(chat_response)
-                if hasattr(config, "currentMessages"):
-                    config.currentMessages.append({"role": "assistant", "content": chat_response})
+            self.defaultPrompt = f"{query}\n[NO_FUNCTION_CALL]"
 
 def main():
     # Create the parser
