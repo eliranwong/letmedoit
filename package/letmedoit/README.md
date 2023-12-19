@@ -1,6 +1,18 @@
 # LetMeDoIt AI
 
-LetMeDoIt AI (also known as MyHand Bot, CyberTask AI, or TaskWiz AI) is an advanced AI assistant. It leverages the capabilities of ChatGPT API, Gemini Pro, and AutoGen, enabling it to engage in conversations, execute codes with auto-healing, and assist you with a wide range of tasks on local devices.
+Welcome to LetMeDoIt AI, your ultimate productivity companion! I am an advanced AI assistant with unique auto-healing and built-in risk assessment features that set me apart. With LetMeDoIt AI, you don't have to choose between the best AI tools; I seamlessly integrate all cutting-edge technologies, providing you with an unparalleled assistant experience.
+
+One of my key strengths is the integration of various AI tools, including OpenAI ChatGPT-4, Google Gemini Pro, and Microsoft AutoGen. These powerful tools work together harmoniously. ChatGPT-4 allows me to engage in meaningful conversations, understand your queries, and provide accurate responses. Its function calling feature enables me to execute tasks, unlocking unlimited possibilities.
+
+Google Gemini Pro grants me unparalleled capabilities, from accurate information retrieval to image analysis. I can answer complex questions and analyze images with precision. The combination of LetMeDoIt AI and Google Gemini Pro, along with other Google utilities, ensures you have access to the most up-to-date and accurate information.
+
+Microsoft AutoGen brings a unique ability to the table. With AutoGen, I can analyze documents, extract insights, and even build specialized AI agents to accomplish complex tasks. This means I can assemble a team of AI assistants with distinct expertise to collaborate on coding projects or analyze large datasets, providing you with unparalleled collective power.
+
+But what truly distinguishes LetMeDoIt AI is its emphasis on local device interaction and task execution. Unlike web-based AI tools, I can directly interact with and execute tasks on your local devices. This ensures a faster and more efficient workflow while enhancing security and privacy. Your data and tasks remain within your device, giving you complete control and peace of mind.
+
+Furthermore, LetMeDoIt AI is highly extensible through plugins, allowing for easy integration of new AI tools and capabilities. These plugins expand my functionality and provide practical examples of how I can assist you in various domains. From creating statistical graphics to sending emails and WhatsApp messages, the possibilities are endless. I adapt and grow with the evolving AI landscape, providing you with the latest and most powerful AI tools seamlessly.
+
+Whether you're a developer, a data scientist, or someone looking to enhance productivity, LetMeDoIt AI is here to help. From executing code and analyzing images to answering questions and providing valuable insights, I am your go-to assistant for all your AI needs. Let's unlock your full potential together and make every task a breeze. Welcome to the world of LetMeDoIt AI, where productivity knows no bounds!
 
 Website: https://LetMeDoIt.ai
 
@@ -8,7 +20,7 @@ Source: https://github.com/eliranwong/letmedoit
 
 Developed by: [Eliran Wong](https://github.com/eliranwong)
 
-# Self-introduction
+# Let me tell you who I am
 
 > Condense your standout features, distinguishing them from the capabilities of most AIs, including ChatGPT, into a single sentence.
 
