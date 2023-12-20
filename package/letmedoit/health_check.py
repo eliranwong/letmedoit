@@ -1,4 +1,4 @@
-import os, traceback, json, pprint, wcwidth, textwrap, threading
+import os, traceback, json, pprint, wcwidth, textwrap, threading, time
 import openai
 from openai import OpenAI
 from chromadb.utils import embedding_functions
