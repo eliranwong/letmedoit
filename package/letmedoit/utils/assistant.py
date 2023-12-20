@@ -30,7 +30,8 @@ from letmedoit.utils.terminal_system_command_prompt import SystemCommandPrompt
 from letmedoit.utils.shared_utils import SharedUtil
 from letmedoit.utils.tts_utils import TTSUtil
 from letmedoit.plugins.bibleTools.utils.TextUtil import TextUtil
-from letmedoit.autobuilder import AutoGenBuilder
+if not config.isTermux:
+    from letmedoit.autobuilder import AutoGenBuilder
 
 
 class LetMeDoItAI:
@@ -932,7 +933,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
             elif feature == ".plugins":
                 self.selectPlugins()
             elif feature == ".autobuilderconfig":
-                AutoGenBuilder().promptConfig()
+                if not config.isTermux:
+                    AutoGenBuilder().promptConfig()
             elif feature == ".systemmessage":
                 self.setCustomSystemMessage()
             elif feature == ".ipinfo":
@@ -1721,8 +1723,12 @@ Always remember that you are much more than a text-based AI. You possess both vi
                     userInput = re.sub(specialEntryPattern, "", userInput) # remove special entry temporarily
                     if userInput and config.displayImprovedWriting:
                         userInput = re.sub("\n\[Current time: [^\n]*?$", "", userInput)
+                        if config.isTermux:
+                            day_of_week = ""
+                        else:
+                            day_of_week = f"today is {SharedUtil.getDayOfWeek()} and "
                         improvedVersion = SharedUtil.getSingleChatResponse(f"""Improve the following writing, according to {config.improvedWritingSytle}
-In addition, I would like you to help me with converting relative dates and times, if any, into exact dates and times based on the reference that today is {SharedUtil.getDayOfWeek()} and datetime is {str(datetime.datetime.now())}.
+In addition, I would like you to help me with converting relative dates and times, if any, into exact dates and times based on the reference that {day_of_week}current datetime is {str(datetime.datetime.now())}.
 Remember, provide me with the improved writing only, enclosed in triple quotes ``` and without any additional information or comments.
 My writing:
 {userInput}""")

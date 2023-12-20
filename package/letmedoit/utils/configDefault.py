@@ -1,5 +1,5 @@
 from letmedoit import config
-import pprint, os, shutil, sys
+import pprint, os, shutil, sys, subprocess, platform
 from prompt_toolkit.shortcuts import yes_no_dialog
 
 def setConfig(defaultSettings, thisTranslation={}, temporary=False):
@@ -13,6 +13,38 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
         for i in thisTranslation:
             if not i in config.thisTranslation:
                 config.thisTranslation[i] = thisTranslation[i]
+
+def isPackageInstalled(package):
+    whichCommand = "where.exe" if platform.system() == "Windows" else "which"
+    try:
+        isInstalled, *_ = subprocess.Popen("{0} {1}".format(whichCommand, package), shell=True, stdout=subprocess.PIPE).communicate()
+        return True if isInstalled else False
+    except:
+        return False
+
+pluginExcludeList = [
+    "awesome prompts",
+    "bible", "bible studies",
+    "biblical counselling",
+    "convert bible to chromadb",
+    "counselling",
+    "edit text",
+    "simplified Chinese to traditional Chinese",
+]
+if config.isTermux:
+    pluginExcludeList += [
+        "analyze files",
+        "analyze web content",
+        "ask codey",
+        "ask gemini pro",
+        "ask palm2",
+        "create ai assistants",
+        "create statistical graphics",
+        "dates and times",
+        "memory",
+        "remove image background",
+        "solve math problems",
+    ]
 
 defaultSettings = (
     ('includeIpInSystemMessage', False),
@@ -49,9 +81,9 @@ defaultSettings = (
     ('customPredefinedContext', ''),
     ('applyPredefinedContextAlways', False), # True: apply predefined context with all use inputs; False: apply predefined context only in the beginning of the conversation
     ('thisTranslation', {}),
-    ('pluginExcludeList', ["awesome prompts", "bible", "bible studies", "biblical counselling", "convert bible to chromadb", "counselling", "edit text", "simplified Chinese to traditional Chinese"]),
-    ('terminalEnableTermuxAPI', False),
+    ('terminalEnableTermuxAPI', True if config.isTermux and isPackageInstalled("termux-open-url") else False),
     ('terminalEnableTermuxAPIToast', False),
+    ('pluginExcludeList', pluginExcludeList),
     ('cancel_entry', '.cancel'),
     ('exit_entry', '.exit'),
     ('terminalHeadingTextColor', 'ansigreen'),

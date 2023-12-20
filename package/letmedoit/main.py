@@ -73,6 +73,7 @@ if not hasattr(config, "letMeDoItName") or not config.letMeDoItName:
     config.letMeDoItName = apps[basename][-1] if basename in apps else "LetMeDoIt AI"
 config.letMeDoItFile = letMeDoItFile
 config.letMeDoItAIFolder = letMeDoItAIFolder
+config.isTermux = True if os.path.isdir("/data/data/com.termux/files/home") else False
 
 # package name
 with open(os.path.join(config.letMeDoItAIFolder, "package_name.txt"), "r", encoding="utf-8") as fileObj:

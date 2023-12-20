@@ -36,10 +36,23 @@ with open(package_readme, "r", encoding="utf-8") as fileObj:
 
 # get required packages
 install_requires = []
+exclude_packages = (
+    "google-cloud-aiplatform",
+    "google-cloud-texttospeech",
+    "pygame",
+    "pyautogen[retrievechat,teachable,mathchat]==0.2.0",
+    "unstructured[all-docs]",
+    "chromadb",
+    "docker",
+    "rembg",
+    "numpy",
+    "seaborn[stats]",
+    "sentence-transformers",
+)
 with open(os.path.join(package, "requirements.txt"), "r") as fileObj:
     for line in fileObj.readlines():
         mod = line.strip()
-        if mod:
+        if mod and not mod in exclude_packages:
             install_requires.append(mod)
 
 # make sure config.py is empty
@@ -47,8 +60,8 @@ open(os.path.join(package, "config.py"), "w").close()
 
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
-    name=package,
-    version="2.0.32",
+    name=f"{package}_android",
+    version="0.0.20",
     python_requires=">=3.8, <3.12",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of ChatGPT API, Gemini Pro and AutoGen, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks on your local devices.",
     long_description=long_description,

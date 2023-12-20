@@ -16,10 +16,11 @@ try:
 except:
     tiktokenImported = False
 from openai import OpenAI
-from PIL import Image
 from urllib.parse import quote
-from autogen.retrieve_utils import TEXT_FORMATS
 from pathlib import Path
+from PIL import Image
+if not config.isTermux:
+    from autogen.retrieve_utils import TEXT_FORMATS
 
 
 class SharedUtil:
@@ -457,8 +458,11 @@ Acess the risk level of this Python code:
 
     @staticmethod
     def getDayOfWeek():
-        now = pendulum.now() 
-        return now.format('dddd')
+        if config.isTermux:
+            return ""
+        else:
+            now = pendulum.now() 
+            return now.format('dddd')
 
     @staticmethod
     def getDeviceInfo(includeIp=False):
@@ -477,7 +481,11 @@ Local ip: {local_ip}
 '''
         else:
             ipInfo = ""
-        dayOfWeek = SharedUtil.getDayOfWeek()
+        if config.isTermux:
+            dayOfWeek = ""
+        else:
+            dayOfWeek = SharedUtil.getDayOfWeek()
+            dayOfWeek = f"Current day of the week: {dayOfWeek}"
         return f"""Operating system: {thisPlatform}
 Version: {platform.version()}
 Machine: {platform.machine()}
@@ -489,7 +497,7 @@ Python version: {platform.python_version()}
 Python implementation: {platform.python_implementation()}
 Current directory: {os.getcwd()}
 Current time: {str(datetime.datetime.now())}
-Current day of the week: {dayOfWeek}
+{dayOfWeek}
 {ipInfo}Latitude & longitude: {g.latlng}
 Country: {g.country}
 State: {g.state}

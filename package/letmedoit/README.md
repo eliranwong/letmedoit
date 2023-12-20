@@ -44,7 +44,7 @@ I am an advanced AI assistant uniquely equipped with direct execution capabiliti
 
 2. [Python](https://www.python.org) version 3.8-3.11; read [Install a Supported Python Version](https://github.com/eliranwong/letmedoit/wiki/Install-a-Supported-Python-Version)
 
-3. Supported OS: Windows / macOS / Linux / ChromeOS / Android
+3. Supported OS: Windows / macOS / Linux / ChromeOS / Android (Termux)
 
 # Recent Additions
 
@@ -280,7 +280,17 @@ Alternately, you may install "myhand", "cybertask" and "taskwiz":
 
 > taskwiz
 
-Tips: You can change the assistant's name regardless of the package you choose to install. For example, the "myhand" package is designed to showcase this flexibility.
+Tips: You can change the assistant's name regardless of the package you choose to install.
+
+## Android Users
+
+> pip install --upgrade letmedoit_android
+
+> letmedoit
+
+Remarks: Please note that the name of the Android package is "letmedoit_android" but the cli command remains the same, i.e. "letmedoit"
+
+Read more at: https://github.com/eliranwong/letmedoit/wiki/Android-Support
 
 # Install with pip and venv (recommended)
 
@@ -301,6 +311,18 @@ Tips: You can change the assistant's name regardless of the package you choose t
 > .\letmedoit\Scripts\activate
 
 > pip install --upgrade letmedoit
+
+> letmedoit
+
+## Android Users
+
+> cd
+
+> python -m venv --system-site-packages letmedoit
+
+> source letmedoit/bin/activate
+
+> pip install letmedoit_android
 
 > letmedoit
 

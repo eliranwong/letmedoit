@@ -171,26 +171,29 @@ selected_text=$(echo "$(xsel -o)" | sed 's/"/\"/g')
         with open(work_with_translation_script_path, "w", encoding="utf-8") as fileObj:
             fileObj.write(work_with_text_script)
         # work with files or folders selection via NAUTILUS; right-click > scripts > LetMeDoIt
-        work_with_files_script = f'''#!/usr/bin/env bash
+        if not config.isTermux:
+            work_with_files_script = f'''#!/usr/bin/env bash
 mkdir -p {storage}
 # Get the selected file or folder path
 path="$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS"
 echo "$path" > {storage}/selected_files.txt
 /usr/bin/gnome-terminal --command "{sys.executable} {config.letMeDoItFile} -u false -n true -i false -f {storage}/selected_files.txt"'''
-        work_with_files_script_path = os.path.expanduser(f"~/.local/share/nautilus/scripts/{first_name}")
-        with open(work_with_files_script_path, "w", encoding="utf-8") as fileObj:
-            fileObj.write(work_with_files_script)
+            work_with_files_script_path = os.path.expanduser(f"~/.local/share/nautilus/scripts/{first_name}")
+            with open(work_with_files_script_path, "w", encoding="utf-8") as fileObj:
+                fileObj.write(work_with_files_script)
         # make script files executable
-        for i in (
+        scriptFiles = [
             work_with_translation_script_path,
             work_with_explanation_script_path,
             work_with_summary_script_path,
             work_with_text_script_path,
-            work_with_files_script_path,
             work_with_pronunciation_script_path,
             work_with_downloadmp3_script_path,
             work_with_download_script_path,
-        ):
+        ]
+        if not config.isTermux:
+            scriptFiles.append(work_with_files_script_path)
+        for i in scriptFiles:
             os.chmod(i, 0o755)
     elif thisOS == "Darwin":
         file1 = os.path.join(config.letMeDoItAIFolder, "macOS_service/LetMeDoIt_Text_workflow/Contents/document.wflow")
