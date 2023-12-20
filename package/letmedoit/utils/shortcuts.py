@@ -191,7 +191,17 @@ echo "$path" > {storage}/selected_files.txt
             work_with_downloadmp3_script_path,
             work_with_download_script_path,
         ]
-        if not config.isTermux:
+        if config.isTermux:
+            # added a command shortcut
+            try:
+                termux_shortcut_script = f'''#!/usr/bin/env bash\n{sys.executable} {config.letMeDoItFile}'''
+                termux_shortcut_path = "/data/data/com.termux/files/usr/bin"
+                with open(termux_shortcut_path, "w", encoding="utf-8") as fileObj:
+                    fileObj.write(work_with_text_script)
+                scriptFiles.append(termux_shortcut_path)
+            except:
+                pass
+        else:
             scriptFiles.append(work_with_files_script_path)
         for i in scriptFiles:
             os.chmod(i, 0o755)

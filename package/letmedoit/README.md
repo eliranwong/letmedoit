@@ -14,11 +14,19 @@ Furthermore, LetMeDoIt AI is highly extensible through plugins, allowing for eas
 
 Whether you're a developer, a data scientist, or someone looking to enhance productivity, LetMeDoIt AI is here to help. From executing code and analyzing images to answering questions and providing valuable insights, I am your go-to assistant for all your AI needs. Let's unlock your full potential together and make every task a breeze. Welcome to the world of LetMeDoIt AI, where productivity knows no bounds!
 
+Developer: [Eliran Wong](https://github.com/eliranwong)
+
 Website: https://LetMeDoIt.ai
 
 Source: https://github.com/eliranwong/letmedoit
 
-Developed by: [Eliran Wong](https://github.com/eliranwong)
+Installation: https://github.com/eliranwong/letmedoit/wiki/Installation
+
+Quick-Guide: https://github.com/eliranwong/letmedoit/wiki/Quick-Guide
+
+Wiki: https://github.com/eliranwong/letmedoit/wiki
+
+Support this project: https://www.paypal.me/MarvelBible
 
 # Let me tell you who I am
 

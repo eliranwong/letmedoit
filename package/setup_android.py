@@ -33,6 +33,16 @@ package_readme = os.path.join(package, "README.md") # package readme
 shutil.copy(latest_readme, package_readme)
 with open(package_readme, "r", encoding="utf-8") as fileObj:
     long_description = fileObj.read()
+long_description = f'''# Android Version
+This is a mini version of LetMeDoIt AI, created for running on Android Termux Application.
+
+Read moare at: https://github.com/eliranwong/letmedoit/wiki/Android-Support
+
+Install package "letmedoit" instead for full features on Windows / macOS / Linux / ChromeOS
+
+Read more at: https://github.com/eliranwong/letmedoit/wiki/Installation
+
+{long_description}'''
 
 # get required packages
 install_requires = []
@@ -61,7 +71,7 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=f"{package}_android",
-    version="0.0.20",
+    version="0.0.21",
     python_requires=">=3.8, <3.12",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of ChatGPT API, Gemini Pro and AutoGen, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks on your local devices.",
     long_description=long_description,
