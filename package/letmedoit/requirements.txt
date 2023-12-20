@@ -25,6 +25,8 @@ pyperclip
 colorama
 pillow
 docker
+einops
+transformers
 sentence-transformers
 chromadb
 unstructured[all-docs]

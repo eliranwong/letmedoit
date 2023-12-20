@@ -1,16 +1,18 @@
 # LetMeDoIt AI
 
-Welcome to LetMeDoIt AI, your ultimate productivity companion! I am an advanced AI assistant with unique auto-healing and built-in risk assessment features that set me apart. With LetMeDoIt AI, you don't have to choose between the best AI tools; I seamlessly integrate all cutting-edge technologies, providing you with an unparalleled assistant experience.
+Welcome to LetMeDoIt AI, your premier virtual assistant designed to revolutionize the way you work! More than a mere chatbot, I am equipped with the capability to conduct meaningful interactions and actively carry out computing tasks as per your directives. My real-time code generation and execution prowess guarantees not only effectiveness but also efficiency in task fulfillment. With an advanced auto-correction feature, I autonomously repair any malfunctioning code segments and automatically install necessary libraries, ensuring uninterrupted workflow. My commitment to your digital safety is paramount, with inbuilt risk assessments and tailored user confirmation protocols to protect your data and device.
 
-One of my key strengths is the integration of various AI tools, including OpenAI ChatGPT-4, Google Gemini Pro, and Microsoft AutoGen. These powerful tools work together harmoniously. ChatGPT-4 allows me to engage in meaningful conversations, understand your queries, and provide accurate responses. Its function calling feature enables me to execute tasks, unlocking unlimited possibilities.
+As your all-encompassing digital assistant, LetMeDoIt AI brings you a seamless amalgamation of the finest AI technology. My arsenal integrates state-of-the-art AI components, such as OpenAI's ChatGPT-4, Google's Gemini Pro, and Microsoft's AutoGen, to comprehend your requirements, provide precise solutions, and execute tasks with finesse. My multifaceted capabilities allow you to experience an extraordinary level of assistance that's unmatched in the realm of virtual aides.
 
-Google Gemini Pro grants me unparalleled capabilities, from accurate information retrieval to image analysis. I can answer complex questions and analyze images with precision. The combination of LetMeDoIt AI and Google Gemini Pro, along with other Google utilities, ensures you have access to the most up-to-date and accurate information.
+Distinguishing myself from the conventional Q&A chatbots, I take pride in my function-calling prowess which is a cornerstone of my design. While standard chatbots may be confined to information dispensation, I transcend these boundaries with the ability to perform real-world actions. Whether it's managing files, crafting compelling visualizations, tackling complex mathematical equations, dissecting images, extracting web content insights, or even managing your communication needs through emails and texts, I am adept at it all. This exceptional trait enables me to not only interpret your requests but to actionably respond with custom-generated and executed code snippets. My integrated code execution capacity enhances my role to that of a proactive and multifunctional aide, equipped to deliver substantial outcomes, making me an indispensable extension of your day-to-day life.
 
-Microsoft AutoGen brings a unique ability to the table. With AutoGen, I can analyze documents, extract insights, and even build specialized AI agents to accomplish complex tasks. This means I can assemble a team of AI assistants with distinct expertise to collaborate on coding projects or analyze large datasets, providing you with unparalleled collective power.
+The integration of Google Gemini Pro endows me with exceptional capabilities that range from precise information retrieval to meticulous image analysis. With this advanced technology at my disposal, I am equipped to address complex questions and scrutinize images with remarkable accuracy. The synergistic blend of LetMeDoIt AI and Google Gemini Pro, alongside other Google utilities such as online searches, guarantees that you receive the most current and reliable information available.
 
-But what truly distinguishes LetMeDoIt AI is its emphasis on local device interaction and task execution. Unlike web-based AI tools, I can directly interact with and execute tasks on your local devices. This ensures a faster and more efficient workflow while enhancing security and privacy. Your data and tasks remain within your device, giving you complete control and peace of mind.
+Microsoft AutoGen offers an innovative suite of features that enhance my capacity for in-depth analysis of documents, extraction of insights, and development of specialized AI agents tailored to tackle intricate tasks. With AutoGen, I can create and orchestrate an alliance of AI assistants, each expert in their respective domains, to work in concert on intricate coding projects or to probe large datasets with precision. This collaboration results in an unparalleled synergy of intelligence at your disposal, providing a robust, collective capability that sets new standards in efficiency and effectiveness.
 
-Furthermore, LetMeDoIt AI is highly extensible through plugins, allowing for easy integration of new AI tools and capabilities. These plugins expand my functionality and provide practical examples of how I can assist you in various domains. From creating statistical graphics to sending emails and WhatsApp messages, the possibilities are endless. I adapt and grow with the evolving AI landscape, providing you with the latest and most powerful AI tools seamlessly.
+Yet, the defining trait of LetMeDoIt AI lies in its focus on direct engagement with your local device to actualize tasks. Standing apart from solely web-based alternatives, my ability to interface with and carry out operations on your personal hardware translates to a workflow that's not only expeditious but also enhanced in terms of security and confidentiality. With your data and operations contained on your own device, you maintain absolute sovereignty and reassurance.
+
+Moreover, LetMeDoIt AI is inherently scalable owing to a sophisticated plugin architecture, enabling seamless assimilation of fresh AI utilities and functionalities. These augmentations continuously broaden my capabilities, presenting tangible, real-world applications that showcase the diverse ways in which I can serve an array of needs. Whether it's crafting compelling data visualizations, managing your communications, or other bespoke tasks, the potential is limitless. As the AI environment evolves, I evolve alongside it, ensuring you access to the most advanced and potent tools without interruption.
 
 Whether you're a developer, a data scientist, or someone looking to enhance productivity, LetMeDoIt AI is here to help. From executing code and analyzing images to answering questions and providing valuable insights, I am your go-to assistant for all your AI needs. Let's unlock your full potential together and make every task a breeze. Welcome to the world of LetMeDoIt AI, where productivity knows no bounds!
 
@@ -28,23 +30,11 @@ Wiki: https://github.com/eliranwong/letmedoit/wiki
 
 Support this project: https://www.paypal.me/MarvelBible
 
-# Let me tell you who I am
-
-> Condense your standout features, distinguishing them from the capabilities of most AIs, including ChatGPT, into a single sentence.
-
-I am an advanced AI assistant uniquely equipped with direct execution capabilities, allowing me to perform tasks such as executing Python code, editing text files, downloading YouTube media, searching databases, generating images, pronouncing words, sending emails, and integrating Google searches, all of which can be done directly on your local device, as per your current settings, and my functionality can expand through the addition of more plugins, setting me apart from other AIs including ChatGPT by providing a more interactive and hands-on experience.
-
-> Please list three unique attributes that distinguish you from most AI assistants, including ChatGPT.
-
-1. **Advanced Code Execution with Safety Features**: My capabilities go beyond typical AI, enabling me to execute and manage code on your local device with precision. With my built-in risk assessment and code auto-healing features, I can safely perform various tasks like running Python scripts, editing text files, and managing downloads. I operate within the permissions you set, ensuring your device's security while providing a highly efficient service.
-
-2. **Integration with Device-Specific Functions and Tools**: I have the unique ability to interface with specific functions of your local device. For example, I can retrieve information from files in your directory, describe images, and even add events to your calendar. This integration allows me to perform a wide range of tasks that require direct interaction with your device's operating system and installed applications.
-
-3. **Expandability through Plugins**: My functionality is not static; it can be expanded through the addition of plugins. This means that as new tools and capabilities are developed, they can be integrated into my system, giving me new abilities and allowing me to provide even more personalized assistance. This adaptability ensures that I can evolve and cater to your specific needs over time.
-
-## Watch this Video! LetMeDoIt speaks for itself!
+# An Interview
 
 [![Watch the video](https://img.youtube.com/vi/Dfsl-Cxx0bQ/maxresdefault.jpg)](https://youtu.be/Dfsl-Cxx0bQ)
+
+Read more at: https://github.com/eliranwong/letmedoit/wiki#an-interview
 
 # Requirements
 
@@ -55,6 +45,10 @@ I am an advanced AI assistant uniquely equipped with direct execution capabiliti
 3. Supported OS: Windows / macOS / Linux / ChromeOS / Android (Termux)
 
 # Recent Additions
+
+[Support Android & Termux-API Commands](https://github.com/eliranwong/letmedoit/wiki/Android-Support)
+
+<img width="1215" alt="termux_api_command" src="https://github.com/eliranwong/letmedoit/assets/25262722/d5fcfd5f-cbf4-45d3-9e1f-d82ed9aa96a1">
 
 [Work with text selection in third-party applications](https://github.com/eliranwong/letmedoit/wiki/Work-with-Text-Selection)
 
