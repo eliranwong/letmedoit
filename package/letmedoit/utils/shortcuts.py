@@ -195,7 +195,7 @@ echo "$path" > {storage}/selected_files.txt
             # added a command shortcut
             try:
                 termux_shortcut_script = f'''#!/usr/bin/env bash\n{sys.executable} {config.letMeDoItFile}'''
-                termux_shortcut_path = "/data/data/com.termux/files/usr/bin"
+                termux_shortcut_path = "/data/data/com.termux/files/usr/bin/letmedoit"
                 with open(termux_shortcut_path, "w", encoding="utf-8") as fileObj:
                     fileObj.write(work_with_text_script)
                 scriptFiles.append(termux_shortcut_path)
