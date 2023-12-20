@@ -101,13 +101,14 @@ from letmedoit.utils.shared_utils import SharedUtil
 # automatic update
 config.pipIsUpdated = False
 def updateApp():
-    print(f"Checking '{package}' version ...")
-    installed_version = SharedUtil.getPackageInstalledVersion(package)
+    thisPackage = f"{package}_android" if config.isTermux else package
+    print(f"Checking '{thisPackage}' version ...")
+    installed_version = SharedUtil.getPackageInstalledVersion(thisPackage)
     if installed_version is None:
         print("Installed version information is not accessible!")
     else:
         print(f"Installed version: {installed_version}")
-    latest_version = SharedUtil.getPackageLatestVersion(package)
+    latest_version = SharedUtil.getPackageLatestVersion(thisPackage)
     if latest_version is None:
         print("Latest version information is not accessible at the moment!")
     elif installed_version is not None:
@@ -115,7 +116,7 @@ def updateApp():
         if latest_version > installed_version:
             if thisPlatform == "Windows":
                 print("Automatic upgrade feature is yet to be supported on Windows!")
-                print(f"Run 'pip install --upgrade {package}' to manually upgrade this app!")
+                print(f"Run 'pip install --upgrade {thisPackage}' to manually upgrade this app!")
             else:
                 try:
                     # delete old shortcut files
@@ -126,10 +127,10 @@ def updateApp():
                         if os.path.isfile(shortcut):
                             os.remove(shortcut)
                     # upgrade package
-                    installmodule(f"--upgrade {package}")
+                    installmodule(f"--upgrade {thisPackage}")
                     restartApp()
                 except:
-                    print(f"Failed to upgrade '{package}'!")
+                    print(f"Failed to upgrade '{thisPackage}'!")
 
 # import other libraries
 import pprint
