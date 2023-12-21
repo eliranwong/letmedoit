@@ -62,6 +62,7 @@ def create_image(function_args):
         image_data = b64decode(response.data[0].b64_json)
         with open(imageFile, mode="wb") as pngObj:
             pngObj.write(image_data)
+        config.stopSpinning()
         if config.terminalEnableTermuxAPI:
             SharedUtil.getCliOutput(f"termux-share {imageFile}")
         else:

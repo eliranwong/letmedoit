@@ -152,6 +152,7 @@ def create_image(description, original_filename):
         imageFile = f"{original_filename}_modified.png"
         with open(imageFile, mode="wb") as pngObj:
             pngObj.write(image_data)
+        config.stopSpinning()
         if config.terminalEnableTermuxAPI:
             SharedUtil.getCliOutput(f"termux-share {imageFile}")
         else:
