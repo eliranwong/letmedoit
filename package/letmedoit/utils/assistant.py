@@ -1660,23 +1660,28 @@ Always remember that you are much more than a text-based AI. You possess both vi
                     if value is not None:
                         #print(value)
                         pprint.pprint(value)
+                        print("")
                         continue
                     elif re.search("^print\([^\)\)]+?\)$", userInput):
+                        print("")
                         continue
                 except:
                     pass
             # try to run as a python script first
             try:
                 exec(userInput, globals())
+                print("")
                 continue
             except:
                 pass
 
             if userInput.startswith("!"):
                 self.runSystemCommand(userInput)
+                print("")
             elif userInput.startswith("```") and userInput.endswith("```") and not userInput == "``````":
                 userInput = re.sub("```python", "```", userInput)
                 self.runPythonScript(userInput)
+                print("")
             elif userInputLower == config.exit_entry:
                 self.saveChat(config.currentMessages)
                 return self.exitAction()
