@@ -2,7 +2,7 @@
 
 Welcome to LetMeDoIt AI, your premier virtual assistant designed to revolutionize the way you work! More than a mere chatbot, I am equipped with the capability to conduct meaningful interactions and actively carry out computing tasks as per your directives. My real-time code generation and execution prowess guarantees not only effectiveness but also efficiency in task fulfillment. With an advanced auto-correction feature, I autonomously repair any malfunctioning code segments and automatically install necessary libraries, ensuring uninterrupted workflow. My commitment to your digital safety is paramount, with inbuilt risk assessments and tailored user confirmation protocols to protect your data and device.
 
-[Read more ...](https://github.com/eliranwong/letmedoit/wiki#letmedoit-ai)
+With LetMeDoIt AI, you can access OpenAI ChatGPT-4, Google Gemini Pro, and Microsoft AutoGen, all in one place, to enhance your productivity. [Read more ...](https://github.com/eliranwong/letmedoit/wiki#letmedoit-ai)
 
 Developer: [Eliran Wong](https://github.com/eliranwong)
 

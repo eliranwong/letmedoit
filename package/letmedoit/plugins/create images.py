@@ -63,7 +63,7 @@ def create_image(function_args):
         with open(imageFile, mode="wb") as pngObj:
             pngObj.write(image_data)
         if config.terminalEnableTermuxAPI:
-            config.mainWindow.getCliOutput(f"termux-share {imageFile}")
+            SharedUtil.getCliOutput(f"termux-share {imageFile}")
         else:
             os.system(f"{config.open} {imageFile}")
         return f"Saved as '{imageFile}'"

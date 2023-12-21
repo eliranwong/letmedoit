@@ -16,8 +16,8 @@ if not config.isTermux:
     config.aliases["!autoteachable"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autoteachable.py')}"
     config.aliases["!autobuilder"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autobuilder.py')}"
     # integrated Google AI tools
-    config.aliases["!geminipro"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'geminipro.py')}"
     config.aliases["!geminiprovision"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'geminiprovision.py')}"
+    config.aliases["!geminipro"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'geminipro.py')}"
     config.aliases["!palm2"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'palm2.py')}"
     config.aliases["!codey"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'codey.py')}"
 # integrated text editor
