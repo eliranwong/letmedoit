@@ -72,6 +72,7 @@ class GeminiPro:
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
         }
         self.defaultPrompt = ""
+        self.enableVision = (os.path.realpath(__file__).endswith("vision.py"))
 
     def wrapText(self, content, terminal_width):
         return "\n".join([textwrap.fill(line, width=terminal_width) for line in content.split("\n")])
@@ -235,7 +236,7 @@ class GeminiPro:
             "indicator": config.terminalPromptIndicatorColor2,
         })
 
-        completer = WordCompleter(["[", "[NO_FUNCTION_CALL]"], ignore_case=True) if os.path.realpath(__file__).endswith("vision.py") else None
+        completer = WordCompleter(["[", "[NO_FUNCTION_CALL]"], ignore_case=True) if self.enableVision else None
 
         if not self.runnable:
             print(f"{self.name} is not running due to missing configurations!")
@@ -244,7 +245,7 @@ class GeminiPro:
         chat = model.start_chat(
             #context=f"You're {self.name}, a helpful AI assistant.",
         )
-        HealthCheck.print2(f"\n{self.name} loaded!")
+        HealthCheck.print2(f"\n{self.name} + Vision loaded!" if self.enableVision else f"\n{self.name} loaded!")
         print("(To start a new chart, enter '.new')")
         print(f"(To quit, enter '{config.exit_entry}')\n")
         while True:
@@ -289,7 +290,7 @@ class GeminiPro:
 
                 try:
                     # https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini
-                    if "[NO_FUNCTION_CALL]" in prompt or not os.path.realpath(__file__).endswith("vision.py"):
+                    if "[NO_FUNCTION_CALL]" in prompt or not self.enableVision:
                         allow_function_call = False
                         prompt = prompt.replace("[NO_FUNCTION_CALL]", "")
                     else:

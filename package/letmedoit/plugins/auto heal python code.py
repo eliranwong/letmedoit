@@ -18,6 +18,9 @@ The default value of config.max_consecutive_auto_heal is 3.
 
 def heal_python(function_args):
     # get the sql query statement
+    issue = function_args.get("issue") # required
+    config.print3(f"Issue: {issue}")
+
     fix = function_args.get("fix") # required
     missing = function_args.get("missing") # required
     if isinstance(missing, str):
@@ -25,8 +28,12 @@ def heal_python(function_args):
 
     try:
         if missing:
+            config.print2("Installing missing packages ...")
             for i in missing:
                 installmodule(f"--upgrade {i}")
+        config.print2("Running improved code ...")
+        if config.developer or config.codeDisplay:
+            SharedUtil.displayPythonCode(fix)
         exec(SharedUtil.fineTunePythonCode(fix), globals())
         return "EXECUTED"
     except:
@@ -46,8 +53,12 @@ functionSignature = {
                 "type": "string",
                 "description": """List of missing packages identified from import errors, e.g. "['datetime', 'requests']". Return "[]" if there is no import error in the traceback.""",
             },
+            "issue": {
+                "type": "string",
+                "description": """Briefly explain the error""",
+            },
         },
-        "required": ["fix", "missing"],
+        "required": ["fix", "missing", "issue"],
     },
 }
 

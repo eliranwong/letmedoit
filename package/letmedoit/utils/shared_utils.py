@@ -199,12 +199,16 @@ class SharedUtil:
         return style_from_pygments_cls(get_style_by_name(theme))
 
     @staticmethod
-    def showAndExecutePythonCode(code):
+    def displayPythonCode(code):
         if config.developer or config.codeDisplay:
             config.print("```python")
             tokens = list(pygments.lex(code, lexer=PythonLexer()))
             print_formatted_text(PygmentsTokens(tokens), style=SharedUtil.getPygmentsStyle())
             config.print("```")
+
+    @staticmethod
+    def showAndExecutePythonCode(code):
+        SharedUtil.displayPythonCode(code)
         config.stopSpinning()
         refinedCode = SharedUtil.fineTunePythonCode(code)
         information = SharedUtil.executePythonCode(refinedCode)
@@ -238,10 +242,7 @@ class SharedUtil:
     def autoHealPythonCode(code, trace):
         for i in range(config.max_consecutive_auto_heal):
             userInput = f"Original python code:\n```\n{code}\n```\n\nTraceback:\n```\n{trace}\n```"
-            config.print(f"Auto-heal attempt {(i + 1)} ...")
-            config.print(f"running python code ...")
-            if config.developer:
-                print(f"```\n{code}\n```")
+            config.print3(f"Auto-correction attempt: {(i + 1)}")
             function_call_message, function_call_response = SharedUtil.getSingleFunctionResponse(userInput, config.heal_python_signature, "heal_python")
             # display response
             config.print(config.divider)
