@@ -1,4 +1,4 @@
-import vertexai, os, traceback, argparse, re
+import vertexai, os, argparse, re
 from vertexai.preview.generative_models import GenerativeModel
 from vertexai.generative_models._generative_models import (
     GenerationConfig,
@@ -12,42 +12,24 @@ if not hasattr(config, "exit_entry"):
     HealthCheck.saveConfig()
     print("Updated!")
 HealthCheck.setPrint()
-#import pygments
-#from pygments.lexers.markup import MarkdownLexer
-#from prompt_toolkit.formatted_text import PygmentsTokens
-#from prompt_toolkit import print_formatted_text
-from prompt_toolkit.styles import Style
-from prompt_toolkit.keys import Keys
-from prompt_toolkit.input import create_input
-from prompt_toolkit import PromptSession
-from prompt_toolkit.history import FileHistory
-from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit.shortcuts import clear
-from pathlib import Path
-import asyncio, threading, shutil, textwrap
 
-# To work with gemini-pro-vision
+import shutil, textwrap
 from PIL import Image as im
 import requests
 import http.client
 import typing
 import urllib.request
 from vertexai.preview.generative_models import Image
-from vertexai.preview import generative_models
+from prompt_toolkit.styles import Style
+
 
 # Install google-cloud-aiplatform FIRST!
 #!pip install --upgrade google-cloud-aiplatform
 
-# Keep for reference; unnecessary for api key authentication with json file
-# (developer): Update and un-comment below lines
-#project_id = "letmedoitai"
-#location = "us-central1"
-#vertexai.init(project=project_id, location=location)
 
+class GeminiProVision:
 
-class GeminiPro:
-
-    def __init__(self, name="Gemini Pro", temperature=0.9, max_output_tokens=8192):
+    def __init__(self, temperature=0.9, max_output_tokens=2048):
         # authentication
         authpath1 = os.path.join(HealthCheck.getFiles(), "credentials_googleaistudio.json")
         if os.path.isfile(authpath1):
@@ -59,7 +41,6 @@ class GeminiPro:
             self.runnable = False
         # initiation
         vertexai.init()
-        self.name, self.temperature = name, temperature
         self.generation_config=GenerationConfig(
             temperature=temperature, # 0.0-1.0; default 0.9
             max_output_tokens=max_output_tokens, # default
@@ -71,164 +52,21 @@ class GeminiPro:
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
         }
-        self.defaultPrompt = ""
-        self.enableVision = (os.path.realpath(__file__).endswith("vision.py"))
 
-    def wrapText(self, content, terminal_width):
+    def refinePath(self, img_path):
+        img_path = img_path.strip()
+        img_path = re.sub("^'(.*?)'$", r"\1", img_path)
+        if "\\ " in img_path or "\(" in img_path:
+            img_path = img_path.replace("\\ ", " ")
+            img_path = img_path.replace("\(", "(")
+        return os.path.expanduser(img_path)
+
+    def wrapText(self, content, terminal_width=None):
+        if terminal_width is None:
+            terminal_width = shutil.get_terminal_size().columns
         return "\n".join([textwrap.fill(line, width=terminal_width) for line in content.split("\n")])
 
-    def wrapStreamWords(self, answer, terminal_width):
-        if " " in answer:
-            if answer == " ":
-                if self.lineWidth < terminal_width:
-                    print(" ", end='', flush=True)
-                    self.lineWidth += 1
-            else:
-                answers = answer.split(" ")
-                for index, item in enumerate(answers):
-                    isLastItem = (len(answers) - index == 1)
-                    itemWidth = HealthCheck.getStringWidth(item)
-                    newLineWidth = (self.lineWidth + itemWidth) if isLastItem else (self.lineWidth + itemWidth + 1)
-                    if isLastItem:
-                        if newLineWidth > terminal_width:
-                            print(f"\n{item}", end='', flush=True)
-                            self.lineWidth = itemWidth
-                        else:
-                            print(item, end='', flush=True)
-                            self.lineWidth += itemWidth
-                    else:
-                        if (newLineWidth - terminal_width) == 1:
-                            print(f"{item}\n", end='', flush=True)
-                            self.lineWidth = 0
-                        elif newLineWidth > terminal_width:
-                            print(f"\n{item} ", end='', flush=True)
-                            self.lineWidth = itemWidth + 1
-                        else:
-                            print(f"{item} ", end='', flush=True)
-                            self.lineWidth += (itemWidth + 1)
-        else:
-            answerWidth = HealthCheck.getStringWidth(answer)
-            newLineWidth = self.lineWidth + answerWidth
-            if newLineWidth > terminal_width:
-                print(f"\n{answer}", end='', flush=True)
-                self.lineWidth = answerWidth
-            else:
-                print(answer, end='', flush=True)
-                self.lineWidth += answerWidth
-
-    def keyToStopStreaming(self, streaming_event):
-        async def readKeys() -> None:
-            done = False
-            input = create_input()
-
-            def keys_ready():
-                nonlocal done
-                for key_press in input.read_keys():
-                    #print(key_press)
-                    if key_press.key in (Keys.ControlQ, Keys.ControlZ):
-                        print("\n")
-                        done = True
-                        streaming_event.set()
-
-            with input.raw_mode():
-                with input.attach(keys_ready):
-                    while not done:
-                        if self.streaming_finished:
-                            break
-                        await asyncio.sleep(0.1)
-
-        asyncio.run(readKeys())
-
-    def streamOutputs(self, streaming_event, completion, prompt):
-        terminal_width = shutil.get_terminal_size().columns
-
-        def finishOutputs(wrapWords, chat_response, terminal_width=terminal_width):
-            config.wrapWords = wrapWords
-            # reset config.tempChunk
-            config.tempChunk = ""
-            print("\n")
-            # add chat response to messages
-            if hasattr(config, "currentMessages") and chat_response:
-                config.currentMessages.append({"role": "assistant", "content": chat_response})
-            # auto pager feature
-            if hasattr(config, "pagerView"):
-                config.pagerContent += self.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
-                self.addPagerContent = False
-                if config.pagerView:
-                    self.launchPager(config.pagerContent)
-            # finishing
-            if hasattr(config, "conversationStarted"):
-                config.conversationStarted = True
-            self.streaming_finished = True
-
-        chat_response = ""
-        self.lineWidth = 0
-        blockStart = False
-        wrapWords = config.wrapWords
-        for event in completion:
-            if not streaming_event.is_set() and not self.streaming_finished:
-                # RETRIEVE THE TEXT FROM THE RESPONSE
-                # vertex
-                #print(str(event.candidates[0].content))
-                function_call = ("function_call" in str(event.candidates[0].content))
-                if not function_call:
-                    answer = event.text
-                # openai
-                #answer = event.choices[0].delta.content
-                #answer = SharedUtil.transformText(answer)
-                # STREAM THE ANSWER
-                if function_call:
-                    # assume only one tool is in place
-                    try:
-                        function_args = dict(event.candidates[0].content.parts[0].function_call.args)
-                        files = function_args["files"]
-                        if not files or (len(files) == 1 and not files[0]): # {'files': [''], 'query': 'my query'}
-                            self.defaultPrompt = f"{prompt}\n[NO_FUNCTION_CALL]"
-                        else:
-                            HealthCheck.print2("Running Gemini Pro Vision ...")
-                            self.analyze_images(function_args)
-                    except:
-                        self.defaultPrompt = f"{prompt}\n[NO_FUNCTION_CALL]"
-                    self.streaming_finished = True
-                elif answer is not None:
-                    # display the chunk
-                    chat_response += answer
-                    # word wrap
-                    if answer in ("```", "``"):
-                        blockStart = not blockStart
-                        if blockStart:
-                            config.wrapWords = False
-                        else:
-                            config.wrapWords = wrapWords
-                    if config.wrapWords:
-                        if "\n" in answer:
-                            lines = answer.split("\n")
-                            for index, line in enumerate(lines):
-                                isLastLine = (len(lines) - index == 1)
-                                self.wrapStreamWords(line, terminal_width)
-                                if not isLastLine:
-                                    print("\n", end='', flush=True)
-                                    self.lineWidth = 0
-                        else:
-                            self.wrapStreamWords(answer, terminal_width)
-                    else:
-                        print(answer, end='', flush=True) # Print the response
-                    # speak streaming words
-                    #self.readAnswer(answer)
-            else:
-                finishOutputs(wrapWords, chat_response)
-                return None
-        
-        finishOutputs(wrapWords, chat_response)
-
-    def run(self, prompt=""):
-        if self.defaultPrompt:
-            prompt, self.defaultPrompt = self.defaultPrompt, ""
-        historyFolder = os.path.join(HealthCheck.getFiles(), "history")
-        Path(historyFolder).mkdir(parents=True, exist_ok=True)
-        chat_history = os.path.join(historyFolder, "geminipro")
-        chat_session = PromptSession(history=FileHistory(chat_history))
-
+    def run(self, query="", files=[]):
         promptStyle = Style.from_dict({
             # User input (default text).
             "": config.terminalCommandEntryColor2,
@@ -236,99 +74,33 @@ class GeminiPro:
             "indicator": config.terminalPromptIndicatorColor2,
         })
 
-        completer = WordCompleter(["[", "[NO_FUNCTION_CALL]"], ignore_case=True) if self.enableVision else None
-
-        if not self.runnable:
-            print(f"{self.name} is not running due to missing configurations!")
-            return None
-        model = GenerativeModel("gemini-pro")
-        chat = model.start_chat(
-            #context=f"You're {self.name}, a helpful AI assistant.",
-        )
-        HealthCheck.print2(f"\n{self.name} + Vision loaded!" if self.enableVision else f"\n{self.name} loaded!")
-        print("(To start a new chart, enter '.new')")
-        print(f"(To quit, enter '{config.exit_entry}')\n")
-        while True:
-            if not prompt:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, completer=completer,)
-                if prompt and not prompt in (".new", config.exit_entry) and hasattr(config, "currentMessages"):
-                    config.currentMessages.append({"content": prompt, "role": "user"})
-            else:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, default=prompt, accept_default=True)
-            if prompt == config.exit_entry:
-                break
-            elif prompt == ".new":
-                clear()
-                chat = model.start_chat()
-                print("New chat started!")
-            elif prompt := prompt.strip():
-                config.pagerContent = ""
-                self.addPagerContent = True
-
-                # declare a function
-                get_vision_func = generative_models.FunctionDeclaration(
-                    name="analyze_images",
-                    description="Describe or analyze images. Remember, do not use this function for non-image related tasks. Even it is an image-related task, use this function ONLY if I provide at least one image file path or image url.",
-                    parameters={
-                        "type": "object",
-                        "properties": {
-                            "query": {
-                                "type": "string",
-                                "description": "Questions or requests that users ask about the given images",
-                            },
-                            "files": {
-                                "type": "string",
-                                "description": """Return a list of image paths or urls, e.g. '["image1.png", "/tmp/image2.png", "https://letmedoit.ai/image.png"]'. Return '[]' if image path is not provided.""",
-                            },
-                        },
-                        "required": ["query", "files"],
-                    },
-                )
-                vision_tool = generative_models.Tool(
-                    function_declarations=[get_vision_func],
-                )
-
+        HealthCheck.print2("\nGemini Pro Vision loaded!")
+        print("[press 'ctrl+q' to exit]")
+        if not files:
+            HealthCheck.print2("Enter image path below (file / folder):")
+            files = HealthCheck.simplePrompt(style=promptStyle)
+        if files:
+            # handle path dragged to terminal
+            files = self.refinePath(files)
+        if files == config.exit_entry:
+            pass
+        elif files and os.path.exists(files):
+            files = [files]
+            if not query:
+                HealthCheck.print2("Enter your query below:")
+                query = HealthCheck.simplePrompt(style=promptStyle)
+            if query and not query == config.exit_entry:
                 try:
-                    # https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini
-                    if "[NO_FUNCTION_CALL]" in prompt or not self.enableVision:
-                        allow_function_call = False
-                        prompt = prompt.replace("[NO_FUNCTION_CALL]", "")
-                    else:
-                        allow_function_call = True
-                    completion = chat.send_message(
-                        prompt,
-                        # Optional:
-                        generation_config=self.generation_config,
-                        safety_settings=self.safety_settings,
-                        tools=[vision_tool] if allow_function_call else None,
-                        stream=True,
-                    )
-
-                    # Create a new thread for the streaming task
-                    self.streaming_finished = False
-                    streaming_event = threading.Event()
-                    self.streaming_thread = threading.Thread(target=self.streamOutputs, args=(streaming_event, completion, prompt,))
-                    # Start the streaming thread
-                    self.streaming_thread.start()
-
-                    # wait while text output is steaming; capture key combo 'ctrl+q' or 'ctrl+z' to stop the streaming
-                    self.keyToStopStreaming(streaming_event)
-
-                    # when streaming is done or when user press "ctrl+q"
-                    self.streaming_thread.join()
-
-                    # format response when streaming is not applied
-                    #tokens = list(pygments.lex(fullContent, lexer=MarkdownLexer()))
-                    #print_formatted_text(PygmentsTokens(tokens), style=HealthCheck.getPygmentsStyle())
-
+                    function_args = {
+                        "query": query,
+                        "files": files,
+                    }
+                    self.analyze_images(function_args)
                 except:
-                    self.streaming_finished = True
-                    self.streaming_thread.join()
-                    HealthCheck.print2(traceback.format_exc())
-
-            prompt = ""
-
-        HealthCheck.print2(f"\n{self.name} closed!")
+                    HealthCheck.showErrors()
+        else:
+            HealthCheck.print2("Entered path does not exist!")
+        HealthCheck.print2("\nGemini Pro Vision closed!")
 
     def analyze_images(self, function_args):
         def is_valid_url(url: str) -> bool:
@@ -410,40 +182,44 @@ class GeminiPro:
             model = GenerativeModel("gemini-pro-vision")
             response = model.generate_content(
                 content,
-                generation_config=GenerationConfig(
-                    temperature=self.temperature, # 0.0-1.0; default 0.9
-                    max_output_tokens=2048,
-                    candidate_count=1,
-                ),
+                generation_config=self.generation_config,
                 safety_settings=self.safety_settings,
             )
             if response:
-                chat_response = response.text.strip()
-                if chat_response:
-                    print(chat_response)
-                    if hasattr(config, "currentMessages"):
-                        config.currentMessages.append({"role": "assistant", "content": chat_response})
+                try:
+                    chat_response = response.text.strip()
+                    if chat_response:
+                        print(self.wrapText(chat_response))
+                        return chat_response
+                except:
+                    HealthCheck.showErrors()
+                    return ""
         else:
-            self.defaultPrompt = f"{query}\n[NO_FUNCTION_CALL]"
+            HealthCheck.print2("No image file is found!")
+        return ""
 
 def main():
     # Create the parser
-    parser = argparse.ArgumentParser(description="geminipro cli options")
+    parser = argparse.ArgumentParser(description="geminipro vision cli options")
     # Add arguments
     parser.add_argument("default", nargs="?", default=None, help="default entry")
-    parser.add_argument('-o', '--outputtokens', action='store', dest='outputtokens', help="specify maximum output tokens with -o flag; default: 8192")
+    parser.add_argument('-f', '--files', action='store', dest='files', help="specify a file of a directory of files with -f flag")
+    parser.add_argument('-o', '--outputtokens', action='store', dest='outputtokens', help="specify maximum output tokens with -o flag; default: 2048")
     parser.add_argument('-t', '--temperature', action='store', dest='temperature', help="specify temperature with -t flag: default: 0.9")
     # Parse arguments
     args = parser.parse_args()
     # Get options
-    prompt = args.default.strip() if args.default and args.default.strip() else ""
+    query = args.default.strip() if args.default and args.default.strip() else ""
+    files = [args.files.strip()] if args.files and os.path.exists(args.files.strip()) else []
     if args.outputtokens and args.outputtokens.strip():
         try:
             max_output_tokens = int(args.outputtokens.strip())
         except:
-            max_output_tokens = 8192
+            max_output_tokens = 2048
     else:
-        max_output_tokens = 8192
+        max_output_tokens = 2048
+    if max_output_tokens > 2048:
+        max_output_tokens = 2048
     if args.temperature and args.temperature.strip():
         try:
             temperature = float(args.temperature.strip())
@@ -451,11 +227,14 @@ def main():
             temperature = 0.9
     else:
         temperature = 0.9
-    GeminiPro(
+    if temperature > 1.0:
+        temperature = 1.0
+    GeminiProVision(
         temperature=temperature,
         max_output_tokens = max_output_tokens,
     ).run(
-        prompt=prompt,
+        query=query,
+        files=files,
     )
 
 if __name__ == '__main__':

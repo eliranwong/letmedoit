@@ -146,7 +146,7 @@ class AutoGenRetriever:
         if "\\ " in docs_path or "\(" in docs_path:
             docs_path = docs_path.replace("\\ ", " ")
             docs_path = docs_path.replace("\(", "(")
-        return docs_path
+        return os.path.expanduser(docs_path)
 
     def run(self):
         promptStyle = Style.from_dict({
@@ -170,7 +170,7 @@ class AutoGenRetriever:
         self.print(f"<{config.terminalCommandEntryColor1}>AutoGen Retriever launched!</{config.terminalCommandEntryColor1}>")
         self.print("[press 'ctrl+q' to exit]")
         
-        self.print(f"<{config.terminalCommandEntryColor1}>Enter your document path below (file / folder):</{config.terminalCommandEntryColor1}>")
+        self.print(f"<{config.terminalCommandEntryColor1}>Enter document path below (file / folder):</{config.terminalCommandEntryColor1}>")
         self.print(f"""Supported formats: *.{", *.".join(TEXT_FORMATS)}""" + ", *.zip")
         docs_path = prompts.simplePrompt(style=promptStyle)
 

@@ -1,0 +1,41 @@
+"""
+LetMeDoIt AI Plugin - analyze images
+
+analyze images with model "gpt-4-vision-preview"
+
+reference: https://platform.openai.com/docs/guides/vision
+
+[FUNCTION_CALL]
+"""
+
+from letmedoit import config
+from letmedoit.geminiprovision import GeminiProVision
+
+def analyze_images_with_gemini(function_args):
+    answer = GeminiProVision(temperature=config.llmTemperature).analyze_images(function_args)
+    config.tempContent = answer
+    return "[INVALID]" if not answer else ""
+
+functionSignature = {
+    "name": "analyze_images_with_gemini",
+    "description": "Use Gemini Pro Vision to describe or analyze images",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Questions or requests that users ask about the given images",
+            },
+            "files": {
+                "type": "string",
+                "description": """Return a list of image paths or urls, e.g. '["image1.png", "/tmp/image2.png", "https://letmedoit.ai/image.png"]'. Return '[]' if image path is not provided.""",
+            },
+        },
+        "required": ["query", "files"],
+    },
+}
+
+config.pluginsWithFunctionCall.append("analyze_images_with_gemini")
+config.chatGPTApiFunctionSignatures.append(functionSignature)
+config.chatGPTApiAvailableFunctions["analyze_images_with_gemini"] = analyze_images_with_gemini
+config.inputSuggestions.append("Ask Gemini Pro Vision to describe this image in detail: ")
