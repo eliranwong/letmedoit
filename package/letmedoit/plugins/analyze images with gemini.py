@@ -13,7 +13,8 @@ from letmedoit.geminiprovision import GeminiProVision
 
 def analyze_images_with_gemini(function_args):
     answer = GeminiProVision(temperature=config.llmTemperature).analyze_images(function_args)
-    config.tempContent = answer
+    if answer:
+        config.tempContent = answer
     return "[INVALID]" if not answer else ""
 
 functionSignature = {
