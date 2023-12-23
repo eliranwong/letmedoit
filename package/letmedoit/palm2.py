@@ -1,16 +1,13 @@
-import vertexai, os, traceback, argparse
+import vertexai, os, traceback, argparse, threading
 from vertexai.language_models import ChatModel
 from letmedoit import config
+from streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
 if not hasattr(config, "exit_entry"):
     HealthCheck.setBasicConfig()
     HealthCheck.saveConfig()
     print("Updated!")
 HealthCheck.setPrint()
-import pygments
-from pygments.lexers.markup import MarkdownLexer
-from prompt_toolkit.formatted_text import PygmentsTokens
-from prompt_toolkit import print_formatted_text
 from prompt_toolkit.styles import Style
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -88,21 +85,24 @@ class VertexAIModel:
                 chat = model.start_chat()
                 print("New chat started!")
             elif prompt := prompt.strip():
+                streamingWordWrapper = StreamingWordWrapper()
+                config.pagerContent = ""
                 try:
-                    HealthCheck.startSpinning()
-                    response = chat.send_message(
-                        prompt, **parameters
-                    )
-                    HealthCheck.stopSpinning()
-                    config.pagerContent = response.text.strip()
-                    # color response with markdown style
-                    tokens = list(pygments.lex(config.pagerContent, lexer=MarkdownLexer()))
-                    print_formatted_text(PygmentsTokens(tokens), style=HealthCheck.getPygmentsStyle())
-                    # integrate messages into LetMeDoIt messages
-                    if hasattr(config, "currentMessages") and config.pagerContent:
-                        config.currentMessages.append({"role": "assistant", "content": config.pagerContent})
+                    completion = chat.send_message_streaming(prompt, **parameters)
+
+                    # Create a new thread for the streaming task
+                    streaming_event = threading.Event()
+                    self.streaming_thread = threading.Thread(target=streamingWordWrapper.streamOutputs, args=(streaming_event, completion, prompt,))
+                    # Start the streaming thread
+                    self.streaming_thread.start()
+
+                    # wait while text output is steaming; capture key combo 'ctrl+q' or 'ctrl+z' to stop the streaming
+                    streamingWordWrapper.keyToStopStreaming(streaming_event)
+
+                    # when streaming is done or when user press "ctrl+q"
+                    self.streaming_thread.join()
                 except:
-                    HealthCheck.stopSpinning()
+                    self.streaming_thread.join()
                     HealthCheck.print2(traceback.format_exc())
 
             prompt = ""
