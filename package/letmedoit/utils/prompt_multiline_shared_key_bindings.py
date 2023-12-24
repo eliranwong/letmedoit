@@ -1,4 +1,5 @@
 from letmedoit import config
+from letmedoit.utils.shared_utils import SharedUtil
 import shutil
 from prompt_toolkit.key_binding import KeyBindings
 
