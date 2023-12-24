@@ -1,7 +1,7 @@
 import vertexai, os, traceback, argparse, threading
 from vertexai.language_models import ChatModel
 from letmedoit import config
-from streaming_word_wrapper import StreamingWordWrapper
+from letmedoit.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
 if not hasattr(config, "exit_entry"):
     HealthCheck.setBasicConfig()

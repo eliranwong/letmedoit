@@ -57,7 +57,7 @@ class LetMeDoItAI:
             config.predefinedContextTemp = ""
         config.systemCommandPromptEntry = ""
         config.pagerContent = ""
-        self.addPagerContent = False
+        #self.addPagerContent = False
         # share the following methods in config so that they are accessible via plugins
         config.getFiles = self.getFiles
         config.stopSpinning = self.stopSpinning
@@ -1794,7 +1794,7 @@ My writing:
                             SharedUtil.showErrors()
 
                     config.pagerContent = ""
-                    self.addPagerContent = True
+                    #self.addPagerContent = True
 
                     #if config.conversationStarted:
                     #    config.currentMessages = self.moveForwardSystemMessage(config.currentMessages)
@@ -1884,7 +1884,7 @@ My writing:
                 config.currentMessages.append({"role": "assistant", "content": chat_response})
             # auto pager feature
             config.pagerContent += self.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
-            self.addPagerContent = False
+            #self.addPagerContent = False
             if config.pagerView:
                 self.launchPager(config.pagerContent)
             # finishing

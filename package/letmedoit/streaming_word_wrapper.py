@@ -98,9 +98,9 @@ class StreamingWordWrapper:
             # auto pager feature
             if hasattr(config, "pagerView"):
                 config.pagerContent += self.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
-                self.addPagerContent = False
+                #self.addPagerContent = False
                 if config.pagerView:
-                    self.launchPager(config.pagerContent)
+                    config.launchPager(config.pagerContent)
             # finishing
             if hasattr(config, "conversationStarted"):
                 config.conversationStarted = True
