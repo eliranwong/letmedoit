@@ -1,5 +1,6 @@
 from letmedoit import config
 from letmedoit.health_check import HealthCheck
+from letmedoit.utils.tts_utils import TTSUtil
 if not hasattr(config, "exit_entry"):
     HealthCheck.setBasicConfig()
     HealthCheck.saveConfig()
@@ -11,15 +12,19 @@ HealthCheck.setPrint()
 #from prompt_toolkit import print_formatted_text
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.input import create_input
-import asyncio, shutil, textwrap
+import asyncio, shutil, textwrap, string
 
 
 class StreamingWordWrapper:
 
     def __init__(self):
         self.streaming_finished = False
+        config.tempChunk = ""
 
-    def wrapText(self, content, terminal_width):
+    @staticmethod
+    def wrapText(content, terminal_width=None):
+        if terminal_width is None:
+            terminal_width = shutil.get_terminal_size().columns
         return "\n".join([textwrap.fill(line, width=terminal_width) for line in content.split("\n")])
 
     def wrapStreamWords(self, answer, terminal_width):
@@ -84,7 +89,7 @@ class StreamingWordWrapper:
 
         asyncio.run(readKeys())
 
-    def streamOutputs(self, streaming_event, completion, prompt):
+    def streamOutputs(self, streaming_event, completion, openai=False):
         terminal_width = shutil.get_terminal_size().columns
 
         def finishOutputs(wrapWords, chat_response, terminal_width=terminal_width):
@@ -97,7 +102,7 @@ class StreamingWordWrapper:
                 config.currentMessages.append({"role": "assistant", "content": chat_response})
             # auto pager feature
             if hasattr(config, "pagerView"):
-                config.pagerContent += self.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
+                config.pagerContent += StreamingWordWrapper.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
                 #self.addPagerContent = False
                 if config.pagerView:
                     config.launchPager(config.pagerContent)
@@ -114,11 +119,12 @@ class StreamingWordWrapper:
         for event in completion:
             if not streaming_event.is_set() and not self.streaming_finished:
                 # RETRIEVE THE TEXT FROM THE RESPONSE
-                # vertex
-                answer = event.text
-                # openai
-                #answer = event.choices[0].delta.content
-                #answer = SharedUtil.transformText(answer)
+                # openai or vertex
+                answer = event.choices[0].delta.content if openai else event.text
+                # transform
+                if hasattr(config, "chatGPTTransformers"):
+                    for transformer in config.chatGPTTransformers:
+                        answer = transformer(answer)
                 # STREAM THE ANSWER
                 if answer is not None:
                     if firstEvent:
@@ -147,9 +153,23 @@ class StreamingWordWrapper:
                     else:
                         print(answer, end='', flush=True) # Print the response
                     # speak streaming words
-                    #self.readAnswer(answer)
+                    self.readAnswer(answer)
             else:
                 finishOutputs(wrapWords, chat_response)
                 return None
         
         finishOutputs(wrapWords, chat_response)
+
+    def readAnswer(self, answer):
+        # read the chunk when there is a punctuation
+        if answer in string.punctuation and config.tempChunk:
+            # read words when there a punctuation
+            chunk = config.tempChunk + answer
+            # reset config.tempChunk
+            config.tempChunk = ""
+            # play with tts
+            if config.ttsOutput:
+                TTSUtil.play(chunk)
+        else:
+            # append to a chunk for reading
+            config.tempChunk += answer

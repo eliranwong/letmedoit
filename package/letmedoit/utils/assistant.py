@@ -29,6 +29,7 @@ from letmedoit.utils.file_utils import FileUtil
 from letmedoit.utils.terminal_system_command_prompt import SystemCommandPrompt
 from letmedoit.utils.shared_utils import SharedUtil
 from letmedoit.utils.tts_utils import TTSUtil
+from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.plugins.bibleTools.utils.TextUtil import TextUtil
 if not config.isTermux:
     from letmedoit.autobuilder import AutoGenBuilder
@@ -121,9 +122,6 @@ class LetMeDoItAI:
         else:
             config.tts = True
         self.isTtsAvailable()
-
-        # check if text output streaming is finished
-        self.streaming_finished = False
 
         self.actions = {
             '.new': 'start a new chat [ctrl+n]',
@@ -339,15 +337,12 @@ class LetMeDoItAI:
         self.print(self.divider)
         return ""
 
-    def wrapText(self, content, terminal_width):
-        return "\n".join([textwrap.fill(line, width=terminal_width) for line in content.split("\n")])
-
     def print(self, content):
         content = SharedUtil.transformText(content)
         if config.wrapWords:
             # wrap words to fit terminal width
             terminal_width = shutil.get_terminal_size().columns
-            print(self.wrapText(content, terminal_width))
+            print(StreamingWordWrapper.wrapText(content, terminal_width))
             # remarks: 'fold' or 'fmt' does not work on Windows
             # pydoc.pipepager(f"{content}\n", cmd=f"fold -s -w {terminal_width}")
             # pydoc.pipepager(f"{content}\n", cmd=f"fmt -w {terminal_width}")
@@ -1525,20 +1520,6 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 directoryList.append(f)
         return directoryList
 
-    def readAnswer(self, answer):
-        # read the chunk
-        if answer in string.punctuation and config.tempChunk:
-            # read words when there a punctuation
-            chunk = config.tempChunk + answer
-            # reset config.tempChunk
-            config.tempChunk = ""
-            # play with tts
-            if config.ttsOutput:
-                TTSUtil.play(chunk)
-        else:
-            # append to a chunk for reading
-            config.tempChunk += answer
-
     def stopSpinning(self):
         try:
             config.stop_event.set()
@@ -1804,14 +1785,14 @@ My writing:
                     self.stopSpinning()
 
                     # Create a new thread for the streaming task
-                    self.streaming_finished = False
+                    streamingWordWrapper = StreamingWordWrapper()
                     streaming_event = threading.Event()
-                    self.streaming_thread = threading.Thread(target=self.streamOutputs, args=(streaming_event, completion,))
+                    self.streaming_thread = threading.Thread(target=streamingWordWrapper.streamOutputs, args=(streaming_event, completion, True))
                     # Start the streaming thread
                     self.streaming_thread.start()
 
                     # wait while text output is steaming; capture key combo 'ctrl+q' or 'ctrl+z' to stop the streaming
-                    self.keyToStopStreaming(streaming_event)
+                    streamingWordWrapper.keyToStopStreaming(streaming_event)
 
                     # when streaming is done or when user press "ctrl+q"
                     self.streaming_thread.join()
@@ -1848,90 +1829,6 @@ My writing:
                     self.saveChat(config.currentMessages)
                     storagedirectory, config.currentMessages = startChat()
 
-    def keyToStopStreaming(self, streaming_event):
-        async def readKeys() -> None:
-            done = False
-            input = create_input()
-
-            def keys_ready():
-                nonlocal done
-                for key_press in input.read_keys():
-                    #print(key_press)
-                    if key_press.key in (Keys.ControlQ, Keys.ControlZ):
-                        print("\n")
-                        done = True
-                        streaming_event.set()
-
-            with input.raw_mode():
-                with input.attach(keys_ready):
-                    while not done:
-                        if self.streaming_finished:
-                            break
-                        await asyncio.sleep(0.1)
-
-        asyncio.run(readKeys())
-
-    def streamOutputs(self, streaming_event, completion):
-        terminal_width = shutil.get_terminal_size().columns
-
-        def finishOutputs(wrapWords, chat_response, terminal_width=terminal_width):
-            config.wrapWords = wrapWords
-            # reset config.tempChunk
-            config.tempChunk = ""
-            print("\n")
-            # add chat response to messages
-            if chat_response:
-                config.currentMessages.append({"role": "assistant", "content": chat_response})
-            # auto pager feature
-            config.pagerContent += self.wrapText(chat_response, terminal_width) if config.wrapWords else chat_response
-            #self.addPagerContent = False
-            if config.pagerView:
-                self.launchPager(config.pagerContent)
-            # finishing
-            config.conversationStarted = True
-            self.streaming_finished = True
-
-        chat_response = ""
-        self.lineWidth = 0
-        blockStart = False
-        wrapWords = config.wrapWords
-        for event in completion:
-            if not streaming_event.is_set():
-                # RETRIEVE THE TEXT FROM THE RESPONSE
-                answer = event.choices[0].delta.content
-                answer = SharedUtil.transformText(answer)
-                # STREAM THE ANSWER
-                if answer is not None:
-                    # display the chunk
-                    chat_response += answer
-                    # word wrap
-                    if answer in ("```", "``"):
-                        blockStart = not blockStart
-                        if blockStart:
-                            config.wrapWords = False
-                        else:
-                            config.wrapWords = wrapWords
-                    if config.wrapWords:
-                        if "\n" in answer:
-                            lines = answer.split("\n")
-                            for index, line in enumerate(lines):
-                                isLastLine = (len(lines) - index == 1)
-                                self.wrapStreamWords(line, terminal_width)
-                                if not isLastLine:
-                                    print("\n", end='', flush=True)
-                                    self.lineWidth = 0
-                        else:
-                            self.wrapStreamWords(answer, terminal_width)
-                    else:
-                        print(answer, end='', flush=True) # Print the response
-                    # speak streaming words
-                    self.readAnswer(answer)
-            else:
-                finishOutputs(wrapWords, chat_response)
-                return None
-        
-        finishOutputs(wrapWords, chat_response)
-
     def addPagerText(self, text, wrapWords=False):
         if wrapWords:
             text = self.getWrappedHTMLText(text)
@@ -1955,45 +1852,6 @@ My writing:
             except:
                 config.pagerView = False
                 SharedUtil.showErrors()
-
-    def wrapStreamWords(self, answer, terminal_width):
-        if " " in answer:
-            if answer == " ":
-                if self.lineWidth < terminal_width:
-                    print(" ", end='', flush=True)
-                    self.lineWidth += 1
-            else:
-                answers = answer.split(" ")
-                for index, item in enumerate(answers):
-                    isLastItem = (len(answers) - index == 1)
-                    itemWidth = SharedUtil.getStringWidth(item)
-                    newLineWidth = (self.lineWidth + itemWidth) if isLastItem else (self.lineWidth + itemWidth + 1)
-                    if isLastItem:
-                        if newLineWidth > terminal_width:
-                            print(f"\n{item}", end='', flush=True)
-                            self.lineWidth = itemWidth
-                        else:
-                            print(item, end='', flush=True)
-                            self.lineWidth += itemWidth
-                    else:
-                        if (newLineWidth - terminal_width) == 1:
-                            print(f"{item}\n", end='', flush=True)
-                            self.lineWidth = 0
-                        elif newLineWidth > terminal_width:
-                            print(f"\n{item} ", end='', flush=True)
-                            self.lineWidth = itemWidth + 1
-                        else:
-                            print(f"{item} ", end='', flush=True)
-                            self.lineWidth += (itemWidth + 1)
-        else:
-            answerWidth = SharedUtil.getStringWidth(answer)
-            newLineWidth = self.lineWidth + answerWidth
-            if newLineWidth > terminal_width:
-                print(f"\n{answer}", end='', flush=True)
-                self.lineWidth = answerWidth
-            else:
-                print(answer, end='', flush=True)
-                self.lineWidth += answerWidth
 
     # wrap html text at spaces
     def getWrappedHTMLText(self, text, terminal_width=None):

@@ -6,6 +6,7 @@ from vertexai.generative_models._generative_models import (
     HarmBlockThreshold,
 )
 from letmedoit import config
+from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
 if not hasattr(config, "exit_entry"):
     HealthCheck.setBasicConfig()
@@ -60,11 +61,6 @@ class GeminiProVision:
             img_path = img_path.replace("\\ ", " ")
             img_path = img_path.replace("\(", "(")
         return os.path.expanduser(img_path)
-
-    def wrapText(self, content, terminal_width=None):
-        if terminal_width is None:
-            terminal_width = shutil.get_terminal_size().columns
-        return "\n".join([textwrap.fill(line, width=terminal_width) for line in content.split("\n")])
 
     def run(self, query="", files=[]):
         promptStyle = Style.from_dict({
@@ -189,7 +185,7 @@ class GeminiProVision:
                 try:
                     chat_response = response.text.strip()
                     if chat_response:
-                        print(self.wrapText(chat_response))
+                        print(StreamingWordWrapper.wrapText(chat_response))
                         return chat_response
                 except:
                     HealthCheck.showErrors()

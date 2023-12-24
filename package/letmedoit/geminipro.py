@@ -6,7 +6,7 @@ from vertexai.generative_models._generative_models import (
     HarmBlockThreshold,
 )
 from letmedoit import config
-from letmedoit.streaming_word_wrapper import StreamingWordWrapper
+from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
 if not hasattr(config, "exit_entry"):
     HealthCheck.setBasicConfig()
@@ -143,9 +143,8 @@ class GeminiPro:
                     )
 
                     # Create a new thread for the streaming task
-                    self.streaming_finished = False
                     streaming_event = threading.Event()
-                    self.streaming_thread = threading.Thread(target=streamingWordWrapper.streamOutputs, args=(streaming_event, completion, prompt,))
+                    self.streaming_thread = threading.Thread(target=streamingWordWrapper.streamOutputs, args=(streaming_event, completion,))
                     # Start the streaming thread
                     self.streaming_thread.start()
 
@@ -160,7 +159,6 @@ class GeminiPro:
                     #print_formatted_text(PygmentsTokens(tokens), style=HealthCheck.getPygmentsStyle())
 
                 except:
-                    self.streaming_finished = True
                     self.streaming_thread.join()
                     HealthCheck.print2(traceback.format_exc())
 
