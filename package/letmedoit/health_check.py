@@ -1,7 +1,6 @@
 import os, traceback, json, pprint, wcwidth, textwrap, threading, time
 import openai
 from openai import OpenAI
-from chromadb.utils import embedding_functions
 from pygments.styles import get_style_by_name
 from prompt_toolkit.styles.pygments import style_from_pygments_cls
 from prompt_toolkit import print_formatted_text, HTML
@@ -188,6 +187,8 @@ class HealthCheck:
 
     @staticmethod
     def getEmbeddingFunction(embeddingModel=None):
+        # import statement is placed here to make this file compatible on Android
+        from chromadb.utils import embedding_functions
         embeddingModel = embeddingModel if embeddingModel is not None else config.embeddingModel
         if embeddingModel == "text-embedding-ada-002":
             return embedding_functions.OpenAIEmbeddingFunction(api_key=config.openaiApiKey, model_name="text-embedding-ada-002")
