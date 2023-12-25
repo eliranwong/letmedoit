@@ -21,6 +21,7 @@ HealthCheck.checkCompletion()
 HealthCheck.setPrint()
 
 import autogen, os, json, traceback, chromadb, re, zipfile, datetime, traceback
+from chromadb.config import Settings
 from pathlib import Path
 from letmedoit.utils.prompts import Prompts
 from prompt_toolkit import print_formatted_text, HTML
@@ -97,7 +98,7 @@ class AutoGenRetriever:
             },  # configuration for autogen's enhanced inference API which is compatible with OpenAI API
         )
 
-        client = chromadb.PersistentClient(path=db)
+        client = chromadb.PersistentClient(path=db, Settings(anonymized_telemetry=False))
         try:
             client.delete_collection(name="autogen-docs")
         except:

@@ -10,15 +10,15 @@ modified from source: https://medium.com/@simon_attard/building-a-memory-layer-f
 
 from letmedoit import config
 from letmedoit.health_check import HealthCheck
+from pathlib import Path
+from chromadb.config import Settings
+import uuid, os, chromadb, getpass, geocoder, datetime, json
 import numpy as np
 from numpy.linalg import norm
-import uuid, os, chromadb, getpass, geocoder, datetime, json
-#import tiktoken
-from pathlib import Path
 
 memory_store = os.path.join(config.getFiles(), "memory")
 Path(memory_store).mkdir(parents=True, exist_ok=True)
-chroma_client = chromadb.PersistentClient(memory_store)
+chroma_client = chromadb.PersistentClient(memory_store, Settings(anonymized_telemetry=False))
 
 #def cosine_similarity(A, B):
 #    cosine = np.dot(A, B) / (norm(A) * norm(B))

@@ -40,7 +40,7 @@ class HealthCheck:
         config.terminalResourceLinkColor = "ansiyellow"
         config.terminalHeadingTextColor = "ansigreen"
         config.mouseSupport = False
-        config.embeddingModel = "text-embedding-ada-002"
+        config.embeddingModel = "all-mpnet-base-v2"
         config.max_agents = 5
         config.max_group_chat_round = 12
         config.max_consecutive_auto_reply = 10

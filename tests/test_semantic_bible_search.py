@@ -1,4 +1,5 @@
 from letmedoit.health_check import HealthCheck
+from chromadb.config import Settings
 import os, chromadb, re
 
 
@@ -11,7 +12,7 @@ def getAndItems(query):
 #dbpath
 dbpath = os.path.join(os.path.expanduser("~/letmedoit"), "bibles", "NET")
 # client
-chroma_client = chromadb.PersistentClient(dbpath)
+chroma_client = chromadb.PersistentClient(dbpath, Settings(anonymized_telemetry=False))
 # collection
 collection = chroma_client.get_or_create_collection(
     name="verses",
