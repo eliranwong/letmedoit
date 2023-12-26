@@ -98,7 +98,7 @@ class AutoGenRetriever:
             },  # configuration for autogen's enhanced inference API which is compatible with OpenAI API
         )
 
-        client = chromadb.PersistentClient(path=db, Settings(anonymized_telemetry=False))
+        client = chromadb.PersistentClient(db, Settings(anonymized_telemetry=False))
         try:
             client.delete_collection(name="autogen-docs")
         except:
