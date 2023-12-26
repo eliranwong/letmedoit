@@ -290,6 +290,7 @@ class LetMeDoItAI:
                 elif not p in enabledPlugins and not p in config.pluginExcludeList:
                     config.pluginExcludeList.append(p)
             self.runPlugins()
+            config.saveConfig()
             self.print("Plugin selection updated!")
 
     def getCliOutput(self, cli):
