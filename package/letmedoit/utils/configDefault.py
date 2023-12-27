@@ -64,7 +64,7 @@ defaultSettings = (
     ('mouseSupport', False),
     ('autoUpgrade', True),
     ('chatGPTApiModel', 'gpt-3.5-turbo-16k'),
-    ('chatGPTApiMaxTokens', 2000),
+    ('chatGPTApiMaxTokens', 4000),
     ('chatGPTApiMinTokens', 256),
     #('chatGPTApiNoOfChoices', 1),
     ('chatGPTApiFunctionCall', "auto"),
