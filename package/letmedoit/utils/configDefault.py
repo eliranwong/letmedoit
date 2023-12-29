@@ -99,7 +99,6 @@ defaultSettings = (
     #('enhanceCommandExecution', False),
     ('confirmExecution', "always"), # 'always', 'high_risk_only', 'medium_risk_or_above', 'none'
     ('codeDisplay', False),
-    ('autoUpdate', True),
     ('terminalEditorScrollLineCount', 20),
     ('terminalEditorTabText', "    "),
     ('blankEntryAction', "..."),

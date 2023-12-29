@@ -34,6 +34,10 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki#an-interview
 
 # Recent Additions
 
+[Work with Database Files](https://github.com/eliranwong/letmedoit/wiki/Work-with-Database-Files)
+
+<img width="1440" alt="work_with_database" src="https://github.com/eliranwong/letmedoit/assets/25262722/c163bf47-8d0b-4831-a51d-211c9455d9b6">
+
 [Support Android & Termux-API Commands](https://github.com/eliranwong/letmedoit/wiki/Android-Support)
 
 <img width="1215" alt="termux_api_command" src="https://github.com/eliranwong/letmedoit/assets/25262722/d5fcfd5f-cbf4-45d3-9e1f-d82ed9aa96a1">
