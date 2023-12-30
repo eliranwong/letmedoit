@@ -88,6 +88,6 @@ config.pluginsWithFunctionCall.append("ask_sqlite")
 config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["ask_sqlite"] = ask_sqlite
 
-config.inputSuggestions.append("""Connect the following SQLite file and tell me about the table that it contains:
+config.inputSuggestions.append("""Connect the following SQLite file and tell me about the tables that it contains:
 [CALL_ask_sqlite]
 \n""")
