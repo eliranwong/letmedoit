@@ -77,7 +77,7 @@ functionSignature = {
             },
             "request": {
                 "type": "string",
-                "description": "My original request in detail, including all available supplementary information, if any.  If there is no specific request apart from connection, return 'Describe tables' only.",
+                "description": "The request about fetching data or making changes in the sqlite file, including all available supplementary information in detail, if any.  If there is no specific request apart from connection or query about table schema / information, return 'Describe tables' without extra comment or information.",
             },
         },
         "required": ["code", "request"],
@@ -88,6 +88,6 @@ config.pluginsWithFunctionCall.append("ask_sqlite")
 config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["ask_sqlite"] = ask_sqlite
 
-config.inputSuggestions.append("""Connect the SQLite file located at the following path and provide me with the names of all tables and their corresponding columns:
+config.inputSuggestions.append("""Connect the following SQLite file and tell me about the table that it contains:
 [CALL_ask_sqlite]
 \n""")
