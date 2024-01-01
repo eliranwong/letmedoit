@@ -1225,7 +1225,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             suggestedMaxToken = int(tokenLimit / 2)
             config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else suggestedMaxToken # 'gpt-4-1106-preview' supports at most 4096 completion tokens
             config.saveConfig()
-            self.print3(f"Maximum response tokens: {config.chatGPTApiMaxTokens}.")
+            self.print3(f"Maximum response tokens: {config.chatGPTApiMaxTokens}")
 
     def setEmbeddingModel(self):
         oldEmbeddingModel = config.embeddingModel

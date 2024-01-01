@@ -34,7 +34,7 @@ functionSignature = {
         "properties": {
             "code": {
                 "type": "string",
-                "description": "Python code that integrates package seaborn to resolve my request. Use TkAgg as backend. Greated plots are saved in png format",
+                "description": "Python code that integrates package seaborn to resolve my request. Use TkAgg as backend. Created plots are saved in png format",
             },
         },
         "required": ["code"],
