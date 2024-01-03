@@ -1,12 +1,11 @@
 """
-Modified from source: https://github.com/microsoft/autogen/blob/main/autogen/agentchat/contrib/agent_builder.py
-Modified from the AgentBuilder class available in pyautogen v0.2.2
+Modifed from source: https://github.com/microsoft/autogen/blob/main/autogen/agentchat/contrib/agent_builder.py
+At the time of writing, the script above is not available via "pip install pyautogen==0.2.0
 
 Changes made:
 * max_tokens changed to 4096
-* add option to customise max_agents
+* customisable max_agents
 * use gpt-4-1106-preview, instead of gpt-4, as default builder_model and agent_model
-* added a print function
 """
 
 from letmedoit import config
@@ -114,10 +113,8 @@ class AgentBuilder:
             return False
 
     def print(self, content):
-        if hasattr(config, "print3") and ":" in content:
+        if hasattr(config, "print3"):
             config.print3(content)
-        elif hasattr(config, "print2"):
-            config.print2(content)
         else:
             print(content)
 
@@ -206,6 +203,8 @@ class AgentBuilder:
 
             config_list[0]["base_url"] = f"http://{self.host}:{port}/v1"
 
+        #print(llm_config)
+        #llm_config = llm_config[0]
         current_config = llm_config.copy()
         current_config.update(
             {"config_list": config_list, "model": model_name_or_hf_repo, "max_tokens": self.max_tokens}
@@ -297,11 +296,11 @@ class AgentBuilder:
             coding = cached_configs["coding"]
             agent_configs = cached_configs["agent_configs"]
 
-        if use_api:
-            config_list = autogen.config_list_from_json(self.config_path, filter_dict={"model": [self.builder_model]})
-            build_manager = autogen.OpenAIWrapper(config_list=config_list)
+        config_list = autogen.config_list_from_json(self.config_path, filter_dict={"model": [self.builder_model]})
+        build_manager = autogen.OpenAIWrapper(config_list=config_list)
 
-            self.print("Generating agents ...")
+        if use_api:
+            self.print("Generating agents...")
             resp_agent_name = (
                 build_manager.create(
                     messages=[
@@ -315,11 +314,11 @@ class AgentBuilder:
                 .message.content
             )
             agent_name_list = resp_agent_name.split(",")
-            self.print(f"{resp_agent_name} are generated.")
+            print(f"{resp_agent_name} are generated.")
 
             agent_sys_msg_list = []
             for name in agent_name_list:
-                self.print(f"Preparing configuration for {name}...")
+                print(f"Preparing configuration for {name}...")
                 resp_agent_sys_msg = (
                     build_manager.create(
                         messages=[
@@ -343,16 +342,6 @@ class AgentBuilder:
                     {"name": agent_name_list[i], "model": self.agent_model, "system_message": agent_sys_msg_list[i]}
                 )
 
-            if coding is None:
-                resp = (
-                    build_manager.create(
-                        messages=[{"role": "user", "content": self.CODING_PROMPT.format(task=building_task)}]
-                    )
-                    .choices[0]
-                    .message.content
-                )
-                coding = True if resp == "YES" else False
-
         for config in agent_configs:
             print(f"Creating agent {config['name']} with backbone {config['model']}...")
             self._create_agent(
@@ -365,12 +354,22 @@ class AgentBuilder:
             )
         agent_list = [agent_config[0] for agent_config in self.agent_procs_assign.values()]
 
+        if coding is None:
+            resp = (
+                build_manager.create(
+                    messages=[{"role": "user", "content": self.CODING_PROMPT.format(task=building_task)}]
+                )
+                .choices[0]
+                .message.content
+            )
+            coding = True if resp == "YES" else False
+
         if coding is True:
             print("Adding user console proxy...")
             agent_list = [
                 autogen.UserProxyAgent(
                     name="User_console_and_Python_code_interpreter",
-                    is_termination_msg=lambda x: "TERMINATE" in x.get("content"),
+                    is_termination_msg=lambda x: "TERMINATE" in x.get("content") or not x.get("content"),
                     system_message="User console with a python code interpreter interface.",
                     code_execution_config=code_execution_config,
                     human_input_mode="NEVER",
@@ -404,7 +403,7 @@ class AgentBuilder:
             filepath = f'./save_config_{hashlib.md5(self.building_task.encode("utf-8")).hexdigest()}.json'
         with open(filepath, "w") as save_file:
             json.dump(self.cached_configs, save_file, indent=4)
-        self.print(f"Building config saved to {filepath}")
+        self.print(f"Building config saved to: {filepath}")
 
         return filepath
 
@@ -420,8 +419,8 @@ class AgentBuilder:
             filepath: filepath for the save config.
         """
         try:
-            self.print(f"Loding config from {filepath}")
-            cached_configs = json.load(open(filepath))
+            self.print(f"Loding config from: {filepath}")
+            cached_configs = json.loads(open(filepath))
         except FileNotFoundError:
             raise FileNotFoundError(f"Config file {filepath} does not exist.")
 

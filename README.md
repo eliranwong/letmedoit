@@ -110,6 +110,10 @@ LetMeDoIt AI just got smarter with memory retention!
 
 Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural language:
 
+* [NEW] connect a sqlite file and fetch data or make changes
+
+> connect /temp/my_database.sqlite and tell me about the tables that it contains
+
 * [NEW] integrated Google Gemini Pro (+Vision) multiturn chat, e.g.
 
 > ask Gemini Pro to write an article about Google
