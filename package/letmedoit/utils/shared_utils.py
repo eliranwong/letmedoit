@@ -23,6 +23,48 @@ if not config.isTermux:
     from autogen.retrieve_utils import TEXT_FORMATS
 
 
+def check_openai_errors(func):
+    def wrapper(*args, **kwargs):
+        try: 
+            return func(*args, **kwargs)
+        except openai.APIError as e:
+            print("Error: Issue on OpenAI side.")
+            print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
+        except openai.APIConnectionError as e:
+            print("Error: Issue connecting to our services.")
+            print("Solution: Check your network settings, proxy configuration, SSL certificates, or firewall rules.")
+        except openai.APITimeoutError as e:
+            print("Error: Request timed out.")
+            print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
+        except openai.AuthenticationError as e:
+            print("Error: Your API key or token was invalid, expired, or revoked.")
+            print("Solution: Check your API key or token and make sure it is correct and active. You may need to generate a new one from your account dashboard.")
+            HealthCheck.changeAPIkey()
+        except openai.BadRequestError as e:
+            print("Error: Your request was malformed or missing some required parameters, such as a token or an input.")
+            print("Solution: The error message should advise you on the specific error made. Check the [documentation](https://platform.openai.com/docs/api-reference/) for the specific API method you are calling and make sure you are sending valid and complete parameters. You may also need to check the encoding, format, or size of your request data.")
+        except openai.ConflictError as e:
+            print("Error: The resource was updated by another request.")
+            print("Solution: Try to update the resource again and ensure no other requests are trying to update it.")
+        except openai.InternalServerError as e:
+            print("Error: Issue on OpenAI servers.")
+            print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
+        except openai.NotFoundError as e:
+            print("Error: Requested resource does not exist.")
+            print("Solution: Ensure you are the correct resource identifier.")
+        except openai.PermissionDeniedError as e:
+            print("Error: You don't have access to the requested resource.")
+            print("Solution: Ensure you are using the correct API key, organization ID, and resource ID.")
+        except openai.RateLimitError as e:
+            print("Error: You have hit your assigned rate limit.")
+            print("Solution: Pace your requests. Read more in OpenAI [Rate limit guide](https://platform.openai.com/docs/guides/rate-limits).")
+        except openai.UnprocessableEntityError as e:
+            print("Error: Unable to process the request despite the format being correct.")
+            print("Solution: Please try the request again.")
+        except:
+            print(traceback.format_exc())
+    return wrapper
+
 class SharedUtil:
 
     # token limit
@@ -36,6 +78,28 @@ class SharedUtil:
         "gpt-4": 8192,
         "gpt-4-32k": 32768,
     }
+
+    @staticmethod
+    @check_openai_errors
+    def checkCompletion():
+        SharedUtil.setAPIkey()
+        config.oai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content" : "hello"}],
+            n=1,
+            max_tokens=10,
+        )
+
+    @staticmethod
+    def setAPIkey():
+        # instantiate a client that can shared with plugins
+        os.environ["OPENAI_API_KEY"] = config.openaiApiKey
+        config.oai_client = OpenAI()
+        # set variable 'OAI_CONFIG_LIST' to work with pyautogen
+        oai_config_list = []
+        for model in SharedUtil.tokenLimits.keys():
+            oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
+        os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
 
     @staticmethod
     def getPackageInstalledVersion(package):

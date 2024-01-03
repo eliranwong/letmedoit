@@ -22,6 +22,7 @@ if not config.isTermux:
     config.aliases["!codey"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'codey.py')}"
 # integrated text editor
 config.aliases["!etextedit"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
+config.aliases["!chatgpt"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'chatgpt.py')}"
 
 if not config.isTermux:
     config.inputSuggestions += [
@@ -47,6 +48,8 @@ if not config.isTermux:
 config.inputSuggestions += [
     "!etextedit",
     "etextedit",
+    "!chatgpt",
+    "chatgpt",
 ]
 
 # Example to set an alias to open-interpreter

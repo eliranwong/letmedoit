@@ -91,6 +91,7 @@ class StreamingWordWrapper:
 
     def streamOutputs(self, streaming_event, completion, openai=False):
         terminal_width = shutil.get_terminal_size().columns
+        config.new_chat_response = ""
 
         def finishOutputs(wrapWords, chat_response, terminal_width=terminal_width):
             config.wrapWords = wrapWords
@@ -98,6 +99,8 @@ class StreamingWordWrapper:
             config.tempChunk = ""
             print("\n")
             # add chat response to messages
+            if chat_response:
+                config.new_chat_response = chat_response
             if hasattr(config, "currentMessages") and chat_response:
                 config.currentMessages.append({"role": "assistant", "content": chat_response})
             # auto pager feature

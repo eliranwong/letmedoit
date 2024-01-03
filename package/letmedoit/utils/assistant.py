@@ -109,9 +109,9 @@ class LetMeDoItAI:
 
         # initial completion check at startup
         if config.initialCompletionCheck:
-            self.checkCompletion()
+            SharedUtil.checkCompletion()
         else:
-            self.setAPIkey()
+            SharedUtil.setAPIkey()
 
         chat_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "chats")
         self.terminal_chat_session = PromptSession(history=FileHistory(chat_history))
@@ -308,16 +308,6 @@ class LetMeDoItAI:
         except:
             return False
 
-    def setAPIkey(self):
-        # instantiate a client that can shared with plugins
-        os.environ["OPENAI_API_KEY"] = config.openaiApiKey
-        self.client = OpenAI()
-        # set variable 'OAI_CONFIG_LIST' to work with pyautogen
-        oai_config_list = []
-        for model in self.models:
-            oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
-        os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
-
     def changeAPIkey(self):
         if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
             print("Enter your OpenAI API Key [required]:")
@@ -328,7 +318,7 @@ class LetMeDoItAI:
             #oid = self.prompts.simplePrompt(default=config.openaiApiOrganization, is_password=True)
             #if oid and not oid.strip().lower() in (config.cancel_entry, config.exit_entry):
             #    config.openaiApiOrganization = oid
-            self.checkCompletion()
+            SharedUtil.checkCompletion()
             config.saveConfig()
             self.print2("Updated!")
 
@@ -546,62 +536,6 @@ class LetMeDoItAI:
         config.chatGPTApiFunctionSignatures.append(functionSignature)
         config.chatGPTApiAvailableFunctions["python_qa"] = python_qa
 
-    def screening(self, messages, userInput):
-        self.print("enhanced screening ...")
-
-        messagesCopy = messages[:]
-
-        if config.terminalEnableTermuxAPI:
-            context = """In response to the following request, answer me either "termux" or "python" or "chat" without extra comments.
-Answer "python" only if you can write python code to get the requested information or carry out the requested task, e.g. open a web browser.
-Answer "termux" only if you can write a Termux commands to get the requested information or carry out the requested task on Android, e.g. open Google Chrome.
-Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
-Otherwise, answer "chat". Here is the request:"""
-        else:
-            context = """In response to the following request, answer me either "python" or "chat" without extra comments.
-Answer "python" only if you can write python code to get the requested information or carry out the requested task, e.g. open a web browser.
-Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
-Otherwise, answer "chat". Here is the request:"""
-
-        messagesCopy.append({"role": "user", "content": f"{context} {userInput}"})
-        completion = self.client.chat.completions.create(
-            model=config.chatGPTApiModel,
-            messages=messagesCopy,
-            n=1,
-            temperature=0.0,
-            max_tokens=SharedUtil.getDynamicTokens(messagesCopy),
-        )
-        answer = completion.choices[0].message.content
-        self.screenAction = answer = re.sub("[^A-Za-z]", "", answer).lower()
-
-        self.print("screening done!")
-
-        if answer == "termux":
-            context = """I am running Turmux terminal on this Android device.\nFind my device information below:\n```\n{SharedUtil.getDeviceInfo()}\n```\nExecute Termux command or python code to achieve the following tasks."""
-            userInputWithcontext = f"{context}\n{userInput}"
-            messages.append({"role": "user", "content" : userInputWithcontext})
-            messages = self.runFunction(messages, config.execute_termux_command_signature, "execute_termux_command")
-            if messages[-1]["content"] == "[INVALID]":
-                # remove messages for command execution
-                messages = messages[:-3]
-            else:
-                return messages
-        elif answer == "python":
-            context = f"""Find my device information below:\n```\n{SharedUtil.getDeviceInfo()}\n```\nExecute python code to achieve the following tasks."""
-            userInputWithcontext = f"{context}\n{userInput}"
-            messages.append({"role": "user", "content" : userInputWithcontext})
-            messages = self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
-            if messages[-1]["content"] == "[INVALID]":
-                # remove messages for command execution
-                messages = messages[:-3]
-            else:
-                return messages
-        #elif answer == "web":
-        #    messages.append({"role": "user", "content" : userInput})
-        #    return self.runFunction(messages, config.integrate_google_searches_signature, "integrate_google_searches")
-        messages.append({"role": "user", "content" : userInput})
-        return messages
-
     # call a specific function and return messages
     def runFunction(self, messages, functionSignatures, function_name):
         messagesCopy = messages[:]
@@ -622,7 +556,7 @@ Otherwise, answer "chat". Here is the request:"""
         return messages
 
     def getFunctionMessageAndResponse(self, messages, functionSignatures, function_name, temperature=None):
-        completion = self.client.chat.completions.create(
+        completion = config.oai_client.chat.completions.create(
             model=config.chatGPTApiModel,
             messages=messages,
             max_tokens=SharedUtil.getDynamicTokens(messages, functionSignatures),
@@ -717,7 +651,7 @@ Otherwise, answer "chat". Here is the request:"""
         self.functionJustCalled = False
         def runThisCompletion(thisThisMessage):
             if config.chatGPTApiFunctionSignatures and not self.functionJustCalled and not noFunctionCall:
-                return self.client.chat.completions.create(
+                return config.oai_client.chat.completions.create(
                     model=config.chatGPTApiModel,
                     messages=thisThisMessage,
                     n=1,
@@ -727,7 +661,7 @@ Otherwise, answer "chat". Here is the request:"""
                     tool_choice={"type": "function", "function": {"name": config.runSpecificFuntion}} if config.runSpecificFuntion else config.chatGPTApiFunctionCall,
                     stream=True,
                 )
-            return self.client.chat.completions.create(
+            return config.oai_client.chat.completions.create(
                 model=config.chatGPTApiModel,
                 messages=thisThisMessage,
                 n=1,
@@ -1744,21 +1678,12 @@ My writing:
                         config.predefinedContextTemp = ""
                     # check special entries
                     noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.predefinedContext.startswith("Counselling - ") or config.predefinedContext.endswith("Counselling"))
-                    noScreening = ("[NO_SCREENING]" in fineTunedUserInput)
                     checkCallSpecificFunction = re.search("\[CALL_([^\[\]]+?)\]", fineTunedUserInput)
                     config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
                     if config.developer and config.runSpecificFuntion:
                         #self.print(f"calling function '{config.runSpecificFuntion}' ...")
                         print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Calling function</{config.terminalPromptIndicatorColor2}> <{config.terminalCommandEntryColor2}>'{config.runSpecificFuntion}'</{config.terminalCommandEntryColor2}> <{config.terminalPromptIndicatorColor2}>...</{config.terminalPromptIndicatorColor2}>"))
                     fineTunedUserInput = re.sub(specialEntryPattern, "", fineTunedUserInput)
-
-                    # remove enhanced screening option from v2.0.1 as handling of function calls improved
-                    # python execution
-                    #self.screenAction = ""
-                    #if config.enhanceCommandExecution and not noScreening and not noFunctionCall:
-                    #    config.currentMessages = self.screening(config.currentMessages, fineTunedUserInput)
-                    #else:
-                    #    config.currentMessages.append({"role": "user", "content": fineTunedUserInput})
                     config.currentMessages.append({"role": "user", "content": fineTunedUserInput})
 
                     # start spinning
@@ -1924,37 +1849,3 @@ My writing:
                 self.lineWidth = 0
 
         return self.wrappedText
-
-    def checkCompletion(self):
-        self.setAPIkey()
-        try:
-            self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content" : "hello"}],
-                n=1,
-                max_tokens=10,
-            )
-        except openai.APIError as e:
-            self.print3("Error: Issue on OpenAI side.")
-            self.print3("Solution: Retry your request after a brief wait and contact us if the issue persists.")
-        #except openai.Timeout as e:
-        #    self.print3("Error: Request timed out.")
-        #    self.print3("Solution: Retry your request after a brief wait and contact us if the issue persists.")
-        except openai.RateLimitError as e:
-            self.print3("Error: You have hit your assigned rate limit.")
-            self.print3("Solution: Pace your requests. Read more in OpenAI [Rate limit guide](https://platform.openai.com/docs/guides/rate-limits).")
-        except openai.APIConnectionError as e:
-            self.print3("Error: Issue connecting to our services.")
-            self.print3("Solution: Check your network settings, proxy configuration, SSL certificates, or firewall rules.")
-        #except openai.InvalidRequestError as e:
-        #    self.print3("Error: Your request was malformed or missing some required parameters, such as a token or an input.")
-        #    self.print3("Solution: The error message should advise you on the specific error made. Check the [documentation](https://platform.openai.com/docs/api-reference/) for the specific API method you are calling and make sure you are sending valid and complete parameters. You may also need to check the encoding, format, or size of your request data.")
-        except openai.AuthenticationError as e:
-            self.print3("Error: Your API key or token was invalid, expired, or revoked.")
-            self.print3("Solution: Check your API key or token and make sure it is correct and active. You may need to generate a new one from your account dashboard.")
-            self.changeAPIkey()
-        #except openai.ServiceUnavailableError as e:
-        #    self.print3("Error: Issue on OpenAI servers. ")
-        #    self.print3("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
-        except:
-            SharedUtil.showErrors()
