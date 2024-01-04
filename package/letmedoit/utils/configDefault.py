@@ -124,6 +124,20 @@ storageDir = config.getStorageDir()
 if os.path.isdir(storageDir):
     configFile = os.path.join(config.letMeDoItAIFolder, "config.py")
     if os.path.getsize(configFile) == 0:
+        # It means that it is either a newly installed copy or an upgraded copy
+        
+        # delete old shortcut files so that newer versions of shortcuts can be created
+        appName = config.letMeDoItName.split()[0]
+        shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop", f"{appName}Tray.bat", f"{appName}Tray.command", f"{appName}Tray.desktop")
+        for shortcutFile in shortcutFiles:
+            shortcut = os.path.join(config.letMeDoItAIFolder, shortcutFile)
+            if os.path.isfile(shortcut):
+                os.remove(shortcut)
+        # delete system tray shortcuts
+        shortcut_dir = os.path.join(config.letMeDoItAIFolder, "shortcuts")
+        shutil.rmtree(shortcut_dir, ignore_errors=True)
+
+        # check if config backup is available
         backupFile = os.path.join(storageDir, "config_backup.py")
         if os.path.isfile(backupFile):
             restore_backup = yes_no_dialog(

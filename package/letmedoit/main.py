@@ -18,38 +18,6 @@ if os.getcwd() != letMeDoItAIFolder:
 # check current platform
 thisPlatform = platform.system()
 
-# the following code block is not for pip installation
-## Activate virtual environment, if any
-#venvDir = "venv"
-#venvDirFullPath = os.path.join(letMeDoItAIFolder, venvDir)
-#if os.path.isdir(venvDirFullPath) and not sys.executable.startswith(venvDirFullPath):
-#    try:
-#        python = os.path.basename(sys.executable)
-#        binDir = "Scripts" if thisPlatform == "Windows" else "bin"
-#        if thisPlatform == "Windows":
-#            if python.endswith(".exe"):
-#                python = python[:-4]
-#            # Activate virtual environment
-#            activator = os.path.join(venvDirFullPath, binDir, "activate")
-#            # Run main.py
-#            os.system(f"{activator} & {python} {letMeDoItFile}")
-#        else:
-#            # Activate virtual environment
-#            activator = os.path.join(venvDirFullPath, binDir, "activate_this.py")
-#            if not os.path.exists(activator):
-#                copyfile("activate_this.py", activator)
-#            with open(activator) as f:
-#                code = compile(f.read(), activator, 'exec')
-#                exec(code, dict(__file__=activator))
-#            # Run main.py
-#            os.system(f"{python} {letMeDoItFile}")
-#        venvActivated = True
-#    except:
-#        venvActivated = False
-#    if venvActivated:
-#        # exit non-venv process
-#        exit(0)
-
 # set up config
 # create config.py if it does not exist
 configFile = os.path.join(letMeDoItAIFolder, "config.py")
@@ -124,16 +92,6 @@ def updateApp():
                 print(f"Run 'pip install --upgrade {thisPackage}' to manually upgrade this app!")
             else:
                 try:
-                    # delete old shortcut files
-                    appName = config.letMeDoItName.split()[0]
-                    shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop", f"{appName}Tray.bat", f"{appName}Tray.command", f"{appName}Tray.desktop")
-                    for shortcutFile in shortcutFiles:
-                        shortcut = os.path.join(config.letMeDoItAIFolder, shortcutFile)
-                        if os.path.isfile(shortcut):
-                            os.remove(shortcut)
-                    # delete system tray shortcuts
-                    shortcut_dir = os.path.join(config.letMeDoItAIFolder, "shortcuts")
-                    shutil.rmtree(shortcut_dir, ignore_errors=True)
                     # upgrade package
                     installmodule(f"--upgrade {thisPackage}")
                     restartApp()

@@ -24,7 +24,7 @@ def createShortcuts():
         desktopShortcut1a = os.path.join(os.path.expanduser('~'), 'Desktop', f"{appName}.bat")
         desktopShortcut1b = os.path.join(os.path.expanduser('~'), 'OneDrive', 'Desktop', f"{appName}.bat")
         sendToShortcut1 = os.path.join(os.path.expanduser('~'), os.environ["APPDATA"], 'Microsoft\Windows\SendTo', f"{appName}.bat")
-        shortcutCommand1 = f'''powershell.exe -NoExit -Command "{sys.executable} '{config.letMeDoItFile}' \"%1\""'''
+        shortcutCommand1 = f'''powershell.exe -NoExit -Command "{sys.executable} '{config.letMeDoItFile}' \\"%1\\""'''
         # Create .bat for application shortcuts
         if not os.path.exists(shortcutBat1):
             for i in (shortcutBat1, desktopShortcut1a, desktopShortcut1b, sendToShortcut1):
