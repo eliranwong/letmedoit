@@ -33,3 +33,4 @@ unstructured[all-docs]
 pyautogen[retrievechat,teachable,mathchat]==0.2.2
 tiktoken
 pygame
+PySide6

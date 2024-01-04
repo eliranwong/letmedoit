@@ -126,11 +126,14 @@ def updateApp():
                 try:
                     # delete old shortcut files
                     appName = config.letMeDoItName.split()[0]
-                    shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop")
+                    shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop", f"{appName}Tray.bat", f"{appName}Tray.command", f"{appName}Tray.desktop")
                     for shortcutFile in shortcutFiles:
                         shortcut = os.path.join(config.letMeDoItAIFolder, shortcutFile)
                         if os.path.isfile(shortcut):
                             os.remove(shortcut)
+                    # delete system tray shortcuts
+                    shortcut_dir = os.path.join(config.letMeDoItAIFolder, "shortcuts")
+                    shutil.rmtree(shortcut_dir, ignore_errors=True)
                     # upgrade package
                     installmodule(f"--upgrade {thisPackage}")
                     restartApp()

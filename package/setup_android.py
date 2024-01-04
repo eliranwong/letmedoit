@@ -58,6 +58,7 @@ exclude_packages = (
     "numpy",
     "seaborn[stats]",
     "sentence-transformers",
+    "PySide6",
 )
 with open(os.path.join(package, "requirements.txt"), "r") as fileObj:
     for line in fileObj.readlines():
