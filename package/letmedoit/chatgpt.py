@@ -25,7 +25,7 @@ class ChatGPT:
     """
 
     def __init__(self, name="ChatGPT", temperature=config.llmTemperature, max_output_tokens=config.chatGPTApiMaxTokens):
-        self.name, self.temperature = name, temperature
+        self.name, self.temperature, self.max_output_tokens = name, temperature, max_output_tokens
         self.client = OpenAI()
         self.messages = self.resetMessages()
         self.defaultPrompt = ""
@@ -37,9 +37,9 @@ class ChatGPT:
         tokenLimit = HealthCheck.tokenLimits[config.chatGPTApiModel]
         currentMessagesTokens = HealthCheck.count_tokens_from_messages(self.messages)
         availableTokens = tokenLimit - currentMessagesTokens
-        if availableTokens >= config.chatGPTApiMaxTokens:
-            return config.chatGPTApiMaxTokens
-        elif (config.chatGPTApiMaxTokens > availableTokens > config.chatGPTApiMinTokens):
+        if availableTokens >= self.max_output_tokens:
+            return self.max_output_tokens
+        elif (self.max_output_tokens > availableTokens > config.chatGPTApiMinTokens):
             return availableTokens
         return config.chatGPTApiMinTokens
 

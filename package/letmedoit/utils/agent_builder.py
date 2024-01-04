@@ -114,7 +114,7 @@ class AgentBuilder:
             return False
 
     def print(self, content):
-        if hasattr(config, "print3") and ":" in content:
+        if hasattr(config, "print3") and ": " in content:
             config.print3(content)
         elif hasattr(config, "print2"):
             config.print2(content)
