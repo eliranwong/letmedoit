@@ -286,7 +286,7 @@ class HealthCheck:
                 if not name.startswith("__") and not name in excludeConfigList:
                     try:
                         value = eval(f"config.{name}")
-                        if not callable(value):
+                        if not callable(value) and not str(value).startswith("<"):
                             fileObj.write("{0} = {1}\n".format(name, pprint.pformat(value)))
                     except:
                         pass

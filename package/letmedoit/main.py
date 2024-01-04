@@ -58,7 +58,12 @@ if not os.path.isfile(configFile):
 
 # import config and setup default
 #import traceback
-from letmedoit import config
+try:
+    from letmedoit import config
+except:
+    # write off problematic configFile
+    open(configFile, "w", encoding="utf-8").close()
+    from letmedoit import config
 from pathlib import Path
 
 apps = {
@@ -165,6 +170,7 @@ def saveConfig():
     with open(configFile, "w", encoding="utf-8") as fileObj:
         for name in dir(config):
             excludeConfigList = [
+                "oai_client",
                 "includeIpInSystemMessageTemp",
                 "initialCompletionCheck",
                 "promptStyle1",
@@ -235,7 +241,7 @@ def saveConfig():
             if not name.startswith("__") and not name in excludeConfigList:
                 try:
                     value = eval(f"config.{name}")
-                    if not callable(value):
+                    if not callable(value) and not str(value).startswith("<"):
                         fileObj.write("{0} = {1}\n".format(name, pprint.pformat(value)))
                 except:
                     pass
