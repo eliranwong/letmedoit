@@ -39,7 +39,7 @@ def createShortcuts():
         shortcutBat1 = os.path.join(config.letMeDoItAIFolder, f"{appName}Tray.bat")
         desktopShortcut1a = os.path.join(os.path.expanduser('~'), 'Desktop', f"{appName}Tray.bat")
         desktopShortcut1b = os.path.join(os.path.expanduser('~'), 'OneDrive', 'Desktop', f"{appName}Tray.bat")
-        shortcutCommand1 = f'''powershell.exe -NoExit -Command "{sys.executable} '{systemtrayFile}' \"%1\""'''
+        shortcutCommand1 = f'''powershell.exe -NoExit -Command "{sys.executable} '{systemtrayFile}'"'''
         # Create .bat for application shortcuts
         if not os.path.exists(shortcutBat1):
             for i in (shortcutBat1, desktopShortcut1a, desktopShortcut1b):
@@ -132,7 +132,7 @@ Type=Application
 Path={config.letMeDoItAIFolder}
 Exec={sys.executable} {systemtrayFile}
 Icon={iconPath}
-Name={config.letMeDoItName}
+Name={config.letMeDoItName} Tray
 """
         linuxDesktopFile = os.path.join(config.letMeDoItAIFolder, f"{appName}Tray.desktop")
         if not os.path.exists(linuxDesktopFile):
