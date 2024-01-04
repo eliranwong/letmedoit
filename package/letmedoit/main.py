@@ -239,6 +239,7 @@ def saveConfig():
                 "launchPager",
                 "addPagerText",
                 "getFunctionMessageAndResponse",
+                "isTermux",
             ]
             excludeConfigList = excludeConfigList + config.excludeConfigList
             if not name.startswith("__") and not name in excludeConfigList:

@@ -62,13 +62,20 @@ class SystemTrayIcon(QSystemTrayIcon):
 
         shortcut_dir = os.path.join(letMeDoItAIFolder, "shortcuts")
         Path(shortcut_dir).mkdir(parents=True, exist_ok=True)
+
+        # The following line does not work on Windows
         commandPath = os.path.join(os.path.dirname(sys.executable), command)
 
         if thisOS == "Windows":
             opencommand = "start"
             filePath = os.path.join(shortcut_dir, f"{command}.bat")
             if not os.path.isfile(filePath):
-                content = f'''powershell.exe -NoExit -Command "'{commandPath}' \"%1\""'''
+                filenames = {
+                    package: "main.py",
+                    "etextedit": "eTextEdit.py",
+                }
+                systemTrayFile = os.path.join(letMeDoItAIFolder, filenames.get(command, f"{command}.py"))
+                content = f'''powershell.exe -NoExit -Command "{sys.executable} '{systemTrayFile}'"'''
                 createShortcutFile(filePath, content)
         elif thisOS == "Darwin":
             opencommand = "open"
@@ -89,9 +96,9 @@ Version=1.0
 Type=Application
 Terminal=true
 Path={letMeDoItAIFolder}
-Exec={command}
+Exec={commandPath}
 Icon={iconFile}
-Name={commandPath}"""
+Name={command}"""
                 createShortcutFile(filePath, content)
         os.system(f"{opencommand} {filePath}")
 
