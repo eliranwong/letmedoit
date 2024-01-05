@@ -1,5 +1,5 @@
 import vertexai, os, traceback, argparse
-from vertexai.preview.generative_models import GenerativeModel
+from vertexai.preview.generative_models import GenerativeModel, Content, Part
 from vertexai.generative_models._generative_models import (
     GenerationConfig,
     HarmCategory,
@@ -75,23 +75,41 @@ class GeminiPro:
             print(f"{self.name} is not running due to missing configurations!")
             return None
         model = GenerativeModel("gemini-pro")
-        chat = model.start_chat(
-            #context=f"You're {self.name}, a helpful AI assistant.",
-        )
+        if hasattr(config, "currentMessages") and config.currentMessages:
+            bottom_toolbar = f" [ctrl+q] {config.exit_entry}"
+            history = []
+            user = True
+            for i in config.currentMessages:
+                if i["role"] == "user" if user else "assistant":
+                    history.append(Content(role="user" if user else "model", parts=[Part.from_text(i["content"])]))
+                    user = not user
+            # e.g. history=[
+            #    Content(role="user", parts=[Part.from_text("Hello!")]),
+            #    Content(role="model", parts=[Part.from_text("Hello! How can I assist you today?")]),
+            #]
+            if history and history[-1].role == "user":
+                history = history[:-1]
+            elif not history:
+                history = None
+        else:
+            bottom_toolbar = f" [ctrl+q] {config.exit_entry} [ctrl+n] .new"
+            history = None
+        chat = model.start_chat(history=history)
         #HealthCheck.print2(f"\n{self.name} + Vision loaded!" if self.enableVision else f"\n{self.name} loaded!")
         HealthCheck.print2(f"\n{self.name} loaded!")
-        print("(To start a new chart, enter '.new')")
+        if not hasattr(config, "currentMessages"):
+            print("(To start a new chart, enter '.new')")
         print(f"(To quit, enter '{config.exit_entry}')\n")
         while True:
             if not prompt:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar)
                 if prompt and not prompt in (".new", config.exit_entry) and hasattr(config, "currentMessages"):
                     config.currentMessages.append({"content": prompt, "role": "user"})
             else:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, default=prompt, accept_default=True)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar, default=prompt, accept_default=True)
             if prompt == config.exit_entry:
                 break
-            elif prompt == ".new":
+            elif prompt == ".new" and not hasattr(config, "currentMessages"):
                 clear()
                 chat = model.start_chat()
                 print("New chat started!")
@@ -165,6 +183,8 @@ class GeminiPro:
             prompt = ""
 
         HealthCheck.print2(f"\n{self.name} closed!")
+        if hasattr(config, "currentMessages"):
+            HealthCheck.print2(f"Going back to {config.letMeDoItName} prompt ...")
 
 def main():
     # Create the parser

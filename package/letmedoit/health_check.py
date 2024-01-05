@@ -136,19 +136,21 @@ class HealthCheck:
             buffer = event.app.current_buffer
             buffer.text = config.exit_entry
             buffer.validate_and_handle()
-        @this_key_bindings.add("c-n")
-        def _(event):
-            buffer = event.app.current_buffer
-            config.defaultEntry = buffer.text
-            buffer.text = ".new"
-            buffer.validate_and_handle()
-        @this_key_bindings.add("c-g")
-        def _(_):
-            config.launchPager()
-        this_key_bindings = merge_key_bindings([
-            this_key_bindings,
-            prompt_shared_key_bindings,
-        ])
+        if hasattr(config, "currentMessages"):
+            @this_key_bindings.add("c-g")
+            def _(_):
+                config.launchPager()
+            this_key_bindings = merge_key_bindings([
+                this_key_bindings,
+                prompt_shared_key_bindings,
+            ])
+        else:
+            @this_key_bindings.add("c-n")
+            def _(event):
+                buffer = event.app.current_buffer
+                config.defaultEntry = buffer.text
+                buffer.text = ".new"
+                buffer.validate_and_handle()
 
         config.selectAll = False
         inputPrompt = promptSession.prompt if promptSession is not None else prompt
