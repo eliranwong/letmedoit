@@ -1,4 +1,16 @@
-import os, traceback, json, pprint, wcwidth, textwrap, threading, time
+import os
+thisFile = os.path.realpath(__file__)
+packageFolder = os.path.dirname(thisFile)
+package = os.path.basename(packageFolder)
+if os.getcwd() != packageFolder:
+    os.chdir(packageFolder)
+configFile = os.path.join(packageFolder, "config.py")
+if not os.path.isfile(configFile):
+    open(configFile, "a", encoding="utf-8").close()
+from letmedoit import config
+config.isTermux = True if os.path.isdir("/data/data/com.termux/files/home") else False
+
+import traceback, json, pprint, wcwidth, textwrap, threading, time
 import openai, tiktoken
 from openai import OpenAI
 from pygments.styles import get_style_by_name
@@ -9,16 +21,6 @@ from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
 from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
-
-thisFile = os.path.realpath(__file__)
-packageFolder = os.path.dirname(thisFile)
-package = os.path.basename(packageFolder)
-if os.getcwd() != packageFolder:
-    os.chdir(packageFolder)
-configFile = os.path.join(packageFolder, "config.py")
-if not os.path.isfile(configFile):
-    open(configFile, "a", encoding="utf-8").close()
-from letmedoit import config
 from pathlib import Path
 
 def check_openai_errors(func):
@@ -284,7 +286,9 @@ class HealthCheck:
         with open(configFile, "w", encoding="utf-8") as fileObj:
             #print(dir(config))
             for name in dir(config):
-                excludeConfigList = []
+                excludeConfigList = [
+                    "isTermux",
+                ]
                 if not name.startswith("__") and not name in excludeConfigList:
                     try:
                         value = eval(f"config.{name}")

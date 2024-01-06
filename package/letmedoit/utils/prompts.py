@@ -1,5 +1,5 @@
 from letmedoit import config
-import pydoc, textwrap, sys, os
+import pydoc, textwrap, sys, os, re
 
 from prompt_toolkit import prompt
 from prompt_toolkit.application import run_in_terminal
@@ -103,9 +103,12 @@ class Prompts:
                 except:
                     encoding = tiktoken.get_encoding("cl100k_base")
                 currentInput = event.app.current_buffer.text
-                if "[NO_FUNCTION_CALL]" in currentInput:
+                no_function_call_pattern = "\[NO_FUNCTION_CALL\]|\[CHAT\]|\[CHAT_[^\[\]]+?\]"
+                #if "[NO_FUNCTION_CALL]" in currentInput:
+                if re.search(no_function_call_pattern, currentInput):
                     availableFunctionTokens = 0
-                    currentInput = currentInput.replace("[NO_FUNCTION_CALL]", "")
+                    #currentInput = currentInput.replace("[NO_FUNCTION_CALL]", "")
+                    currentInput = re.sub(no_function_call_pattern, "", currentInput)
                 else:
                     availableFunctionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
                 currentInputTokens = len(encoding.encode(config.fineTuneUserInput(currentInput)))

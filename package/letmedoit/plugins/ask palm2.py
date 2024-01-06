@@ -8,23 +8,23 @@ Ask Google PaLM 2 for information
 
 
 from letmedoit import config
-from letmedoit.palm2 import VertexAIModel
+from letmedoit.palm2 import Palm2
 
 def ask_palm2(function_args):
     query = function_args.get("query") # required
     config.stopSpinning()
-    VertexAIModel().run(query, temperature=config.llmTemperature)
+    Palm2().run(query, temperature=config.llmTemperature)
     return ""
 
 functionSignature = {
     "name": "ask_palm2",
-    "description": "Ask PaLM 2 for information",
+    "description": "Ask PaLM 2 to chat or provide information",
     "parameters": {
         "type": "object",
         "properties": {
             "query": {
                 "type": "string",
-                "description": "The request in detail",
+                "description": "The request in detail, including any supplementary information",
             },
         },
         "required": ["query"],

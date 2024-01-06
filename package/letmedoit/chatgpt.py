@@ -29,7 +29,7 @@ class ChatGPT:
         self.client = OpenAI()
         self.messages = self.resetMessages()
         if hasattr(config, "currentMessages") and config.currentMessages:
-            self.messages += config.currentMessages[:-2]
+            self.messages += config.currentMessages[:-1]
         self.defaultPrompt = ""
 
     def resetMessages(self):
@@ -76,6 +76,9 @@ class ChatGPT:
                     config.currentMessages.append(userMessage)
             else:
                 prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar, default=prompt, accept_default=True)
+                userMessage = {"role": "user", "content": prompt}
+                self.messages.append(userMessage)
+                config.currentMessages.append(userMessage)
             if prompt == config.exit_entry:
                 break
             elif prompt == ".new" and not hasattr(config, "currentMessages"):

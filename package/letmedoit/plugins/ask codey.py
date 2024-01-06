@@ -8,12 +8,12 @@ Ask Google Codey for information about coding
 
 
 from letmedoit import config
-from letmedoit.palm2 import VertexAIModel
+from letmedoit.codey import Codey
 
 def ask_codey(function_args):
     query = function_args.get("query") # required
     config.stopSpinning()
-    VertexAIModel().run(query, temperature=config.llmTemperature)
+    Codey().run(query, temperature=config.llmTemperature)
     return ""
 
 functionSignature = {
@@ -24,7 +24,7 @@ functionSignature = {
         "properties": {
             "query": {
                 "type": "string",
-                "description": "The request in detail",
+                "description": "The request in detail, including any supplementary information",
             },
         },
         "required": ["query"],

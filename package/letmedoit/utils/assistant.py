@@ -31,8 +31,12 @@ from letmedoit.utils.shared_utils import SharedUtil
 from letmedoit.utils.tts_utils import TTSUtil
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.plugins.bibleTools.utils.TextUtil import TextUtil
+from letmedoit.chatgpt import ChatGPT
 if not config.isTermux:
     from letmedoit.autobuilder import AutoGenBuilder
+    from letmedoit.geminipro import GeminiPro
+    from letmedoit.palm2 import Palm2
+    from letmedoit.codey import Codey
 
 
 class LetMeDoItAI:
@@ -131,8 +135,9 @@ class LetMeDoItAI:
             '.context': 'change chat context [ctrl+o]',
             '.contextinclusion': 'change chat context inclusion',
             '.changeapikey': 'change API key',
-            '.chatgptmodel': 'change ChatGPT model',
-            '.temperature': 'change ChatGPT temperature',
+            '.chatgptmodel': 'change chat-and-task model',
+            '.chatbot': 'change chat-only model',
+            '.temperature': 'change temperature',
             '.maxtokens': 'change maximum response tokens',
             '.mintokens': 'change minimum response tokens',
             '.dynamictokencount': 'change dynamic token count',
@@ -836,16 +841,17 @@ Always remember that you are much more than a text-based AI. You possess both vi
         #userInput = SharedUtil.addTimeStamp(userInput)
         return userInput
 
-    def runOptions(self, userInput):
-        features = tuple(self.actions.keys())
-        descriptions = tuple(self.actions.values())
-        feature = self.dialogs.getValidOptions(
-            options=features,
-            descriptions=descriptions,
-            title=config.letMeDoItName,
-            default=config.defaultBlankEntryAction,
-            text="Select an action or make changes:",
-        )
+    def runOptions(self, userInput, feature=""):
+        if not feature:
+            features = tuple(self.actions.keys())
+            descriptions = tuple(self.actions.values())
+            feature = self.dialogs.getValidOptions(
+                options=features,
+                descriptions=descriptions,
+                title=config.letMeDoItName,
+                default=config.defaultBlankEntryAction,
+                text="Select an action or make changes:",
+            )
         if feature:
             if feature == ".chatgptmodel":
                 self.setLlmModel()
@@ -902,6 +908,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 self.setAssistantName()
             elif feature == ".customtexteditor":
                 self.setCustomTextEditor()
+            elif feature == ".chatbot":
+                self.setChatbot()
             elif feature == ".temperature":
                 self.setTemperature()
             elif feature == ".changeapikey":
@@ -1138,14 +1146,14 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 temperature = 2
             config.llmTemperature = round(temperature, 1)
             config.saveConfig()
-            self.print3(f"ChatGPT Temperature: {temperature}")
+            self.print3(f"LLM Temperature: {temperature}")
 
     def setLlmModel(self):
         model = self.dialogs.getValidOptions(
             options=self.models,
             title="ChatGPT model",
             default=config.chatGPTApiModel,
-            text="Select a ChatGPT model:",
+            text="Select a ChatGPT model:\n(both chat and task execution)",
         )
         if model:
             config.chatGPTApiModel = model
@@ -1160,6 +1168,17 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else suggestedMaxToken # 'gpt-4-1106-preview' supports at most 4096 completion tokens
             config.saveConfig()
             self.print3(f"Maximum response tokens: {config.chatGPTApiMaxTokens}")
+
+    def setChatbot(self):
+        model = self.dialogs.getValidOptions(
+            options=("chatgpt", "geminipro", "palm2", "codey"),
+            title="Chat-only model",
+            default=config.chatbot,
+            text="Select a chat-only model:\n(Use this model when you include '[CHAT]' in your input)",
+        )
+        if model:
+            config.chatbot = model
+            self.print3(f"Chat-only model: {model}")
 
     def setEmbeddingModel(self):
         oldEmbeddingModel = config.embeddingModel
@@ -1549,6 +1568,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 userInput = config.blankEntryAction
             if userInput == "...":
                 userInput = userInputLower = self.runOptions(userInput)
+            elif userInputLower in tuple(self.actions.keys()):
+                userInput = userInputLower = self.runOptions("...", userInputLower)
 
             # replace alias, if any with full entry
             for alias, fullEntry in config.aliases.items():
@@ -1682,16 +1703,18 @@ My writing:
                     # check special entries
                     # if user call a chatbot without function calling
                     if "[CHAT]" in fineTunedUserInput:
-                        chatbot = "chatgpt"
+                        chatbot = config.chatbot
                     elif callChatBot := re.search("\[CHAT_([^\[\]]+?)\]", fineTunedUserInput):
                         chatbot = callChatBot.group(1).lower() if callChatBot and callChatBot.group(1).lower() in ("chatgpt", "geminipro", "palm2", "codey") else ""
                     else:
                         chatbot = ""
                     if chatbot:
                         # call the spcified chatbot to continue the conversation
+                        fineTunedUserInput = re.sub("\[CHAT\]|\[CHAT_[^\[\]]+?\]", "", fineTunedUserInput)
+                        self.launchChatbot(chatbot, fineTunedUserInput)
                         continue
                     # if user don't want function call or a particular function call
-                    noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.predefinedContext.startswith("Counselling - ") or config.predefinedContext.endswith("Counselling"))
+                    noFunctionCall = ("[NO_FUNCTION_CALL]" in fineTunedUserInput)
                     checkCallSpecificFunction = re.search("\[CALL_([^\[\]]+?)\]", fineTunedUserInput)
                     config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
                     if config.developer and config.runSpecificFuntion:
@@ -1761,6 +1784,18 @@ My writing:
                     self.print("starting a new chat!")
                     self.saveChat(config.currentMessages)
                     storagedirectory, config.currentMessages = startChat()
+
+    def launchChatbot(self, chatbot, fineTunedUserInput):
+        if config.isTermux:
+            chatbot = "chatgpt"
+        chatbots = {
+            "chatgpt": lambda: ChatGPT().run(fineTunedUserInput),
+            "geminipro": lambda: GeminiPro(temperature=config.llmTemperature).run(fineTunedUserInput),
+            "palm2": lambda: Palm2().run(fineTunedUserInput, temperature=config.llmTemperature),
+            "codey": lambda: Codey().run(fineTunedUserInput, temperature=config.llmTemperature),
+        }
+        if chatbot in chatbots:
+            chatbots[chatbot]()
 
     def addPagerText(self, text, wrapWords=False):
         if wrapWords:

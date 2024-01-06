@@ -19,7 +19,7 @@ from pathlib import Path
 #!pip install --upgrade google-cloud-aiplatform
 
 
-class VertexAIModel:
+class Palm2:
 
     def __init__(self, name="PaLM 2"):
         # authentication
@@ -159,7 +159,7 @@ def main():
     else:
         temperature = 0.0
     # Run chat bot
-    VertexAIModel().run(
+    Palm2().run(
         prompt=prompt,
         model=model,
         temperature=temperature,

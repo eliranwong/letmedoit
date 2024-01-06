@@ -63,6 +63,7 @@ defaultSettings = (
     ('wrapWords', True),
     ('mouseSupport', False),
     ('autoUpgrade', True),
+    ('chatbot', 'chatgpt'),
     ('chatGPTApiModel', 'gpt-3.5-turbo-16k'),
     ('chatGPTApiMaxTokens', 4000),
     ('chatGPTApiMinTokens', 256),

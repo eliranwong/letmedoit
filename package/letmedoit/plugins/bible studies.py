@@ -12,21 +12,21 @@ Write about the following topic in reference to the Bible.
 In addition, explain the significance of the topic in the bible.
 I want your writing to be comprehensive and informative.
 Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing.
-[NO_FUNCTION_CALL]
+[CHAT]
 Bible topic: """)
 config.inputSuggestions.append("""Bible Place.
 I will provide you with a location name.
 Give me comprehensive information on this location in the bible.
 If this singular name is used to denote various different locations in the Bible, kindly provide separate descriptions for each one.
 Explain the significance of this location in the bible.
-[NO_FUNCTION_CALL]
+[CHAT]
 Bible location: """)
 config.inputSuggestions.append("""Bible Person.
 I will provide you with a person name.
 Give me comprehensive information on this person in the bible.
 If this singular name is used to denote various different characters in the Bible, kindly provide separate descriptions for each one.
 Explain the significance of this person in the bible.
-[NO_FUNCTION_CALL]
+[CHAT]
 Bible preson name: """)
 
 # Translation
@@ -40,7 +40,7 @@ Third, map each Hebrew word with corresponding translation.
 In mapping section, do include transliteration of each Hebrew word, so that each mapping are formatted in pattern this pattern: word | transliteration | corresponding translation.
 Use "Transliteration:", "Translation:" and "Mapping:" as the section titles.
 Remember, do not give parsing information, explanation or repeat the bible reference that I give you.
-[NO_FUNCTION_CALL]
+[CHAT]
 I am giving you the Hebrew verse text below: """)
 config.inputSuggestions.append("""Bible Greek Verse Translation.
 I would like to request your assistance as a bible translator.
@@ -52,7 +52,7 @@ Third, map each Greek word with corresponding translation.
 In mapping section, do include transliteration of each Greek word, so that each mapping are formatted in pattern this pattern: word | transliteration | corresponding translation.
 Use "Transliteration:", "Translation:" and "Mapping:" as the section titles.
 Remember, do not give parsing information, explanation or repeat the bible reference that I give you.
-[NO_FUNCTION_CALL]
+[CHAT]
 I am giving you the Greek verse text below: """)
 
 # Book Features
@@ -71,7 +71,7 @@ Write a detailed introduction on a book in the bible, considering all the follow
 I want the introduction to be comprehensive and informative.
 When you explain, quote specific words or phases from relevant bible verses, if any.
 Answer all these relevant questions mentioned above, in the introduction, pertaining to the following bible book.
-[NO_FUNCTION_CALL]
+[CHAT]
 Bible book name:""")
 config.inputSuggestions.append("""Bible Outline.
 I am currently studying the following bible book and chapters and would appreciate it if you could provide me with a detailed outline for it.
@@ -81,7 +81,7 @@ Break down the passages into the smallest ones possible, as I am looking for a h
 Additionally, kindly provide a title for each passage.
 Remember, use your own analysis based on the bible text instead of copying a published outline.
 If chapters are not specified, provide an outline to cover all chapters of the bible book given.
-[NO_FUNCTION_CALL]
+[CHAT]
 Bible reference: """)
 
 # Chapter Features
@@ -100,7 +100,7 @@ Write a detailed interpretation on a bible chapter, considering all the followin
 I want your interpretation to be comprehensive and informative.
 When you explain, quote specific words or phases from relevant bible verses, if any.
 Answer all these relevant questions mentioned above, in the interpretation, pertaining to the following bible chapter.
-[NO_FUNCTION_CALL]
+[CHAT]
 Bible chapter: """)
 
 # Verse Features
@@ -108,93 +108,93 @@ config.inputSuggestions.append("""Bible OT Verse Interpretation.
 Interpret the following verse in the light of its context, together with insights of biblical Hebrew studies.
 I want your interpretation to be comprehensive and informative.  When you explain, quote specific words or phases from the verse.
 However, remember, I want you not to quote the whole verse word by word, especially in the beginning of your response, as I already know its content.
-[NO_FUNCTION_CALL]
+[CHAT]
 Bible verse: """)
 config.inputSuggestions.append("""Bible NT Verse Interpretation.
 Interpret the following verse in the light of its context, together with insights of biblical Greek studies.
 I want your interpretation to be comprehensive and informative.  When you explain, quote specific words or phases from the verse.
 However, remember, I want you not to quote the whole verse word by word, especially in the beginning of your response, as I already know its content.
-[NO_FUNCTION_CALL]
+[CHAT]
 Bible verse: """)
 
 # Studies
 config.inputSuggestions.append("""Bible Perspective.
 Tell me how we should understand the content, according to biblical perspectives and principles:
-[NO_FUNCTION_CALL]
+[CHAT]
 """)
 config.inputSuggestions.append("""Bible Meaning.
 Explain the meaning of the content in reference to the Bible:
-[NO_FUNCTION_CALL]
+[CHAT]
 """)
 config.inputSuggestions.append("""Bible Summary.
 Write a summary on the content in reference to the Bible:
-[NO_FUNCTION_CALL]
+[CHAT]
 """)
 config.inputSuggestions.append("""Bible Sermon.
 Write a sermon on the content in reference to the Bible:
-[NO_FUNCTION_CALL]
+[CHAT]
 """)
 config.inputSuggestions.append("""Bible Prayer.
 Write a prayer on the content in reference to the Bible:
-[NO_FUNCTION_CALL]
+[CHAT]
 """)
 config.inputSuggestions.append("""Bible Short Prayer.
 Write a short prayer on the content in reference to the Bible:
 (Keep the prayer short and do not make it longer than a paragraph.)
-[NO_FUNCTION_CALL]
+[CHAT]
 """)
 config.inputSuggestions.append("""Bible Key Words.
 Identify key words in the content.
 Elaborate on their importance in comprehending the context and the bible as a whole.
 I want your elaboration to be comprehensive and informative.
 Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing.
-[NO_FUNCTION_CALL]
+[CHAT]
 """)
 config.inputSuggestions.append("""Bible Key Themes.
 Identify key themes or key messages in the content.
 Elaborate on their importance in comprehending the content and the bible as a whole.
 I want your elaboration to be comprehensive and informative.
 Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing.
-[NO_FUNCTION_CALL]
+[CHAT]
 """)
 config.inputSuggestions.append("""Bible Theology.
 Please write the theological messages conveyed in the content, in reference to the Bible.
 In addition, explain the significance of the theological messages in the bible.
 I want your writing to be comprehensive and informative.
 Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing.
-[NO_FUNCTION_CALL]
+[CHAT]
 """)
 config.inputSuggestions.append("""Bible Promises.
 Quote relevant Bible promises in relation to the content.
 Explain how these promises are meant to provide comfort, hope, and guidance in my life.
-[NO_FUNCTION_CALL]
+[CHAT]
 """)
 config.inputSuggestions.append("""Bible Passages.
 Quote relevant Bible passages in relation to the content. Explain how these passages are related to the given content.
-[NO_FUNCTION_CALL]
+[CHAT]
 """)
 
 # Instructions accoring to the given content
-config.predefinedInstructions["Bible - Put in Perspective"] = """Tell me how we should understand it or response, according to biblical perspectives and principles. [NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Explain its Meaning"] = """Explain the meaning of the given content in reference to the Bible. [NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Write a Summary"] = """Write a summary in reference to the Bible. [NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Write a Sermon"] = """Write a sermon in reference to the Bible. [NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Write a Prayer"] = """Write a prayer in reference to the Bible. [NO_FUNCTION_CALL]"""
+config.predefinedInstructions["Bible - Put in Perspective"] = """Tell me how we should understand it or response, according to biblical perspectives and principles. [CHAT]"""
+config.predefinedInstructions["Bible - Explain its Meaning"] = """Explain the meaning of the given content in reference to the Bible. [CHAT]"""
+config.predefinedInstructions["Bible - Write a Summary"] = """Write a summary in reference to the Bible. [CHAT]"""
+config.predefinedInstructions["Bible - Write a Sermon"] = """Write a sermon in reference to the Bible. [CHAT]"""
+config.predefinedInstructions["Bible - Write a Prayer"] = """Write a prayer in reference to the Bible. [CHAT]"""
 config.predefinedInstructions["Bible - Write a Short Prayer"] = """Write a short prayer in reference to the Bible.
-Keep the prayer short and do not make it longer than a paragraph. [NO_FUNCTION_CALL]"""
+Keep the prayer short and do not make it longer than a paragraph. [CHAT]"""
 config.predefinedInstructions["Bible - Explain Key Words"] = """Identify key words in the content.
 Elaborate on their importance in comprehending the context and the bible as a whole.
 I want your elaboration to be comprehensive and informative.
-Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing. [NO_FUNCTION_CALL]"""
+Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing. [CHAT]"""
 config.predefinedInstructions["Bible - Explain Key Themes"] = """Identify key themes or key messages in the content.
 Elaborate on their importance in comprehending the content and the bible as a whole.
 I want your elaboration to be comprehensive and informative.
-Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing. [NO_FUNCTION_CALL]"""
+Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing. [CHAT]"""
 config.predefinedInstructions["Bible - Explain Theology"] = """Please write the theological messages conveyed in the content, in reference to the Bible.
 In addition, explain the significance of the theological messages in the bible.
 I want your writing to be comprehensive and informative.
-Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing. [NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Quote Promises"] = """Quote relevant Bible promises in relation to the content. [NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Quote Promises & Explain"] = """Quote relevant Bible promises in relation to the content. Explain how these promises are meant to provide comfort, hope, and guidance in my life. [NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Quote Passages"] = """Quote relevant Bible passages in relation to the content. [NO_FUNCTION_CALL]"""
-config.predefinedInstructions["Bible - Quote Passages & Explain"] = """Quote relevant Bible passages in relation to the content. Explain how these passages are related to the given content. [NO_FUNCTION_CALL]"""
+Remember, in your writing, please provide me with concrete examples from the Bible and the bible references from the text you are citing. [CHAT]"""
+config.predefinedInstructions["Bible - Quote Promises"] = """Quote relevant Bible promises in relation to the content. [CHAT]"""
+config.predefinedInstructions["Bible - Quote Promises & Explain"] = """Quote relevant Bible promises in relation to the content. Explain how these promises are meant to provide comfort, hope, and guidance in my life. [CHAT]"""
+config.predefinedInstructions["Bible - Quote Passages"] = """Quote relevant Bible passages in relation to the content. [CHAT]"""
+config.predefinedInstructions["Bible - Quote Passages & Explain"] = """Quote relevant Bible passages in relation to the content. Explain how these passages are related to the given content. [CHAT]"""

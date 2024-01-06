@@ -8,7 +8,7 @@ try:
     tiktokenImported = True
 except:
     tiktokenImported = False
-
+import re
 
 class TokenValidator(Validator):
     def validate(self, document):
@@ -21,9 +21,12 @@ class TokenValidator(Validator):
                 encoding = tiktoken.encoding_for_model(config.chatGPTApiModel)
             except:
                 encoding = tiktoken.get_encoding("cl100k_base")
-            if "[NO_FUNCTION_CALL]" in currentInput:
+            no_function_call_pattern = "\[NO_FUNCTION_CALL\]|\[CHAT\]|\[CHAT_[^\[\]]+?\]"
+            #if "[NO_FUNCTION_CALL]" in currentInput:
+            if re.search(no_function_call_pattern, currentInput):
                 availableFunctionTokens = 0
-                currentInput = currentInput.replace("[NO_FUNCTION_CALL]", "")
+                #currentInput = currentInput.replace("[NO_FUNCTION_CALL]", "")
+                currentInput = re.sub(no_function_call_pattern, "", currentInput)
             else:
                 availableFunctionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
             currentInputTokens = len(encoding.encode(config.fineTuneUserInput(currentInput)))
