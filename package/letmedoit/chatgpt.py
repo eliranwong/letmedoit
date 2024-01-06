@@ -28,6 +28,8 @@ class ChatGPT:
         self.name, self.temperature, self.max_output_tokens = name, temperature, max_output_tokens
         self.client = OpenAI()
         self.messages = self.resetMessages()
+        if hasattr(config, "currentMessages") and config.currentMessages:
+            self.messages += config.currentMessages[:-2]
         self.defaultPrompt = ""
 
     def resetMessages(self):
@@ -59,20 +61,24 @@ class ChatGPT:
         })
 
         HealthCheck.print2(f"\n{self.name} loaded!")
-        print("(To start a new chart, enter '.new')")
+        if hasattr(config, "currentMessages"):
+            bottom_toolbar = f" [ctrl+q] {config.exit_entry}"
+        else:
+            print("(To start a new chart, enter '.new')")
+            bottom_toolbar = f" [ctrl+q] {config.exit_entry} [ctrl+n] .new"
         print(f"(To quit, enter '{config.exit_entry}')\n")
         while True:
             if not prompt:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar)
                 userMessage = {"role": "user", "content": prompt}
                 self.messages.append(userMessage)
                 if prompt and not prompt in (".new", config.exit_entry) and hasattr(config, "currentMessages"):
                     config.currentMessages.append(userMessage)
             else:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, default=prompt, accept_default=True)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar, default=prompt, accept_default=True)
             if prompt == config.exit_entry:
                 break
-            elif prompt == ".new":
+            elif prompt == ".new" and not hasattr(config, "currentMessages"):
                 clear()
                 self.messages = self.resetMessages()
                 print("New chat started!")
@@ -111,6 +117,8 @@ class ChatGPT:
             prompt = ""
 
         HealthCheck.print2(f"\n{self.name} closed!")
+        if hasattr(config, "currentMessages"):
+            HealthCheck.print2(f"Going back to {config.letMeDoItName} prompt ...")
 
 def main():
     # Create the parser
