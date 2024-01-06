@@ -1,4 +1,4 @@
-import os, sys, platform
+import os, sys, platform, subprocess
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QApplication
 from PySide6.QtGui import QIcon, QAction, QGuiApplication
 from pathlib import Path
@@ -60,6 +60,14 @@ class SystemTrayIcon(QSystemTrayIcon):
             with open(filePath, "w", encoding="utf-8") as fileObj:
                 fileObj.write(content)
 
+        def isPackageInstalled(package):
+            whichCommand = "where.exe" if platform.system() == "Windows" else "which"
+            try:
+                isInstalled, *_ = subprocess.Popen("{0} {1}".format(whichCommand, package), shell=True, stdout=subprocess.PIPE).communicate()
+                return True if isInstalled else False
+            except:
+                return False
+
         shortcut_dir = os.path.join(letMeDoItAIFolder, "shortcuts")
         Path(shortcut_dir).mkdir(parents=True, exist_ok=True)
 
@@ -87,10 +95,17 @@ cd {letMeDoItAIFolder}
                 createShortcutFile(filePath, content)
                 os.chmod(filePath, 0o755)
         elif thisOS == "Linux":
-            opencommand = "xdg-open"
-            filePath = os.path.join(shortcut_dir, f"{command}.desktop")
-            if not os.path.isfile(filePath):
-                content = f"""#!/usr/bin/env xdg-open
+            opencommand = ""
+            for i in ("dex", "exo-open", "gio launch", "xdg-open"):
+                if isPackageInstalled(i):
+                    opencommand = i
+            # Remarks:
+            # 'exo-open' comes with 'exo-utils'
+            # 'gio' comes with 'glib2'
+            if opencommand:
+                filePath = os.path.join(shortcut_dir, f"{command}.desktop")
+                if not os.path.isfile(filePath):
+                    content = f"""#!/usr/bin/env xdg-open
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -99,7 +114,7 @@ Path={letMeDoItAIFolder}
 Exec={commandPath}
 Icon={iconFile}
 Name={command}"""
-                createShortcutFile(filePath, content)
+                    createShortcutFile(filePath, content)
         os.system(f"{opencommand} {filePath}")
 
 if __name__ == "__main__":
