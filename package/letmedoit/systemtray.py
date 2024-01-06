@@ -11,7 +11,8 @@ with open(os.path.join(letMeDoItAIFolder, "package_name.txt"), "r", encoding="ut
     package = fileObj.read()
 apps = {
     "myhand": "MyHand",
-    "letmedoit": "LetMeDoIt",
+    #"letmedoit": "LetMeDoIt",
+    "letmedoit": "systemtray",
     "taskwiz": "TaskWiz",
     "cybertask": "CyberTask",
 }
@@ -96,17 +97,16 @@ cd {letMeDoItAIFolder}
                 os.chmod(filePath, 0o755)
         elif thisOS == "Linux":
             opencommand = ""
-            for i in ("dex", "exo-open", "gio launch", "xdg-open"):
+            for i in ("gio launch", "dex", "exo-open", "xdg-open"):
+                # Remarks:
+                # 'exo-open' comes with 'exo-utils'
+                # 'gio' comes with 'glib2'
                 if isPackageInstalled(i):
                     opencommand = i
-            # Remarks:
-            # 'exo-open' comes with 'exo-utils'
-            # 'gio' comes with 'glib2'
-            if opencommand:
-                filePath = os.path.join(shortcut_dir, f"{command}.desktop")
-                if not os.path.isfile(filePath):
-                    content = f"""#!/usr/bin/env xdg-open
-[Desktop Entry]
+                    break
+            filePath = os.path.join(shortcut_dir, f"{command}.desktop")
+            if not os.path.isfile(filePath):
+                content = f"""[Desktop Entry]
 Version=1.0
 Type=Application
 Terminal=true
@@ -114,8 +114,9 @@ Path={letMeDoItAIFolder}
 Exec={commandPath}
 Icon={iconFile}
 Name={command}"""
-                    createShortcutFile(filePath, content)
-        os.system(f"{opencommand} {filePath}")
+                createShortcutFile(filePath, content)
+        if opencommand:
+            os.system(f"{opencommand} {filePath}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
