@@ -64,9 +64,9 @@ class ChatGPT:
         if hasattr(config, "currentMessages"):
             bottom_toolbar = f" [ctrl+q] {config.exit_entry}"
         else:
-            print("(To start a new chart, enter '.new')")
             bottom_toolbar = f" [ctrl+q] {config.exit_entry} [ctrl+n] .new"
-        print(f"(To quit, enter '{config.exit_entry}')\n")
+            print("(To start a new chart, enter '.new')")
+        print(f"(To exit, enter '{config.exit_entry}')\n")
         while True:
             if not prompt:
                 prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar)

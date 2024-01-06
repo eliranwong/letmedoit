@@ -1,5 +1,5 @@
 import vertexai, os, traceback, argparse, threading
-from vertexai.language_models import ChatModel
+from vertexai.language_models import ChatModel, ChatMessage
 from letmedoit import config
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
@@ -59,8 +59,24 @@ class VertexAIModel:
             "top_p": 0.95,  # Tokens are selected from most probable to least until the sum of their probabilities equals the top_p value; 0.0–1.0; Default: 0.95
             "top_k": 40,  # A top_k of 1 means the selected token is the most probable among all tokens; 1-40; Default: 40
         }
+        # chat history
+        if hasattr(config, "currentMessages") and config.currentMessages:
+            history = []
+            user = True
+            for i in config.currentMessages:
+                if i["role"] == "user" if user else "assistant":
+                    history.append(ChatMessage(content=i["content"], author="user" if user else "model"))
+                    user = not user
+            if history and history[-1].author == "user":
+                history = history[:-1]
+            elif not history:
+                history = None
+        else:
+            history = None
+        # start chat
         chat = model.start_chat(
             context=f"You're {self.name}, a helpful AI assistant.",
+            message_history=history,
             #examples=[
             #    InputOutputTextPair(
             #        input_text="How many moons does Mars have?",
@@ -69,18 +85,22 @@ class VertexAIModel:
             #],
         )
         HealthCheck.print2(f"\n{self.name} loaded!")
-        print("(To start a new chart, enter '.new')")
-        print(f"(To quit, enter '{config.exit_entry}')\n")
+        if hasattr(config, "currentMessages"):
+            bottom_toolbar = f" [ctrl+q] {config.exit_entry}"
+        else:
+            bottom_toolbar = f" [ctrl+q] {config.exit_entry} [ctrl+n] .new"
+            print("(To start a new chart, enter '.new')")
+        print(f"(To exit, enter '{config.exit_entry}')\n")
         while True:
             if not prompt:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar)
                 if prompt and not prompt in (".new", config.exit_entry) and hasattr(config, "currentMessages"):
                     config.currentMessages.append({"content": prompt, "role": "user"})
             else:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, default=prompt, accept_default=True)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar, default=prompt, accept_default=True)
             if prompt == config.exit_entry:
                 break
-            elif prompt == ".new":
+            elif prompt == ".new" and not hasattr(config, "currentMessages"):
                 clear()
                 chat = model.start_chat()
                 print("New chat started!")
@@ -108,6 +128,8 @@ class VertexAIModel:
             prompt = ""
 
         HealthCheck.print2(f"\n{self.name} closed!")
+        if hasattr(config, "currentMessages"):
+            HealthCheck.print2(f"Going back to {config.letMeDoItName} prompt ...")
 
 def main():
     # Create the parser

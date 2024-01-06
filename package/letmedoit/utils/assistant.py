@@ -1676,7 +1676,21 @@ My writing:
                     if config.predefinedContextTemp:
                         config.predefinedContext = config.predefinedContextTemp
                         config.predefinedContextTemp = ""
+                    # empty config.pagerContent
+                    config.pagerContent = ""
+
                     # check special entries
+                    # if user call a chatbot without function calling
+                    if "[CHAT]" in fineTunedUserInput:
+                        chatbot = "chatgpt"
+                    elif callChatBot := re.search("\[CHAT_([^\[\]]+?)\]", fineTunedUserInput):
+                        chatbot = callChatBot.group(1).lower() if callChatBot and callChatBot.group(1).lower() in ("chatgpt", "geminipro", "palm2", "codey") else ""
+                    else:
+                        chatbot = ""
+                    if chatbot:
+                        # call the spcified chatbot to continue the conversation
+                        continue
+                    # if user don't want function call or a particular function call
                     noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.predefinedContext.startswith("Counselling - ") or config.predefinedContext.endswith("Counselling"))
                     checkCallSpecificFunction = re.search("\[CALL_([^\[\]]+?)\]", fineTunedUserInput)
                     config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
@@ -1700,11 +1714,6 @@ My writing:
                             self.print("Unable to load internet resources.")
                             SharedUtil.showErrors()
 
-                    config.pagerContent = ""
-                    #self.addPagerContent = True
-
-                    #if config.conversationStarted:
-                    #    config.currentMessages = self.moveForwardSystemMessage(config.currentMessages)
                     completion = self.runCompletion(config.currentMessages, noFunctionCall)
                     # stop spinning
                     self.runPython = True
@@ -1722,8 +1731,6 @@ My writing:
 
                     # when streaming is done or when user press "ctrl+q"
                     self.streaming_thread.join()
-
-                    #print(config.currentMessages)
 
                 # error codes: https://platform.openai.com/docs/guides/error-codes/python-library-error-types
                 except openai.APIError as e:

@@ -75,8 +75,8 @@ class GeminiPro:
             print(f"{self.name} is not running due to missing configurations!")
             return None
         model = GenerativeModel("gemini-pro")
+        # on-going history
         if hasattr(config, "currentMessages") and config.currentMessages:
-            bottom_toolbar = f" [ctrl+q] {config.exit_entry}"
             history = []
             user = True
             for i in config.currentMessages:
@@ -92,14 +92,16 @@ class GeminiPro:
             elif not history:
                 history = None
         else:
-            bottom_toolbar = f" [ctrl+q] {config.exit_entry} [ctrl+n] .new"
             history = None
         chat = model.start_chat(history=history)
         #HealthCheck.print2(f"\n{self.name} + Vision loaded!" if self.enableVision else f"\n{self.name} loaded!")
         HealthCheck.print2(f"\n{self.name} loaded!")
-        if not hasattr(config, "currentMessages"):
+        if hasattr(config, "currentMessages"):
+            bottom_toolbar = f" [ctrl+q] {config.exit_entry}"
+        else:
+            bottom_toolbar = f" [ctrl+q] {config.exit_entry} [ctrl+n] .new"
             print("(To start a new chart, enter '.new')")
-        print(f"(To quit, enter '{config.exit_entry}')\n")
+        print(f"(To exit, enter '{config.exit_entry}')\n")
         while True:
             if not prompt:
                 prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar)
