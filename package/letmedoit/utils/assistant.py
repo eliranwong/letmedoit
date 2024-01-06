@@ -937,7 +937,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             options=options,
             title="Dynamic Token Count",
             default="enable" if config.dynamicTokenCount else "disable",
-            text="Perform token count as users type.\nSelect an option below:"
+            text="Perform token count as you type.\nSelect an option below:"
         )
         if option:
             config.dynamicTokenCount = (option == "enable")
@@ -1174,7 +1174,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             options=("chatgpt", "geminipro", "palm2", "codey"),
             title="Chat-only model",
             default=config.chatbot,
-            text="Select a chat-only model:\n(Use this model when you include '[CHAT]' in your input)",
+            text="Select default chat-only model:\n(Default model is loaded when you include '[CHAT]' in your input)",
         )
         if model:
             config.chatbot = model
