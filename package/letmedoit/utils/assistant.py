@@ -30,7 +30,7 @@ from letmedoit.utils.terminal_system_command_prompt import SystemCommandPrompt
 from letmedoit.utils.shared_utils import SharedUtil
 from letmedoit.utils.tts_utils import TTSUtil
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
-from letmedoit.plugins.bibleTools.utils.TextUtil import TextUtil
+from letmedoit.utils.text_utils import TextUtil
 from letmedoit.chatgpt import ChatGPT
 if not config.isTermux:
     from letmedoit.autobuilder import AutoGenBuilder

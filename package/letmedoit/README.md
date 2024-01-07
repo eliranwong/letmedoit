@@ -248,10 +248,6 @@ Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural lang
 
 > Improve my writing according to British English style
 
-* search literature or database, e.g. bibles
-
-> Search for bible verses that contain both 'Jesus' and 'love'
-
 * convert text display, e.g. from simplified Chinese to traditional Chinese, e.g.
 
 > Translate your last response into Chinese

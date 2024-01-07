@@ -148,5 +148,5 @@ if os.path.isdir(storageDir):
                 config.restartApp()
 setConfig(defaultSettings)
 # allow plugins to add customised config
-# e.g. check plugins/bible.py
+# read https://github.com/eliranwong/letmedoit/wiki/Plugins-%E2%80%90-Work-with-LetMeDoIt-AI-Configurations#example
 config.setConfig = setConfig
