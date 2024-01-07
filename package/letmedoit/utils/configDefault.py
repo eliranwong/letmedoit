@@ -24,9 +24,6 @@ def isPackageInstalled(package):
 
 pluginExcludeList = [
     "awesome prompts",
-    "bible", "bible studies",
-    "biblical counselling",
-    "convert bible to chromadb",
     "counselling",
     "edit text",
     "simplified Chinese to traditional Chinese",
