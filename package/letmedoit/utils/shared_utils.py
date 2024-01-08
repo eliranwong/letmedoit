@@ -1,7 +1,7 @@
 from letmedoit import config
 from packaging import version
 from bs4 import BeautifulSoup
-import platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback
+import platform, shutil, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback
 import datetime, requests, netifaces, textwrap, json, geocoder, base64, getpass, pendulum, pkg_resources
 import pygments
 from pygments.lexers.python import PythonLexer
@@ -15,6 +15,7 @@ try:
     tiktokenImported = True
 except:
     tiktokenImported = False
+import openai
 from openai import OpenAI
 from urllib.parse import quote
 from pathlib import Path
@@ -584,12 +585,7 @@ City: {g.city}"""
 
     @staticmethod
     def isPackageInstalled(package):
-        whichCommand = "where.exe" if platform.system() == "Windows" else "which"
-        try:
-            isInstalled, *_ = subprocess.Popen("{0} {1}".format(whichCommand, package), shell=True, stdout=subprocess.PIPE).communicate()
-            return True if isInstalled else False
-        except:
-            return False
+        return True if shutil.which(package.split(" ", 1)[0]) else False
 
     @staticmethod
     def getCliOutput(cli):

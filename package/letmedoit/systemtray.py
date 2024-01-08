@@ -1,4 +1,4 @@
-import os, sys, platform, subprocess
+import os, sys, platform, shutil
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QApplication
 from PySide6.QtGui import QIcon, QAction, QGuiApplication
 from pathlib import Path
@@ -61,14 +61,6 @@ class SystemTrayIcon(QSystemTrayIcon):
             with open(filePath, "w", encoding="utf-8") as fileObj:
                 fileObj.write(content)
 
-        def isPackageInstalled(package):
-            whichCommand = "where.exe" if platform.system() == "Windows" else "which"
-            try:
-                isInstalled, *_ = subprocess.Popen("{0} {1}".format(whichCommand, package), shell=True, stdout=subprocess.PIPE).communicate()
-                return True if isInstalled else False
-            except:
-                return False
-
         shortcut_dir = os.path.join(letMeDoItAIFolder, "shortcuts")
         Path(shortcut_dir).mkdir(parents=True, exist_ok=True)
 
@@ -101,7 +93,7 @@ cd {letMeDoItAIFolder}
                 # Remarks:
                 # 'exo-open' comes with 'exo-utils'
                 # 'gio' comes with 'glib2'
-                if isPackageInstalled(i):
+                if shutil.which(i.split(" ", 1)[0]):
                     opencommand = i
                     break
             filePath = os.path.join(shortcut_dir, f"{command}.desktop")

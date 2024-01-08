@@ -1729,7 +1729,6 @@ My writing:
                     config.spinner_thread.start()
 
                     # force loading internet searches
-                    #if config.loadingInternetSearches == "always" and not self.screenAction in ("termux", "python", "web", "system"):
                     if config.loadingInternetSearches == "always":
                         try:
                             config.currentMessages = self.runFunction(config.currentMessages, config.integrate_google_searches_signature, "integrate_google_searches")
@@ -1807,8 +1806,17 @@ My writing:
             pagerContent = config.pagerContent
         if pagerContent:
             try:
-                if SharedUtil.isPackageInstalled("less"):
-                    # Windows users can install vlc command with scoop
+                if shutil.which("bat"):
+                    # Windows users can install bat command with scoop
+                    # read: https://github.com/ScoopInstaller/Scoop
+                    # > iwr -useb get.scoop.sh | iex
+                    # > scoop install aria2 bat
+                    if re.search("<[^<>]+?>", pagerContent):
+                        pagerContent = TextUtil.convertHtmlTagToColorama(pagerContent)
+                    language = "Python" if "```python" in pagerContent else "Markdown"
+                    pydoc.pipepager(pagerContent, cmd=f"bat -l {language} --paging always")
+                elif shutil.which("less"):
+                    # Windows users can install less command with scoop
                     # read: https://github.com/ScoopInstaller/Scoop
                     # > iwr -useb get.scoop.sh | iex
                     # > scoop install aria2 less
