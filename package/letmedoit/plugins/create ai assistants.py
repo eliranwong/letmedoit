@@ -8,7 +8,6 @@ build a group of agents to execute a task with integrated "AutoGen Agent Builder
 
 
 from letmedoit import config
-import os
 from letmedoit.autobuilder import AutoGenBuilder
 
 def build_agents(function_args):

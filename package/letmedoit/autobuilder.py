@@ -159,7 +159,9 @@ class AutoGenBuilder:
             except:
                 self.print(traceback.format_exc())
                 break
-        self.print(f"\n\n<{config.terminalCommandEntryColor1}>AutoGen Agent Builder closed!</{config.terminalCommandEntryColor1}>")
+
+        HealthCheck.print2("\n\nAutoGen Agent Builder closed!")
+
 
 
     def print(self, message):

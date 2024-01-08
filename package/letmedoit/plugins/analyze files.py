@@ -10,12 +10,25 @@ analyze files with integrated "AutoGen Retriever"
 from letmedoit import config
 import os
 from letmedoit.autoretriever import AutoGenRetriever
+from PIL import Image
+
 
 def analyze_files(function_args):
+    def is_valid_image_file(file_path):
+        try:
+            # Open the image file
+            with Image.open(file_path) as img:
+                # Check if the file format is supported by PIL
+                img.verify()
+                return True
+        except (IOError, SyntaxError) as e:
+            # The file path is not a valid image file path
+            return False
+
     query = function_args.get("query") # required
     files = function_args.get("files") # required
     if os.path.exists(files):
-        if os.path.isfile(files) and SharedUtil.is_valid_image_file(files):
+        if os.path.isfile(files) and is_valid_image_file(files):
             # call function "analyze image" instead if it is an image
             function_args = {
                 "query": query,
