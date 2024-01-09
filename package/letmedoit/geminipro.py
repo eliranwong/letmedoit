@@ -69,8 +69,6 @@ class GeminiPro:
             "indicator": config.terminalPromptIndicatorColor2,
         })
 
-        #completer = WordCompleter(["[", "[NO_FUNCTION_CALL]"], ignore_case=True) if self.enableVision else None
-
         if not self.runnable:
             print(f"{self.name} is not running due to missing configurations!")
             return None

@@ -4,7 +4,7 @@ from letmedoit.utils.get_path_prompt import GetPath
 from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
-from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.completion import WordCompleter, FuzzyCompleter
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.styles import Style
@@ -98,9 +98,9 @@ class SystemCommandPrompt:
                 inputIndicator = [("class:indicator", indicator)]
                 dirIndicator = "\\" if platform.system() == "Windows" else "/"
                 if config.suggestSystemCommand:
-                    completer = WordCompleter(sorted(set(systemCommands + [f"{i}{dirIndicator}" if os.path.isdir(i) else i for i in os.listdir()])))
+                    completer = FuzzyCompleter(WordCompleter(sorted(set(systemCommands + [f"{i}{dirIndicator}" if os.path.isdir(i) else i for i in os.listdir()]))))
                 else:
-                    completer = WordCompleter(sorted([f"{i}{dirIndicator}" if os.path.isdir(i) else i for i in os.listdir()]))
+                    completer = FuzzyCompleter(WordCompleter(sorted([f"{i}{dirIndicator}" if os.path.isdir(i) else i for i in os.listdir()])))
                 auto_suggestion=AutoSuggestFromHistory()
                 userInput = self.terminal_system_command_session.prompt(inputIndicator, swap_light_and_dark_colors=Condition(lambda: not config.terminalResourceLinkColor.startswith("ansibright")), mouse_support=Condition(lambda: config.mouseSupport), style=self.promptStyle, key_bindings=this_key_bindings, auto_suggest=auto_suggestion, completer=completer, bottom_toolbar=self.getToolBar(), default=self.systemCommandPromptEntry).strip()
                 if self.addPath:

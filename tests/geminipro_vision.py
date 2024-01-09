@@ -21,7 +21,7 @@ from prompt_toolkit.keys import Keys
 from prompt_toolkit.input import create_input
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
-from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.completion import WordCompleter, FuzzyCompleter
 from prompt_toolkit.shortcuts import clear
 from pathlib import Path
 import asyncio, threading, shutil, textwrap
@@ -236,7 +236,7 @@ class GeminiPro:
             "indicator": config.terminalPromptIndicatorColor2,
         })
 
-        completer = WordCompleter(["[", "[NO_FUNCTION_CALL]"], ignore_case=True) if self.enableVision else None
+        completer = FuzzyCompleter(WordCompleter(["[", "[NO_FUNCTION_CALL]"], ignore_case=True) if self.enableVision else None)
 
         if not self.runnable:
             print(f"{self.name} is not running due to missing configurations!")

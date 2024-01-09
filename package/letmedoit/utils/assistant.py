@@ -14,7 +14,7 @@ from pygments.lexers.shell import BashLexer
 from prompt_toolkit.formatted_text import PygmentsTokens
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
-from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.completion import WordCompleter, FuzzyCompleter
 from prompt_toolkit.shortcuts import clear
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit import print_formatted_text, HTML
@@ -1540,7 +1540,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.defaultEntry = ""
             # input suggestions
             inputSuggestions = config.inputSuggestions[:] + self.getDirectoryList() if config.developer else config.inputSuggestions
-            completer = WordCompleter(inputSuggestions, ignore_case=True) if inputSuggestions else None
+            completer = FuzzyCompleter(WordCompleter(inputSuggestions, ignore_case=True)) if inputSuggestions else None
             userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, completer=completer, default=defaultEntry, accept_default=accept_default, validator=tokenValidator, bottom_toolbar=getDynamicToolBar)
             
             # update system message when user enter a new input
