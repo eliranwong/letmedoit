@@ -1183,7 +1183,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
     def setEmbeddingModel(self):
         oldEmbeddingModel = config.embeddingModel
         model = self.dialogs.getValidOptions(
-            options=("text-embedding-ada-002", "all-mpnet-base-v2", "all-MiniLM-L6-v2", "custom"),
+            options=("text-embedding-ada-002", "paraphrase-multilingual-mpnet-base-v2", "all-mpnet-base-v2", "all-MiniLM-L6-v2", "custom"),
             title="Embedding model",
             default=config.embeddingModel,
             text="Select an embedding model:",
@@ -1191,6 +1191,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
         if model:
             if model == "custom":
                 self.print("Enter OpenAI or Sentence Transformer Embedding model:")
+                self.print("Read more at: https://www.sbert.net/docs/pretrained_models.html")
                 customModel = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.embeddingModel)
                 if customModel and not customModel.strip().lower() == config.exit_entry:
                     config.embeddingModel = customModel 
