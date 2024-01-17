@@ -1,4 +1,4 @@
-openai==1.6.1
+openai==1.8.0
 requests
 argparse
 pendulum
@@ -30,7 +30,7 @@ transformers
 sentence-transformers
 chromadb
 unstructured[all-docs]
-pyautogen[retrievechat,teachable,mathchat]==0.2.2
+pyautogen[retrievechat,teachable,mathchat]==0.2.6
 tiktoken
 pygame
 PySide6
