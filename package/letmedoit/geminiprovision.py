@@ -11,7 +11,7 @@ from letmedoit.health_check import HealthCheck
 if not hasattr(config, "exit_entry"):
     HealthCheck.setBasicConfig()
     HealthCheck.saveConfig()
-    print("Updated!")
+    print("Configurations updated!")
 HealthCheck.setPrint()
 
 import shutil, textwrap

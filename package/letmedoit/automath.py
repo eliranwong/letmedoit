@@ -14,7 +14,7 @@ if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
     HealthCheck.setBasicConfig()
     HealthCheck.changeAPIkey()
     HealthCheck.saveConfig()
-    print("Updated!")
+    print("Configurations updated!")
 HealthCheck.checkCompletion()
 
 import autogen, os, json, traceback

@@ -1,6 +1,5 @@
 from letmedoit import config
-import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, string, shutil, asyncio, datetime, pprint
-from openai import OpenAI
+import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, shutil, datetime, pprint
 try:
     import tiktoken
     tiktokenImported = True
@@ -18,8 +17,6 @@ from prompt_toolkit.completion import WordCompleter, FuzzyCompleter
 from prompt_toolkit.shortcuts import clear
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit import print_formatted_text, HTML
-from prompt_toolkit.input import create_input
-from prompt_toolkit.keys import Keys
 from letmedoit.utils.terminal_mode_dialogs import TerminalModeDialogs
 from letmedoit.utils.prompts import Prompts
 from letmedoit.utils.promptValidator import FloatValidator, TokenValidator

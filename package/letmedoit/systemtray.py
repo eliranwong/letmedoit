@@ -39,6 +39,7 @@ class SystemTrayIcon(QSystemTrayIcon):
             "autoteachable",
             "autobuilder",
             "etextedit",
+            "commandprompt",
         ):
             action = QAction(i, self)
             action.triggered.connect(partial(self.runLetMeDoItCommand, i))
