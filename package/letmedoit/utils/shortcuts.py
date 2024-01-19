@@ -246,7 +246,9 @@ mkdir -p {storage}
 path="$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS"
 echo "$path" > {storage}/selected_files.txt
 /usr/bin/gnome-terminal --command "{sys.executable} {config.letMeDoItFile} -u false -n true -i false -f {storage}/selected_files.txt"'''
-            work_with_files_script_path = os.path.expanduser(f"~/.local/share/nautilus/scripts/{first_name}")
+            scripts_path = os.path.expanduser("~/.local/share/nautilus/scripts")
+            Path(scripts_path).mkdir(parents=True, exist_ok=True)
+            work_with_files_script_path = os.path.join(scripts_path, first_name)
             with open(work_with_files_script_path, "w", encoding="utf-8") as fileObj:
                 fileObj.write(work_with_files_script)
         # make script files executable
