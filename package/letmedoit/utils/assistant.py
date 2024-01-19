@@ -228,10 +228,8 @@ class LetMeDoItAI:
 
         # built-in functions
         config.pluginsWithFunctionCall.append("execute_python_code")
-        config.inputSuggestions.append("[CALL_execute_python_code]")
         if config.terminalEnableTermuxAPI:
             config.pluginsWithFunctionCall.append("execute_termux_command")
-            config.inputSuggestions.append("[CALL_execute_termux_command]")
 
         pluginFolder = os.path.join(config.letMeDoItAIFolder, "plugins")
         if self.storageDir:
@@ -261,8 +259,9 @@ class LetMeDoItAI:
         if config.terminalEnableTermuxAPI:
             self.setupTermuxExecution()
         for i in config.pluginsWithFunctionCall:
-            config.inputSuggestions.append(f"[CALL_{i}]")
-            config.inputSuggestions.append(f"CALL_{i}]")
+            callEntry = f"[CALL_{i}]"
+            if not callEntry in config.inputSuggestions:
+                config.inputSuggestions.append(callEntry)
 
     def selectPlugins(self):
         plugins = []
