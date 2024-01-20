@@ -125,50 +125,49 @@ class LetMeDoItAI:
         self.isTtsAvailable()
 
         self.actions = {
-            '.new': 'start a new chat [ctrl+n]',
-            '.save': 'save content [ctrl+s]',
-            '.instruction': 'run a predefined instruction',
-            '.context': 'change chat context [ctrl+o]',
-            '.contextinclusion': 'change chat context inclusion',
-            '.changeapikey': 'change API key',
-            '.functionmodel': 'change function call model',
-            '.chatmodel': 'change chat-only model',
-            '.embeddingmodel': 'change embedding model',
-            '.temperature': 'change temperature',
-            '.maxtokens': 'change maximum response tokens',
-            '.mintokens': 'change minimum response tokens',
-            '.dynamictokencount': 'change dynamic token count',
-            '.maxautoheal': 'change maximum consecutive auto-heal',
-            '.maxmemorymatches': 'change maximum memory matches',
-            '.plugins': 'change plugins',
-            '.functioncall': 'change function call',
-            '.functionresponse': 'change function call response integration',
-            '.latestSearches': 'change online searches',
-            '.userconfirmation': 'change code confirmation protocol',
-            '.codedisplay': 'change code display',
-            '.pagerview': 'change pager view',
-            '.assistantname': 'change assistant name',
-            '.systemmessage': 'change custom system message',
-            '.ipinfo': 'change ip information inclusion',
-            '.storagedirectory': 'change storage directory',
-            '.autobuilderconfig': 'change auto builder config',
-            '.customtexteditor': 'change custom text editor',
-            '.termuxapi': 'change Termux API integration',
-            '.autoupgrade': 'change automatic upgrade',
-            '.developer': 'change developer mode [ctrl+d]',
-            '.togglemultiline': 'toggle multi-line input [ctrl+l]',
-            '.togglemousesupport': 'toogle mouse support [esc+m]',
-            '.toggletextbrightness': 'swap text brightness [esc+s]',
-            '.togglewordwrap': 'toggle word wrap [ctrl+w]',
-            '.toggleimprovedwriting': 'toggle improved writing [esc+i]',
-            '.toggleinputaudio': 'toggle input audio [ctrl+b]',
-            '.toggleresponseaudio': 'toggle response audio [ctrl+p]',
-            '.ttscommand': 'configure text-to-speech command',
-            '.system': 'open system command prompt',
-            '.help': 'open LetMeDoIt wiki',
-            '.keys': 'display key bindings',
+            ".new": ("start a new chat [ctrl+n]", None),
+            ".save": ("save content [ctrl+s]", lambda: self.saveChat(config.currentMessages, openFile=True)),
+            #".instruction": ("run a predefined instruction", self.runInstruction),
+            ".context": ("change chat context [ctrl+o]", None),
+            ".contextintegration": ("change chat context integration", self.setContextIntegration),
+            ".changeapikey": ("change API key", self.changeAPIkey),
+            ".functionmodel": ("change function call model", self.setLlmModel),
+            ".chatmodel": ("change chat-only model", self.setChatbot),
+            ".embeddingmodel": ("change embedding model", self.setEmbeddingModel),
+            ".temperature": ("change temperature", self.setTemperature),
+            ".maxtokens": ("change maximum response tokens", self.setMaxTokens),
+            ".mintokens": ("change minimum response tokens", self.setMinTokens),
+            ".dynamictokencount": ("change dynamic token count", self.setDynamicTokenCount),
+            ".maxautoheal": ("change maximum consecutive auto-heal", self.setMaxAutoHeal),
+            ".maxmemorymatches": ("change maximum memory matches", self.setMemoryClosestMatchesNumber),
+            ".plugins": ("change plugins", self.selectPlugins),
+            ".functioncall": ("change function call", self.setFunctionCall),
+            ".functioncallintegration": ("change function call integration", self.setFunctionResponse),
+            ".latestSearches": ("change online searches", self.setLatestSearches),
+            ".userconfirmation": ("change code confirmation protocol", self.setUserConfirmation),
+            ".codedisplay": ("change code display", self.setCodeDisplay),
+            ".pagerview": ("change pager view", self.setPagerView),
+            ".assistantname": ("change assistant name", self.setAssistantName),
+            ".systemmessage": ("change custom system message", self.setCustomSystemMessage),
+            ".ipinfo": ("change ip information integration", self.setIncludeIpInSystemMessage),
+            ".storagedirectory": ("change storage directory", self.setStorageDirectory),
+            ".autobuilderconfig": ("change auto builder config", self.setAutoGenBuilderConfig),
+            ".customtexteditor": ("change custom text editor", self.setCustomTextEditor),
+            ".termuxapi": ("change Termux API integration", self.setTermuxApi),
+            ".autoupgrade": ("change automatic upgrade", self.setAutoUpgrade),
+            ".developer": ("change developer mode [ctrl+d]", self.setDeveloperMode),
+            ".togglemultiline": ("toggle multi-line input [ctrl+l]", self.toggleMultiline),
+            ".togglemousesupport": ("toogle mouse support [esc+m]", self.toggleMouseSupport),
+            ".toggletextbrightness": ("swap text brightness [esc+s]", swapTerminalColors),
+            ".togglewordwrap": ("toggle word wrap [ctrl+w]", self.toggleWordWrap),
+            ".toggleimprovedwriting": ("toggle improved writing [esc+i]", self.toggleImprovedWriting),
+            ".toggleinputaudio": ("toggle input audio [ctrl+b]", self.toggleinputaudio),
+            ".toggleresponseaudio": ("toggle response audio [ctrl+p]", self.toggleresponseaudio),
+            ".ttscommand": ("configure text-to-speech command", self.defineTtsCommand),
+            ".system": ("open system command prompt", lambda: SystemCommandPrompt().run(allowPathChanges=True)),
+            ".help": ("open LetMeDoIt wiki", lambda: SharedUtil.openURL('https://github.com/eliranwong/letmedoit/wiki')),
+            ".keys": ("display key bindings", config.showKeyBindings),
         }
-        config.inputSuggestions += list(self.actions.keys())
 
     def getStorageDir(self):
         storageDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
@@ -184,7 +183,7 @@ class LetMeDoItAI:
         storageDir = self.storageDir if self.storageDir else os.path.join(config.letMeDoItAIFolder, "files")
         return config.storagedirectory if config.storagedirectory else storageDir
 
-    def getFolderPath(self):
+    def getFolderPath(self, default=""):
         return self.getPath.getFolderPath(
             check_isdir=True,
             display_dir_only=True,
@@ -194,7 +193,8 @@ class LetMeDoItAI:
             keep_startup_directory=True,
             message=f"{self.divider}\nSetting a startup directory ...\nEnter a folder name or path below:",
             bottom_toolbar="",
-            promptIndicator = ""
+            promptIndicator = "",
+            default="",
         )
 
     def execPythonFile(self, script="", content=""):
@@ -840,7 +840,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
     def runOptions(self, userInput, feature=""):
         if not feature:
             features = tuple(self.actions.keys())
-            descriptions = tuple(self.actions.values())
+            descriptions = [i[0] for i in self.actions.values()]
             feature = self.dialogs.getValidOptions(
                 options=features,
                 descriptions=descriptions,
@@ -849,68 +849,10 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 text="Select an action or make changes:",
             )
         if feature:
-            if feature == ".functionmodel":
-                self.setLlmModel()
-            elif feature == ".embeddingmodel":
-                self.setEmbeddingModel()
-            elif feature == ".latestSearches":
-                self.setLatestSearches()
-            elif feature == ".storagedirectory":
-                self.setStorageDirectory()
-            elif feature == ".contextinclusion":
-                self.setContextInclusion()
-            elif feature == ".codedisplay":
-                self.setCodeDisplay()
-            elif feature == ".userconfirmation":
-                self.setUserConfirmation()
-            elif feature == ".plugins":
-                self.selectPlugins()
-            elif feature == ".autobuilderconfig":
-                if not config.isTermux:
-                    AutoGenBuilder().promptConfig()
-            elif feature == ".systemmessage":
-                self.setCustomSystemMessage()
-            elif feature == ".ipinfo":
-                self.setIncludeIpInSystemMessage()
-            elif feature == ".dynamictokencount":
-                self.setDynamicTokenCount()
-            elif feature == ".keys":
-                config.showKeyBindings()
-            elif feature == ".help":
-                SharedUtil.openURL('https://github.com/eliranwong/letmedoit/wiki')
-            elif feature == ".pagerview":
-                self.setPagerView()
-            elif feature == ".developer":
-                self.setDeveloperMode()
-            elif feature == ".autoupgrade":
-                self.setAutoUpgrade()
-            elif feature == ".termuxapi":
-                self.setTermuxApi()
-            elif feature == ".enhanceexecution":
-                self.setCommandExecutionMode()
-            elif feature == ".functioncall":
-                self.setFunctionCall()
-            elif feature == ".functionresponse":
-                self.setFunctionResponse()
-            elif feature == ".mintokens":
-                self.setMinTokens()
-            elif feature == ".maxtokens":
-                self.setMaxTokens()
-            elif feature == ".maxautoheal":
-                self.setMaxAutoHeal()
-            elif feature == ".maxmemorymatches":
-                self.setMemoryClosestMatchesNumber()
-            elif feature == ".assistantname":
-                self.setAssistantName()
-            elif feature == ".customtexteditor":
-                self.setCustomTextEditor()
-            elif feature == ".chatmodel":
-                self.setChatbot()
-            elif feature == ".temperature":
-                self.setTemperature()
-            elif feature == ".changeapikey":
-                self.changeAPIkey()
+            if feature in self.actions and self.actions[feature][-1] is not None:
+                self.actions[feature][-1]()
             else:
+                # current execeptions are ".new" and ".context"
                 userInput = feature
         return userInput
 
@@ -966,22 +908,22 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.saveConfig()
             self.print3(f"Code display: {option}d!")
 
-    def setContextInclusion(self):
+    def setContextIntegration(self):
         options = ("the first input only", "all inputs")
         option = self.dialogs.getValidOptions(
             options=options,
-            title="Predefined Context Inclusion",
+            title="Predefined Context Integration",
             default="all inputs" if config.applyPredefinedContextAlways else "the first input only",
-            text="Define below how you want to include predefined context\nwith your inputs.\nApply predefined context in ...",
+            text="Define below how you want to integrate predefined context\nwith your inputs.\nApply predefined context in ...",
         )
         if option:
             config.applyPredefinedContextAlways = True if option == "all inputs" else False
             config.saveConfig()
-            self.print3(f"Predefined Context Inclusion: {option}!")
+            self.print3(f"Predefined Context Integration: {option}!")
 
     def setStorageDirectory(self):
         try:
-            folder = self.getFolderPath()
+            folder = self.getFolderPath(default=config.storagedirectory)
         except:
             self.print2(f"Given path not accessible!")
             folder = ""
@@ -1091,19 +1033,6 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.saveConfig()
             self.print3(f"""Termux API Integration: {"enable" if config.terminalEnableTermuxAPI else "disable"}d!""")
 
-    def setCommandExecutionMode(self):
-        options = ("enhanced", "auto")
-        option = self.dialogs.getValidOptions(
-            options=options,
-            title="Code Execution Mode",
-            default="enhanced" if config.enhanceCommandExecution else "auto",
-            text=f"{config.letMeDoItName} can execute commands\nto retrieve the requested information\nor perform tasks for users.\n(read https://github.com/eliranwong/letmedoit/wiki/Command-Execution)\nSelect a mode below:",
-        )
-        if option:
-            config.enhanceCommandExecution = (option == "enhanced")
-            config.saveConfig()
-            self.print3(f"Code Execution Mode: {option}")
-
     def setFunctionCall(self):
         calls = ("auto", "none")
         call = self.dialogs.getValidOptions(
@@ -1147,9 +1076,9 @@ Always remember that you are much more than a text-based AI. You possess both vi
     def setLlmModel(self):
         model = self.dialogs.getValidOptions(
             options=self.models,
-            title="ChatGPT model",
+            title="Function Calling Model",
             default=config.chatGPTApiModel,
-            text="Select a ChatGPT model:\n(both chat and task execution)",
+            text="Select a function call model:\n(for both chat and task execution)",
         )
         if model:
             config.chatGPTApiModel = model
@@ -1212,6 +1141,10 @@ Always remember that you are much more than a text-based AI. You possess both vi
                     self.print3(f"Embedding model: {oldEmbeddingModel}")
         if not oldEmbeddingModel == config.embeddingModel:
             config.saveConfig()
+
+    def setAutoGenBuilderConfig(self):
+        if not config.isTermux:
+            AutoGenBuilder().promptConfig()
 
     def setAssistantName(self):
         self.print("You may modify my name below:")
@@ -1392,42 +1325,43 @@ Always remember that you are much more than a text-based AI. You possess both vi
         self.print3(f"Improved Writing Display: '{'enabled' if config.displayImprovedWriting else 'disabled'}'!")
 
     def saveChat(self, messages, openFile=False):
-        plainText = ""
-        for i in messages:
-            if i["role"] == "user":
-                content = i["content"]
-                plainText += f">>> {content}"
-            if i["role"] == "function":
-                if plainText:
-                    plainText += "\n\n"
-                name = i["name"]
-                plainText += f"```\n{name}\n```"
-                content = i["content"]
-                plainText += f"\n\n{content}\n\n"
-            elif i["role"] == "assistant":
-                content = i["content"]
-                if content is not None:
+        if config.conversationStarted:
+            plainText = ""
+            for i in messages:
+                if i["role"] == "user":
+                    content = i["content"]
+                    plainText += f">>> {content}"
+                if i["role"] == "function":
                     if plainText:
                         plainText += "\n\n"
-                    plainText += f"{content}\n\n"
-        plainText = plainText.strip()
-        if config.terminalEnableTermuxAPI:
-            pydoc.pipepager(plainText, cmd="termux-share -a send")
-        else:
-            try:
-                #filename = re.sub('[\\\/\:\*\?\"\<\>\|]', "", messages[2 if config.customPredefinedContext.strip() else 1]["content"])[:40].strip()
-                filename = SharedUtil.getCurrentDateTime()
-                foldername = os.path.join(self.getFiles(), "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", filename))
-                Path(foldername).mkdir(parents=True, exist_ok=True)
-                if filename:
-                    chatFile = os.path.join(foldername, f"{filename}.txt")
-                    with open(chatFile, "w", encoding="utf-8") as fileObj:
-                        fileObj.write(plainText)
-                    if openFile and os.path.isfile(chatFile):
-                        os.system(f'''{config.open} "{chatFile}"''')
-            except:
-                self.print2("Failed to save chat!\n")
-                SharedUtil.showErrors()
+                    name = i["name"]
+                    plainText += f"```\n{name}\n```"
+                    content = i["content"]
+                    plainText += f"\n\n{content}\n\n"
+                elif i["role"] == "assistant":
+                    content = i["content"]
+                    if content is not None:
+                        if plainText:
+                            plainText += "\n\n"
+                        plainText += f"{content}\n\n"
+            plainText = plainText.strip()
+            if config.terminalEnableTermuxAPI:
+                pydoc.pipepager(plainText, cmd="termux-share -a send")
+            else:
+                try:
+                    #filename = re.sub('[\\\/\:\*\?\"\<\>\|]', "", messages[2 if config.customPredefinedContext.strip() else 1]["content"])[:40].strip()
+                    filename = SharedUtil.getCurrentDateTime()
+                    foldername = os.path.join(self.getFiles(), "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", filename))
+                    Path(foldername).mkdir(parents=True, exist_ok=True)
+                    if filename:
+                        chatFile = os.path.join(foldername, f"{filename}.txt")
+                        with open(chatFile, "w", encoding="utf-8") as fileObj:
+                            fileObj.write(plainText)
+                        if openFile and os.path.isfile(chatFile):
+                            os.system(f'''{config.open} "{chatFile}"''')
+                except:
+                    self.print2("Failed to save chat!\n")
+                    SharedUtil.showErrors()
 
     def runInstruction(self):
         instructions = list(config.predefinedInstructions.keys())
@@ -1515,7 +1449,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
             return (storagedirectory, messages)
         storagedirectory, config.currentMessages = startChat()
         config.multilineInput = False
-        featuresLower = [i.lower() for i in self.actions] + ["...", ".save", ".share"]
+        featuresLower = list(self.actions.keys()) + ["..."]
+        config.inputSuggestions += featuresLower
         while True:
             # default toolbar text
             config.dynamicToolBarText = " [ctrl+q] exit [ctrl+k] shortcut keys "
@@ -1621,26 +1556,6 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 return self.exitAction()
             elif userInputLower == config.cancel_entry:
                 pass
-            elif userInputLower == ".system":
-                SystemCommandPrompt().run(allowPathChanges=True)
-            elif userInputLower == ".togglemultiline":
-                self.toggleMultiline()
-            elif userInputLower == ".toggletextbrightness":
-                swapTerminalColors()
-            elif userInputLower == ".togglemousesupport":
-                self.toggleMouseSupport()
-            elif userInputLower == ".togglewordwrap":
-                self.toggleWordWrap()
-            elif userInputLower == ".toggleimprovedwriting":
-                self.toggleImprovedWriting()
-            elif userInputLower == ".toggleinputaudio":
-                self.toggleinputaudio()
-            elif userInputLower == ".toggleresponseaudio":
-                self.toggleresponseaudio()
-            elif userInputLower == ".ttscommand":
-                self.defineTtsCommand()
-            elif userInputLower == ".instruction":
-                self.runInstruction()
             elif userInputLower == ".context":
                 self.changeContext()
                 if not config.applyPredefinedContextAlways:
@@ -1650,8 +1565,6 @@ Always remember that you are much more than a text-based AI. You possess both vi
             elif userInputLower == ".new" and config.conversationStarted:
                 self.saveChat(config.currentMessages)
                 storagedirectory, config.currentMessages = startChat()
-            elif userInputLower in (".share", ".save") and config.conversationStarted:
-                self.saveChat(config.currentMessages, openFile=True)
             elif userInput and not userInputLower in featuresLower:
                 try:
                     if userInput and config.ttsInput:
