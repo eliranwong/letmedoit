@@ -41,6 +41,7 @@ if config.isTermux:
         "memory",
         "remove image background",
         "solve math problems",
+        "search chat records",
     ]
 
 defaultSettings = (
@@ -69,7 +70,8 @@ defaultSettings = (
     ('passFunctionCallReturnToChatGPT', True),
     ('llmTemperature', 0.8),
     ('max_consecutive_auto_reply', 10), # work with pyautogen
-    ('memoryClosestMatchesNumber', 5),
+    ('memoryClosestMatches', 5),
+    ('chatRecordClosestMatches', 5),
     ('runPythonScriptGlobally', False),
     ('openaiApiKey', ''),
     ('openaiApiOrganization', ''),

@@ -34,6 +34,10 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki#an-interview
 
 # Recent Additions
 
+[Search and Load Old Conversations](https://github.com/eliranwong/letmedoit/wiki/Search-and-Load-Old-Conversations)
+
+![search_chat_records_0](https://github.com/eliranwong/letmedoit/assets/25262722/f2fb9c1c-d239-4723-b9ff-65634863d96f)
+
 [System Tray for Quick Access](https://github.com/eliranwong/letmedoit/wiki/System-Tray-for-Quick-Access)
 
 <img width="1440" alt="system_tray" src="https://github.com/eliranwong/letmedoit/assets/25262722/639d9cd4-a42a-4ca6-85bb-c290f38c023d">
@@ -113,6 +117,14 @@ LetMeDoIt AI just got smarter with memory retention!
 # Examples of Plugin Features (selective only):
 
 Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural language:
+
+* [NEW] search old conversations
+
+> search for "joke" in chat records
+
+* [NEW] load old conversations
+
+> Load chat records with this ID: 2024-01-20_19_21_04
 
 * [NEW] connect a sqlite file and fetch data or make changes
 

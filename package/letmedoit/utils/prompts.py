@@ -89,7 +89,7 @@ class Prompts:
         @this_key_bindings.add("c-s")
         def _(event):
             buffer = event.app.current_buffer
-            buffer.text = ".save"
+            buffer.text = ".export"
             buffer.validate_and_handle()
         @this_key_bindings.add("escape", "f")
         def _(_):

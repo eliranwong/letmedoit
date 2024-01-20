@@ -13,13 +13,13 @@ from letmedoit.health_check import HealthCheck
 from pathlib import Path
 from chromadb.config import Settings
 import uuid, os, chromadb, getpass, geocoder, datetime, json
-import numpy as np
-from numpy.linalg import norm
 
 memory_store = os.path.join(config.getFiles(), "memory")
 Path(memory_store).mkdir(parents=True, exist_ok=True)
 chroma_client = chromadb.PersistentClient(memory_store, Settings(anonymized_telemetry=False))
 
+#import numpy as np
+#from numpy.linalg import norm
 #def cosine_similarity(A, B):
 #    cosine = np.dot(A, B) / (norm(A) * norm(B))
 #    return cosine
@@ -78,7 +78,7 @@ def query_vectors(collection, query, n):
 def retrieve_memories(function_args):
     query = function_args.get("query") # required
     collection = get_or_create_collection("memories")
-    res = query_vectors(collection, query, config.memoryClosestMatchesNumber)
+    res = query_vectors(collection, query, config.memoryClosestMatches)
     if config.developer:
         config.print(config.divider)
         print(">>> retrieved memories: ") 
@@ -133,7 +133,7 @@ functionSignature2 = {
     }
 }
 
-config.inputSuggestions += ["Remember, "]
+config.inputSuggestions += ["Remember, ", "Do you remember?"]
 config.pluginsWithFunctionCall += ["save_memory", "retrieve_memories"]
 config.chatGPTApiFunctionSignatures += [functionSignature1, functionSignature2]
 config.chatGPTApiAvailableFunctions["save_memory"] = save_memory

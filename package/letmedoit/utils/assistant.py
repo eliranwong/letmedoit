@@ -126,7 +126,8 @@ class LetMeDoItAI:
 
         self.actions = {
             ".new": ("start a new chat [ctrl+n]", None),
-            ".save": ("save content [ctrl+s]", lambda: self.saveChat(config.currentMessages, openFile=True)),
+            ".save": ("save content", lambda: self.saveChat(config.currentMessages)),
+            ".export": ("export content [ctrl+s]", lambda: self.exportChat(config.currentMessages)),
             #".instruction": ("run a predefined instruction", self.runInstruction),
             ".context": ("change chat context [ctrl+o]", None),
             ".contextintegration": ("change chat context integration", self.setContextIntegration),
@@ -139,7 +140,8 @@ class LetMeDoItAI:
             ".mintokens": ("change minimum response tokens", self.setMinTokens),
             ".dynamictokencount": ("change dynamic token count", self.setDynamicTokenCount),
             ".maxautoheal": ("change maximum consecutive auto-heal", self.setMaxAutoHeal),
-            ".maxmemorymatches": ("change maximum memory matches", self.setMemoryClosestMatchesNumber),
+            ".maxmemorymatches": ("change maximum memory matches", self.setMemoryClosestMatches),
+            ".maxchatrecordmatches": ("change maximum chat record matches", self.setChatRecordClosestMatches),
             ".plugins": ("change plugins", self.selectPlugins),
             ".functioncall": ("change function call", self.setFunctionCall),
             ".functioncallintegration": ("change function call integration", self.setFunctionResponse),
@@ -208,9 +210,11 @@ class LetMeDoItAI:
                 else:
                     with open(script, 'r', encoding='utf8') as f:
                         runCode(f.read())
+                return True
             except:
                 self.print("Failed to run '{0}'!".format(os.path.basename(script)))
                 SharedUtil.showErrors()
+        return False
 
     def runPlugins(self):
         # The following config values can be modified with plugins, to extend functionalities
@@ -252,7 +256,9 @@ class LetMeDoItAI:
             for plugin in FileUtil.fileNamesWithoutExtension(folder, "py"):
                 if not plugin in config.pluginExcludeList:
                     script = os.path.join(folder, "{0}.py".format(plugin))
-                    self.execPythonFile(script)
+                    run = self.execPythonFile(script)
+                    if not run:
+                        config.pluginExcludeList.append(plugin)
         if internetSeraches in config.pluginExcludeList:
             del config.chatGPTApiFunctionSignatures[0]
         self.setupPythonExecution()
@@ -1180,13 +1186,21 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 config.saveConfig()
                 self.print3(f"Custom text editor: {config.customTextEditor}")
 
-    def setMemoryClosestMatchesNumber(self):
+    def setChatRecordClosestMatches(self):
         self.print("Please specify the number of closest matches in each memory retrieval:")
-        memoryClosestMatchesNumber = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.memoryClosestMatchesNumber))
-        if memoryClosestMatchesNumber and not memoryClosestMatchesNumber.strip().lower() == config.exit_entry and int(memoryClosestMatchesNumber) >= 0:
-            config.memoryClosestMatchesNumber = int(memoryClosestMatchesNumber)
+        chatRecordClosestMatches = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.chatRecordClosestMatches))
+        if chatRecordClosestMatches and not chatRecordClosestMatches.strip().lower() == config.exit_entry and int(chatRecordClosestMatches) >= 0:
+            config.chatRecordClosestMatches = int(chatRecordClosestMatches)
             config.saveConfig()
-            self.print3(f"Number of memory closest matches: {config.memoryClosestMatchesNumber}")
+            self.print3(f"Number of memory closest matches: {config.chatRecordClosestMatches}")
+
+    def setMemoryClosestMatches(self):
+        self.print("Please specify the number of closest matches in each memory retrieval:")
+        memoryClosestMatches = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.memoryClosestMatches))
+        if memoryClosestMatches and not memoryClosestMatches.strip().lower() == config.exit_entry and int(memoryClosestMatches) >= 0:
+            config.memoryClosestMatches = int(memoryClosestMatches)
+            config.saveConfig()
+            self.print3(f"Number of memory closest matches: {config.memoryClosestMatches}")
 
     def setMaxAutoHeal(self):
         self.print(f"The auto-heal feature enables {config.letMeDoItName} to automatically fix broken Python code if it was not executed properly.")
@@ -1324,9 +1338,31 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 config.saveConfig()
         self.print3(f"Improved Writing Display: '{'enabled' if config.displayImprovedWriting else 'disabled'}'!")
 
-    def saveChat(self, messages, openFile=False):
+    def saveChat(self, messages):
+        if config.conversationStarted:
+            timestamp = SharedUtil.getCurrentDateTime()
+
+            if hasattr(config, "save_chat_record"):
+                # when plugin "save chat records" is enabled
+                for order, i in enumerate(messages):
+                    config.save_chat_record(timestamp, order, i)
+
+            try:
+                folderPath = os.path.join(self.getFiles(), "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", timestamp))
+                Path(folderPath).mkdir(parents=True, exist_ok=True)
+                if os.path.isdir(folderPath):
+                    chatFile = os.path.join(folderPath, f"{timestamp}.txt")
+                    with open(chatFile, "w", encoding="utf-8") as fileObj:
+                        fileObj.write(pprint.pformat(messages))
+            except:
+                self.print2("Failed to save chat!\n")
+                SharedUtil.showErrors()
+
+    def exportChat(self, messages, openFile=True):
         if config.conversationStarted:
             plainText = ""
+            timestamp = SharedUtil.getCurrentDateTime()
+
             for i in messages:
                 if i["role"] == "user":
                     content = i["content"]
@@ -1349,12 +1385,10 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 pydoc.pipepager(plainText, cmd="termux-share -a send")
             else:
                 try:
-                    #filename = re.sub('[\\\/\:\*\?\"\<\>\|]', "", messages[2 if config.customPredefinedContext.strip() else 1]["content"])[:40].strip()
-                    filename = SharedUtil.getCurrentDateTime()
-                    foldername = os.path.join(self.getFiles(), "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", filename))
-                    Path(foldername).mkdir(parents=True, exist_ok=True)
-                    if filename:
-                        chatFile = os.path.join(foldername, f"{filename}.txt")
+                    folderPath = os.path.join(config.letMeDoItAIFolder, "temp")
+                    Path(folderPath).mkdir(parents=True, exist_ok=True)
+                    if os.path.isdir(folderPath):
+                        chatFile = os.path.join(folderPath, f"{timestamp}.txt")
                         with open(chatFile, "w", encoding="utf-8") as fileObj:
                             fileObj.write(plainText)
                         if openFile and os.path.isfile(chatFile):
