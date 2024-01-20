@@ -24,8 +24,8 @@ if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
 HealthCheck.checkCompletion()
 HealthCheck.setPrint()
 
-#from autogen.agentchat.contrib.agent_builder import AgentBuilder
-from letmedoit.utils.agent_builder import AgentBuilder #
+from autogen.agentchat.contrib.agent_builder import AgentBuilder
+#from letmedoit.utils.agent_builder import AgentBuilder
 import autogen, os, json, traceback, re, datetime, argparse
 from pathlib import Path
 from urllib.parse import quote
@@ -98,6 +98,8 @@ class AutoGenBuilder:
             #config_path=config_path, # use default
             builder_model=self.chatGPTmodel,
             agent_model=self.chatGPTmodel,
+            max_tokens=4096,
+            max_agents=config.max_agents,
         )
 
         # e.g.
@@ -134,14 +136,14 @@ class AutoGenBuilder:
         max_agents = self.prompts.simplePrompt(numberOnly=True, style=self.promptStyle, default=str(config.max_agents),)
         if max_agents and int(max_agents) > 1:
             config.max_agents = int(max_agents)
-        self.print("Enter maximum round of group chat:")
-        max_group_chat_round = self.prompts.simplePrompt(numberOnly=True, style=self.promptStyle, default=str(config.max_group_chat_round),)
-        if max_group_chat_round and int(max_group_chat_round) > 1:
-            config.max_group_chat_round = int(max_group_chat_round)
-        self.print("Do you want to support OpenAI Assistant API (y/yes/N/NO)?")
-        userInput = self.prompts.simplePrompt(style=self.promptStyle, default="y" if config.use_oai_assistant else "NO")
-        if userInput:
-            config.use_oai_assistant = True if userInput.strip().lower() in ("y", "yes") else False
+        #self.print("Enter maximum round of group chat:")
+        #max_group_chat_round = self.prompts.simplePrompt(numberOnly=True, style=self.promptStyle, default=str(config.max_group_chat_round),)
+        #if max_group_chat_round and int(max_group_chat_round) > 1:
+        #    config.max_group_chat_round = int(max_group_chat_round)
+        #self.print("Do you want to support OpenAI Assistant API (y/yes/N/NO)?")
+        #userInput = self.prompts.simplePrompt(style=self.promptStyle, default="y" if config.use_oai_assistant else "NO")
+        #if userInput:
+        #    config.use_oai_assistant = True if userInput.strip().lower() in ("y", "yes") else False
         HealthCheck.saveConfig()
 
     def run(self):
@@ -174,8 +176,8 @@ def main():
     parser.add_argument("default", nargs="?", default=None, help="execution task")
     parser.add_argument('-c', '--config', action='store', dest='config', help="load building config file")
     parser.add_argument('-a', '--agents', action='store', dest='agents', help="maximum number of agents")
-    parser.add_argument('-r', '--round', action='store', dest='round', help="maximum round of group chat")
-    parser.add_argument('-o', '--oaiassistant', action='store', dest='oaiassistant', help="support OpenAI Assistant API (true/false)")
+    #parser.add_argument('-r', '--round', action='store', dest='round', help="maximum round of group chat")
+    #parser.add_argument('-o', '--oaiassistant', action='store', dest='oaiassistant', help="support OpenAI Assistant API (true/false)")
     # Parse arguments
     args = parser.parse_args()
 
@@ -187,14 +189,14 @@ def main():
         except:
             config.print2("Integer required for setting number of agents!")
 
-    if args.round:
-        try:
-            config.max_group_chat_round = int(args.round)
-        except:
-            config.print2("Integer required for setting round of group chat!")
+    #if args.round:
+    #    try:
+    #        config.max_group_chat_round = int(args.round)
+    #    except:
+    #        config.print2("Integer required for setting round of group chat!")
 
-    if args.oaiassistant:
-        config.use_oai_assistant = True if args.oaiassistant.lower() == "true" else False
+    #if args.oaiassistant:
+    #    config.use_oai_assistant = True if args.oaiassistant.lower() == "true" else False
 
     if args.config and not os.path.isfile(args.config):
         config.print2(f"'{args.config}' does not exist!")
