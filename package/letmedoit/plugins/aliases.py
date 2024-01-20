@@ -32,13 +32,18 @@ if not config.isTermux:
         "!autoretriever",
         "!autoteachable",
         "!geminipro",
+        "geminipro",
         "!geminiprovision",
+        "geminiprovision",
         "!palm2",
+        "palm2",
         "!codey",
+        "codey",
     ]
 config.inputSuggestions += [
     "!etextedit",
     "!chatgpt",
+    "chatgpt",
 ]
 
 # Example to set an alias to open-interpreter

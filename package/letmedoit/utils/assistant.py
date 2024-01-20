@@ -127,13 +127,13 @@ class LetMeDoItAI:
         self.actions = {
             '.new': 'start a new chat [ctrl+n]',
             '.save': 'save content [ctrl+s]',
-            '.swaptextbrightness': 'swap text brightness [esc+s]',
-            '.instruction': 'run an instruction',
+            '.instruction': 'run a predefined instruction',
             '.context': 'change chat context [ctrl+o]',
             '.contextinclusion': 'change chat context inclusion',
             '.changeapikey': 'change API key',
-            '.chatgptmodel': 'change chat-and-task model',
-            '.chatbot': 'change chat-only model',
+            '.functionmodel': 'change function call model',
+            '.chatmodel': 'change chat-only model',
+            '.embeddingmodel': 'change embedding model',
             '.temperature': 'change temperature',
             '.maxtokens': 'change maximum response tokens',
             '.mintokens': 'change minimum response tokens',
@@ -144,11 +144,9 @@ class LetMeDoItAI:
             '.functioncall': 'change function call',
             '.functionresponse': 'change function call response integration',
             '.latestSearches': 'change online searches',
-            #'.enhanceexecution': 'change code execution mode [ctrl+e]',
-            '.confirmexecution': 'change code confirmation protocol',
+            '.userconfirmation': 'change code confirmation protocol',
             '.codedisplay': 'change code display',
             '.pagerview': 'change pager view',
-            '.embeddingmodel': 'change embedding model',
             '.assistantname': 'change assistant name',
             '.systemmessage': 'change custom system message',
             '.ipinfo': 'change ip information inclusion',
@@ -160,6 +158,7 @@ class LetMeDoItAI:
             '.developer': 'change developer mode [ctrl+d]',
             '.togglemultiline': 'toggle multi-line input [ctrl+l]',
             '.togglemousesupport': 'toogle mouse support [esc+m]',
+            '.toggletextbrightness': 'swap text brightness [esc+s]',
             '.togglewordwrap': 'toggle word wrap [ctrl+w]',
             '.toggleimprovedwriting': 'toggle improved writing [esc+i]',
             '.toggleinputaudio': 'toggle input audio [ctrl+b]',
@@ -169,6 +168,7 @@ class LetMeDoItAI:
             '.help': 'open LetMeDoIt wiki',
             '.keys': 'display key bindings',
         }
+        config.inputSuggestions += list(self.actions.keys())
 
     def getStorageDir(self):
         storageDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
@@ -849,7 +849,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 text="Select an action or make changes:",
             )
         if feature:
-            if feature == ".chatgptmodel":
+            if feature == ".functionmodel":
                 self.setLlmModel()
             elif feature == ".embeddingmodel":
                 self.setEmbeddingModel()
@@ -861,7 +861,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 self.setContextInclusion()
             elif feature == ".codedisplay":
                 self.setCodeDisplay()
-            elif feature == ".confirmexecution":
+            elif feature == ".userconfirmation":
                 self.setUserConfirmation()
             elif feature == ".plugins":
                 self.selectPlugins()
@@ -904,7 +904,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 self.setAssistantName()
             elif feature == ".customtexteditor":
                 self.setCustomTextEditor()
-            elif feature == ".chatbot":
+            elif feature == ".chatmodel":
                 self.setChatbot()
             elif feature == ".temperature":
                 self.setTemperature()
@@ -1625,7 +1625,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 SystemCommandPrompt().run(allowPathChanges=True)
             elif userInputLower == ".togglemultiline":
                 self.toggleMultiline()
-            elif userInputLower == ".swaptextbrightness":
+            elif userInputLower == ".toggletextbrightness":
                 swapTerminalColors()
             elif userInputLower == ".togglemousesupport":
                 self.toggleMouseSupport()
