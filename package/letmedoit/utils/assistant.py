@@ -1548,7 +1548,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             if userInput == "...":
                 userInput = userInputLower = self.runActions(userInput)
             #elif userInputLower in tuple(self.actions.keys()):
-            elif userInputLower.startswith("."):
+            elif userInputLower.startswith(".") and not userInputLower in (config.exit_entry, config.cancel_entry, ".new", ".context"):
                 userInput = userInputLower = self.runActions("...", userInput)
 
             # replace alias, if any with full entry

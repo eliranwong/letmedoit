@@ -79,13 +79,33 @@ def search_chats(function_args):
     return ""
 
 def load_chats(function_args):
+
+    def validateChatFile(chatFile):
+        chatFile = os.path.expanduser(chatFile)
+        if os.path.isfile(chatFile):
+            isfile = True
+        elif re.search("^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]_[0-9][0-9]_[0-9][0-9]$", chatFile):
+            # match chat id format
+            folderPath = os.path.join(config.getFiles(), "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", chatFile))
+            chatFile = os.path.join(folderPath, f"{chatFile}.txt")
+            if os.path.isfile(chatFile):
+                isfile = True
+            else:
+                isfile = False
+        else:
+            isfile = False
+        return (isfile, chatFile)
+
     config.stopSpinning()
     timestamp = function_args.get("id") # required
+    isfile, chatFile = validateChatFile(timestamp)
+    if not isfile:
+        config.print3(f"Invalid chat ID / file path: {timestamp}")
+        return "[INVALID]"
+
     config.print3(f"Loading chat records: {timestamp} ...")
 
     try:
-        folderPath = os.path.join(config.getFiles(), "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", timestamp))
-        chatFile = os.path.join(folderPath, f"{timestamp}.txt")
         with open(chatFile, "r", encoding="utf-8") as fileObj:
             messages = fileObj.read()
         currentMessages = eval(messages)
@@ -103,11 +123,13 @@ def load_chats(function_args):
                         config.print(content)
                     if role == 'assistant' and not index == len(config.currentMessages) - 2:
                         print("")
+            return ""
         else:
             config.print3(f"Failed to load chat records '{timestamp}' due to invalid format!")
     except:
         config.print3(f"Failed to load chat records: {timestamp}\n")
         SharedUtil.showErrors()
+    return "[INVALID]"
 
 functionSignature1 = {
     "name": "search_chats",
@@ -126,20 +148,20 @@ functionSignature1 = {
 
 functionSignature2 = {
     "name": "load_chats",
-    "description": """Load or open old chat records if chat ID or timestamp is given""",
+    "description": """Load or open old saved chat records if chat ID / timestamp / file path is given""",
     "parameters": {
         "type": "object",
         "properties": {
             "id": {
                 "type": "string",
-                "description": "The chat ID or timestamp"
+                "description": "The chat ID or timestamp or a file path"
             },
         },
         "required": ["id"]
     }
 }
 
-config.inputSuggestions += ["Search chat records: ", "Load chat records with this ID: "]
+config.inputSuggestions += ["Search chat records: ", "Load chat records with this ID: ", "Load chat records in this file: "]
 config.pluginsWithFunctionCall += ["search_chats", "load_chats"]
 config.chatGPTApiFunctionSignatures += [functionSignature1, functionSignature2]
 config.chatGPTApiAvailableFunctions["search_chats"] = search_chats
