@@ -267,7 +267,8 @@ def main():
         config.predefinedContext = args.context
 
     # priority: load > runfile > file > run > default
-    if load := args.load.strip():
+    if args.load:
+        load = args.load.strip()
         config.defaultEntry = f"Load chat records with this ID: {load}"
         config.accept_default = True
     elif args.runfile or args.file:
