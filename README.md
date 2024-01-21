@@ -98,7 +98,9 @@ LetMeDoIt AI just got smarter with memory retention!
 
 * higly customizable, e.g. [you can even change the assistant name](https://github.com/eliranwong/letmedoit/wiki/Change-Assistant-Name)
 
-* Support predefined contexts and instructions
+* Support predefined contexts
+
+* [Searchable Chat Records](https://github.com/eliranwong/letmedoit/wiki/Search-and-Load-Old-Conversations)
 
 * [Audio Input and Output](https://github.com/eliranwong/letmedoit/wiki/LetMeDoIt-Speaks)
 

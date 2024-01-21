@@ -218,7 +218,7 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+x": "cut [w/ mouse support]",
             "ctrl+n": "new chat",
             "ctrl+y": "new chat without context",
-            "ctrl+s": "save chat",
+            "ctrl+s": "export chat",
             "ctrl+o": "change predefined context",
             "ctrl+g": "pager view",
             "ctrl+d": "forward delete",
@@ -274,7 +274,7 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+u": f"go up '{config.terminalEditorScrollLineCount}' lines [configurable]",
             "ctrl+j": f"go down '{config.terminalEditorScrollLineCount}' lines [configurable]",
         }
-        keyHelp = f"{config.divider}\n"
+        keyHelp = f"{config.divider}\n\n"
         keyHelp += "# Key Bindings\n"
         keyHelp += "[blank]: launch action menu\n"
         for key, value in bindings.items():
@@ -282,7 +282,9 @@ Available tokens: {estimatedAvailableTokens}
         keyHelp += "\n## Key Bindings\n[for multiline entry only]\n"
         for key, value in multilineBindings.items():
             keyHelp += f"{key}: {value}\n"
-        keyHelp += f"{config.divider}\n"
+        keyHelp += f"\n{config.divider}\n\n"
+        keyHelp += config.actionHelp
+        keyHelp += f"\n{config.divider}\n"
 
         if SharedUtil.isPackageInstalled("less"):
             pydoc.pipepager(f"To close this help page, press 'q'\n\n{keyHelp}\nTo close this help page, press 'q'", cmd='less -R')

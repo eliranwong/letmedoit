@@ -171,6 +171,11 @@ class LetMeDoItAI:
             ".keys": ("display key bindings", config.showKeyBindings),
         }
 
+        config.actionHelp = f"# Quick Actions\n(entries that start with '.')\n"
+        for key, value in self.actions.items():
+            config.actionHelp += f"{key}: {value[0]}\n"
+        config.actionHelp += "\n## Read more at:\nhttps://github.com/eliranwong/letmedoit/wiki/Action-Menu"
+
     def getStorageDir(self):
         storageDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
         try:
@@ -843,23 +848,31 @@ Always remember that you are much more than a text-based AI. You possess both vi
         #userInput = SharedUtil.addTimeStamp(userInput)
         return userInput
 
-    def runOptions(self, userInput, feature=""):
-        if not feature:
-            features = tuple(self.actions.keys())
-            descriptions = [i[0] for i in self.actions.values()]
+    def runActions(self, userInput, feature=""):
+        query = ""
+        featureTemp = feature
+        options = tuple(self.actions.keys())
+        descriptions = [i[0] for i in self.actions.values()]
+        if not feature or not feature in self.actions:
+            if feature.startswith("."):
+                query = feature[1:]
             feature = self.dialogs.getValidOptions(
-                options=features,
+                options=options,
                 descriptions=descriptions,
                 title=config.letMeDoItName,
                 default=config.defaultBlankEntryAction,
                 text="Select an action or make changes:",
+                filter=query,
             )
         if feature:
-            if feature in self.actions and self.actions[feature][-1] is not None:
+            if self.actions[feature][-1] is not None:
                 self.actions[feature][-1]()
             else:
                 # current execeptions are ".new" and ".context"
                 userInput = feature
+        elif featureTemp:
+            # when the entered feature does not match an action
+            return featureTemp
         return userInput
 
     def setAutoUpgrade(self):
@@ -1385,7 +1398,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 pydoc.pipepager(plainText, cmd="termux-share -a send")
             else:
                 try:
-                    folderPath = os.path.join(config.letMeDoItAIFolder, "temp")
+                    folderPath = os.path.join(self.getFiles(), "chats", "export")
                     Path(folderPath).mkdir(parents=True, exist_ok=True)
                     if os.path.isdir(folderPath):
                         chatFile = os.path.join(folderPath, f"{timestamp}.txt")
@@ -1487,7 +1500,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
         config.inputSuggestions += featuresLower
         while True:
             # default toolbar text
-            config.dynamicToolBarText = " [ctrl+q] exit [ctrl+k] shortcut keys "
+            config.dynamicToolBarText = " [ctrl+q] exit [ctrl+k] shortcuts "
             # display current directory if changed
             currentDirectory = os.getcwd()
             if not currentDirectory == storagedirectory:
@@ -1533,9 +1546,10 @@ Always remember that you are much more than a text-based AI. You possess both vi
             elif not userInputLower:
                 userInput = config.blankEntryAction
             if userInput == "...":
-                userInput = userInputLower = self.runOptions(userInput)
-            elif userInputLower in tuple(self.actions.keys()):
-                userInput = userInputLower = self.runOptions("...", userInputLower)
+                userInput = userInputLower = self.runActions(userInput)
+            #elif userInputLower in tuple(self.actions.keys()):
+            elif userInputLower.startswith("."):
+                userInput = userInputLower = self.runActions("...", userInput)
 
             # replace alias, if any with full entry
             for alias, fullEntry in config.aliases.items():
