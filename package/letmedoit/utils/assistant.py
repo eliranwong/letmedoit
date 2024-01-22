@@ -1498,6 +1498,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
         config.multilineInput = False
         featuresLower = list(self.actions.keys()) + ["..."]
         config.inputSuggestions += featuresLower
+        if config.developer:
+            config.inputSuggestions += [f"config.{i}" for i in dir(config) if not i.startswith("__")]
         while True:
             # default toolbar text
             config.dynamicToolBarText = " [ctrl+q] exit [ctrl+k] shortcuts "

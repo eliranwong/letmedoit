@@ -120,6 +120,10 @@ LetMeDoIt AI just got smarter with memory retention!
 
 Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural language:
 
+* [NEW] search latest news
+
+> tell me the latest news about ChatGPT
+
 * [NEW] search old conversations
 
 > search for "joke" in chat records
@@ -392,7 +396,7 @@ Check our built-in plugins at: https://github.com/eliranwong/letmedoit/tree/main
 
 # Highlight - Command Execution
 
-Latest: LetMeDoIt AI is now equipped with an [auto-healing feature for Python code](https://github.com/eliranwong/letmedoit/wiki/Python-Code-Auto%E2%80%90heal-Feature).
+LetMeDoIt AI is now equipped with an [auto-healing feature for Python code](https://github.com/eliranwong/letmedoit/wiki/Python-Code-Auto%E2%80%90heal-Feature).
 
 Overview: Command execution enables you to:
 
