@@ -34,6 +34,10 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki#an-interview
 
 # Recent Additions
 
+[Access Weather Information](https://github.com/eliranwong/letmedoit/wiki/Search-Weather-Information)
+
+![test_weather_plugin](https://github.com/eliranwong/letmedoit/assets/25262722/e9fd4376-1579-40e0-b1b2-a2b7c5583f0c)
+
 [Search and Load Old Conversations](https://github.com/eliranwong/letmedoit/wiki/Search-and-Load-Old-Conversations)
 
 ![search_chat_records_0](https://github.com/eliranwong/letmedoit/assets/25262722/f2fb9c1c-d239-4723-b9ff-65634863d96f)
@@ -120,6 +124,10 @@ LetMeDoIt AI just got smarter with memory retention!
 
 Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural language:
 
+* [NEW] search weather information
+
+> what is the current weather in New York?
+
 * [NEW] search latest news
 
 > tell me the latest news about ChatGPT
@@ -130,7 +138,7 @@ Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural lang
 
 * [NEW] load old conversations
 
-> Load chat records with this ID: 2024-01-20_19_21_04
+> load chat records with this ID: 2024-01-20_19_21_04
 
 * [NEW] connect a sqlite file and fetch data or make changes
 

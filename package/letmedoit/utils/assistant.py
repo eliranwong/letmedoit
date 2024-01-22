@@ -131,7 +131,7 @@ class LetMeDoItAI:
             #".instruction": ("run a predefined instruction", self.runInstruction),
             ".context": ("change chat context [ctrl+o]", None),
             ".contextintegration": ("change chat context integration", self.setContextIntegration),
-            ".changeapikey": ("change API key", self.changeAPIkey),
+            ".changeapikey": ("change OpenAI API key", self.changeAPIkey),
             ".functionmodel": ("change function call model", self.setLlmModel),
             ".chatmodel": ("change chat-only model", self.setChatbot),
             ".embeddingmodel": ("change embedding model", self.setEmbeddingModel),
@@ -151,6 +151,7 @@ class LetMeDoItAI:
             ".pagerview": ("change pager view", self.setPagerView),
             ".assistantname": ("change assistant name", self.setAssistantName),
             ".systemmessage": ("change custom system message", self.setCustomSystemMessage),
+            ".openweathermapapi": ("change OpenWeatherMap API key", self.changeOpenweathermapApi),
             ".ipinfo": ("change ip information integration", self.setIncludeIpInSystemMessage),
             ".storagedirectory": ("change storage directory", self.setStorageDirectory),
             ".autobuilderconfig": ("change auto builder config", self.setAutoGenBuilderConfig),
@@ -322,7 +323,7 @@ class LetMeDoItAI:
 
     def changeAPIkey(self):
         if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
-            print("Enter your OpenAI API Key [required]:")
+            self.print("Enter your OpenAI API Key [required]:")
             apikey = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.openaiApiKey, is_password=True)
             if apikey and not apikey.strip().lower() in (config.cancel_entry, config.exit_entry):
                 config.openaiApiKey = apikey
@@ -332,7 +333,22 @@ class LetMeDoItAI:
             #    config.openaiApiOrganization = oid
             SharedUtil.checkCompletion()
             config.saveConfig()
-            self.print2("Updated!")
+            self.print2("Configurations updated!")
+
+    def changeOpenweathermapApi(self):
+        if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
+            self.print("To set up OpenWeatherMap API Key, read:\nhttps://github.com/eliranwong/letmedoit/wiki/OpenWeatherMap-API-Setup\n")
+            self.print("Enter your OpenWeatherMap API Key:")
+            print()
+            apikey = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.openweathermapApi, is_password=True)
+            if apikey and not apikey.strip().lower() in (config.cancel_entry, config.exit_entry):
+                config.openweathermapApi = apikey
+            if SharedUtil.getWeather()[0]:
+                config.saveConfig()
+                self.print2("Configurations updated!")
+            else:
+                config.openweathermapApi = ""
+                self.print2("Invalid API key entered!")
 
     def exitAction(self):
         message = "closing ..."

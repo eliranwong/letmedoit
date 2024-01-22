@@ -1,7 +1,7 @@
 from letmedoit import config
 from packaging import version
 from bs4 import BeautifulSoup
-import platform, shutil, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback
+import platform, shutil, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, html2text
 import datetime, requests, netifaces, textwrap, json, geocoder, base64, getpass, pendulum, pkg_resources
 import pygments
 from pygments.lexers.python import PythonLexer
@@ -531,6 +531,42 @@ Acess the risk level of this Python code:
             return now.format('dddd')
 
     @staticmethod
+    def getWeather(latlng=""):
+        # get current weather information
+        # Reference: https://openweathermap.org/api/one-call-3
+
+        if not config.openweathermapApi:
+            return None
+
+        # latitude, longitude
+        if not latlng:
+            latlng = geocoder.ip('me').latlng
+
+        try:
+            latitude, longitude = latlng
+            # Build the URL for the weather API
+            url = f"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={config.openweathermapApi}&units=metric"
+            # Make the request to the API
+            response = requests.get(url)
+            # Parse the JSON response
+            data = json.loads(response.text)
+            # Get the current weather condition
+            weather_condition = data["weather"][0]["description"]
+            # Get the current temperature in Celsius
+            temperature_celsius = data["main"]["temp"]
+
+            # Convert the temperature to Fahrenheit
+            #temperature_fahrenheit = (temperature_celsius * 9/5) + 32
+
+            # Print the weather condition and temperature
+            #print(f"The current weather condition is {weather_condition}.")
+            #print(f"The current temperature is {temperature_fahrenheit} degrees Fahrenheit.")
+            return temperature_celsius, weather_condition
+        except:
+            SharedUtil.showErrors()
+            return None
+
+    @staticmethod
     def getDeviceInfo(includeIp=False):
         g = geocoder.ip('me')
         if hasattr(config, "thisPlatform"):
@@ -615,6 +651,16 @@ City: {g.city}"""
         if error.strip():
             response += f"\n# Error:\n{error}"
         return response
+
+    # Function to convert HTML to Markdown
+    @staticmethod
+    def convert_html_to_markdown(html_string):
+        # Create an instance of the HTML2Text converter
+        converter = html2text.HTML2Text()
+        # Convert the HTML string to Markdown
+        markdown_string = converter.handle(html_string)
+        # Return the Markdown string
+        return markdown_string
 
     @staticmethod
     def openURL(url):

@@ -53,4 +53,4 @@ config.chatGPTApiFunctionSignatures.append(functionSignature)
 config.chatGPTApiAvailableFunctions["search_latest_news"] = search_latest_news
 
 # The following line is optional. It adds an input suggestion to LetMeDoIt AI user input prompt
-config.inputSuggestions.append("Give me the latest news about ")
+config.inputSuggestions.append("Tell me the latest news about ")
