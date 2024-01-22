@@ -36,7 +36,6 @@ class SystemTrayIcon(QSystemTrayIcon):
             "autoassist",
             "autoretriever",
             "automath",
-            "autoteachable",
             "autobuilder",
             "etextedit",
             "commandprompt",

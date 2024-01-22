@@ -13,7 +13,6 @@ if not config.isTermux:
     config.aliases["!autoassist"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autoassist.py')}"
     config.aliases["!automath"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'automath.py')}"
     config.aliases["!autoretriever"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autoretriever.py')}"
-    config.aliases["!autoteachable"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autoteachable.py')}"
     config.aliases["!autobuilder"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'autobuilder.py')}"
     # integrated Google AI tools
     config.aliases["!geminiprovision"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'geminiprovision.py')}"
@@ -30,7 +29,6 @@ if not config.isTermux:
         "!autobuilder",
         "!automath",
         "!autoretriever",
-        "!autoteachable",
         "!geminipro",
         "geminipro",
         "!geminiprovision",
