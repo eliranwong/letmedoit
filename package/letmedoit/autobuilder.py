@@ -197,9 +197,9 @@ def main():
 
     if oaiassistant := args.oaiassistant:
         oaiassistant = oaiassistant.lower().strip()
-        if oaiassistant == "true"
+        if oaiassistant == "true":
             config.use_oai_assistant = True
-        elif oaiassistant == "false"
+        elif oaiassistant == "false":
             config.use_oai_assistant = False
 
     if args.config and not os.path.isfile(args.config):
