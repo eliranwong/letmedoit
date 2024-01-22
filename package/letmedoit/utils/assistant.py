@@ -343,7 +343,7 @@ class LetMeDoItAI:
             apikey = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.openweathermapApi, is_password=True)
             if apikey and not apikey.strip().lower() in (config.cancel_entry, config.exit_entry):
                 config.openweathermapApi = apikey
-            if SharedUtil.getWeather()[0]:
+            if SharedUtil.getWeather() is not None:
                 config.saveConfig()
                 self.print2("Configurations updated!")
             else:

@@ -10,8 +10,8 @@ if not os.path.isfile(configFile):
 from letmedoit import config
 if not hasattr(config, "max_agents"):
     config.max_agents = 5
-if not hasattr(config, "max_group_chat_round"):
-    config.max_group_chat_round = 12
+#if not hasattr(config, "max_group_chat_round"):
+#    config.max_group_chat_round = 12
 if not hasattr(config, "use_oai_assistant"):
     config.use_oai_assistant = False
 
@@ -108,7 +108,7 @@ class AutoGenBuilder:
         #agent_list, agent_configs = builder.build(building_task, llm_config, coding=True)
         
         if load_path:
-            agent_list, _ = builder.load(load_path)
+            agent_list, _ = builder.load(load_path, use_oai_assistant=config.use_oai_assistant)
         else:
             agent_list, _ = builder.build(building_task, llm_config, use_oai_assistant=config.use_oai_assistant) # Coding=None; determined by CODING_PROMPT
 
@@ -140,10 +140,10 @@ class AutoGenBuilder:
         #max_group_chat_round = self.prompts.simplePrompt(numberOnly=True, style=self.promptStyle, default=str(config.max_group_chat_round),)
         #if max_group_chat_round and int(max_group_chat_round) > 1:
         #    config.max_group_chat_round = int(max_group_chat_round)
-        #self.print("Do you want to support OpenAI Assistant API (y/yes/N/NO)?")
-        #userInput = self.prompts.simplePrompt(style=self.promptStyle, default="y" if config.use_oai_assistant else "NO")
-        #if userInput:
-        #    config.use_oai_assistant = True if userInput.strip().lower() in ("y", "yes") else False
+        self.print("Do you want to support OpenAI Assistant API (y/yes/N/NO)?")
+        userInput = self.prompts.simplePrompt(style=self.promptStyle, default="y" if config.use_oai_assistant else "NO")
+        if userInput:
+            config.use_oai_assistant = True if userInput.strip().lower() in ("y", "yes") else False
         HealthCheck.saveConfig()
 
     def run(self):
@@ -177,7 +177,7 @@ def main():
     parser.add_argument('-c', '--config', action='store', dest='config', help="load building config file")
     parser.add_argument('-a', '--agents', action='store', dest='agents', help="maximum number of agents")
     #parser.add_argument('-r', '--round', action='store', dest='round', help="maximum round of group chat")
-    #parser.add_argument('-o', '--oaiassistant', action='store', dest='oaiassistant', help="support OpenAI Assistant API (true/false)")
+    parser.add_argument('-o', '--oaiassistant', action='store', dest='oaiassistant', help="support OpenAI Assistant API (true/false)")
     # Parse arguments
     args = parser.parse_args()
 
@@ -195,8 +195,12 @@ def main():
     #    except:
     #        config.print2("Integer required for setting round of group chat!")
 
-    #if args.oaiassistant:
-    #    config.use_oai_assistant = True if args.oaiassistant.lower() == "true" else False
+    if oaiassistant := args.oaiassistant:
+        oaiassistant = oaiassistant.lower().strip()
+        if oaiassistant == "true"
+            config.use_oai_assistant = True
+        elif oaiassistant == "false"
+            config.use_oai_assistant = False
 
     if args.config and not os.path.isfile(args.config):
         config.print2(f"'{args.config}' does not exist!")

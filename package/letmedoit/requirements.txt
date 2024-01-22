@@ -36,3 +36,5 @@ pygame
 PySide6
 feedparser
 html2text
+pypdf
+PyMuPDF
