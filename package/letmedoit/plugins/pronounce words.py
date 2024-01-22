@@ -1,7 +1,7 @@
 """
 LetMeDoIt AI Plugin - pronunce words
 
-add predefined contexts about pastoral care
+pronunce words
 
 [FUNCTION_CALL]
 """

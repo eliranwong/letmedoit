@@ -34,3 +34,4 @@ pyautogen[retrievechat,teachable,mathchat]==0.2.6
 tiktoken
 pygame
 PySide6
+feedparser
