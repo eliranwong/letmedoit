@@ -1,6 +1,6 @@
 from letmedoit import config
 import traceback
-from letmedoit.utils.install import *
+from letmedoit.utils.install import installmodule
 from letmedoit.utils.shared_utils import SharedUtil
 
 """

@@ -9,7 +9,7 @@ pronunce words
 try:
     from gtts import gTTS
 except:
-    from letmedoit.utils.install import *
+    from letmedoit.utils.install import installmodule
     installmodule(f"--upgrade gTTS")
 
 from letmedoit import config

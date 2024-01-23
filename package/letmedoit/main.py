@@ -68,7 +68,7 @@ def restartApp():
 config.restartApp = restartApp
 
 from letmedoit.utils.configDefault import *
-from letmedoit.utils.install import *
+from letmedoit.utils.install import installmodule
 from letmedoit.utils.shared_utils import SharedUtil
 
 # automatic update

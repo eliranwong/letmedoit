@@ -34,6 +34,7 @@ if not config.isTermux:
     from letmedoit.geminipro import GeminiPro
     from letmedoit.palm2 import Palm2
     from letmedoit.codey import Codey
+from letmedoit.utils.install import installmodule
 
 
 class LetMeDoItAI:
@@ -167,6 +168,7 @@ class LetMeDoItAI:
             ".toggleinputaudio": ("toggle input audio [ctrl+b]", self.toggleinputaudio),
             ".toggleresponseaudio": ("toggle response audio [ctrl+p]", self.toggleresponseaudio),
             ".ttscommand": ("configure text-to-speech command", self.defineTtsCommand),
+            ".install": ("install python package", self.installPythonPackage),
             ".system": ("open system command prompt", lambda: SystemCommandPrompt().run(allowPathChanges=True)),
             ".help": ("open LetMeDoIt wiki", lambda: SharedUtil.openURL('https://github.com/eliranwong/letmedoit/wiki')),
             ".keys": ("display key bindings", config.showKeyBindings),
@@ -1093,6 +1095,13 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.passFunctionCallReturnToChatGPT = (call == "enable")
             config.saveConfig()
             self.print3(f"Pass Function Call Response to ChatGPT: {'enabled' if config.passFunctionCallReturnToChatGPT else 'disabled'}!")
+
+    def installPythonPackage(self):
+        self.print("Enter a python package name:")
+        package = self.prompts.simplePrompt(style=self.prompts.promptStyle2)
+        if package:
+            self.print(f"Installing '{package}' ...")
+            installmodule(f"--upgrade {package}")
 
     def setTemperature(self):
         self.print("Enter a value between 0.0 and 2.0:")

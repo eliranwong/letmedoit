@@ -22,8 +22,12 @@ def search_latest_news(function_args: dict) -> str:
         if index < 10:
             if not index == 0:
                 config.print2(config.divider)
-            config.print(entry.title)
-            print(entry.link)
+            # title
+            title = re.sub("<[^<>]*?>", "", entry.title)
+            config.print3(f"Title: {title}")
+            # link
+            link = re.sub("<[^<>]*?>", "", entry.link)
+            config.print3(f"Link: {link}")
     config.print2(config.divider)
     return ""
 
