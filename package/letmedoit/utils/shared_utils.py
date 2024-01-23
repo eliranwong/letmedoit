@@ -301,7 +301,7 @@ class SharedUtil:
 
     @staticmethod
     def getPythonFunctionResponse(code):
-        return str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) and not ("os.system(" in code) else ""
+        return str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and (type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) or str(type(config.pythonFunctionResponse)).startswith("<class 'numpy.")) and not ("os.system(" in code) else ""
 
     @staticmethod
     def autoHealPythonCode(code, trace):

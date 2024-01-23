@@ -34,6 +34,10 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki#an-interview
 
 # Recent Additions
 
+[Search / Analyze Financial Data](https://github.com/eliranwong/letmedoit/wiki/Search-Financial-Data)
+
+<img width="1312" alt="search_financial_data" src="https://github.com/eliranwong/letmedoit/assets/25262722/9976f15b-85e1-4c5b-97a0-5124c04ffa8a">
+
 [Access Weather Information](https://github.com/eliranwong/letmedoit/wiki/Search-Weather-Information)
 
 ![test_weather_plugin](https://github.com/eliranwong/letmedoit/assets/25262722/e9fd4376-1579-40e0-b1b2-a2b7c5583f0c)
@@ -123,6 +127,12 @@ LetMeDoIt AI just got smarter with memory retention!
 # Examples of Plugin Features (selective only):
 
 Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural language:
+
+* [NEW] search / analyze financial data
+
+> What was the average stock price of Apple Inc. in 2023?
+
+> Analyze Apple Inc's stock price over last 5 years.
 
 * [NEW] search weather information
 

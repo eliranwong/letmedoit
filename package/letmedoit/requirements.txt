@@ -38,3 +38,4 @@ feedparser
 html2text
 pypdf
 PyMuPDF
+yfinance
