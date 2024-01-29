@@ -74,6 +74,8 @@ class SharedUtil:
         #"gpt-3.5-turbo-instruct": 4097,
         "gpt-3.5-turbo": 4097,
         "gpt-3.5-turbo-16k": 16385,
+        "gpt-4-turbo-preview": 128000,
+        "gpt-4-0125-preview": 128000,
         "gpt-4-1106-preview": 128000, # official 128,000; but "This model supports at most 4096 completion tokens"; set 8192 here to work with LetMeDoIt AI dynamic token feature
         #"gpt-4-vision-preview": 128,000, # used in plugin "analyze images"
         "gpt-4": 8192,
@@ -408,6 +410,8 @@ class SharedUtil:
                 "gpt-3.5-turbo-0613",
                 "gpt-3.5-turbo-16k",
                 "gpt-3.5-turbo-16k-0613",
+                "gpt-4-turbo-preview",
+                "gpt-4-0125-preview",
                 "gpt-4-1106-preview",
                 "gpt-4-0314",
                 "gpt-4-32k-0314",

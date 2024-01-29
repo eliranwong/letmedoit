@@ -1,7 +1,7 @@
 """
-LetMeDoIt AI Plugin - analyze images
+LetMeDoIt AI Plugin - analyze images with gemini
 
-analyze images with model "gpt-4-vision-preview"
+analyze images with model "gemini pro vision"
 
 reference: https://platform.openai.com/docs/guides/vision
 

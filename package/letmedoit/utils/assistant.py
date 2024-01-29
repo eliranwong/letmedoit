@@ -1134,7 +1134,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             else:
                 tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
             suggestedMaxToken = int(tokenLimit / 2)
-            config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else suggestedMaxToken # 'gpt-4-1106-preview' supports at most 4096 completion tokens
+            config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel in ("gpt-4-turbo-preview", "gpt-4-0125-preview", "gpt-4-1106-preview") else suggestedMaxToken # 'gpt-4-1106-preview' supports at most 4096 completion tokens
             config.saveConfig()
             self.print3(f"Maximum response tokens: {config.chatGPTApiMaxTokens}")
 
@@ -1282,8 +1282,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
             maxtokens = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.chatGPTApiMaxTokens))
             if maxtokens and not maxtokens.strip().lower() == config.exit_entry and int(maxtokens) > 0:
                 config.chatGPTApiMaxTokens = int(maxtokens)
-                if config.chatGPTApiMaxTokens > 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit: # 'gpt-4-1106-preview' supports at most 4096 completion tokens
-                    config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit
+                if config.chatGPTApiMaxTokens > 4096 if config.chatGPTApiModel in ("gpt-4-turbo-preview", "gpt-4-0125-preview", "gpt-4-1106-preview") else tokenLimit: # 'gpt-4-1106-preview' supports at most 4096 completion tokens
+                    config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel in ("gpt-4-turbo-preview", "gpt-4-0125-preview", "gpt-4-1106-preview") else tokenLimit
                 config.saveConfig()
                 self.print3(f"Maximum tokens: {config.chatGPTApiMaxTokens}")
 
