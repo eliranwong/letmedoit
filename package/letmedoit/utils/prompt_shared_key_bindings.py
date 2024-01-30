@@ -54,10 +54,13 @@ def _(event):
     # remarks: set_data does not work
     config.clipboard.set_text(data.text)
 # insert linebreak
-@prompt_shared_key_bindings.add("c-r")
+@prompt_shared_key_bindings.add("escape", "enter")
 def _(event):
     buffer = event.app.current_buffer
-    buffer.insert_text("\n")
+    if config.multilineInput:
+        buffer.validate_and_handle()
+    else:
+        buffer.newline()
 
 # navigation
 

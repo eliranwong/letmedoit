@@ -1,6 +1,13 @@
 from letmedoit import config
-import pprint, os, shutil, sys, subprocess, platform
+import pprint, re, os, shutil, sys, subprocess, platform
 from prompt_toolkit.shortcuts import yes_no_dialog
+
+def loadConfig(configPath):
+    with open(configPath, "r", encoding="utf-8") as fileObj:
+        configs = fileObj.read()
+    configs = "from letmedoit import config\n" + re.sub("^([A-Za-z])", r"config.\1", configs, flags=re.M)
+    exec(configs, globals())
+config.loadConfig = loadConfig
 
 def setConfig(defaultSettings, thisTranslation={}, temporary=False):
     for key, value in defaultSettings:
@@ -146,9 +153,13 @@ if os.path.isdir(storageDir):
                 text=f"Do you want to use the following backup?\n{backupFile}"
             ).run()
             if restore_backup:
-                shutil.copy(backupFile, configFile)
-                print("Configuration backup restored!")
-                config.restartApp()
+                try:
+                    loadConfig(backupFile)
+                    shutil.copy(backupFile, configFile)
+                    print("Configuration backup restored!")
+                    #config.restartApp()
+                except:
+                    print("Failed to restore backup!")
 setConfig(defaultSettings)
 # allow plugins to add customised config
 # read https://github.com/eliranwong/letmedoit/wiki/Plugins-%E2%80%90-Work-with-LetMeDoIt-AI-Configurations#example

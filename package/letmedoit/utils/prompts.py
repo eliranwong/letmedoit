@@ -6,7 +6,6 @@ from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.styles import Style
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings, ConditionalKeyBindings
-from prompt_toolkit.shortcuts import set_title
 from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
 from letmedoit.utils.prompt_multiline_shared_key_bindings import prompt_multiline_shared_key_bindings
 from letmedoit.utils.promptValidator import NumberValidator
@@ -139,11 +138,6 @@ Available tokens: {estimatedAvailableTokens}
             config.developer = not config.developer
             config.saveConfig()
             run_in_terminal(lambda: config.print3(f"Developer mode: {'enabled' if config.developer else 'disabled'}!"))
-        #@this_key_bindings.add("c-e")
-        #def _(_):
-        #    config.enhanceCommandExecution = not config.enhanceCommandExecution
-        #    config.saveConfig()
-        #    run_in_terminal(lambda: config.print3(f"Command execution mode: '{'enhanced' if config.enhanceCommandExecution else 'auto'}'!"))
         @this_key_bindings.add("c-l")
         def _(_):
             config.toggleMultiline()
@@ -151,13 +145,14 @@ Available tokens: {estimatedAvailableTokens}
         def _(event):
             buffer = event.app.current_buffer
             config.defaultEntry = buffer.text
-            event.app.current_buffer.text = ".context"
-            event.app.current_buffer.validate_and_handle()
+            buffer.text = ".context"
+            buffer.validate_and_handle()
         @this_key_bindings.add("escape", "!")
         @this_key_bindings.add("escape", "t")
         def _(event):
-            event.app.current_buffer.text = ".system"
-            event.app.current_buffer.validate_and_handle()
+            buffer = event.app.current_buffer
+            buffer.text = ".system"
+            buffer.validate_and_handle()
         @this_key_bindings.add("c-k")
         def _(_):
             run_in_terminal(self.showKeyBindings)
@@ -194,10 +189,10 @@ Available tokens: {estimatedAvailableTokens}
             run_in_terminal(lambda: config.print3(f"Entry Mouse Support: '{'enabled' if config.mouseSupport else 'disabled'}'!"))
         # edit the last response in built-in or custom text editor
         @this_key_bindings.add("escape", "p")
-        def _(_):
-            customTextEditor = config.customTextEditor if config.customTextEditor else f"{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
-            pydoc.pipepager(config.pagerContent, cmd=customTextEditor)
-            set_title(config.letMeDoItName)
+        def _(event):
+            buffer = event.app.current_buffer
+            buffer.text = ".editresponse"
+            buffer.validate_and_handle()
 
         conditional_prompt_multiline_shared_key_bindings = ConditionalKeyBindings(
             key_bindings=prompt_multiline_shared_key_bindings,
@@ -210,6 +205,8 @@ Available tokens: {estimatedAvailableTokens}
         ])
     def showKeyBindings(self):
         bindings = {
+            "enter": "complete entry",
+            "esc+enter": "new line",
             "ctrl+q": "quit / exit current feature",
             "ctrl+z": "cancel",
             "ctrl+a": "select / unselect all",
@@ -223,13 +220,11 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+g": "pager view",
             "ctrl+d": "forward delete",
             "ctrl+h": "backspace",
-            #"ctrl+e": "swap command execution mode",
             "ctrl+k": "show key bindings",
             "ctrl+l": "toggle multi-line entry",
             "ctrl+b": "toggle input audio",
             "ctrl+p": "toggle response audio",
             "ctrl+w": "toggle word wrap",
-            "ctrl+r": "insert a linebreak",
             "ctrl+i or tab": "insert a file or folder path",
             "shift+tab": f"insert '{config.terminalEditorTabText}' [configurable]",
             "esc+f": "display device information",
@@ -243,6 +238,7 @@ Available tokens: {estimatedAvailableTokens}
             "esc+z": "move cursor to entry end",
             "esc+s": "swap text brightness",
             "esc+d": "swap developer mode",
+            "ctrl+r": "reverse-i-search",
             "esc+r": "restart letmedoit",
         }
         textEditor = config.customTextEditor.split(" ", 1)[0]

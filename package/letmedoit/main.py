@@ -131,6 +131,7 @@ def saveConfig():
     with open(configFile, "w", encoding="utf-8") as fileObj:
         for name in dir(config):
             excludeConfigList = [
+                "actionHelp",
                 "isTermux",
                 "oai_client",
                 "includeIpInSystemMessageTemp",

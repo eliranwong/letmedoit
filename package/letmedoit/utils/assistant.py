@@ -14,7 +14,7 @@ from prompt_toolkit.formatted_text import PygmentsTokens
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter, FuzzyCompleter
-from prompt_toolkit.shortcuts import clear
+from prompt_toolkit.shortcuts import clear, set_title
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit import print_formatted_text, HTML
 from letmedoit.utils.terminal_mode_dialogs import TerminalModeDialogs
@@ -157,6 +157,7 @@ class LetMeDoItAI:
             ".storagedirectory": ("change storage directory", self.setStorageDirectory),
             ".autobuilderconfig": ("change auto builder config", self.setAutoGenBuilderConfig),
             ".customtexteditor": ("change custom text editor", self.setCustomTextEditor),
+            ".ttscommand": ("change text-to-speech command", self.defineTtsCommand),
             ".termuxapi": ("change Termux API integration", self.setTermuxApi),
             ".autoupgrade": ("change automatic upgrade", self.setAutoUpgrade),
             ".developer": ("change developer mode [ctrl+d]", self.setDeveloperMode),
@@ -167,11 +168,12 @@ class LetMeDoItAI:
             ".toggleimprovedwriting": ("toggle improved writing [esc+i]", self.toggleImprovedWriting),
             ".toggleinputaudio": ("toggle input audio [ctrl+b]", self.toggleinputaudio),
             ".toggleresponseaudio": ("toggle response audio [ctrl+p]", self.toggleresponseaudio),
-            ".ttscommand": ("configure text-to-speech command", self.defineTtsCommand),
+            ".editresponse": ("edit the last response", self.editLastResponse),
+            ".editconfigs": ("edit configuration settings", self.editConfigs),
             ".install": ("install python package", self.installPythonPackage),
             ".system": ("open system command prompt", lambda: SystemCommandPrompt().run(allowPathChanges=True)),
-            ".help": ("open LetMeDoIt wiki", lambda: SharedUtil.openURL('https://github.com/eliranwong/letmedoit/wiki')),
             ".keys": ("display key bindings", config.showKeyBindings),
+            ".help": ("open LetMeDoIt wiki", lambda: SharedUtil.openURL('https://github.com/eliranwong/letmedoit/wiki')),
         }
 
         config.actionHelp = f"# Quick Actions\n(entries that start with '.')\n"
@@ -1096,6 +1098,38 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.saveConfig()
             self.print3(f"Pass Function Call Response to ChatGPT: {'enabled' if config.passFunctionCallReturnToChatGPT else 'disabled'}!")
 
+    def editLastResponse(self):
+        customTextEditor = config.customTextEditor if config.customTextEditor else f"{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
+        pydoc.pipepager(config.pagerContent, cmd=customTextEditor)
+        set_title(config.letMeDoItName)
+
+    # change configs
+    def editConfigs(self):
+        # file paths
+        configFile = os.path.join(config.letMeDoItAIFolder, "config.py")
+        backupFile = os.path.join(config.getFiles(), "config_backup.py")
+        # backup configs
+        config.saveConfig()
+        shutil.copy(configFile, backupFile)
+        # open current configs with built-in text editor
+        customTextEditor = config.customTextEditor if config.customTextEditor else f"{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
+        os.system(f"{customTextEditor} {configFile}")
+        set_title(config.letMeDoItName)
+        # re-load configs
+        try:
+            config.loadConfig(configFile)
+            self.print2("Changes loaded!")
+        except:
+            self.print2("Failed to load your changes!")
+            print(traceback.format_exc())
+            try:
+                self.print2("Restoring backup ...")
+                config.loadConfig(backupFile)
+                shutil.copy(backupFile, configFile)
+                self.print2("Restored!")
+            except:
+                self.print2("Failed to restore backup!")
+
     def installPythonPackage(self):
         self.print("Enter a python package name:")
         package = self.prompts.simplePrompt(style=self.prompts.promptStyle2)
@@ -1300,7 +1334,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
 
     def runSystemCommand(self, command):
         command = command.strip()[1:]
-        if config.multilineInput:
+        if "\n" in command:
             command = ";".join(command.split("\n"))
         if config.thisPlatform == "Windows":
             os.system(command)

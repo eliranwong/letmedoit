@@ -18,9 +18,10 @@ from prompt_toolkit.styles.pygments import style_from_pygments_cls
 from prompt_toolkit import print_formatted_text, HTML
 from prompt_toolkit import prompt
 from prompt_toolkit.filters import Condition
-from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
-from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
+from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings, ConditionalKeyBindings
 from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
+from letmedoit.utils.prompt_multiline_shared_key_bindings import prompt_multiline_shared_key_bindings
+from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 from pathlib import Path
 
 def check_openai_errors(func):
@@ -85,6 +86,7 @@ class HealthCheck:
 
     @staticmethod
     def setBasicConfig(): # minimum config to work with standalone scripts built with AutoGen
+        config.multilineInput = False
         config.openaiApiKey = ''
         config.chatGPTApiModel = 'gpt-3.5-turbo-16k'
         config.chatGPTApiMaxTokens = 4000
@@ -144,9 +146,15 @@ class HealthCheck:
             @this_key_bindings.add("c-g")
             def _(_):
                 config.launchPager()
+            # additional key binding
+            conditional_prompt_multiline_shared_key_bindings = ConditionalKeyBindings(
+                key_bindings=prompt_multiline_shared_key_bindings,
+                filter=Condition(lambda: config.multilineInput),
+            )
             this_key_bindings = merge_key_bindings([
                 this_key_bindings,
                 prompt_shared_key_bindings,
+                conditional_prompt_multiline_shared_key_bindings,
             ])
         else:
             @this_key_bindings.add("c-n")
@@ -172,7 +180,7 @@ class HealthCheck:
             swap_light_and_dark_colors=Condition(lambda: not config.terminalResourceLinkColor.startswith("ansibright")),
             style=style,
             validator=validator,
-            #multiline=Condition(lambda: config.multilineInput),
+            multiline=Condition(lambda: hasattr(config, "currentMessages") and config.multilineInput),
             default=default,
             accept_default=accept_default,
             completer=completer,

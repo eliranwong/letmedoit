@@ -72,10 +72,10 @@ class SystemCommandPrompt:
             self.systemCommandPromptEntry = buffer.text
             self.systemCommandPromptPosition = buffer.cursor_position
             buffer.validate_and_handle()
-        @this_key_bindings.add("c-r")
+        @this_key_bindings.add("escape", "enter")
         def _(event):
             buffer = event.app.current_buffer
-            buffer.insert_text("\n")
+            buffer.newline()
         @this_key_bindings.add("escape", "m")
         def _(_):
             config.mouseSupport = not config.mouseSupport
