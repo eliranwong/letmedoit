@@ -33,7 +33,7 @@ class ChatGPT:
         self.defaultPrompt = ""
 
     def resetMessages(self):
-        return [{"role": "system", "content": "You are a helpful assistant."},]
+        return [{"role": "system", "content": config.systemMessage_chatgpt},]
 
     def getDynamicTokens(self):
         tokenLimit = HealthCheck.tokenLimits[config.chatGPTApiModel]

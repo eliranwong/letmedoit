@@ -59,7 +59,11 @@ defaultSettings = (
     ('max_agents', 5), # maximum number of agents build manager can create.
     ('max_group_chat_round', 12), # AutoGen group chat maximum round
     ('env_QT_QPA_PLATFORM_PLUGIN_PATH', ''), # e.g. # deal with error: qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "~/apps/letmedoit/lib/python3.10/site-packages/cv2/qt/plugins" even though it was found.
-    ('customSystemMessage', ''),
+    ('systemMessage_letmedoit', ''), # letmedoit system message
+    ('systemMessage_chatgpt', 'You are a helpful assistant.'), # system message for standalone chatgpt chatbot
+    ('systemMessage_geminipro', 'You are a helpful assistant.'), # system message for standalone geminipro chatbot
+    ('systemMessage_palm2', 'You are a helpful assistant.'), # system message for standalone palm2 chatbot
+    ('systemMessage_codey', 'You are an expert on coding.'), # system message for standalone codey chatbot
     ('embeddingModel', 'paraphrase-multilingual-mpnet-base-v2'), # reference: https://www.sbert.net/docs/pretrained_models.html
     ('historyParentFolder', ""),
     ('customTextEditor', ""), # e.g. 'micro -softwrap true -wordwrap true'; built-in text editor eTextEdit is used when it is not defined.

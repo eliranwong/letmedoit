@@ -92,6 +92,7 @@ class GeminiPro:
         else:
             history = None
         chat = model.start_chat(history=history)
+        justStarted = True
         #HealthCheck.print2(f"\n{self.name} + Vision loaded!" if self.enableVision else f"\n{self.name} loaded!")
         HealthCheck.print2(f"\n{self.name} loaded!")
         if hasattr(config, "currentMessages"):
@@ -112,6 +113,7 @@ class GeminiPro:
             elif prompt == ".new" and not hasattr(config, "currentMessages"):
                 clear()
                 chat = model.start_chat()
+                justStarted = True
                 print("New chat started!")
             elif prompt := prompt.strip():
                 streamingWordWrapper = StreamingWordWrapper()
@@ -142,6 +144,9 @@ class GeminiPro:
 #                )
 
                 try:
+                    if not hasattr(config, "currentMessages") and config.config.systemMessage_geminipro and justStarted:
+                        prompt = f"{config.systemMessage_geminipro}\n{prompt}"
+                        justStarted = False
                     # https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini
                     # Note: At the time of writing, function call feature with Gemini Pro is very weak, compared with the function call feature offerred by ChatGPT:
                     # 1. Gemini Pro do not accept multiple tools in a single message

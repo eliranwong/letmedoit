@@ -75,7 +75,7 @@ class Palm2:
             history = None
         # start chat
         chat = model.start_chat(
-            context=f"You're {self.name}, a helpful AI assistant.",
+            context=config.systemMessage_palm2,
             message_history=history,
             #examples=[
             #    InputOutputTextPair(

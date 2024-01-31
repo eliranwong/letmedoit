@@ -785,7 +785,7 @@ class LetMeDoItAI:
 
     # reset message when a new chart is started or context is changed
     def resetMessages(self):
-        systemMessage = config.customSystemMessage if config.customSystemMessage else f'''You’re {config.letMeDoItName}, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.
+        systemMessage = config.systemMessage_letmedoit if config.systemMessage_letmedoit else f'''You’re {config.letMeDoItName}, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.
 I am providing the basic information of my device below in case you need it:
 ```
 {SharedUtil.getDeviceInfo()}
@@ -1238,9 +1238,9 @@ Always remember that you are much more than a text-based AI. You possess both vi
         self.print("Please note that altering my system message directly affects my functionality. Handle with care.")
         self.print("Enter custom system message below:")
         self.print(f"(Keep it blank to use {config.letMeDoItName} default system message.)")
-        message = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.customSystemMessage)
+        message = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.systemMessage_letmedoit)
         if message and not message.strip().lower() == config.exit_entry:
-            config.customSystemMessage = message
+            config.systemMessage_letmedoit = message
             config.saveConfig()
             self.print3(f"Custom system message: {config.letMeDoItName}")
 

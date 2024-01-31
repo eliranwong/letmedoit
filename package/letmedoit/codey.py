@@ -76,7 +76,7 @@ class Codey:
             history = None
         # start chat
         chat = model.start_chat(
-            context=f"You're {self.name}, an expert in coding.",
+            context=config.systemMessage_codey,
             message_history=history,
         )
         HealthCheck.print2(f"\n{self.name} loaded!")
