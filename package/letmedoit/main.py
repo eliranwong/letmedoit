@@ -317,6 +317,8 @@ def main():
     createShortcuts()
     config.excludeConfigList = []
     config.isVlcPlayerInstalled = VlcUtil.isVlcPlayerInstalled()
+    # save loaded configs
+    saveConfig()
     # check log files; remove old lines if more than 3000 lines is found in a log file
     for i in ("chats", "paths", "commands"):
         filepath = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", i)

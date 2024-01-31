@@ -109,6 +109,10 @@ class HealthCheck:
         config.includeIpInSystemMessage = False
         config.wrapWords = True
         config.pygments_style = ""
+        config.systemMessage_chatgpt = 'You are a helpful assistant.'
+        config.systemMessage_geminipro = 'You are a helpful assistant.'
+        config.systemMessage_palm2 = 'You are a helpful assistant.'
+        config.systemMessage_codey = 'You are an expert on coding.'
         HealthCheck.setPrint()
 
     @staticmethod
