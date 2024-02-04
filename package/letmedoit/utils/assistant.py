@@ -1186,7 +1186,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
     def setEmbeddingModel(self):
         oldEmbeddingModel = config.embeddingModel
         model = self.dialogs.getValidOptions(
-            options=("text-embedding-ada-002", "paraphrase-multilingual-mpnet-base-v2", "all-mpnet-base-v2", "all-MiniLM-L6-v2", "custom"),
+            options=("text-embedding-3-large", "text-embedding-3-small", "text-embedding-ada-002", "paraphrase-multilingual-mpnet-base-v2", "all-mpnet-base-v2", "all-MiniLM-L6-v2", "custom"),
             title="Embedding model",
             default=config.embeddingModel,
             text="Select an embedding model:",
