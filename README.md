@@ -34,6 +34,10 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki#an-interview
 
 # Recent Additions
 
+[Analyze audio](https://github.com/eliranwong/letmedoit/wiki/Analyze-Audio)
+
+<img width="1440" alt="analyze_audio" src="https://github.com/eliranwong/letmedoit/assets/25262722/24e49f3b-289d-40f6-bf9c-45ed1e0eeed6">
+
 [Search / Analyze Financial Data](https://github.com/eliranwong/letmedoit/wiki/Search-Financial-Data)
 
 <img width="1312" alt="search_financial_data" src="https://github.com/eliranwong/letmedoit/assets/25262722/9976f15b-85e1-4c5b-97a0-5124c04ffa8a">
