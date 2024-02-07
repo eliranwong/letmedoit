@@ -96,6 +96,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("download_web_content")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["download_web_content"] = download_web_content
+config.addFunctionCall(name="download_web_content", signature=functionSignature, method=download_web_content)

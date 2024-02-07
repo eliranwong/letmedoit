@@ -33,7 +33,5 @@ functionSignature = {
 }
 
 # Integrate the signature and method into LetMeDoIt AI
-config.pluginsWithFunctionCall.append("open_browser")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["open_browser"] = open_browser
+config.addFunctionCall(name="open_browser", signature=functionSignature, method=open_browser)
 config.inputSuggestions.append("Open url: ")

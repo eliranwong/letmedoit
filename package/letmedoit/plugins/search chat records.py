@@ -162,7 +162,5 @@ functionSignature2 = {
 }
 
 config.inputSuggestions += ["Search chat records: ", "Load chat records with this ID: ", "Load chat records in this file: "]
-config.pluginsWithFunctionCall += ["search_chats", "load_chats"]
-config.chatGPTApiFunctionSignatures += [functionSignature1, functionSignature2]
-config.chatGPTApiAvailableFunctions["search_chats"] = search_chats
-config.chatGPTApiAvailableFunctions["load_chats"] = load_chats
+config.addFunctionCall(name="search_chats", signature=functionSignature1, method=search_chats)
+config.addFunctionCall(name="load_chats", signature=functionSignature2, method=load_chats)

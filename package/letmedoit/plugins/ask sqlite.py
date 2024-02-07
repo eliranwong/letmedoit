@@ -59,7 +59,7 @@ And run python code to resolve my request: {request}
 
 Please consider individual table information below for code generation:
 {info}"""
-        _, function_call_response = SharedUtil.getSingleFunctionResponse(userInput, config.execute_python_code_signature, "execute_python_code")
+        _, function_call_response = SharedUtil.getSingleFunctionResponse(userInput, [config.chatGPTApiFunctionSignatures["execute_python_code"]], "execute_python_code")
         return function_call_response
     except:
         SharedUtil.showErrors()
@@ -84,9 +84,7 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("ask_sqlite")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["ask_sqlite"] = ask_sqlite
+config.addFunctionCall(name="ask_sqlite", signature=functionSignature, method=ask_sqlite)
 
 config.inputSuggestions.append("""Connect the following SQLite file and tell me about the tables that it contains:
 [CALL_ask_sqlite]

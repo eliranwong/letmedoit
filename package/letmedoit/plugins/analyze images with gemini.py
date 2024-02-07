@@ -36,7 +36,5 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("analyze_images_with_gemini")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["analyze_images_with_gemini"] = analyze_images_with_gemini
+config.addFunctionCall(name="analyze_images_with_gemini", signature=functionSignature, method=analyze_images_with_gemini)
 config.inputSuggestions.append("Ask Gemini Pro Vision to describe this image in detail: ")

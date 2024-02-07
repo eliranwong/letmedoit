@@ -41,6 +41,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("create_statistical_graphics")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["create_statistical_graphics"] = create_statistical_graphics
+config.addFunctionCall(name="create_statistical_graphics", signature=functionSignature, method=create_statistical_graphics)

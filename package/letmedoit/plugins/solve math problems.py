@@ -34,6 +34,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("solve_math")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["solve_math"] = solve_math
+config.addFunctionCall(name="solve_math", signature=functionSignature, method=solve_math)

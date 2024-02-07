@@ -103,8 +103,6 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("analyze_images")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["analyze_images"] = analyze_images
+config.addFunctionCall(name="analyze_images", signature=functionSignature, method=analyze_images)
 config.inputSuggestions.append("Describe this image in detail: ")
 config.inputSuggestions.append("Extract text from this image: ")

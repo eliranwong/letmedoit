@@ -35,9 +35,7 @@ In the last line of your code, use 'print' function to print the requested infor
         },
     }
 
-    config.pluginsWithFunctionCall.append("search_weather_info")
-    config.chatGPTApiFunctionSignatures.append(functionSignature)
-    config.chatGPTApiAvailableFunctions["search_weather_info"] = search_weather_info
+    config.addFunctionCall(name="search_weather_info", signature=functionSignature, method=search_weather_info)
 else:
     config.print("To use plugin 'search weather info', you need to set up an OpenWeatherMap API key first.")
     config.print3("Read: https://github.com/eliranwong/letmedoit/wiki/OpenWeatherMap-API-Setup")

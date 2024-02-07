@@ -31,7 +31,5 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("ask_palm2")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["ask_palm2"] = ask_palm2
+config.addFunctionCall(name="ask_palm2", signature=functionSignature, method=ask_palm2)
 config.inputSuggestions.append("Ask PaLM 2: ")

@@ -31,7 +31,5 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("ask_gemini_pro")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["ask_gemini_pro"] = ask_gemini_pro
+config.addFunctionCall(name="ask_gemini_pro", signature=functionSignature, method=ask_gemini_pro)
 config.inputSuggestions.append("Ask Gemini Pro: ")

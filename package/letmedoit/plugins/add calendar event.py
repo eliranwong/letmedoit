@@ -162,6 +162,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("add_calendar_event")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["add_calendar_event"] = add_calendar_event
+config.addFunctionCall(name="add_calendar_event", signature=functionSignature, method=add_calendar_event)

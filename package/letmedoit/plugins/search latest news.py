@@ -47,14 +47,8 @@ functionSignature = {
     },
 }
 
-# Add the following line to tell LetMeDoIt AI that this plugin work with function calling feature.
-config.pluginsWithFunctionCall.append("search_latest_news")
-
-# The following line adds the function signature, that we prepared in STEP 3, to the full list of all function signatures that work with LetMeDoIt AI.
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-
-# The following line tells LetMeDoIt AI to call the method "search_latest_news" that we added in this plugin when the function signature "search_latest_news" is loaded.
-config.chatGPTApiAvailableFunctions["search_latest_news"] = search_latest_news
+# The following line integrate the function method and signature into LetMeDoIt AI
+config.addFunctionCall(name="search_latest_news", signature=functionSignature, method=search_latest_news)
 
 # The following line is optional. It adds an input suggestion to LetMeDoIt AI user input prompt
 config.inputSuggestions.append("Tell me the latest news about ")

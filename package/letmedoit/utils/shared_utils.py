@@ -310,7 +310,7 @@ class SharedUtil:
         for i in range(config.max_consecutive_auto_heal):
             userInput = f"Original python code:\n```\n{code}\n```\n\nTraceback:\n```\n{trace}\n```"
             config.print3(f"Auto-correction attempt: {(i + 1)}")
-            function_call_message, function_call_response = SharedUtil.getSingleFunctionResponse(userInput, config.heal_python_signature, "heal_python")
+            function_call_message, function_call_response = SharedUtil.getSingleFunctionResponse(userInput, [config.chatGPTApiFunctionSignatures["heal_python"]], "heal_python")
             # display response
             config.print(config.divider)
             if config.developer:

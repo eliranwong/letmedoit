@@ -69,6 +69,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("remove_image_background")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["remove_image_background"] = remove_image_background
+config.addFunctionCall(name="remove_image_background", signature=functionSignature, method=remove_image_background)

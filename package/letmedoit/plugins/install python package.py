@@ -35,6 +35,4 @@ functionSignature = {
 }
 
 # Integrate the signature and method into LetMeDoIt AI
-config.pluginsWithFunctionCall.append("install_package")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["install_package"] = install_package
+config.addFunctionCall(name="install_package", signature=functionSignature, method=install_package)

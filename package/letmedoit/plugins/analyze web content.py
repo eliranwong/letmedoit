@@ -57,6 +57,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("analyze_web_content")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["analyze_web_content"] = analyze_web_content
+config.addFunctionCall(name="analyze_web_content", signature=functionSignature, method=analyze_web_content)

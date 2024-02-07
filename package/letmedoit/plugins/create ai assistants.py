@@ -43,6 +43,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("build_agents")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["build_agents"] = build_agents
+config.addFunctionCall(name="build_agents", signature=functionSignature, method=build_agents)

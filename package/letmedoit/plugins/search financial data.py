@@ -35,6 +35,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("search_finance")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["search_finance"] = search_finance
+config.addFunctionCall(name="search_finance", signature=functionSignature, method=search_finance)

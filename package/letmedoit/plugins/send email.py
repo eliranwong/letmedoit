@@ -120,6 +120,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("send_email")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["send_email"] = send_email
+config.addFunctionCall(name="send_email", signature=functionSignature, method=send_email)

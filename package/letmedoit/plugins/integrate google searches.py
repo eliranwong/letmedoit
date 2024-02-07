@@ -46,7 +46,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("integrate_google_searches")
-config.integrate_google_searches_signature = [functionSignature]
-config.chatGPTApiFunctionSignatures.insert(0, functionSignature)
-config.chatGPTApiAvailableFunctions["integrate_google_searches"] = integrate_google_searches
+config.addFunctionCall(name="integrate_google_searches", signature=functionSignature, method=integrate_google_searches)

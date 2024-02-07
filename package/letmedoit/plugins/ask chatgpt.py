@@ -32,7 +32,5 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("ask_chatgpt")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["ask_chatgpt"] = ask_chatgpt
+config.addFunctionCall(name="ask_chatgpt", signature=functionSignature, method=ask_chatgpt)
 config.inputSuggestions.append("Ask ChatGPT: ")

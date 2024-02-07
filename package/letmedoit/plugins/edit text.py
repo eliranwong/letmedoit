@@ -51,6 +51,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("edit_text")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["edit_text"] = edit_text
+config.addFunctionCall(name="edit_text", signature=functionSignature, method=edit_text)

@@ -38,6 +38,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("send_whatsapp")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["send_whatsapp"] = send_whatsapp
+config.addFunctionCall(name="send_whatsapp", signature=functionSignature, method=send_whatsapp)

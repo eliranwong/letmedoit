@@ -38,6 +38,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("create_map")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["create_map"] = create_map
+config.addFunctionCall(name="create_map", signature=functionSignature, method=create_map)

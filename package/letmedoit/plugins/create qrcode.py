@@ -38,6 +38,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("create_qrcode")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["create_qrcode"] = create_qrcode
+config.addFunctionCall(name="create_qrcode", signature=functionSignature, method=create_qrcode)

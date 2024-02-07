@@ -35,6 +35,7 @@ if not config.isTermux:
     from letmedoit.palm2 import Palm2
     from letmedoit.codey import Codey
 from letmedoit.utils.install import installmodule
+from typing import Callable
 
 
 class LetMeDoItAI:
@@ -62,6 +63,7 @@ class LetMeDoItAI:
         config.pagerContent = ""
         #self.addPagerContent = False
         # share the following methods in config so that they are accessible via plugins
+        config.addFunctionCall = self.addFunctionCall
         config.getFiles = self.getFiles
         config.stopSpinning = self.stopSpinning
         config.toggleMultiline = self.toggleMultiline
@@ -228,7 +230,7 @@ class LetMeDoItAI:
 
     def runPlugins(self):
         # The following config values can be modified with plugins, to extend functionalities
-        config.pluginsWithFunctionCall = []
+        #config.pluginsWithFunctionCall = []
         config.aliases = {}
         config.predefinedContexts = {
             "[none]": "",
@@ -237,13 +239,8 @@ class LetMeDoItAI:
         config.predefinedInstructions = {}
         config.inputSuggestions = []
         config.chatGPTTransformers = []
-        config.chatGPTApiFunctionSignatures = []
+        config.chatGPTApiFunctionSignatures = {}
         config.chatGPTApiAvailableFunctions = {}
-
-        # built-in functions
-        config.pluginsWithFunctionCall.append("execute_python_code")
-        if config.terminalEnableTermuxAPI:
-            config.pluginsWithFunctionCall.append("execute_termux_command")
 
         pluginFolder = os.path.join(config.letMeDoItAIFolder, "plugins")
         if self.storageDir:
@@ -270,14 +267,15 @@ class LetMeDoItAI:
                     if not run:
                         config.pluginExcludeList.append(plugin)
         if internetSeraches in config.pluginExcludeList:
-            del config.chatGPTApiFunctionSignatures[0]
+            del config.chatGPTApiFunctionSignatures["integrate google searches"]
         self.setupPythonExecution()
         if config.terminalEnableTermuxAPI:
             self.setupTermuxExecution()
-        for i in config.pluginsWithFunctionCall:
-            callEntry = f"[CALL_{i}]"
-            if not callEntry in config.inputSuggestions:
-                config.inputSuggestions.append(callEntry)
+        for i in config.chatGPTApiAvailableFunctions:
+            if not i in ("python_qa",):
+                callEntry = f"[CALL_{i}]"
+                if not callEntry in config.inputSuggestions:
+                    config.inputSuggestions.append(callEntry)
 
     def selectPlugins(self):
         plugins = []
@@ -482,10 +480,7 @@ class LetMeDoItAI:
             },
         }
 
-        config.execute_termux_command_signature = [functionSignature]
-        # useful when enhanced mode is disabled
-        config.chatGPTApiFunctionSignatures.append(functionSignature)
-        config.chatGPTApiAvailableFunctions["execute_termux_command"] = execute_termux_command
+        self.addFunctionCall(name="execute_termux_command", signature=functionSignature, method=execute_termux_command)
 
     def setupPythonExecution(self):
         def execute_python_code(function_args):
@@ -543,13 +538,10 @@ class LetMeDoItAI:
             },
         }
 
-        config.execute_python_code_signature = [functionSignature]
-        # useful when enhanced mode is disabled
-        config.chatGPTApiFunctionSignatures.append(functionSignature)
-        config.chatGPTApiAvailableFunctions["execute_python_code"] = execute_python_code
+        self.addFunctionCall(name="execute_python_code", signature=functionSignature, method=execute_python_code)
 
         ### A dummy function to redirect q&a task about python, otherwise, it may be mistaken by execute_python_code
-        def python_qa(function_args):
+        def python_qa(_):
             return "[INVALID]"
         functionSignature = {
             "name": "python_qa",
@@ -564,9 +556,12 @@ class LetMeDoItAI:
                 },
             },
         }
-        #config.pluginsWithFunctionCall.append("python_qa")
-        config.chatGPTApiFunctionSignatures.append(functionSignature)
-        config.chatGPTApiAvailableFunctions["python_qa"] = python_qa
+        self.addFunctionCall(name="python_qa", signature=functionSignature, method=python_qa)
+
+    # integrate function call plugin
+    def addFunctionCall(self, name: str, signature: str, method: Callable[[dict], str]):
+        config.chatGPTApiFunctionSignatures[name] = signature
+        config.chatGPTApiAvailableFunctions[name] = method
 
     # call a specific function and return messages
     def runFunction(self, messages, functionSignatures, function_name):
@@ -688,8 +683,8 @@ class LetMeDoItAI:
                     messages=thisThisMessage,
                     n=1,
                     temperature=config.llmTemperature,
-                    max_tokens=SharedUtil.getDynamicTokens(thisThisMessage, config.chatGPTApiFunctionSignatures),
-                    tools=SharedUtil.convertFunctionSignaturesIntoTools(config.chatGPTApiFunctionSignatures),
+                    max_tokens=SharedUtil.getDynamicTokens(thisThisMessage, config.chatGPTApiFunctionSignatures.values()),
+                    tools=SharedUtil.convertFunctionSignaturesIntoTools([config.chatGPTApiFunctionSignatures[config.runSpecificFuntion]] if config.runSpecificFuntion and config.runSpecificFuntion in config.chatGPTApiFunctionSignatures else config.chatGPTApiFunctionSignatures.values()),
                     tool_choice={"type": "function", "function": {"name": config.runSpecificFuntion}} if config.runSpecificFuntion else config.chatGPTApiFunctionCall,
                     stream=True,
                 )
@@ -1163,7 +1158,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.print3(f"ChatGPT model: {model}")
             # handle max tokens
             if tiktokenImported:
-                functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
+                functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures.values())
                 tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel] - functionTokens
             else:
                 tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
@@ -1297,7 +1292,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
     def setMaxTokens(self):
         contextWindowLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
         if tiktokenImported:
-            functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
+            functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures.values())
             tokenLimit = contextWindowLimit - functionTokens - config.chatGPTApiMinTokens
         else:
             tokenLimit = contextWindowLimit
@@ -1735,7 +1730,7 @@ My writing:
                     # if user don't want function call or a particular function call
                     noFunctionCall = ("[NO_FUNCTION_CALL]" in fineTunedUserInput)
                     checkCallSpecificFunction = re.search("\[CALL_([^\[\]]+?)\]", fineTunedUserInput)
-                    config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
+                    config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.chatGPTApiAvailableFunctions else ""
                     if config.developer and config.runSpecificFuntion:
                         #self.print(f"calling function '{config.runSpecificFuntion}' ...")
                         print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Calling function</{config.terminalPromptIndicatorColor2}> <{config.terminalCommandEntryColor2}>'{config.runSpecificFuntion}'</{config.terminalCommandEntryColor2}> <{config.terminalPromptIndicatorColor2}>...</{config.terminalPromptIndicatorColor2}>"))
@@ -1750,7 +1745,7 @@ My writing:
                     # force loading internet searches
                     if config.loadingInternetSearches == "always":
                         try:
-                            config.currentMessages = self.runFunction(config.currentMessages, config.integrate_google_searches_signature, "integrate_google_searches")
+                            config.currentMessages = self.runFunction(config.currentMessages, [config.chatGPTApiFunctionSignatures["integrate_google_searches"]], "integrate_google_searches")
                         except:
                             self.print("Unable to load internet resources.")
                             SharedUtil.showErrors()

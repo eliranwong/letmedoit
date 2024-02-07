@@ -180,10 +180,6 @@ def saveConfig():
                 "predefinedInstructions", # used with plugins; pre-defined instructions
                 "predefinedContexts", # used with plugins; pre-defined contexts
                 # used with plugins; function call
-                "execute_python_code_signature",
-                "execute_termux_command_signature",
-                "integrate_google_searches_signature",
-                "heal_python_signature",
                 "chatGPTApiFunctionSignatures",
                 "chatGPTApiAvailableFunctions",
                 "pythonFunctionResponse", # used with plugins; function call when function name is 'python'

@@ -64,6 +64,4 @@ functionSignature = {
 }
 
 # Integrate the signature and method into LetMeDoIt AI
-config.pluginsWithFunctionCall.append("analyze_audio")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["analyze_audio"] = analyze_audio
+config.addFunctionCall(name="analyze_audio", signature=functionSignature, method=analyze_audio)

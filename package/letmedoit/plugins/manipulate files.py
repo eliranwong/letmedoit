@@ -31,6 +31,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("manipulate_files")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["manipulate_files"] = manipulate_files
+config.addFunctionCall(name="manipulate_files", signature=functionSignature, method=manipulate_files)
