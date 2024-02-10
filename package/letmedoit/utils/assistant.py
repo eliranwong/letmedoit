@@ -1,10 +1,5 @@
 from letmedoit import config
 import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, shutil, datetime, pprint
-try:
-    import tiktoken
-    tiktokenImported = True
-except:
-    tiktokenImported = False
 from pathlib import Path
 import pygments
 from pygments.lexers.python import PythonLexer
@@ -1150,20 +1145,14 @@ Always remember that you are much more than a text-based AI. You possess both vi
         model = self.dialogs.getValidOptions(
             options=self.models,
             title="Function Calling Model",
-            default=config.chatGPTApiModel,
+            default=config.chatGPTApiModel if config.chatGPTApiModel in self.models else self.models[0],
             text="Select a function call model:\n(for both chat and task execution)",
         )
         if model:
             config.chatGPTApiModel = model
             self.print3(f"ChatGPT model: {model}")
-            # handle max tokens
-            if tiktokenImported:
-                functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures.values())
-                tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel] - functionTokens
-            else:
-                tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
-            suggestedMaxToken = int(tokenLimit / 2)
-            config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel in ("gpt-4-turbo-preview", "gpt-4-0125-preview", "gpt-4-1106-preview") else suggestedMaxToken # 'gpt-4-1106-preview' supports at most 4096 completion tokens
+            # set max tokens
+            config.chatGPTApiMaxTokens = self.getMaxTokens()[-1]
             config.saveConfig()
             self.print3(f"Maximum response tokens: {config.chatGPTApiMaxTokens}")
 
@@ -1289,30 +1278,38 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.saveConfig()
             self.print3(f"Minimum tokens: {config.chatGPTApiMinTokens}")
 
-    def setMaxTokens(self):
+    def getMaxTokens(self):
         contextWindowLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
-        if tiktokenImported:
-            functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures.values())
-            tokenLimit = contextWindowLimit - functionTokens - config.chatGPTApiMinTokens
-        else:
-            tokenLimit = contextWindowLimit
-        if tiktokenImported and tokenLimit < config.chatGPTApiMinTokens:
-            self.print(f"Availble functions have already taken up too many tokens [{functionTokens}] to work with selected model '{config.chatGPTApiModel}'. You may either changing to a model that supports more tokens or deactivating some of the plugins that you don't need to reduce the number of tokens in total.")
+        functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures.values())
+        maxToken = contextWindowLimit - functionTokens - config.chatGPTApiMinTokens
+        if maxToken > 4096 and config.chatGPTApiModel in (
+            "gpt-4-turbo-preview",
+            "gpt-4-0125-preview",
+            "gpt-4-1106-preview",
+            "gpt-3.5-turbo",
+        ):
+            maxToken = 4096
+        return contextWindowLimit, functionTokens, maxToken
+
+    def setMaxTokens(self):
+        contextWindowLimit, functionTokens, tokenLimit = self.getMaxTokens()
+        if tokenLimit < config.chatGPTApiMinTokens:
+            self.print2(f"Function tokens [{functionTokens}] exceed {config.chatGPTApiModel} response token limit.")
+            self.print("Either change to a model with higher token limit or disable unused function-call plguins.")
         else:
             self.print(self.divider)
-            self.print(f"You are now using ChatGPT model '{config.chatGPTApiModel}'. Its context window limit is {contextWindowLimit} tokens.")
-            if tiktokenImported:
-                self.print(f"Current enabled functions have taken up {functionTokens} tokens.")
-            self.print(f"You can have no more than {tokenLimit} tokens, for both prompts and responses, in a single chain of messages.")
-            self.print("(GPT and embeddings models process text in chunks called tokens. As a rough rule of thumb, 1 token is approximately 4 characters or 0.75 words for English text. One limitation to keep in mind is that for a GPT model the prompt and the generated output combined must be no more than the model's maximum context length.)")
+            self.print("GPT and embeddings models process text in chunks called tokens. As a rough rule of thumb, 1 token is approximately 4 characters or 0.75 words for English text. One limitation to keep in mind is that for a GPT model the prompt and the generated output combined must be no more than the model's maximum context length.")
+            self.print3(f"Current GPT model: {config.chatGPTApiModel}")
+            self.print3(f"Maximum context length: {contextWindowLimit}")
+            self.print3(f"Current function tokens: {functionTokens}")
+            self.print3(f"Maximum response token allowed (excl. functions): {tokenLimit}")
             self.print(self.divider)
             self.print("Please specify maximum response tokens below:")
-            self.print("(Remarks: If the entered value exceeds the maximum number of completion tokens allowed in your selected model, it will be modified.)")
             maxtokens = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.chatGPTApiMaxTokens))
             if maxtokens and not maxtokens.strip().lower() == config.exit_entry and int(maxtokens) > 0:
                 config.chatGPTApiMaxTokens = int(maxtokens)
-                if config.chatGPTApiMaxTokens > 4096 if config.chatGPTApiModel in ("gpt-4-turbo-preview", "gpt-4-0125-preview", "gpt-4-1106-preview") else tokenLimit: # 'gpt-4-1106-preview' supports at most 4096 completion tokens
-                    config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel in ("gpt-4-turbo-preview", "gpt-4-0125-preview", "gpt-4-1106-preview") else tokenLimit
+                if config.chatGPTApiMaxTokens > tokenLimit:
+                    config.chatGPTApiMaxTokens = tokenLimit
                 config.saveConfig()
                 self.print3(f"Maximum tokens: {config.chatGPTApiMaxTokens}")
 

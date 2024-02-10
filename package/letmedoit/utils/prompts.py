@@ -1,5 +1,5 @@
 from letmedoit import config
-import pydoc, textwrap, sys, os, re
+import pydoc, textwrap, re, tiktoken
 
 from prompt_toolkit import prompt
 from prompt_toolkit.application import run_in_terminal
@@ -96,7 +96,6 @@ class Prompts:
         @this_key_bindings.add("escape", "c")
         def _(event):
             try:
-                import tiktoken
                 try:
                     encoding = tiktoken.encoding_for_model(config.chatGPTApiModel)
                 except:

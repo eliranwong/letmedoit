@@ -44,12 +44,12 @@ class AutoGenBuilder:
         #    api_type="openai",
         #    api_version=None,
         #)
-        oai_config_list = []
-        for model in ("gpt-4-turbo-preview", "gpt-4-0125-preview", "gpt-4-1106-preview", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k"):
-            oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
-        os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
         # assign ChatGPT4 to run the builder
         self.chatGPTmodel = "gpt-4-turbo-preview"
+        oai_config_list = []
+        for model in (self.chatGPTmodel,):
+            oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
+        os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
         # prompt style
         self.promptStyle = Style.from_dict({
             # User input (default text).
