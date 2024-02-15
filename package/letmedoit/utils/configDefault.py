@@ -44,6 +44,7 @@ if config.isTermux:
         "remove image background",
         "solve math problems",
         "search chat records",
+        "check pyaudio",
     ]
 
 defaultSettings = (
