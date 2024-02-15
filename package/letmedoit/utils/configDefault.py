@@ -22,12 +22,7 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
                 config.thisTranslation[i] = thisTranslation[i]
 
 def isPackageInstalled(package):
-    whichCommand = "where.exe" if platform.system() == "Windows" else "which"
-    try:
-        isInstalled, *_ = subprocess.Popen("{0} {1}".format(whichCommand, package), shell=True, stdout=subprocess.PIPE).communicate()
-        return True if isInstalled else False
-    except:
-        return False
+    return True if shutil.which(package.split(" ", 1)[0]) else False
 
 pluginExcludeList = [
     "awesome prompts",
@@ -130,6 +125,7 @@ defaultSettings = (
     ("ttsLanguages", ["en", "en-gb", "en-us", "zh", "yue", "el"]), # users can edit this item in config.py to support more or less languages
     ("ttsLanguagesCommandMap", {"en": "", "en-gb": "", "en-us": "", "zh": "", "yue": "", "el": "",}), # advanced users need to edit this item manually to support different voices with customised tts command, e.g. ttsCommand set to "say -r 200 -v Daniel" and ttsLanguagesCommandMap set to {"en": "Daniel", "en-gb": "Daniel", "en-us": "", "zh": "", "yue": "", "el": "",}
     ("openweathermapApi", ""),
+    ("pyaudioInstalled", False),
 )
 
 storageDir = config.getStorageDir()

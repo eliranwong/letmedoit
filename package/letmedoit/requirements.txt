@@ -15,6 +15,7 @@ googlesearch-python
 art
 apsw
 gTTS
+google-cloud-speech
 google-cloud-texttospeech
 google-cloud-aiplatform
 pywhatkit
@@ -39,3 +40,7 @@ html2text
 pypdf
 PyMuPDF
 yfinance
+setuptools-rust
+SpeechRecognition
+PyAudio
+openai-whisper

@@ -1,6 +1,6 @@
 from letmedoit import config
 import pydoc, textwrap, re, tiktoken
-
+import speech_recognition as sr
 from prompt_toolkit import prompt
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.styles import Style
@@ -61,6 +61,29 @@ class Prompts:
 
     def shareKeyBindings(self):
         this_key_bindings = KeyBindings()
+
+        @this_key_bindings.add("c-f")
+        def _(event):
+            def voiceTyping():
+                r = sr.Recognizer()
+                with sr.Microphone() as source:
+                    run_in_terminal(lambda: config.print2("Listensing to your voice ..."))
+                    audio = r.listen(source)
+                run_in_terminal(lambda: config.print2("Processing to your voice ..."))
+                try:
+                    return r.recognize_google(audio)
+                except sr.UnknownValueError:
+                    #return "[Speech unrecognized!]"
+                    return ""
+                except sr.RequestError as e:
+                    return "[Error: {0}]".format(e)
+
+            if config.pyaudioInstalled:
+                buffer = event.app.current_buffer
+                buffer.text = f"{buffer.text}{' ' if buffer.text else ''}{voiceTyping()}"
+                buffer.cursor_position = buffer.cursor_position + buffer.document.get_end_of_line_position()
+            else:
+                run_in_terminal(lambda: config.print2("Install PyAudio first to enable voice entry!"))
         @this_key_bindings.add("c-q")
         def _(event):
             buffer = event.app.current_buffer
@@ -220,9 +243,10 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+d": "forward delete",
             "ctrl+h": "backspace",
             "ctrl+k": "show key bindings",
-            "ctrl+l": "toggle multi-line entry",
+            "ctrl+f": "activate voice entry",
             "ctrl+b": "toggle input audio",
             "ctrl+p": "toggle response audio",
+            "ctrl+l": "toggle multi-line entry",
             "ctrl+w": "toggle word wrap",
             "ctrl+i or tab": "insert a file or folder path",
             "shift+tab": f"insert '{config.terminalEditorTabText}' [configurable]",
