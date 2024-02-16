@@ -64,19 +64,35 @@ class Prompts:
 
         @this_key_bindings.add("c-f")
         def _(event):
+            # reference: https://github.com/Uberi/speech_recognition/blob/master/examples/microphone_recognition.py
             def voiceTyping():
                 r = sr.Recognizer()
                 with sr.Microphone() as source:
                     run_in_terminal(lambda: config.print2("Listensing to your voice ..."))
                     audio = r.listen(source)
                 run_in_terminal(lambda: config.print2("Processing to your voice ..."))
-                try:
-                    return r.recognize_google(audio)
-                except sr.UnknownValueError:
-                    #return "[Speech unrecognized!]"
-                    return ""
-                except sr.RequestError as e:
-                    return "[Error: {0}]".format(e)
+                if config.voiceTypingModel == "google":
+                    # recognize speech using Google Speech Recognition
+                    try:
+                        # check google.recognize_legacy in SpeechRecognition package
+                        # check availabl languages at: https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
+                        # config.voiceTypingLanguage should be code list in column BCP-47 at https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
+                        return r.recognize_google(audio, language=config.voiceTypingLanguage)
+                    except sr.UnknownValueError:
+                        #return "[Speech unrecognized!]"
+                        return ""
+                    except sr.RequestError as e:
+                        return "[Error: {0}]".format(e)
+                if config.voiceTypingModel == "whisper":
+                    # recognize speech using whisper
+                    try:
+                        # check availabl languages at: https://github.com/openai/whisper/blob/main/whisper/tokenizer.py
+                        # config.voiceTypingLanguage should be uncapitalized full language name like "english" or "chinese"
+                        return r.recognize_whisper(audio, model="base" if config.voiceTypingLanguage == "english" else "large", language=config.voiceTypingLanguage)
+                    except sr.UnknownValueError:
+                        return ""
+                    except sr.RequestError as e:
+                        return "[Error]"
 
             if config.pyaudioInstalled:
                 buffer = event.app.current_buffer
@@ -84,6 +100,11 @@ class Prompts:
                 buffer.cursor_position = buffer.cursor_position + buffer.document.get_end_of_line_position()
             else:
                 run_in_terminal(lambda: config.print2("Install PyAudio first to enable voice entry!"))
+        @this_key_bindings.add("escape", "f")
+        def _(event):
+            buffer = event.app.current_buffer
+            buffer.text = ".voicetypingconfig"
+            buffer.validate_and_handle()
         @this_key_bindings.add("c-q")
         def _(event):
             buffer = event.app.current_buffer
@@ -113,7 +134,7 @@ class Prompts:
             buffer = event.app.current_buffer
             buffer.text = ".export"
             buffer.validate_and_handle()
-        @this_key_bindings.add("escape", "f")
+        @this_key_bindings.add("escape", "i")
         def _(_):
             run_in_terminal(lambda: print(SharedUtil.getDeviceInfo(True)))
         @this_key_bindings.add("escape", "c")
@@ -194,7 +215,7 @@ Available tokens: {estimatedAvailableTokens}
         def _(_):
             print(f"Restarting {config.letMeDoItName} ...")
             config.restartApp()
-        @this_key_bindings.add("escape", "i")
+        @this_key_bindings.add("escape", "w")
         def _(_):
             config.displayImprovedWriting = not config.displayImprovedWriting
             config.saveConfig()
@@ -243,16 +264,17 @@ Available tokens: {estimatedAvailableTokens}
             "ctrl+d": "forward delete",
             "ctrl+h": "backspace",
             "ctrl+k": "show key bindings",
-            "ctrl+f": "activate voice entry",
+            "ctrl+f": "activate voice typing",
+            "esc+f": "change voice typing configs",
             "ctrl+b": "toggle input audio",
             "ctrl+p": "toggle response audio",
             "ctrl+l": "toggle multi-line entry",
             "ctrl+w": "toggle word wrap",
             "ctrl+i or tab": "insert a file or folder path",
             "shift+tab": f"insert '{config.terminalEditorTabText}' [configurable]",
-            "esc+f": "display device information",
+            "esc+i": "display device information",
             "esc+c": "count current message tokens",
-            "esc+i": "toggle improved writing feature",
+            "esc+w": "toggle improved writing feature",
             "esc+m": "toggle mouse support",
             "esc+t": "system command prompt",
             "esc+b": "move cursor to line beginning",

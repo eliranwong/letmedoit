@@ -23,6 +23,7 @@ from letmedoit.utils.shared_utils import SharedUtil
 from letmedoit.utils.tts_utils import TTSUtil
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.utils.text_utils import TextUtil
+from letmedoit.utils.speech_to_text_languages import googleSpeeckToTextLanguages, whisperSpeeckToTextLanguages
 from letmedoit.chatgpt import ChatGPT
 if not config.isTermux:
     from letmedoit.autobuilder import AutoGenBuilder
@@ -153,8 +154,9 @@ class LetMeDoItAI:
             ".ipinfo": ("change ip information integration", self.setIncludeIpInSystemMessage),
             ".storagedirectory": ("change storage directory", self.setStorageDirectory),
             ".autobuilderconfig": ("change auto builder config", self.setAutoGenBuilderConfig),
-            ".customtexteditor": ("change custom text editor", self.setCustomTextEditor),
+            ".voicetypingconfig": ("change voice typing config", self.setVoiceTypingConfig),
             ".ttscommand": ("change text-to-speech command", self.defineTtsCommand),
+            ".customtexteditor": ("change custom text editor", self.setCustomTextEditor),
             ".termuxapi": ("change Termux API integration", self.setTermuxApi),
             ".autoupgrade": ("change automatic upgrade", self.setAutoUpgrade),
             ".developer": ("change developer mode [ctrl+d]", self.setDeveloperMode),
@@ -1401,6 +1403,39 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 config.improvedWritingSytle = style
                 config.saveConfig()
         self.print3(f"Improved Writing Display: '{'enabled' if config.displayImprovedWriting else 'disabled'}'!")
+
+    def setVoiceTypingConfig(self):
+        voiceTypingModel = self.dialogs.getValidOptions(
+            options=("google", "whisper"),
+            descriptions=("Google Speech-to-text Model [online]", "OpenAI Whisper [offline; slow for non-English entry]"),
+            title="Voice Typing Configurations",
+            text="Select a voice typing model:",
+            default=config.voiceTypingModel,
+        )
+        if voiceTypingModel:
+            if voiceTypingModel == "whisper" and not SharedUtil.isPackageInstalled("ffmpeg"):
+                self.print2("Install 'ffmpeg' first to use offline openai whisper model!")
+                self.print3("Read: https://github.com/openai/whisper#setup")
+                self.print3("Voice typing model changed to: Google Speech-to-text Model")
+                config.voiceTypingModel = "google"
+            else:
+                config.voiceTypingModel = voiceTypingModel
+        # record in history for easy retrieval by moving arrows upwards / downwards
+        voice_typing_language_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "voice_typing_language")
+        voice_typing_language_session = PromptSession(history=FileHistory(voice_typing_language_history))
+        # input suggestion for languages
+        languages = googleSpeeckToTextLanguages if config.voiceTypingModel == "google" else whisperSpeeckToTextLanguages
+        completer = FuzzyCompleter(WordCompleter(languages, ignore_case=True))
+        self.print("Please specify the voice typing language:")
+        language = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.voiceTypingLanguage, promptSession=voice_typing_language_session, completer=completer)
+        if language and not language in (config.exit_entry, config.cancel_entry):
+            if not language in languages:
+                config.voiceTypingLanguage = "en-US" if config.voiceTypingModel == "google" else "english"
+            else:
+                config.voiceTypingLanguage = language
+        # notify
+        self.print3(f"Voice Typing Model: {config.voiceTypingModel}")
+        self.print3(f"Voice Typing Language: {config.voiceTypingLanguage}")
 
     def saveChat(self, messages):
         if config.conversationStarted:

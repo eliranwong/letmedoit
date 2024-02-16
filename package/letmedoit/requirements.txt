@@ -42,5 +42,5 @@ PyMuPDF
 yfinance
 setuptools-rust
 SpeechRecognition
-PyAudio
 openai-whisper
+soundfile
