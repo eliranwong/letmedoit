@@ -113,6 +113,16 @@ class HealthCheck:
         config.systemMessage_geminipro = 'You are a helpful assistant.'
         config.systemMessage_palm2 = 'You are a helpful assistant.'
         config.systemMessage_codey = 'You are an expert on coding.'
+        # key bindings
+        config.keyBinding_exit = ["c-q"]
+        config.keyBinding_cancel = ["c-z"]
+        config.keyBinding_insert_path = ["c-i"]
+        config.keyBinding_new = ["c-n"]
+        config.keyBinding_newline = ["escape", "enter"]
+        config.keyBinding_launch_pager_view = ["c-g"]
+        config.keyBinding_list_directory_content = ["c-l"]
+        config.keyBinding_toggle_mouse_support = ["escape", "m"]
+        # print functions
         HealthCheck.setPrint()
 
     @staticmethod
@@ -141,13 +151,17 @@ class HealthCheck:
     @staticmethod
     def simplePrompt(inputIndicator="", validator=None, default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False, bottom_toolbar=None):
         this_key_bindings = KeyBindings()
-        @this_key_bindings.add("c-q")
+        @this_key_bindings.add(*config.keyBinding_exit)
         def _(event):
             buffer = event.app.current_buffer
             buffer.text = config.exit_entry
             buffer.validate_and_handle()
+        @this_key_bindings.add(*config.keyBinding_cancel)
+        def _(event):
+            buffer = event.app.current_buffer
+            buffer.reset()
         if hasattr(config, "currentMessages"):
-            @this_key_bindings.add("c-g")
+            @this_key_bindings.add(*config.keyBinding_launch_pager_view)
             def _(_):
                 config.launchPager()
             # additional key binding
@@ -161,7 +175,7 @@ class HealthCheck:
                 conditional_prompt_multiline_shared_key_bindings,
             ])
         else:
-            @this_key_bindings.add("c-n")
+            @this_key_bindings.add(*config.keyBinding_new)
             def _(event):
                 buffer = event.app.current_buffer
                 config.defaultEntry = buffer.text

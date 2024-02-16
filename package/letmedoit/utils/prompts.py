@@ -62,7 +62,7 @@ class Prompts:
     def shareKeyBindings(self):
         this_key_bindings = KeyBindings()
 
-        @this_key_bindings.add("c-f")
+        @this_key_bindings.add(*config.keyBinding_voice_entry)
         def _(event):
             # reference: https://github.com/Uberi/speech_recognition/blob/master/examples/microphone_recognition.py
             def voiceTyping():
@@ -102,28 +102,35 @@ class Prompts:
                 buffer.cursor_position = buffer.cursor_position + buffer.document.get_end_of_line_position()
             else:
                 run_in_terminal(lambda: config.print2("Install PyAudio first to enable voice entry!"))
-        @this_key_bindings.add("escape", "f")
+        @this_key_bindings.add(*config.keyBinding_voice_entry_config)
         def _(event):
             buffer = event.app.current_buffer
+            config.defaultEntry = buffer.text
             buffer.text = ".voicetypingconfig"
             buffer.validate_and_handle()
-        @this_key_bindings.add("c-q")
+        @this_key_bindings.add(*config.keyBinding_list_directory_content)
+        def _(event):
+            buffer = event.app.current_buffer
+            config.defaultEntry = buffer.text
+            buffer.text = ".content"
+            buffer.validate_and_handle()
+        @this_key_bindings.add(*config.keyBinding_exit)
         def _(event):
             buffer = event.app.current_buffer
             buffer.text = config.exit_entry
             buffer.validate_and_handle()
-        @this_key_bindings.add("c-i") # add path
+        @this_key_bindings.add(*config.keyBinding_insert_path) # add path
         def _(event):
             buffer = event.app.current_buffer
             config.addPathAt = buffer.cursor_position
             buffer.validate_and_handle()
-        @this_key_bindings.add("c-n")
+        @this_key_bindings.add(*config.keyBinding_new)
         def _(event):
             buffer = event.app.current_buffer
             config.defaultEntry = buffer.text
             buffer.text = ".new"
             buffer.validate_and_handle()
-        @this_key_bindings.add("c-y")
+        @this_key_bindings.add(*config.keyBinding_remove_context_temporarily)
         def _(event):
             buffer = event.app.current_buffer
             config.predefinedContextTemp = config.predefinedContext
@@ -131,15 +138,15 @@ class Prompts:
             buffer.text = ".new"
             buffer.validate_and_handle()
             run_in_terminal(lambda: config.print3("Predefined context temporarily changed to: [none]"))
-        @this_key_bindings.add("c-s")
+        @this_key_bindings.add(*config.keyBinding_export)
         def _(event):
             buffer = event.app.current_buffer
             buffer.text = ".export"
             buffer.validate_and_handle()
-        @this_key_bindings.add("escape", "i")
+        @this_key_bindings.add(*config.keyBinding_display_device_info)
         def _(_):
             run_in_terminal(lambda: print(SharedUtil.getDeviceInfo(True)))
-        @this_key_bindings.add("escape", "c")
+        @this_key_bindings.add(*config.keyBinding_count_tokens)
         def _(event):
             try:
                 try:
@@ -175,65 +182,65 @@ Available tokens: {estimatedAvailableTokens}
             except:
                 content = "Required package 'tiktoken' not found!"
             run_in_terminal(lambda: config.print(content))
-        @this_key_bindings.add("c-g")
+        @this_key_bindings.add(*config.keyBinding_launch_pager_view)
         def _(_):
             config.launchPager()
-        @this_key_bindings.add("escape", "d")
+        @this_key_bindings.add(*config.keyBinding_toggle_developer_mode)
         def _(_):
             config.developer = not config.developer
             config.saveConfig()
             run_in_terminal(lambda: config.print3(f"Developer mode: {'enabled' if config.developer else 'disabled'}!"))
-        @this_key_bindings.add("c-l")
+        @this_key_bindings.add(*config.keyBinding_toggle_multiline_entry)
         def _(_):
             config.toggleMultiline()
-        @this_key_bindings.add("c-o")
+        @this_key_bindings.add(*config.keyBinding_select_context)
         def _(event):
             buffer = event.app.current_buffer
             config.defaultEntry = buffer.text
             buffer.text = ".context"
             buffer.validate_and_handle()
         @this_key_bindings.add("escape", "!")
-        @this_key_bindings.add("escape", "t")
+        @this_key_bindings.add(*config.keyBinding_launch_system_prompt)
         def _(event):
             buffer = event.app.current_buffer
             buffer.text = ".system"
             buffer.validate_and_handle()
-        @this_key_bindings.add("c-k")
+        @this_key_bindings.add(*config.keyBinding_display_key_combo)
         def _(_):
             run_in_terminal(self.showKeyBindings)
-        @this_key_bindings.add("c-b")
+        @this_key_bindings.add(*config.keyBinding_toggle_input_audio)
         def _(_):
             if config.tts:
                 config.ttsInput = not config.ttsInput
                 config.saveConfig()
                 run_in_terminal(lambda: config.print3(f"Input Audio: '{'enabled' if config.ttsInput else 'disabled'}'!"))
-        @this_key_bindings.add("c-p")
+        @this_key_bindings.add(*config.keyBinding_toggle_response_audio)
         def _(_):
             if config.tts:
                 config.ttsOutput = not config.ttsOutput
                 config.saveConfig()
                 run_in_terminal(lambda: config.print3(f"Response Audio: '{'enabled' if config.ttsOutput else 'disabled'}'!"))
-        @this_key_bindings.add("escape", "r")
+        @this_key_bindings.add(*config.keyBinding_restart_app)
         def _(_):
             print(f"Restarting {config.letMeDoItName} ...")
             config.restartApp()
-        @this_key_bindings.add("escape", "w")
+        @this_key_bindings.add(*config.keyBinding_toggle_writing_improvement)
         def _(_):
             config.displayImprovedWriting = not config.displayImprovedWriting
             config.saveConfig()
             run_in_terminal(lambda: config.print3(f"Improved Writing Display: '{'enabled' if config.displayImprovedWriting else 'disabled'}'!"))
-        @this_key_bindings.add("c-w")
+        @this_key_bindings.add(*config.keyBinding_toggle_word_wrap)
         def _(_):
             config.wrapWords = not config.wrapWords
             config.saveConfig()
             run_in_terminal(lambda: config.print3(f"Word Wrap: '{'enabled' if config.wrapWords else 'disabled'}'!"))
-        @this_key_bindings.add("escape", "m")
+        @this_key_bindings.add(*config.keyBinding_toggle_mouse_support)
         def _(_):
             config.mouseSupport = not config.mouseSupport
             config.saveConfig()
             run_in_terminal(lambda: config.print3(f"Entry Mouse Support: '{'enabled' if config.mouseSupport else 'disabled'}'!"))
         # edit the last response in built-in or custom text editor
-        @this_key_bindings.add("escape", "p")
+        @this_key_bindings.add(*config.keyBinding_edit_last_response)
         def _(event):
             buffer = event.app.current_buffer
             buffer.text = ".editresponse"
@@ -249,82 +256,90 @@ Available tokens: {estimatedAvailableTokens}
             prompt_shared_key_bindings,
         ])
     def showKeyBindings(self):
+        def transformKey(entry):
+            if not entry.startswith("["):
+                entry = f"[{entry}]"
+            entry = entry.replace("'", "")
+            entry = entry.replace("[c-", "[ctrl, ")
+            return entry
         bindings = {
-            "enter": "complete entry",
-            "esc+enter": "new line",
-            "ctrl+q": "quit / exit current feature",
-            "ctrl+z": "cancel",
-            "ctrl+a": "select / unselect all",
-            "ctrl+c": "copy [w/ mouse support]",
-            "ctrl+v": "paste [w/ mouse support]",
-            "ctrl+x": "cut [w/ mouse support]",
-            "ctrl+n": "new chat",
-            "ctrl+y": "new chat without context",
-            "ctrl+s": "export chat",
-            "ctrl+o": "change predefined context",
-            "ctrl+g": "pager view",
-            "ctrl+d": "forward delete",
-            "ctrl+h": "backspace",
-            "ctrl+k": "show key bindings",
-            "ctrl+f": "activate voice typing",
-            "esc+f": "change voice typing configs",
-            "ctrl+b": "toggle input audio",
-            "ctrl+p": "toggle response audio",
-            "ctrl+l": "toggle multi-line entry",
-            "ctrl+w": "toggle word wrap",
-            "ctrl+i or tab": "insert a file or folder path",
-            "shift+tab": f"insert '{config.terminalEditorTabText}' [configurable]",
-            "esc+i": "display device information",
-            "esc+c": "count current message tokens",
-            "esc+w": "toggle improved writing feature",
-            "esc+m": "toggle mouse support",
-            "esc+t": "system command prompt",
-            "esc+b": "move cursor to line beginning",
-            "esc+e": "move cursor to line end",
-            "esc+a": "move cursor to entry beginning",
-            "esc+z": "move cursor to entry end",
-            "esc+s": "swap text brightness",
-            "esc+d": "swap developer mode",
-            "ctrl+r": "reverse-i-search",
-            "esc+r": "restart letmedoit",
+            "[enter]": "complete entry",
+            str(config.keyBinding_newline): "new line",
+            str(config.keyBinding_exit): "quit / exit current feature",
+            str(config.keyBinding_cancel): "cancel",
+            "[c-a]": "select / unselect all",
+            "[c-c]": "copy [w/ mouse support]",
+            "[c-v]": "paste [w/ mouse support]",
+            "[c-x]": "cut [w/ mouse support]",
+            "[c-d]": "forward delete",
+            "[c-h]": "backspace",
+            "[shift, tab]": f"insert '{config.terminalEditorTabText}' (configurable)",
+            "[escape, b]": "move cursor to line beginning",
+            "[escape, e]": "move cursor to line end",
+            "[escape, a]": "move cursor to entry beginning",
+            "[escape, z]": "move cursor to entry end",
+            "[c-r]": "reverse-i-search",
+            str(config.keyBinding_new): "new chat",
+            str(config.keyBinding_export): "export chat",
+            str(config.keyBinding_select_context): "change predefined context",
+            str(config.keyBinding_remove_context_temporarily): "remove context temporarily",
+            str(config.keyBinding_launch_pager_view): "launch pager view",
+            str(config.keyBinding_display_key_combo): "show key bindings",
+            str(config.keyBinding_voice_entry): "activate voice typing",
+            str(config.keyBinding_voice_entry_config): "change voice typing configs",
+            str(config.keyBinding_toggle_input_audio): "toggle input audio",
+            str(config.keyBinding_toggle_response_audio): "toggle response audio",
+            str(config.keyBinding_toggle_multiline_entry): "toggle multi-line entry",
+            str(config.keyBinding_toggle_word_wrap): "toggle word wrap",
+            str(config.keyBinding_insert_path): "insert a file or folder path",
+            str(config.keyBinding_display_device_info): "display device information",
+            str(config.keyBinding_count_tokens): "count current message tokens",
+            str(config.keyBinding_toggle_writing_improvement): "toggle improved writing feature",
+            str(config.keyBinding_toggle_mouse_support): "toggle mouse support",
+            str(config.keyBinding_launch_system_prompt): "system command prompt",
+            str(config.keyBinding_swap_text_brightness): "swap text brightness",
+            str(config.keyBinding_toggle_developer_mode): "swap developer mode",
+            str(config.keyBinding_restart_app): "restart letmedoit",
         }
         textEditor = config.customTextEditor.split(" ", 1)[0]
-        bindings["ctrl+e"] = f"""edit current input with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
-        bindings["esc+p"] = f"""edit the previous response with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
+        bindings[str(config.keyBinding_edit_current_entry)] = f"""edit current input with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
+        bindings[str(config.keyBinding_edit_last_response)] = f"""edit the previous response with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
         multilineBindings = {
-            "enter": "new line",
-            "esc+enter": "complete entry",
-            "esc+1": "go up 10 lines",
-            "esc+2": "go up 20 lines",
-            "esc+3": "go up 30 lines",
-            "esc+4": "go up 40 lines",
-            "esc+5": "go up 50 lines",
-            "esc+6": "go up 60 lines",
-            "esc+7": "go up 70 lines",
-            "esc+8": "go up 80 lines",
-            "esc+9": "go up 90 lines",
-            "esc+0": "go up 100 lines",
-            "f1": "go down 10 lines",
-            "f2": "go down 20 lines",
-            "f3": "go down 30 lines",
-            "f4": "go down 40 lines",
-            "f5": "go down 50 lines",
-            "f6": "go down 60 lines",
-            "f7": "go down 70 lines",
-            "f8": "go down 80 lines",
-            "f9": "go down 90 lines",
-            "f10": "go down 100 lines",
-            "ctrl+u": f"go up '{config.terminalEditorScrollLineCount}' lines [configurable]",
-            "ctrl+j": f"go down '{config.terminalEditorScrollLineCount}' lines [configurable]",
+            "[enter]": "new line",
+            "[escape, enter]": "complete entry",
+            "[escape, 1]": "go up 10 lines",
+            "[escape, 2]": "go up 20 lines",
+            "[escape, 3]": "go up 30 lines",
+            "[escape, 4]": "go up 40 lines",
+            "[escape, 5]": "go up 50 lines",
+            "[escape, 6]": "go up 60 lines",
+            "[escape, 7]": "go up 70 lines",
+            "[escape, 8]": "go up 80 lines",
+            "[escape, 9]": "go up 90 lines",
+            "[escape, 0]": "go up 100 lines",
+            "[f1]": "go down 10 lines",
+            "[f2]": "go down 20 lines",
+            "[f3]": "go down 30 lines",
+            "[f4]": "go down 40 lines",
+            "[f5]": "go down 50 lines",
+            "[f6]": "go down 60 lines",
+            "[f7]": "go down 70 lines",
+            "[f8]": "go down 80 lines",
+            "[f9]": "go down 90 lines",
+            "[f10]": "go down 100 lines",
+            "[c-u]": f"go up '{config.terminalEditorScrollLineCount}' lines (configurable)",
+            "[c-j]": f"go down '{config.terminalEditorScrollLineCount}' lines (configurable)",
         }
         keyHelp = f"{config.divider}\n\n"
         keyHelp += "# Key Bindings\n"
-        keyHelp += "[blank]: launch action menu\n"
+        keyHelp += "[BLANK]: launch action menu\n"
         for key, value in bindings.items():
-            keyHelp += f"{key}: {value}\n"
-        keyHelp += "\n## Key Bindings\n[for multiline entry only]\n"
+            key = transformKey(key)
+            keyHelp += f"{key} {value}\n"
+        keyHelp += "\n## Key Bindings\n(for multiline entry only)\n"
         for key, value in multilineBindings.items():
-            keyHelp += f"{key}: {value}\n"
+            key = transformKey(key)
+            keyHelp += f"{key} {value}\n"
         keyHelp += f"\n{config.divider}\n\n"
         keyHelp += config.actionHelp
         keyHelp += f"\n{config.divider}\n"

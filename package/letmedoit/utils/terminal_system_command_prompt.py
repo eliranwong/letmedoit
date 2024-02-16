@@ -57,26 +57,31 @@ class SystemCommandPrompt:
 
         this_key_bindings = KeyBindings()
 
-        @this_key_bindings.add("c-q")
+        @this_key_bindings.add(*config.keyBinding_exit)
         def _(event):
-            event.app.current_buffer.text = config.exit_entry
-            event.app.current_buffer.validate_and_handle()
-        @this_key_bindings.add("c-l")
+            buffer = event.app.current_buffer
+            buffer.text = config.exit_entry
+            buffer.validate_and_handle()
+        @this_key_bindings.add(*config.keyBinding_cancel)
+        def _(event):
+            buffer = event.app.current_buffer
+            buffer.reset()
+        @this_key_bindings.add(*config.keyBinding_list_directory_content)
         def _(_):
             config.print("")
             run_in_terminal(lambda: self.getPath.displayDirectoryContent())
-        @this_key_bindings.add("c-i")
+        @this_key_bindings.add(*config.keyBinding_insert_path)
         def _(event):
             self.addPath = True
             buffer = event.app.current_buffer
             self.systemCommandPromptEntry = buffer.text
             self.systemCommandPromptPosition = buffer.cursor_position
             buffer.validate_and_handle()
-        @this_key_bindings.add("escape", "enter")
+        @this_key_bindings.add(*config.keyBinding_newline)
         def _(event):
             buffer = event.app.current_buffer
             buffer.newline()
-        @this_key_bindings.add("escape", "m")
+        @this_key_bindings.add(*config.keyBinding_toggle_mouse_support)
         def _(_):
             config.mouseSupport = not config.mouseSupport
             run_in_terminal(lambda: config.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))

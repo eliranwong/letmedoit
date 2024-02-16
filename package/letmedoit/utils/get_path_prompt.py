@@ -161,7 +161,7 @@ class GetPath:
                     def _(event):
                         event.app.current_buffer.text = ".system"
                         event.app.current_buffer.validate_and_handle()"""
-                @this_key_bindings.add("c-q")
+                @this_key_bindings.add(*config.keyBinding_exit)
                 def _(event):
                     #if self.ctrl_q_to_exit:
                     #    event.app.current_buffer.text = ".quit"
@@ -169,15 +169,15 @@ class GetPath:
                     #    event.app.current_buffer.text = self.cancel_entry
                     event.app.current_buffer.text = self.cancel_entry
                     event.app.current_buffer.validate_and_handle()
-                @this_key_bindings.add("c-z")
+                @this_key_bindings.add(*config.keyBinding_cancel)
                 def _(event):
                     buffer = event.app.current_buffer
                     buffer.reset()
-                @this_key_bindings.add("c-l")
+                @this_key_bindings.add(*config.keyBinding_list_directory_content)
                 def _(_):
                     # list directories and files
                     run_in_terminal(lambda: self.displayDirectoryContent(display_dir_only=display_dir_only))
-                @this_key_bindings.add("escape", "m")
+                @this_key_bindings.add(*config.keyBinding_toggle_mouse_support)
                 def _(_):
                     config.mouseSupport = not config.mouseSupport
                     run_in_terminal(lambda: config.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))
