@@ -11,6 +11,10 @@ from letmedoit.utils.prompt_multiline_shared_key_bindings import prompt_multilin
 from letmedoit.utils.promptValidator import NumberValidator
 from letmedoit.utils.shared_utils import SharedUtil
 from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
+# import sounddevice to solve alsa error display
+# read https://github.com/Uberi/speech_recognition/issues/182#issuecomment-1426939447
+import sounddevice
+
 
 class Prompts:
 
@@ -68,11 +72,11 @@ class Prompts:
             def voiceTyping():
                 r = sr.Recognizer()
                 with sr.Microphone() as source:
-                    run_in_terminal(lambda: config.print2("Listensing to your voice ..."))
+                    #run_in_terminal(lambda: config.print2("Listensing to your voice ..."))
                     if config.voiceTypingAdjustAmbientNoise:
                         r.adjust_for_ambient_noise(source)
                     audio = r.listen(source)
-                run_in_terminal(lambda: config.print2("Processing to your voice ..."))
+                #run_in_terminal(lambda: config.print2("Processing to your voice ..."))
                 if config.voiceTypingModel == "google":
                     # recognize speech using Google Speech Recognition
                     try:
@@ -141,6 +145,7 @@ class Prompts:
         @this_key_bindings.add(*config.keyBinding_export)
         def _(event):
             buffer = event.app.current_buffer
+            config.defaultEntry = buffer.text
             buffer.text = ".export"
             buffer.validate_and_handle()
         @this_key_bindings.add(*config.keyBinding_display_device_info)
@@ -203,6 +208,7 @@ Available tokens: {estimatedAvailableTokens}
         @this_key_bindings.add(*config.keyBinding_launch_system_prompt)
         def _(event):
             buffer = event.app.current_buffer
+            config.defaultEntry = buffer.text
             buffer.text = ".system"
             buffer.validate_and_handle()
         @this_key_bindings.add(*config.keyBinding_display_key_combo)

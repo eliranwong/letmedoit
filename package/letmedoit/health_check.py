@@ -19,10 +19,14 @@ from prompt_toolkit import print_formatted_text, HTML
 from prompt_toolkit import prompt
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings, ConditionalKeyBindings
+from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
+from prompt_toolkit.application import run_in_terminal
 from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
 from letmedoit.utils.prompt_multiline_shared_key_bindings import prompt_multiline_shared_key_bindings
-from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
-from pathlib import Path
+import speech_recognition as sr
+# a dummy import line to resolve ALSA error display
+import sounddevice
+
 
 def check_openai_errors(func):
     def wrapper(*args, **kwargs):
@@ -113,7 +117,12 @@ class HealthCheck:
         config.systemMessage_geminipro = 'You are a helpful assistant.'
         config.systemMessage_palm2 = 'You are a helpful assistant.'
         config.systemMessage_codey = 'You are an expert on coding.'
+        config.pyaudioInstalled = False
+        config.voiceTypingModel = "google"
+        config.voiceTypingLanguage = "en-US"
+        config.voiceTypingAdjustAmbientNoise = False
         # key bindings
+        config.keyBinding_voice_entry = ["c-f"]
         config.keyBinding_exit = ["c-q"]
         config.keyBinding_cancel = ["c-z"]
         config.keyBinding_insert_path = ["c-i"]
@@ -160,6 +169,51 @@ class HealthCheck:
         def _(event):
             buffer = event.app.current_buffer
             buffer.reset()
+        @this_key_bindings.add(*config.keyBinding_newline)
+        def _(event):
+            buffer = event.app.current_buffer
+            buffer.newline()
+        @this_key_bindings.add(*config.keyBinding_voice_entry)
+        def _(event):
+            # reference: https://github.com/Uberi/speech_recognition/blob/master/examples/microphone_recognition.py
+            def voiceTyping():
+                r = sr.Recognizer()
+                with sr.Microphone() as source:
+                    #run_in_terminal(lambda: config.print2("Listensing to your voice ..."))
+                    if config.voiceTypingAdjustAmbientNoise:
+                        r.adjust_for_ambient_noise(source)
+                    audio = r.listen(source)
+                #run_in_terminal(lambda: config.print2("Processing to your voice ..."))
+                if config.voiceTypingModel == "google":
+                    # recognize speech using Google Speech Recognition
+                    try:
+                        # check google.recognize_legacy in SpeechRecognition package
+                        # check availabl languages at: https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
+                        # config.voiceTypingLanguage should be code list in column BCP-47 at https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
+                        return r.recognize_google(audio, language=config.voiceTypingLanguage)
+                    except sr.UnknownValueError:
+                        #return "[Speech unrecognized!]"
+                        return ""
+                    except sr.RequestError as e:
+                        return "[Error: {0}]".format(e)
+                if config.voiceTypingModel == "whisper":
+                    # recognize speech using whisper
+                    try:
+                        # check availabl languages at: https://github.com/openai/whisper/blob/main/whisper/tokenizer.py
+                        # config.voiceTypingLanguage should be uncapitalized full language name like "english" or "chinese"
+                        return r.recognize_whisper(audio, model="base" if config.voiceTypingLanguage == "english" else "large", language=config.voiceTypingLanguage)
+                    except sr.UnknownValueError:
+                        return ""
+                    except sr.RequestError as e:
+                        return "[Error]"
+
+            if config.pyaudioInstalled:
+                buffer = event.app.current_buffer
+                buffer.text = f"{buffer.text}{' ' if buffer.text else ''}{voiceTyping()}"
+                buffer.cursor_position = buffer.cursor_position + buffer.document.get_end_of_line_position()
+            else:
+                run_in_terminal(lambda: config.print2("Install PyAudio first to enable voice entry!"))
+
         if hasattr(config, "currentMessages"):
             @this_key_bindings.add(*config.keyBinding_launch_pager_view)
             def _(_):

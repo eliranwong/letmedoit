@@ -44,3 +44,4 @@ setuptools-rust
 SpeechRecognition
 openai-whisper
 soundfile
+sounddevice

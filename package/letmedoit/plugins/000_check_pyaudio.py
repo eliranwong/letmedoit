@@ -6,6 +6,7 @@ import os
 # For more information, read https://github.com/Uberi/speech_recognition#pyaudio-for-microphone-users
 
 try:
+    import sounddevice
     import speech_recognition as sr
     mic = sr.Microphone() 
     del mic
