@@ -69,6 +69,8 @@ class Prompts:
                 r = sr.Recognizer()
                 with sr.Microphone() as source:
                     run_in_terminal(lambda: config.print2("Listensing to your voice ..."))
+                    if config.voiceTypingAdjustAmbientNoise:
+                        r.adjust_for_ambient_noise(source)
                     audio = r.listen(source)
                 run_in_terminal(lambda: config.print2("Processing to your voice ..."))
                 if config.voiceTypingModel == "google":

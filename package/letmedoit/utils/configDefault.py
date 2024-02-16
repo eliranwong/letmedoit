@@ -129,6 +129,7 @@ defaultSettings = (
     ("pyaudioInstalled", False),
     ("voiceTypingModel", "google"),
     ("voiceTypingLanguage", "en-US"),
+    ("voiceTypingAdjustAmbientNoise", False),
 )
 
 storageDir = config.getStorageDir()

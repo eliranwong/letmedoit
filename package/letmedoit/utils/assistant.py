@@ -1427,15 +1427,29 @@ Always remember that you are much more than a text-based AI. You possess both vi
         languages = googleSpeeckToTextLanguages if config.voiceTypingModel == "google" else whisperSpeeckToTextLanguages
         completer = FuzzyCompleter(WordCompleter(languages, ignore_case=True))
         self.print("Please specify the voice typing language:")
+        if config.voiceTypingModel == "google":
+            self.print("(Valid language codes available at https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages)")
         language = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.voiceTypingLanguage, promptSession=voice_typing_language_session, completer=completer)
         if language and not language in (config.exit_entry, config.cancel_entry):
             if not language in languages:
                 config.voiceTypingLanguage = "en-US" if config.voiceTypingModel == "google" else "english"
             else:
                 config.voiceTypingLanguage = language
+        # configure config.voiceTypingAdjustAmbientNoise
+        voiceTypingAdjustAmbientNoise = self.dialogs.getValidOptions(
+            options=("Yes", "No"),
+            title="Adjust Ambient Noise",
+            text="Do you want to adjust ambient noise?",
+            default="Yes" if config.voiceTypingAdjustAmbientNoise else "No",
+        )
+        if voiceTypingAdjustAmbientNoise:
+            config.voiceTypingAdjustAmbientNoise = True if voiceTypingAdjustAmbientNoise == "Yes" else False
         # notify
+        print("")
         self.print3(f"Voice Typing Model: {config.voiceTypingModel}")
         self.print3(f"Voice Typing Language: {config.voiceTypingLanguage}")
+        self.print3(f"Ambient Noise Adjustment: {config.voiceTypingAdjustAmbientNoise}")
+        config.saveConfig()
 
     def saveChat(self, messages):
         if config.conversationStarted:
