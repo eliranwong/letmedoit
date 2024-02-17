@@ -69,7 +69,7 @@ defaultSettings = (
     ('mouseSupport', False),
     ('autoUpgrade', True),
     ('chatbot', 'chatgpt'),
-    ('chatGPTApiModel', 'gpt-3.5-turbo-16k'),
+    ('chatGPTApiModel', 'gpt-3.5-turbo'),
     ('chatGPTApiMaxTokens', 4000),
     ('chatGPTApiMinTokens', 256),
     #('chatGPTApiNoOfChoices', 1),
