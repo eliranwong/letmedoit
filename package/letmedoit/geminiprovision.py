@@ -8,11 +8,10 @@ from vertexai.generative_models._generative_models import (
 from letmedoit import config
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
-if not hasattr(config, "exit_entry"):
+if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
     HealthCheck.saveConfig()
     print("Configurations updated!")
-HealthCheck.setPrint()
 
 import shutil, textwrap
 from PIL import Image as im

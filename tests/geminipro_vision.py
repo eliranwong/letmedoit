@@ -7,7 +7,7 @@ from vertexai.generative_models._generative_models import (
 )
 from letmedoit import config
 from letmedoit.health_check import HealthCheck
-if not hasattr(config, "exit_entry"):
+if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
     HealthCheck.saveConfig()
     print("Configurations updated!")
@@ -410,7 +410,7 @@ class GeminiPro:
 
         if imageFiles:
             HealthCheck.print3(f"Reading: '{', '.join(imageFiles)}'")
-            model = GenerativeModel("gemini-pro-vision")
+            model = GenerativeModel("gemini-1.0-pro-vision")
             response = model.generate_content(
                 content,
                 generation_config=GenerationConfig(

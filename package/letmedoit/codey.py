@@ -2,11 +2,10 @@ import vertexai, os, traceback, argparse
 from vertexai.language_models import CodeChatModel, ChatMessage
 from letmedoit import config
 from letmedoit.health_check import HealthCheck
-if not hasattr(config, "exit_entry"):
+if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
     HealthCheck.saveConfig()
     print("Configurations updated!")
-HealthCheck.setPrint()
 import pygments
 from pygments.lexers.markup import MarkdownLexer
 from prompt_toolkit.formatted_text import PygmentsTokens

@@ -1,13 +1,13 @@
 from letmedoit import config
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
-if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
+if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
-    HealthCheck.changeAPIkey()
+    if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
+        HealthCheck.changeAPIkey()
     HealthCheck.saveConfig()
     print("Configurations updated!")
 HealthCheck.checkCompletion()
-HealthCheck.setPrint()
 
 from openai import OpenAI
 from prompt_toolkit.styles import Style

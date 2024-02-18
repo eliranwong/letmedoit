@@ -16,13 +16,13 @@ if not hasattr(config, "use_oai_assistant"):
     config.use_oai_assistant = False
 
 from letmedoit.health_check import HealthCheck
-if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
+if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
-    HealthCheck.changeAPIkey()
+    if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
+        HealthCheck.changeAPIkey()
     HealthCheck.saveConfig()
     print("Configurations updated!")
 HealthCheck.checkCompletion()
-HealthCheck.setPrint()
 
 from autogen.agentchat.contrib.agent_builder import AgentBuilder
 #from letmedoit.utils.agent_builder import AgentBuilder

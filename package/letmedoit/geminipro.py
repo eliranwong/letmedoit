@@ -8,11 +8,10 @@ from vertexai.generative_models._generative_models import (
 from letmedoit import config
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
-if not hasattr(config, "exit_entry"):
+if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
     HealthCheck.saveConfig()
     print("Configurations updated!")
-HealthCheck.setPrint()
 from prompt_toolkit.styles import Style
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -72,7 +71,7 @@ class GeminiPro:
         if not self.runnable:
             print(f"{self.name} is not running due to missing configurations!")
             return None
-        model = GenerativeModel("gemini-pro")
+        model = GenerativeModel("gemini-1.0-pro")
         # on-going history
         if hasattr(config, "currentMessages") and config.currentMessages:
             history = []
@@ -144,7 +143,7 @@ class GeminiPro:
 #                )
 
                 try:
-                    if not hasattr(config, "currentMessages") and config.config.systemMessage_geminipro and justStarted:
+                    if not hasattr(config, "currentMessages") and config.systemMessage_geminipro and justStarted:
                         prompt = f"{config.systemMessage_geminipro}\n{prompt}"
                         justStarted = False
                     # https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini

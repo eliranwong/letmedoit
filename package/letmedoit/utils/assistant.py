@@ -23,7 +23,7 @@ from letmedoit.utils.shared_utils import SharedUtil
 from letmedoit.utils.tts_utils import TTSUtil
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.utils.text_utils import TextUtil
-from letmedoit.utils.speech_to_text_languages import googleSpeeckToTextLanguages, whisperSpeeckToTextLanguages
+from letmedoit.utils.sttLanguages import googleSpeeckToTextLanguages, whisperSpeeckToTextLanguages
 from letmedoit.chatgpt import ChatGPT
 if not config.isTermux:
     from letmedoit.autobuilder import AutoGenBuilder

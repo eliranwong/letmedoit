@@ -1,16 +1,17 @@
 from letmedoit import config
-import pydoc, textwrap, re, tiktoken
+import pydoc, textwrap, re, tiktoken, os
 import speech_recognition as sr
 from prompt_toolkit import prompt
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.styles import Style
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings, ConditionalKeyBindings
+from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
 from letmedoit.utils.prompt_multiline_shared_key_bindings import prompt_multiline_shared_key_bindings
 from letmedoit.utils.promptValidator import NumberValidator
 from letmedoit.utils.shared_utils import SharedUtil
-from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
+from letmedoit.utils.tts_utils import TTSUtil
 # import sounddevice to solve alsa error display
 # read https://github.com/Uberi/speech_recognition/issues/182#issuecomment-1426939447
 import sounddevice
@@ -72,10 +73,14 @@ class Prompts:
             def voiceTyping():
                 r = sr.Recognizer()
                 with sr.Microphone() as source:
+                    if config.voiceTypingNotification:
+                        TTSUtil.playAudioFile(os.path.join(config.letMeDoItAIFolder, "audio", "notification1.mp3"))
                     #run_in_terminal(lambda: config.print2("Listensing to your voice ..."))
                     if config.voiceTypingAdjustAmbientNoise:
                         r.adjust_for_ambient_noise(source)
                     audio = r.listen(source)
+                if config.voiceTypingNotification:
+                    TTSUtil.playAudioFile(os.path.join(config.letMeDoItAIFolder, "audio", "notification2.mp3"))
                 #run_in_terminal(lambda: config.print2("Processing to your voice ..."))
                 if config.voiceTypingModel == "google":
                     # recognize speech using Google Speech Recognition

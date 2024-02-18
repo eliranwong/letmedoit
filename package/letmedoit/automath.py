@@ -10,9 +10,10 @@ if not os.path.isfile(configFile):
 from letmedoit import config
 
 from letmedoit.health_check import HealthCheck
-if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
+if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
-    HealthCheck.changeAPIkey()
+    if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
+        HealthCheck.changeAPIkey()
     HealthCheck.saveConfig()
     print("Configurations updated!")
 HealthCheck.checkCompletion()

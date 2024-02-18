@@ -1,4 +1,4 @@
-import os
+import os, shutil
 thisFile = os.path.realpath(__file__)
 packageFolder = os.path.dirname(thisFile)
 package = os.path.basename(packageFolder)
@@ -21,8 +21,7 @@ from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings, ConditionalKeyBindings
 from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 from prompt_toolkit.application import run_in_terminal
-from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
-from letmedoit.utils.prompt_multiline_shared_key_bindings import prompt_multiline_shared_key_bindings
+from letmedoit.utils.tts_utils import TTSUtil
 import speech_recognition as sr
 # a dummy import line to resolve ALSA error display
 import sounddevice
@@ -88,49 +87,76 @@ class HealthCheck:
 
     @staticmethod
     def setBasicConfig(): # minimum config to work with standalone scripts built with AutoGen
-        config.multilineInput = False
-        config.openaiApiKey = ''
-        config.chatGPTApiModel = 'gpt-3.5-turbo-16k'
-        config.chatGPTApiMaxTokens = 4000
-        config.chatGPTApiMinTokens = 256
-        config.llmTemperature = 0.8
-        config.max_consecutive_auto_reply = 10
-        config.exit_entry = '.exit'
-        config.cancel_entry = '.cancel'
-        config.terminalPromptIndicatorColor1 = "ansimagenta"
-        config.terminalPromptIndicatorColor2 = "ansicyan"
-        config.terminalCommandEntryColor1 = "ansiyellow"
-        config.terminalCommandEntryColor2 = "ansigreen"
-        config.terminalResourceLinkColor = "ansiyellow"
-        config.terminalHeadingTextColor = "ansigreen"
-        config.mouseSupport = False
-        config.embeddingModel = "paraphrase-multilingual-mpnet-base-v2"
-        config.max_agents = 5
-        config.max_group_chat_round = 12
-        config.max_consecutive_auto_reply = 10
-        config.includeIpInSystemMessage = False
-        config.wrapWords = True
-        config.pygments_style = ""
-        config.systemMessage_chatgpt = 'You are a helpful assistant.'
-        config.systemMessage_geminipro = 'You are a helpful assistant.'
-        config.systemMessage_palm2 = 'You are a helpful assistant.'
-        config.systemMessage_codey = 'You are an expert on coding.'
-        config.pyaudioInstalled = False
-        config.voiceTypingModel = "google"
-        config.voiceTypingLanguage = "en-US"
-        config.voiceTypingAdjustAmbientNoise = False
-        # key bindings
-        config.keyBinding_voice_entry = ["c-f"]
-        config.keyBinding_exit = ["c-q"]
-        config.keyBinding_cancel = ["c-z"]
-        config.keyBinding_insert_path = ["c-i"]
-        config.keyBinding_new = ["c-n"]
-        config.keyBinding_newline = ["escape", "enter"]
-        config.keyBinding_launch_pager_view = ["c-g"]
-        config.keyBinding_list_directory_content = ["c-l"]
-        config.keyBinding_toggle_mouse_support = ["escape", "m"]
+        basicConfigs = (
+            ("letMeDoItAIFolder", packageFolder),
+            ('suggestSystemCommand', True),
+            ('developer', False),
+            ('systemMessage_geminipro', 'You are a helpful assistant.'),
+            ("multilineInput", False),
+            ("openaiApiKey", ''),
+            ("chatGPTApiModel", 'gpt-3.5-turbo-16k'),
+            ("chatGPTApiMaxTokens", 4000),
+            ("chatGPTApiMinTokens", 256),
+            ("llmTemperature", 0.8),
+            ("max_consecutive_auto_reply", 10),
+            ("exit_entry", '.exit'),
+            ("cancel_entry", '.cancel'),
+            ("terminalPromptIndicatorColor1", "ansimagenta"),
+            ("terminalPromptIndicatorColor2", "ansicyan"),
+            ("terminalCommandEntryColor1", "ansiyellow"),
+            ("terminalCommandEntryColor2", "ansigreen"),
+            ("terminalResourceLinkColor", "ansiyellow"),
+            ("terminalHeadingTextColor", "ansigreen"),
+            ("mouseSupport", False),
+            ("embeddingModel", "paraphrase-multilingual-mpnet-base-v2"),
+            ("max_agents", 5),
+            ("max_group_chat_round", 12),
+            ("max_consecutive_auto_reply", 10),
+            ("includeIpInSystemMessage", False),
+            ("wrapWords", True),
+            ("pygments_style", ""),
+            ('terminalEnableTermuxAPI', True if config.isTermux and shutil.which("termux-open-url") else False),
+            ('historyParentFolder', ""),
+            ("keyBinding_exit", ["c-q"]),
+            ("keyBinding_cancel", ["c-z"]),
+            ("keyBinding_insert_path", ["c-i"]),
+            ("keyBinding_new", ["c-n"]),
+            ("keyBinding_newline", ["escape", "enter"]),
+            ("keyBinding_remove_context_temporarily", ["c-y"]),
+            ("keyBinding_export", ["c-s"]),
+            ("keyBinding_display_device_info", ["escape", "i"]),
+            ("keyBinding_count_tokens", ["escape", "c"]),
+            ("keyBinding_launch_pager_view", ["c-g"]),
+            ("keyBinding_toggle_developer_mode", ["escape", "d"]),
+            ("keyBinding_toggle_multiline_entry", ["escape", "l"]),
+            ("keyBinding_list_directory_content", ["c-l"]),
+            ("keyBinding_select_context", ["c-o"]),
+            ("keyBinding_launch_system_prompt", ["escape", "t"]),
+            ("keyBinding_voice_entry", ["c-f"]),
+            ("keyBinding_voice_entry_config", ["escape", "f"]),
+            ("keyBinding_display_key_combo", ["c-k"]),
+            ("keyBinding_toggle_input_audio", ["c-b"]),
+            ("keyBinding_toggle_response_audio", ["c-p"]),
+            ("keyBinding_restart_app", ["escape", "r"]),
+            ("keyBinding_toggle_writing_improvement", ["escape", "w"]),
+            ("keyBinding_toggle_word_wrap", ["c-w"]),
+            ("keyBinding_toggle_mouse_support", ["escape", "m"]),
+            ("keyBinding_edit_last_response", ["escape", "p"]),
+            ("keyBinding_edit_current_entry", ["c-e"]),
+            ("keyBinding_swap_text_brightness", ["escape", "s"]),
+        )
+        for key, value in basicConfigs:
+            if not hasattr(config, key):
+                value = pprint.pformat(value)
+                exec(f"""config.{key} = {value} """)
         # print functions
         HealthCheck.setPrint()
+
+    @staticmethod
+    def showErrors():
+        trace = traceback.format_exc()
+        print(trace if config.developer else "Error encountered!")
+        return trace
 
     @staticmethod
     def spinning_animation(stop_event):
@@ -177,10 +203,14 @@ class HealthCheck:
             def voiceTyping():
                 r = sr.Recognizer()
                 with sr.Microphone() as source:
+                    if config.voiceTypingNotification:
+                        TTSUtil.playAudioFile(os.path.join(packageFolder, "audio", "notification1.mp3"))
                     #run_in_terminal(lambda: config.print2("Listensing to your voice ..."))
                     if config.voiceTypingAdjustAmbientNoise:
                         r.adjust_for_ambient_noise(source)
                     audio = r.listen(source)
+                if config.voiceTypingNotification:
+                    TTSUtil.playAudioFile(os.path.join(packageFolder, "audio", "notification2.mp3"))
                 #run_in_terminal(lambda: config.print2("Processing to your voice ..."))
                 if config.voiceTypingModel == "google":
                     # recognize speech using Google Speech Recognition
@@ -213,6 +243,8 @@ class HealthCheck:
                 run_in_terminal(lambda: config.print2("Install PyAudio first to enable voice entry!"))
 
         if hasattr(config, "currentMessages"):
+            from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
+            from letmedoit.utils.prompt_multiline_shared_key_bindings import prompt_multiline_shared_key_bindings
             @this_key_bindings.add(*config.keyBinding_launch_pager_view)
             def _(_):
                 config.launchPager()
@@ -368,6 +400,8 @@ class HealthCheck:
             for name in dir(config):
                 excludeConfigList = [
                     "isTermux",
+                    "isVlcPlayerInstalled",
+                    "letMeDoItAIFolder",
                 ]
                 if not name.startswith("__") and not name in excludeConfigList:
                     try:

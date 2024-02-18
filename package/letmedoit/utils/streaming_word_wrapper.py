@@ -1,11 +1,6 @@
 from letmedoit import config
 from letmedoit.health_check import HealthCheck
 from letmedoit.utils.tts_utils import TTSUtil
-if not hasattr(config, "exit_entry"):
-    HealthCheck.setBasicConfig()
-    HealthCheck.saveConfig()
-    print("Configurations updated!")
-HealthCheck.setPrint()
 #import pygments
 #from pygments.lexers.markup import MarkdownLexer
 #from prompt_toolkit.formatted_text import PygmentsTokens

@@ -17,7 +17,7 @@ apsw
 gTTS
 google-cloud-speech
 google-cloud-texttospeech
-google-cloud-aiplatform
+google-cloud-aiplatform==1.39.0
 pywhatkit
 yt-dlp
 rembg

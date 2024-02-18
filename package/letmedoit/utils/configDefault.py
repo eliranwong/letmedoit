@@ -130,6 +130,7 @@ defaultSettings = (
     ("voiceTypingModel", "google"),
     ("voiceTypingLanguage", "en-US"),
     ("voiceTypingAdjustAmbientNoise", False),
+    ("voiceTypingNotification", True),
     ("keyBinding_exit", ["c-q"]),
     ("keyBinding_cancel", ["c-z"]),
     ("keyBinding_insert_path", ["c-i"]),
