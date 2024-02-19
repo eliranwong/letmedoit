@@ -206,13 +206,13 @@ class HealthCheck:
                 r = sr.Recognizer()
                 with sr.Microphone() as source:
                     if config.voiceTypingNotification:
-                        TTSUtil.playAudioFile(os.path.join(packageFolder, "audio", "notification1.mp3"))
+                        TTSUtil.playAudioFilePygame(os.path.join(packageFolder, "audio", "notification1.mp3"))
                     #run_in_terminal(lambda: config.print2("Listensing to your voice ..."))
                     if config.voiceTypingAdjustAmbientNoise:
                         r.adjust_for_ambient_noise(source)
                     audio = r.listen(source)
                 if config.voiceTypingNotification:
-                    TTSUtil.playAudioFile(os.path.join(packageFolder, "audio", "notification2.mp3"))
+                    TTSUtil.playAudioFilePygame(os.path.join(packageFolder, "audio", "notification2.mp3"))
                 #run_in_terminal(lambda: config.print2("Processing to your voice ..."))
                 if config.voiceTypingModel == "google":
                     # recognize speech using Google Speech Recognition

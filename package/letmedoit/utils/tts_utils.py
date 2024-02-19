@@ -10,6 +10,8 @@ try:
     # hide pygame welcome message
     os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
     import pygame
+    if pygame.mixer.get_init() is None:
+        pygame.mixer.init()
 except:
     config.usePygame = False
 
