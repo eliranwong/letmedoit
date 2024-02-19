@@ -1444,11 +1444,21 @@ Always remember that you are much more than a text-based AI. You possess both vi
         )
         if voiceTypingAdjustAmbientNoise:
             config.voiceTypingAdjustAmbientNoise = True if voiceTypingAdjustAmbientNoise == "Yes" else False
+        # audio notification
+        voiceTypingNotification = self.dialogs.getValidOptions(
+            options=("Yes", "No"),
+            title="Audio Notification",
+            text="Do you want audio notification when you use microphone?",
+            default="Yes" if config.voiceTypingNotification else "No",
+        )
+        if voiceTypingNotification:
+            config.voiceTypingNotification = True if voiceTypingNotification == "Yes" else False
         # notify
         print("")
         self.print3(f"Voice Typing Model: {config.voiceTypingModel}")
         self.print3(f"Voice Typing Language: {config.voiceTypingLanguage}")
         self.print3(f"Ambient Noise Adjustment: {config.voiceTypingAdjustAmbientNoise}")
+        self.print3(f"Audio Notification: {config.voiceTypingNotification}")
         config.saveConfig()
 
     def saveChat(self, messages):
