@@ -1438,6 +1438,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
         # configure config.voiceTypingAdjustAmbientNoise
         voiceTypingAdjustAmbientNoise = self.dialogs.getValidOptions(
             options=("Yes", "No"),
+            descriptions=("Yes [slower]", "No"),
             title="Adjust Ambient Noise",
             text="Do you want to adjust ambient noise?",
             default="Yes" if config.voiceTypingAdjustAmbientNoise else "No",

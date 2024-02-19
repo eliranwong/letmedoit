@@ -11,7 +11,7 @@ from letmedoit.health_check import HealthCheck
 if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
     HealthCheck.saveConfig()
-    print("Configurations updated!")
+    #print("Configurations updated!")
 from prompt_toolkit.styles import Style
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -44,12 +44,25 @@ class GeminiPro:
             max_output_tokens=max_output_tokens, # default
             candidate_count=1,
         )
+        # Note: BLOCK_NONE is not allowed
         self.safety_settings={
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_UNSPECIFIED: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
         }
+        """
+        Alternately,
+        from google.cloud.aiplatform_v1beta1.types.content import SafetySetting
+        self.safety_settings = [
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_UNSPECIFIED, threshold=HarmBlockThreshold.BLOCK_ONLY_HIGH)
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold=HarmBlockThreshold.BLOCK_ONLY_HIGH)
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold=HarmBlockThreshold.BLOCK_ONLY_HIGH)
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=HarmBlockThreshold.BLOCK_ONLY_HIGH)
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold=HarmBlockThreshold.BLOCK_ONLY_HIGH)
+        ]
+        """
         self.defaultPrompt = ""
         #self.enableVision = (os.path.realpath(__file__).endswith("vision.py"))
 
@@ -71,7 +84,7 @@ class GeminiPro:
         if not self.runnable:
             print(f"{self.name} is not running due to missing configurations!")
             return None
-        model = GenerativeModel("gemini-1.0-pro")
+        model = GenerativeModel("gemini-pro")
         # on-going history
         if hasattr(config, "currentMessages") and config.currentMessages:
             history = []

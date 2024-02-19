@@ -34,6 +34,10 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki#an-interview
 
 # Recent Additions
 
+[Talk to LetMeDoIt in Multiple Languages](https://github.com/eliranwong/letmedoit/wiki/Speak-to-LetMeDoIt-AI)
+
+![talk_to_letmedoit](https://github.com/eliranwong/letmedoit/assets/25262722/6aa33f2d-8971-45ad-b5ac-e8f4e290bff5)
+
 [Analyze audio](https://github.com/eliranwong/letmedoit/wiki/Analyze-Audio)
 
 <img width="1440" alt="analyze_audio" src="https://github.com/eliranwong/letmedoit/assets/25262722/24e49f3b-289d-40f6-bf9c-45ed1e0eeed6">

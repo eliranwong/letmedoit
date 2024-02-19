@@ -10,7 +10,7 @@ from letmedoit.health_check import HealthCheck
 if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
     HealthCheck.saveConfig()
-    print("Configurations updated!")
+    #print("Configurations updated!")
 HealthCheck.setPrint()
 #import pygments
 #from pygments.lexers.markup import MarkdownLexer

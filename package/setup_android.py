@@ -51,7 +51,7 @@ exclude_packages = (
     "google-cloud-speech",
     "google-cloud-texttospeech",
     "pygame",
-    "pyautogen[retrievechat,autobuild,mathchat]==0.2.7",
+    "pyautogen[retrievechat,autobuild,mathchat]==0.2.14",
     "unstructured[all-docs]",
     "chromadb",
     "docker",
@@ -76,7 +76,7 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=f"{package}_android",
-    version="0.0.82",
+    version="0.0.83",
     python_requires=">=3.8, <3.12",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of ChatGPT API, Gemini Pro and AutoGen, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks on your local devices.",
     long_description=long_description,

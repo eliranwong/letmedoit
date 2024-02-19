@@ -3,7 +3,7 @@ from letmedoit.health_check import HealthCheck
 if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
     HealthCheck.saveConfig()
-    print("Configurations updated!")
+    #print("Configurations updated!")
 from letmedoit.utils.prompts import Prompts
 from letmedoit.utils.terminal_system_command_prompt import SystemCommandPrompt
 import platform

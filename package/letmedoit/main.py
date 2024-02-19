@@ -67,7 +67,8 @@ def restartApp():
     exit(0)
 config.restartApp = restartApp
 
-from letmedoit.utils.configDefault import *
+from letmedoit.utils.config_tools import *
+from letmedoit.utils.config_essential import temporaryConfigs
 from letmedoit.utils.install import installmodule
 from letmedoit.utils.shared_utils import SharedUtil
 
@@ -130,74 +131,7 @@ def setOsOpenCmd():
 def saveConfig():
     with open(configFile, "w", encoding="utf-8") as fileObj:
         for name in dir(config):
-            excludeConfigList = [
-                "actionHelp",
-                "isTermux",
-                "oai_client",
-                "includeIpInSystemMessageTemp",
-                "initialCompletionCheck",
-                "promptStyle1",
-                "promptStyle2",
-                "runSpecificFuntion",
-                "pluginsWithFunctionCall",
-                "restartApp",
-                "getStorageDir",
-                "saveConfig",
-                "aliases",
-                "addPathAt",
-                "multilineInput",
-                "conversationStarted",
-                "dynamicToolBarText",
-                "tokenLimits",
-                "currentMessages",
-                "pagerContent",
-                "selectAll",
-                "clipboard",
-                "showKeyBindings",
-                "divider",
-                "systemCommandPromptEntry",
-                "stop_event",
-                "spinner_thread",
-                "tts",
-                "isPygameInstalled",
-                "isVlcPlayerInstalled",
-                "accept_default",
-                "defaultEntry",
-                "pipIsUpdated",
-                "setConfig",
-                "excludeConfigList",
-                "tempContent",
-                "tempChunk",
-                "predefinedContextTemp",
-                "thisPlatform",
-                "letMeDoItAI",
-                "terminalColors",
-                "letMeDoItFile",
-                "letMeDoItAIFolder",
-                "open",
-                "inputSuggestions", # used with plugins; user input suggestions
-                "chatGPTTransformers", # used with plugins; transform ChatGPT response message
-                "predefinedInstructions", # used with plugins; pre-defined instructions
-                "predefinedContexts", # used with plugins; pre-defined contexts
-                # used with plugins; function call
-                "chatGPTApiFunctionSignatures",
-                "chatGPTApiAvailableFunctions",
-                "pythonFunctionResponse", # used with plugins; function call when function name is 'python'
-                # LetMeDoItAI methods shared from Class LetMeDoItAI
-                "getFiles",
-                "stopSpinning",
-                "toggleMultiline",
-                "print",
-                "print2",
-                "print3",
-                "getWrappedHTMLText",
-                "fineTuneUserInput",
-                "launchPager",
-                "addPagerText",
-                "getFunctionMessageAndResponse",
-                "isTermux",
-            ]
-            excludeConfigList = excludeConfigList + config.excludeConfigList
+            excludeConfigList = temporaryConfigs + config.excludeConfigList
             if not name.startswith("__") and not name in excludeConfigList:
                 try:
                     value = eval(f"config.{name}")

@@ -22,6 +22,8 @@ from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings, Conditio
 from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 from prompt_toolkit.application import run_in_terminal
 from letmedoit.utils.tts_utils import TTSUtil
+from letmedoit.utils.config_essential import defaultSettings, temporaryConfigs
+from pathlib import Path
 import speech_recognition as sr
 # a dummy import line to resolve ALSA error display
 import sounddevice
@@ -145,7 +147,7 @@ class HealthCheck:
             ("keyBinding_edit_current_entry", ["c-e"]),
             ("keyBinding_swap_text_brightness", ["escape", "s"]),
         )
-        for key, value in basicConfigs:
+        for key, value in defaultSettings:
             if not hasattr(config, key):
                 value = pprint.pformat(value)
                 exec(f"""config.{key} = {value} """)
@@ -398,12 +400,7 @@ class HealthCheck:
         with open(configFile, "w", encoding="utf-8") as fileObj:
             #print(dir(config))
             for name in dir(config):
-                excludeConfigList = [
-                    "isTermux",
-                    "isVlcPlayerInstalled",
-                    "letMeDoItAIFolder",
-                ]
-                if not name.startswith("__") and not name in excludeConfigList:
+                if not name.startswith("__") and not name in temporaryConfigs:
                     try:
                         value = eval(f"config.{name}")
                         if not callable(value) and not str(value).startswith("<"):
