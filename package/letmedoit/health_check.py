@@ -88,65 +88,7 @@ class HealthCheck:
     models = tuple(tokenLimits.keys())
 
     @staticmethod
-    def setBasicConfig(): # minimum config to work with standalone scripts built with AutoGen
-        basicConfigs = (
-            ("letMeDoItAIFolder", packageFolder),
-            ('suggestSystemCommand', True),
-            ('developer', False),
-            ('systemMessage_geminipro', 'You are a helpful assistant.'),
-            ("multilineInput", False),
-            ("openaiApiKey", ''),
-            ("chatGPTApiModel", 'gpt-3.5-turbo-16k'),
-            ("chatGPTApiMaxTokens", 4000),
-            ("chatGPTApiMinTokens", 256),
-            ("llmTemperature", 0.8),
-            ("max_consecutive_auto_reply", 10),
-            ("exit_entry", '.exit'),
-            ("cancel_entry", '.cancel'),
-            ("terminalPromptIndicatorColor1", "ansimagenta"),
-            ("terminalPromptIndicatorColor2", "ansicyan"),
-            ("terminalCommandEntryColor1", "ansiyellow"),
-            ("terminalCommandEntryColor2", "ansigreen"),
-            ("terminalResourceLinkColor", "ansiyellow"),
-            ("terminalHeadingTextColor", "ansigreen"),
-            ("mouseSupport", False),
-            ("embeddingModel", "paraphrase-multilingual-mpnet-base-v2"),
-            ("max_agents", 5),
-            ("max_group_chat_round", 12),
-            ("max_consecutive_auto_reply", 10),
-            ("includeIpInSystemMessage", False),
-            ("wrapWords", True),
-            ("pygments_style", ""),
-            ('terminalEnableTermuxAPI', True if config.isTermux and shutil.which("termux-open-url") else False),
-            ('historyParentFolder', ""),
-            ("keyBinding_exit", ["c-q"]),
-            ("keyBinding_cancel", ["c-z"]),
-            ("keyBinding_insert_path", ["c-i"]),
-            ("keyBinding_new", ["c-n"]),
-            ("keyBinding_newline", ["escape", "enter"]),
-            ("keyBinding_remove_context_temporarily", ["c-y"]),
-            ("keyBinding_export", ["c-s"]),
-            ("keyBinding_display_device_info", ["escape", "i"]),
-            ("keyBinding_count_tokens", ["escape", "c"]),
-            ("keyBinding_launch_pager_view", ["c-g"]),
-            ("keyBinding_toggle_developer_mode", ["escape", "d"]),
-            ("keyBinding_toggle_multiline_entry", ["escape", "l"]),
-            ("keyBinding_list_directory_content", ["c-l"]),
-            ("keyBinding_select_context", ["c-o"]),
-            ("keyBinding_launch_system_prompt", ["escape", "t"]),
-            ("keyBinding_voice_entry", ["c-f"]),
-            ("keyBinding_voice_entry_config", ["escape", "f"]),
-            ("keyBinding_display_key_combo", ["c-k"]),
-            ("keyBinding_toggle_input_audio", ["c-b"]),
-            ("keyBinding_toggle_response_audio", ["c-p"]),
-            ("keyBinding_restart_app", ["escape", "r"]),
-            ("keyBinding_toggle_writing_improvement", ["escape", "w"]),
-            ("keyBinding_toggle_word_wrap", ["c-w"]),
-            ("keyBinding_toggle_mouse_support", ["escape", "m"]),
-            ("keyBinding_edit_last_response", ["escape", "p"]),
-            ("keyBinding_edit_current_entry", ["c-e"]),
-            ("keyBinding_swap_text_brightness", ["escape", "s"]),
-        )
+    def setBasicConfig():
         for key, value in defaultSettings:
             if not hasattr(config, key):
                 value = pprint.pformat(value)
@@ -186,33 +128,33 @@ class HealthCheck:
     @staticmethod
     def simplePrompt(inputIndicator="", validator=None, default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False, bottom_toolbar=None):
         this_key_bindings = KeyBindings()
-        @this_key_bindings.add(*config.keyBinding_exit)
+        @this_key_bindings.add(*config.hotkey_exit)
         def _(event):
             buffer = event.app.current_buffer
             buffer.text = config.exit_entry
             buffer.validate_and_handle()
-        @this_key_bindings.add(*config.keyBinding_cancel)
+        @this_key_bindings.add(*config.hotkey_cancel)
         def _(event):
             buffer = event.app.current_buffer
             buffer.reset()
-        @this_key_bindings.add(*config.keyBinding_newline)
+        @this_key_bindings.add(*config.hotkey_insert_newline)
         def _(event):
             buffer = event.app.current_buffer
             buffer.newline()
-        @this_key_bindings.add(*config.keyBinding_voice_entry)
+        @this_key_bindings.add(*config.hotkey_voice_entry)
         def _(event):
             # reference: https://github.com/Uberi/speech_recognition/blob/master/examples/microphone_recognition.py
             def voiceTyping():
                 r = sr.Recognizer()
                 with sr.Microphone() as source:
                     if config.voiceTypingNotification:
-                        TTSUtil.playAudioFilePygame(os.path.join(packageFolder, "audio", "notification1.mp3"))
+                        TTSUtil.playAudioFilePygame(os.path.join(packageFolder, "audio", "notification1_mild.mp3"))
                     #run_in_terminal(lambda: config.print2("Listensing to your voice ..."))
                     if config.voiceTypingAdjustAmbientNoise:
                         r.adjust_for_ambient_noise(source)
                     audio = r.listen(source)
                 if config.voiceTypingNotification:
-                    TTSUtil.playAudioFilePygame(os.path.join(packageFolder, "audio", "notification2.mp3"))
+                    TTSUtil.playAudioFilePygame(os.path.join(packageFolder, "audio", "notification2_mild.mp3"))
                 #run_in_terminal(lambda: config.print2("Processing to your voice ..."))
                 if config.voiceTypingModel == "google":
                     # recognize speech using Google Speech Recognition
@@ -247,7 +189,7 @@ class HealthCheck:
         if hasattr(config, "currentMessages"):
             from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
             from letmedoit.utils.prompt_multiline_shared_key_bindings import prompt_multiline_shared_key_bindings
-            @this_key_bindings.add(*config.keyBinding_launch_pager_view)
+            @this_key_bindings.add(*config.hotkey_launch_pager_view)
             def _(_):
                 config.launchPager()
             # additional key binding
@@ -261,7 +203,7 @@ class HealthCheck:
                 conditional_prompt_multiline_shared_key_bindings,
             ])
         else:
-            @this_key_bindings.add(*config.keyBinding_new)
+            @this_key_bindings.add(*config.hotkey_new)
             def _(event):
                 buffer = event.app.current_buffer
                 config.defaultEntry = buffer.text
@@ -279,7 +221,7 @@ class HealthCheck:
         userInput = inputPrompt(
             inputIndicator,
             key_bindings=this_key_bindings,
-            bottom_toolbar=bottom_toolbar if bottom_toolbar is not None else f" [ctrl+q] {config.exit_entry}",
+            bottom_toolbar=bottom_toolbar if bottom_toolbar is not None else f""" {str(config.hotkey_exit).replace("'", "")} {config.exit_entry}""",
             #enable_system_prompt=True,
             swap_light_and_dark_colors=Condition(lambda: not config.terminalResourceLinkColor.startswith("ansibright")),
             style=style,
@@ -396,9 +338,7 @@ class HealthCheck:
 
     @staticmethod
     def saveConfig():
-        #print(configFile)
         with open(configFile, "w", encoding="utf-8") as fileObj:
-            #print(dir(config))
             for name in dir(config):
                 if not name.startswith("__") and not name in temporaryConfigs:
                     try:

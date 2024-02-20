@@ -61,26 +61,26 @@ class Prompts:
 
     def getToolBar(self, multiline=False):
         if multiline:
-            return f" [ctrl+q] exit [escape+enter] send "
-        return f" [ctrl+q] exit [enter] send "
+            return f""" {str(config.hotkey_exit).replace("'", "")} exit [escape+enter] send """
+        return f""" {str(config.hotkey_exit).replace("'", "")} exit [enter] send """
 
     def shareKeyBindings(self):
         this_key_bindings = KeyBindings()
 
-        @this_key_bindings.add(*config.keyBinding_voice_entry)
+        @this_key_bindings.add(*config.hotkey_voice_entry)
         def _(event):
             # reference: https://github.com/Uberi/speech_recognition/blob/master/examples/microphone_recognition.py
             def voiceTyping():
                 r = sr.Recognizer()
                 with sr.Microphone() as source:
                     if config.voiceTypingNotification:
-                        TTSUtil.playAudioFile(os.path.join(config.letMeDoItAIFolder, "audio", "notification1.mp3"))
+                        TTSUtil.playAudioFile(os.path.join(config.letMeDoItAIFolder, "audio", "notification1_mild.mp3"))
                     #run_in_terminal(lambda: config.print2("Listensing to your voice ..."))
                     if config.voiceTypingAdjustAmbientNoise:
                         r.adjust_for_ambient_noise(source)
                     audio = r.listen(source)
                 if config.voiceTypingNotification:
-                    TTSUtil.playAudioFile(os.path.join(config.letMeDoItAIFolder, "audio", "notification2.mp3"))
+                    TTSUtil.playAudioFile(os.path.join(config.letMeDoItAIFolder, "audio", "notification2_mild.mp3"))
                 #run_in_terminal(lambda: config.print2("Processing to your voice ..."))
                 if config.voiceTypingModel == "google":
                     # recognize speech using Google Speech Recognition
@@ -111,35 +111,35 @@ class Prompts:
                 buffer.cursor_position = buffer.cursor_position + buffer.document.get_end_of_line_position()
             else:
                 run_in_terminal(lambda: config.print2("Install PyAudio first to enable voice entry!"))
-        @this_key_bindings.add(*config.keyBinding_voice_entry_config)
+        @this_key_bindings.add(*config.hotkey_voice_entry_config)
         def _(event):
             buffer = event.app.current_buffer
             config.defaultEntry = buffer.text
             buffer.text = ".voicetypingconfig"
             buffer.validate_and_handle()
-        @this_key_bindings.add(*config.keyBinding_list_directory_content)
+        @this_key_bindings.add(*config.hotkey_list_directory_content)
         def _(event):
             buffer = event.app.current_buffer
             config.defaultEntry = buffer.text
             buffer.text = ".content"
             buffer.validate_and_handle()
-        @this_key_bindings.add(*config.keyBinding_exit)
+        @this_key_bindings.add(*config.hotkey_exit)
         def _(event):
             buffer = event.app.current_buffer
             buffer.text = config.exit_entry
             buffer.validate_and_handle()
-        @this_key_bindings.add(*config.keyBinding_insert_path) # add path
+        @this_key_bindings.add(*config.hotkey_insert_filepath) # add path
         def _(event):
             buffer = event.app.current_buffer
             config.addPathAt = buffer.cursor_position
             buffer.validate_and_handle()
-        @this_key_bindings.add(*config.keyBinding_new)
+        @this_key_bindings.add(*config.hotkey_new)
         def _(event):
             buffer = event.app.current_buffer
             config.defaultEntry = buffer.text
             buffer.text = ".new"
             buffer.validate_and_handle()
-        @this_key_bindings.add(*config.keyBinding_remove_context_temporarily)
+        @this_key_bindings.add(*config.hotkey_remove_context_temporarily)
         def _(event):
             buffer = event.app.current_buffer
             config.predefinedContextTemp = config.predefinedContext
@@ -147,16 +147,16 @@ class Prompts:
             buffer.text = ".new"
             buffer.validate_and_handle()
             run_in_terminal(lambda: config.print3("Predefined context temporarily changed to: [none]"))
-        @this_key_bindings.add(*config.keyBinding_export)
+        @this_key_bindings.add(*config.hotkey_export)
         def _(event):
             buffer = event.app.current_buffer
             config.defaultEntry = buffer.text
             buffer.text = ".export"
             buffer.validate_and_handle()
-        @this_key_bindings.add(*config.keyBinding_display_device_info)
+        @this_key_bindings.add(*config.hotkey_display_device_info)
         def _(_):
             run_in_terminal(lambda: print(SharedUtil.getDeviceInfo(True)))
-        @this_key_bindings.add(*config.keyBinding_count_tokens)
+        @this_key_bindings.add(*config.hotkey_count_tokens)
         def _(event):
             try:
                 try:
@@ -192,66 +192,66 @@ Available tokens: {estimatedAvailableTokens}
             except:
                 content = "Required package 'tiktoken' not found!"
             run_in_terminal(lambda: config.print(content))
-        @this_key_bindings.add(*config.keyBinding_launch_pager_view)
+        @this_key_bindings.add(*config.hotkey_launch_pager_view)
         def _(_):
             config.launchPager()
-        @this_key_bindings.add(*config.keyBinding_toggle_developer_mode)
+        @this_key_bindings.add(*config.hotkey_toggle_developer_mode)
         def _(_):
             config.developer = not config.developer
             config.saveConfig()
             run_in_terminal(lambda: config.print3(f"Developer mode: {'enabled' if config.developer else 'disabled'}!"))
-        @this_key_bindings.add(*config.keyBinding_toggle_multiline_entry)
+        @this_key_bindings.add(*config.hotkey_toggle_multiline_entry)
         def _(_):
             config.toggleMultiline()
-        @this_key_bindings.add(*config.keyBinding_select_context)
+        @this_key_bindings.add(*config.hotkey_select_context)
         def _(event):
             buffer = event.app.current_buffer
             config.defaultEntry = buffer.text
             buffer.text = ".context"
             buffer.validate_and_handle()
         @this_key_bindings.add("escape", "!")
-        @this_key_bindings.add(*config.keyBinding_launch_system_prompt)
+        @this_key_bindings.add(*config.hotkey_launch_system_prompt)
         def _(event):
             buffer = event.app.current_buffer
             config.defaultEntry = buffer.text
             buffer.text = ".system"
             buffer.validate_and_handle()
-        @this_key_bindings.add(*config.keyBinding_display_key_combo)
+        @this_key_bindings.add(*config.hotkey_display_key_combo)
         def _(_):
             run_in_terminal(self.showKeyBindings)
-        @this_key_bindings.add(*config.keyBinding_toggle_input_audio)
+        @this_key_bindings.add(*config.hotkey_toggle_input_audio)
         def _(_):
             if config.tts:
                 config.ttsInput = not config.ttsInput
                 config.saveConfig()
                 run_in_terminal(lambda: config.print3(f"Input Audio: '{'enabled' if config.ttsInput else 'disabled'}'!"))
-        @this_key_bindings.add(*config.keyBinding_toggle_response_audio)
+        @this_key_bindings.add(*config.hotkey_toggle_response_audio)
         def _(_):
             if config.tts:
                 config.ttsOutput = not config.ttsOutput
                 config.saveConfig()
                 run_in_terminal(lambda: config.print3(f"Response Audio: '{'enabled' if config.ttsOutput else 'disabled'}'!"))
-        @this_key_bindings.add(*config.keyBinding_restart_app)
+        @this_key_bindings.add(*config.hotkey_restart_app)
         def _(_):
             print(f"Restarting {config.letMeDoItName} ...")
             config.restartApp()
-        @this_key_bindings.add(*config.keyBinding_toggle_writing_improvement)
+        @this_key_bindings.add(*config.hotkey_toggle_writing_improvement)
         def _(_):
             config.displayImprovedWriting = not config.displayImprovedWriting
             config.saveConfig()
             run_in_terminal(lambda: config.print3(f"Improved Writing Display: '{'enabled' if config.displayImprovedWriting else 'disabled'}'!"))
-        @this_key_bindings.add(*config.keyBinding_toggle_word_wrap)
+        @this_key_bindings.add(*config.hotkey_toggle_word_wrap)
         def _(_):
             config.wrapWords = not config.wrapWords
             config.saveConfig()
             run_in_terminal(lambda: config.print3(f"Word Wrap: '{'enabled' if config.wrapWords else 'disabled'}'!"))
-        @this_key_bindings.add(*config.keyBinding_toggle_mouse_support)
+        @this_key_bindings.add(*config.hotkey_toggle_mouse_support)
         def _(_):
             config.mouseSupport = not config.mouseSupport
             config.saveConfig()
             run_in_terminal(lambda: config.print3(f"Entry Mouse Support: '{'enabled' if config.mouseSupport else 'disabled'}'!"))
         # edit the last response in built-in or custom text editor
-        @this_key_bindings.add(*config.keyBinding_edit_last_response)
+        @this_key_bindings.add(*config.hotkey_edit_last_response)
         def _(event):
             buffer = event.app.current_buffer
             buffer.text = ".editresponse"
@@ -275,9 +275,9 @@ Available tokens: {estimatedAvailableTokens}
             return entry
         bindings = {
             "[enter]": "complete entry",
-            str(config.keyBinding_newline): "new line",
-            str(config.keyBinding_exit): "quit / exit current feature",
-            str(config.keyBinding_cancel): "cancel",
+            str(config.hotkey_insert_newline): "new line",
+            str(config.hotkey_exit): "quit / exit current feature",
+            str(config.hotkey_cancel): "cancel",
             "[c-a]": "select / unselect all",
             "[c-c]": "copy [w/ mouse support]",
             "[c-v]": "paste [w/ mouse support]",
@@ -290,31 +290,31 @@ Available tokens: {estimatedAvailableTokens}
             "[escape, a]": "move cursor to entry beginning",
             "[escape, z]": "move cursor to entry end",
             "[c-r]": "reverse-i-search",
-            str(config.keyBinding_new): "new chat",
-            str(config.keyBinding_export): "export chat",
-            str(config.keyBinding_select_context): "change predefined context",
-            str(config.keyBinding_remove_context_temporarily): "remove context temporarily",
-            str(config.keyBinding_launch_pager_view): "launch pager view",
-            str(config.keyBinding_display_key_combo): "show key bindings",
-            str(config.keyBinding_voice_entry): "activate voice typing",
-            str(config.keyBinding_voice_entry_config): "change voice typing configs",
-            str(config.keyBinding_toggle_input_audio): "toggle input audio",
-            str(config.keyBinding_toggle_response_audio): "toggle response audio",
-            str(config.keyBinding_toggle_multiline_entry): "toggle multi-line entry",
-            str(config.keyBinding_toggle_word_wrap): "toggle word wrap",
-            str(config.keyBinding_insert_path): "insert a file or folder path",
-            str(config.keyBinding_display_device_info): "display device information",
-            str(config.keyBinding_count_tokens): "count current message tokens",
-            str(config.keyBinding_toggle_writing_improvement): "toggle improved writing feature",
-            str(config.keyBinding_toggle_mouse_support): "toggle mouse support",
-            str(config.keyBinding_launch_system_prompt): "system command prompt",
-            str(config.keyBinding_swap_text_brightness): "swap text brightness",
-            str(config.keyBinding_toggle_developer_mode): "swap developer mode",
-            str(config.keyBinding_restart_app): "restart letmedoit",
+            str(config.hotkey_new): "new chat",
+            str(config.hotkey_export): "export chat",
+            str(config.hotkey_select_context): "change predefined context",
+            str(config.hotkey_remove_context_temporarily): "remove context temporarily",
+            str(config.hotkey_launch_pager_view): "launch pager view",
+            str(config.hotkey_display_key_combo): "show key bindings",
+            str(config.hotkey_voice_entry): "activate voice typing",
+            str(config.hotkey_voice_entry_config): "change voice typing configs",
+            str(config.hotkey_toggle_input_audio): "toggle input audio",
+            str(config.hotkey_toggle_response_audio): "toggle response audio",
+            str(config.hotkey_toggle_multiline_entry): "toggle multi-line entry",
+            str(config.hotkey_toggle_word_wrap): "toggle word wrap",
+            str(config.hotkey_insert_filepath): "insert a file or folder path",
+            str(config.hotkey_display_device_info): "display device information",
+            str(config.hotkey_count_tokens): "count current message tokens",
+            str(config.hotkey_toggle_writing_improvement): "toggle improved writing feature",
+            str(config.hotkey_toggle_mouse_support): "toggle mouse support",
+            str(config.hotkey_launch_system_prompt): "system command prompt",
+            str(config.hotkey_swap_text_brightness): "swap text brightness",
+            str(config.hotkey_toggle_developer_mode): "swap developer mode",
+            str(config.hotkey_restart_app): "restart letmedoit",
         }
         textEditor = config.customTextEditor.split(" ", 1)[0]
-        bindings[str(config.keyBinding_edit_current_entry)] = f"""edit current input with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
-        bindings[str(config.keyBinding_edit_last_response)] = f"""edit the previous response with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
+        bindings[str(config.hotkey_edit_current_entry)] = f"""edit current input with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
+        bindings[str(config.hotkey_edit_last_response)] = f"""edit the previous response with '{config.customTextEditor if textEditor and SharedUtil.isPackageInstalled(textEditor) else "eTextEdit"}'"""
         multilineBindings = {
             "[enter]": "new line",
             "[escape, enter]": "complete entry",

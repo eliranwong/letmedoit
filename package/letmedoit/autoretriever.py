@@ -43,6 +43,14 @@ class AutoGenRetriever:
         for model in ("gpt-4-turbo-preview", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k"):
             oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
         os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
+        """
+        Code execution is set to be run in docker (default behaviour) but docker is not running.
+        The options available are:
+        - Make sure docker is running (advised approach for code execution)
+        - Set "use_docker": False in code_execution_config
+        - Set AUTOGEN_USE_DOCKER to "0/False/no" in your environment variables
+        """
+        os.environ["AUTOGEN_USE_DOCKER"] = "False"
 
     def getResponse(self, docs_path, message, auto=False):
         if not os.path.exists(docs_path):
@@ -169,7 +177,7 @@ class AutoGenRetriever:
                 config.max_consecutive_auto_reply = int(max_consecutive_auto_reply)
 
         self.print(f"<{config.terminalCommandEntryColor1}>AutoGen Retriever launched!</{config.terminalCommandEntryColor1}>")
-        self.print("[press 'ctrl+q' to exit]")
+        self.print(f"""[press '{str(config.hotkey_exit).replace("'", "")[1:-1]}' to exit]""")
         
         self.print(f"<{config.terminalCommandEntryColor1}>Enter document path below (file / folder):</{config.terminalCommandEntryColor1}>")
         self.print(f"""Supported formats: *.{", *.".join(TEXT_FORMATS)}""" + ", *.zip")

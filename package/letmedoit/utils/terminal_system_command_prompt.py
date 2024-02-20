@@ -35,7 +35,7 @@ class SystemCommandPrompt:
         self.openCommand = config.open
 
     def getToolBar(self):
-        return " [ctrl+q] exit [ctrl+l] list content [ctrl+i] insert path "
+        return f""" {str(config.hotkey_exit).replace("'", "")} exit {str(config.hotkey_list_directory_content).replace("'", "")} list content {str(config.hotkey_insert_filepath).replace("'", "")} insert path """
 
     def getSystemCommands(self):
         try:
@@ -51,37 +51,37 @@ class SystemCommandPrompt:
         self.runSystemCommandPrompt = True
         # initial message
         print_formatted_text(HTML(f"<{config.terminalCommandEntryColor1}>You are currently running system command prompt!</{config.terminalCommandEntryColor1}>"))
-        config.print(f"To exit, either press 'ctrl+q' or enter '{config.exit_entry}'.")
+        config.print(f"""To exit, either press '{str(config.hotkey_exit).replace("'", "")[1:-1]}' or enter '{config.exit_entry}'.""")
         # keep current path in case users change directory
         startupDirectory = self.previousDirectory = self.currentDirectory = os.getcwd()
 
         this_key_bindings = KeyBindings()
 
-        @this_key_bindings.add(*config.keyBinding_exit)
+        @this_key_bindings.add(*config.hotkey_exit)
         def _(event):
             buffer = event.app.current_buffer
             buffer.text = config.exit_entry
             buffer.validate_and_handle()
-        @this_key_bindings.add(*config.keyBinding_cancel)
+        @this_key_bindings.add(*config.hotkey_cancel)
         def _(event):
             buffer = event.app.current_buffer
             buffer.reset()
-        @this_key_bindings.add(*config.keyBinding_list_directory_content)
+        @this_key_bindings.add(*config.hotkey_list_directory_content)
         def _(_):
             config.print("")
             run_in_terminal(lambda: self.getPath.displayDirectoryContent())
-        @this_key_bindings.add(*config.keyBinding_insert_path)
+        @this_key_bindings.add(*config.hotkey_insert_filepath)
         def _(event):
             self.addPath = True
             buffer = event.app.current_buffer
             self.systemCommandPromptEntry = buffer.text
             self.systemCommandPromptPosition = buffer.cursor_position
             buffer.validate_and_handle()
-        @this_key_bindings.add(*config.keyBinding_newline)
+        @this_key_bindings.add(*config.hotkey_insert_newline)
         def _(event):
             buffer = event.app.current_buffer
             buffer.newline()
-        @this_key_bindings.add(*config.keyBinding_toggle_mouse_support)
+        @this_key_bindings.add(*config.hotkey_toggle_mouse_support)
         def _(_):
             config.mouseSupport = not config.mouseSupport
             run_in_terminal(lambda: config.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))

@@ -29,13 +29,13 @@ class TokenValidator(Validator):
             selectedModelLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
             #estimatedAvailableTokens = selectedModelLimit - availableFunctionTokens - loadedMessageTokens - currentInputTokens
 
-            config.dynamicToolBarText = f" Tokens: {(availableFunctionTokens + loadedMessageTokens + currentInputTokens)}/{selectedModelLimit} [ctrl+k] shortcuts "
+            config.dynamicToolBarText = f""" Tokens: {(availableFunctionTokens + loadedMessageTokens + currentInputTokens)}/{selectedModelLimit} {str(config.hotkey_display_key_combo).replace("'", "")} shortcuts """
             #if config.conversationStarted:
             #    config.dynamicToolBarText = config.dynamicToolBarText + " [ctrl+n] new"
             if selectedModelLimit - (availableFunctionTokens + loadedMessageTokens + currentInputTokens) >= config.chatGPTApiMinTokens:
                 pass
             else:
-                run_in_terminal(lambda: print("Press 'ctrl+n' to start a new chat!"))
+                run_in_terminal(lambda: print(f"""Press '{str(config.hotkey_new).replace("'", "")[1:-1]}' to start a new chat!"""))
                 raise ValidationError(message='Token limit reached!', cursor_position=document.cursor_position)
 
 class NumberValidator(Validator):

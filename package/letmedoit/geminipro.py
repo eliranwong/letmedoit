@@ -108,9 +108,9 @@ class GeminiPro:
         #HealthCheck.print2(f"\n{self.name} + Vision loaded!" if self.enableVision else f"\n{self.name} loaded!")
         HealthCheck.print2(f"\n{self.name} loaded!")
         if hasattr(config, "currentMessages"):
-            bottom_toolbar = f" [ctrl+q] {config.exit_entry}"
+            bottom_toolbar = f""" {str(config.hotkey_exit).replace("'", "")} {config.exit_entry}"""
         else:
-            bottom_toolbar = f" [ctrl+q] {config.exit_entry} [ctrl+n] .new"
+            bottom_toolbar = f""" {str(config.hotkey_exit).replace("'", "")} {config.exit_entry} {str(config.hotkey_new).replace("'", "")} .new"""
             print("(To start a new chart, enter '.new')")
         print(f"(To exit, enter '{config.exit_entry}')\n")
         while True:

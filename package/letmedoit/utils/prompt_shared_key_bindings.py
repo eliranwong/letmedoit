@@ -54,7 +54,7 @@ def _(event):
     # remarks: set_data does not work
     config.clipboard.set_text(data.text)
 # insert linebreak
-@prompt_shared_key_bindings.add(*config.keyBinding_newline)
+@prompt_shared_key_bindings.add(*config.hotkey_insert_newline)
 def _(event):
     buffer = event.app.current_buffer
     if config.multilineInput:
@@ -96,7 +96,7 @@ def _(event):
     buffer.cursor_position = 0
 
 # reset buffer
-@prompt_shared_key_bindings.add(*config.keyBinding_cancel)
+@prompt_shared_key_bindings.add(*config.hotkey_cancel)
 def _(event):
     buffer = event.app.current_buffer
     buffer.reset()
@@ -104,7 +104,7 @@ def _(event):
 # open current input in built-in or custom text editor
 # place this method here so that terminal or other input can share this binding
 #@prompt_shared_key_bindings.add("escape", "o")
-@prompt_shared_key_bindings.add(*config.keyBinding_edit_current_entry)
+@prompt_shared_key_bindings.add(*config.hotkey_edit_current_entry)
 def _(event):
     customTextEditor = config.customTextEditor if config.customTextEditor else f"{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
     current_buffer = event.app.current_buffer
@@ -121,7 +121,7 @@ def _(event):
     set_title(config.letMeDoItName)
 
 # swap color theme
-@prompt_shared_key_bindings.add(*config.keyBinding_swap_text_brightness)
+@prompt_shared_key_bindings.add(*config.hotkey_swap_text_brightness)
 def _(_):
     swapTerminalColors()
 

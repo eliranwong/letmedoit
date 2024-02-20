@@ -50,6 +50,14 @@ class AutoGenBuilder:
         for model in (self.chatGPTmodel,):
             oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
         os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
+        """
+        Code execution is set to be run in docker (default behaviour) but docker is not running.
+        The options available are:
+        - Make sure docker is running (advised approach for code execution)
+        - Set "use_docker": False in code_execution_config
+        - Set AUTOGEN_USE_DOCKER to "0/False/no" in your environment variables
+        """
+        os.environ["AUTOGEN_USE_DOCKER"] = "False"
         # prompt style
         self.promptStyle = Style.from_dict({
             # User input (default text).
@@ -150,7 +158,7 @@ class AutoGenBuilder:
         self.promptConfig()
 
         self.print(f"<{config.terminalCommandEntryColor1}>AutoGen Agent Builder launched!</{config.terminalCommandEntryColor1}>")
-        self.print("[press 'ctrl+q' to exit]")
+        self.print(f"""[press '{str(config.hotkey_exit).replace("'", "")[1:-1]}' to exit]""")
         while True:
             self.print(f"<{config.terminalCommandEntryColor1}>Hi! I am ready for a new task.</{config.terminalCommandEntryColor1}>")
             task = self.promptTask()

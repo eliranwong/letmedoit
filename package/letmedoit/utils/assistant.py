@@ -124,10 +124,10 @@ class LetMeDoItAI:
         self.isTtsAvailable()
 
         self.actions = {
-            ".new": (f"start a new chat {str(config.keyBinding_new)}", None),
+            ".new": (f"start a new chat {str(config.hotkey_new)}", None),
             ".save": ("save content", lambda: self.saveChat(config.currentMessages)),
-            ".export": (f"export content {str(config.keyBinding_export)}", lambda: self.exportChat(config.currentMessages)),
-            ".context": (f"change chat context {str(config.keyBinding_select_context)}", None),
+            ".export": (f"export content {str(config.hotkey_export)}", lambda: self.exportChat(config.currentMessages)),
+            ".context": (f"change chat context {str(config.hotkey_select_context)}", None),
             ".contextintegration": ("change chat context integration", self.setContextIntegration),
             ".changeapikey": ("change OpenAI API key", self.changeAPIkey),
             ".functionmodel": ("change function call model", self.setLlmModel),
@@ -158,20 +158,20 @@ class LetMeDoItAI:
             ".customtexteditor": ("change custom text editor", self.setCustomTextEditor),
             ".termuxapi": ("change Termux API integration", self.setTermuxApi),
             ".autoupgrade": ("change automatic upgrade", self.setAutoUpgrade),
-            ".developer": (f"change developer mode {str(config.keyBinding_toggle_developer_mode)}", self.setDeveloperMode),
-            ".togglemultiline": (f"toggle multi-line input {str(config.keyBinding_toggle_multiline_entry)}", self.toggleMultiline),
-            ".togglemousesupport": (f"toogle mouse support {str(config.keyBinding_toggle_mouse_support)}", self.toggleMouseSupport),
-            ".toggletextbrightness": (f"swap text brightness {str(config.keyBinding_swap_text_brightness)}", swapTerminalColors),
-            ".togglewordwrap": (f"toggle word wrap {str(config.keyBinding_toggle_word_wrap)}", self.toggleWordWrap),
-            ".toggleimprovedwriting": (f"toggle improved writing {str(config.keyBinding_toggle_writing_improvement)}", self.toggleImprovedWriting),
-            ".toggleinputaudio": (f"toggle input audio {str(config.keyBinding_toggle_input_audio)}", self.toggleinputaudio),
-            ".toggleresponseaudio": (f"toggle response audio {str(config.keyBinding_toggle_response_audio)}", self.toggleresponseaudio),
-            ".editresponse": (f"edit the last response {str(config.keyBinding_edit_last_response)}", self.editLastResponse),
+            ".developer": (f"change developer mode {str(config.hotkey_toggle_developer_mode)}", self.setDeveloperMode),
+            ".togglemultiline": (f"toggle multi-line input {str(config.hotkey_toggle_multiline_entry)}", self.toggleMultiline),
+            ".togglemousesupport": (f"toogle mouse support {str(config.hotkey_toggle_mouse_support)}", self.toggleMouseSupport),
+            ".toggletextbrightness": (f"swap text brightness {str(config.hotkey_swap_text_brightness)}", swapTerminalColors),
+            ".togglewordwrap": (f"toggle word wrap {str(config.hotkey_toggle_word_wrap)}", self.toggleWordWrap),
+            ".toggleimprovedwriting": (f"toggle improved writing {str(config.hotkey_toggle_writing_improvement)}", self.toggleImprovedWriting),
+            ".toggleinputaudio": (f"toggle input audio {str(config.hotkey_toggle_input_audio)}", self.toggleinputaudio),
+            ".toggleresponseaudio": (f"toggle response audio {str(config.hotkey_toggle_response_audio)}", self.toggleresponseaudio),
+            ".editresponse": (f"edit the last response {str(config.hotkey_edit_last_response)}", self.editLastResponse),
             ".editconfigs": ("edit configuration settings", self.editConfigs),
             ".install": ("install python package", self.installPythonPackage),
-            ".system": (f"open system command prompt {str(config.keyBinding_launch_system_prompt)}", lambda: SystemCommandPrompt().run(allowPathChanges=True)),
+            ".system": (f"open system command prompt {str(config.hotkey_launch_system_prompt)}", lambda: SystemCommandPrompt().run(allowPathChanges=True)),
             ".content": ("display current directory content", self.getPath.displayDirectoryContent),
-            ".keys": (f"display key bindings {str(config.keyBinding_display_key_combo)}", config.showKeyBindings),
+            ".keys": (f"display key bindings {str(config.hotkey_display_key_combo)}", config.showKeyBindings),
             ".help": ("open LetMeDoIt wiki", lambda: SharedUtil.openURL('https://github.com/eliranwong/letmedoit/wiki')),
         }
 
@@ -1016,11 +1016,12 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.print3(f"Command Confirmation Protocol: {option}")
 
     def setPagerView(self):
-        options = ("auto", "manual [ctrl+g]")
+        manuel = f"""manual '{str(config.hotkey_launch_pager_view).replace("'", "")}'"""
+        options = ("auto", manuel)
         option = self.dialogs.getValidOptions(
             options=options,
             title="Pager View",
-            default="auto" if config.pagerView else "manual [ctrl+g]",
+            default="auto" if config.pagerView else manuel,
         )
         if option:
             config.pagerView = (option == "auto")
@@ -1613,7 +1614,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.inputSuggestions += [f"config.{i}" for i in dir(config) if not i.startswith("__")]
         while True:
             # default toolbar text
-            config.dynamicToolBarText = " [ctrl+q] exit [ctrl+k] shortcuts "
+            config.dynamicToolBarText = f""" {str(config.hotkey_exit).replace("'", "")} exit {str(config.hotkey_display_key_combo).replace("'", "")} shortcuts """
             # display current directory if changed
             currentDirectory = os.getcwd()
             if not currentDirectory == storagedirectory:

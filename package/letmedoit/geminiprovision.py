@@ -71,7 +71,7 @@ class GeminiProVision:
         })
 
         HealthCheck.print2("\nGemini Pro Vision loaded!")
-        print("[press 'ctrl+q' to exit]")
+        print(f"""[press '{str(config.hotkey_exit).replace("'", "")[1:-1]}' to exit]""")
         if not files:
             HealthCheck.print2("Enter image path below (file / folder):")
             files = HealthCheck.simplePrompt(style=promptStyle)

@@ -18,11 +18,11 @@ Wiki: https://github.com/eliranwong/letmedoit/wiki
 
 Support this project: https://www.paypal.me/MarvelBible
 
-# An Interview
+# Video Demo
 
-[![Watch the video](https://img.youtube.com/vi/C9K2oiLFSZ4/maxresdefault.jpg)](https://youtu.be/C9K2oiLFSZ4)
+[![Watch the video](https://img.youtube.com/vi/Eeat6h_ktbQ/maxresdefault.jpg)](https://youtu.be/Eeat6h_ktbQ)
 
-Read more at: https://github.com/eliranwong/letmedoit/wiki#an-interview
+Youtube Playlist: https://www.youtube.com/watch?v=Eeat6h_ktbQ&list=PLo4xQ5NqC8SEMM71xC4NNhOHJCFlW-jaJ
 
 # Requirements
 
