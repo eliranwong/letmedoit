@@ -20,7 +20,7 @@ Support this project: https://www.paypal.me/MarvelBible
 
 # An Interview
 
-[![Watch the video](https://img.youtube.com/vi/Dfsl-Cxx0bQ/maxresdefault.jpg)](https://youtu.be/Dfsl-Cxx0bQ)
+[![Watch the video](https://img.youtube.com/vi/C9K2oiLFSZ4/maxresdefault.jpg)](https://youtu.be/C9K2oiLFSZ4)
 
 Read more at: https://github.com/eliranwong/letmedoit/wiki#an-interview
 
