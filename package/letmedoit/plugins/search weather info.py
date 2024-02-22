@@ -6,6 +6,9 @@ search for weather information
 [FUNCTION_CALL]
 """
 
+if not config.openweathermapApi:
+    config.changeOpenweathermapApi()
+
 if config.openweathermapApi:
     from letmedoit import config
     from letmedoit.utils.shared_utils import SharedUtil

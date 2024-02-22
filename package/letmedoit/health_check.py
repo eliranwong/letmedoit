@@ -215,7 +215,10 @@ class HealthCheck:
             if config.pyaudioInstalled:
                 buffer = event.app.current_buffer
                 buffer.text = f"{buffer.text}{' ' if buffer.text else ''}{voiceTyping()}"
-                buffer.cursor_position = buffer.cursor_position + buffer.document.get_end_of_line_position()
+                if config.voiceTypingAutoComplete:
+                    buffer.validate_and_handle()
+                else:
+                    buffer.cursor_position = buffer.cursor_position + buffer.document.get_end_of_line_position()
             else:
                 run_in_terminal(lambda: config.print2("Install PyAudio first to enable voice entry!"))
 

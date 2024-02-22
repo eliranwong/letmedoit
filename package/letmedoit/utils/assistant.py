@@ -26,13 +26,14 @@ from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.utils.text_utils import TextUtil
 from letmedoit.utils.sttLanguages import googleSpeeckToTextLanguages, whisperSpeeckToTextLanguages
 from letmedoit.chatgpt import ChatGPT
+from letmedoit.utils.install import installmodule
 if not config.isTermux:
     from letmedoit.autobuilder import AutoGenBuilder
     from letmedoit.geminipro import GeminiPro
     from letmedoit.palm2 import Palm2
     from letmedoit.codey import Codey
-from letmedoit.utils.install import installmodule
 from typing import Callable
+from elevenlabs import generate, voices
 
 
 class LetMeDoItAI:
@@ -72,6 +73,7 @@ class LetMeDoItAI:
         config.launchPager = self.launchPager
         config.addPagerText = self.addPagerText
         config.getFunctionMessageAndResponse = self.getFunctionMessageAndResponse
+        config.changeOpenweathermapApi = self.changeOpenweathermapApi
         config.runSpecificFuntion = ""
         # env variables
         os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = config.env_QT_QPA_PLATFORM_PLUGIN_PATH
@@ -156,6 +158,7 @@ class LetMeDoItAI:
             ".texttospeechconfig": ("change text-to-speech config", self.setTextToSpeechConfig),
             ".googleapiservice": ("change Google API service", self.selectGoogleAPIs),
             ".openweathermapapi": ("change OpenWeatherMap API key", self.changeOpenweathermapApi),
+            ".elevenlabsapi": ("change ElevenLabs API key", self.changeElevenlabsApi),
             ".autobuilderconfig": ("change auto builder config", self.setAutoGenBuilderConfig),
             ".customtexteditor": ("change custom text editor", self.setCustomTextEditor),
             ".termuxapi": ("change Termux API integration", self.setTermuxApi),
@@ -303,6 +306,22 @@ class LetMeDoItAI:
         if config.voiceTypingPlatform in ("google", "googlecloud") and config.voiceTypingLanguage in languages:
             config.voiceTypingLanguage = googleSpeeckToTextLanguages[config.voiceTypingLanguage]
 
+    # ElevenLabs Text-to-Speech Voice
+    def setElevenlabsVoice(self):
+        # record in history for easy retrieval by moving arrows upwards / downwards
+        elevenlabsVoice_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "elevenlabsVoice")
+        elevenlabsVoice_session = PromptSession(history=FileHistory(elevenlabsVoice_history))
+        # input suggestion for options
+        options = [voice.name for voice in voices()]
+        # default
+        default = config.elevenlabsVoice if config.elevenlabsVoice in options else "Rachel"
+        # completer
+        completer = FuzzyCompleter(WordCompleter(options, ignore_case=True))
+        self.print("Please specify ElevenLabs Text-to-Speech Voice:")
+        option = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=default, promptSession=elevenlabsVoice_session, completer=completer)
+        if option and not option in (config.exit_entry, config.cancel_entry):
+            config.elevenlabsVoice = option if option in options else "Rachel"
+
     # Google Text-to-Speech (Generic)
     def setGttsLanguage(self):
         # record in history for easy retrieval by moving arrows upwards / downwards
@@ -365,7 +384,6 @@ class LetMeDoItAI:
                 elif vlcSpeed > 2:
                     vlcSpeed = 2
                 config.vlcSpeed = round(vlcSpeed, 1)
-                config.saveConfig()
                 self.print3(f"VLC player playback speed: {vlcSpeed}")
 
     def setGcttsSpeed(self):
@@ -379,8 +397,7 @@ class LetMeDoItAI:
             elif gcttsSpeed > 2:
                 gcttsSpeed = 2
             config.gcttsSpeed = round(gcttsSpeed, 1)
-            config.saveConfig()
-            self.print3(f"VLC player playback speed: {gcttsSpeed}")
+            self.print3(f"Google Cloud Text-to-Speech playback speed: {gcttsSpeed}")
 
     def selectGoogleAPIs(self):
         if os.environ["GOOGLE_APPLICATION_CREDENTIALS"]:
@@ -392,16 +409,22 @@ class LetMeDoItAI:
             )
             if enabledGoogleAPIs is not None:
                 config.enabledGoogleAPIs = enabledGoogleAPIs
-                config.saveConfig()
         else:
             config.enabledGoogleAPIs = ["Vertex AI"]
             self.print(f"API key json file '{config.google_cloud_credentials_file}' not found!")
             self.print("Read https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup for setting up Google API.")
         if "Speech-to-Text" in config.enabledGoogleAPIs:
+            if not config.voiceTypingPlatform == "googlecloud":
+                config.voiceTypingPlatform = "googlecloud"
+                self.print3("Voice typing platform changed to: Google Text-to-Speech (API)")
             self.setSpeechToTextLanguage()
         if "Text-to-Speech" in config.enabledGoogleAPIs:
+            if not config.ttsPlatform == "googlecloud":
+                config.ttsPlatform = "googlecloud"
+                self.print3("Text-to-Speech platform changed to: Google Text-to-Speech (API)")
             self.setGcttsLanguage()
             self.setGcttsSpeed()
+        config.saveConfig()
 
     def selectPlugins(self):
         plugins = []
@@ -476,6 +499,28 @@ class LetMeDoItAI:
                 self.print2("Configurations updated!")
             else:
                 config.openweathermapApi = ""
+                self.print2("Invalid API key entered!")
+
+    def changeElevenlabsApi(self):
+        if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
+            self.print("To set up ElevenLabs API Key, read:\nhttps://elevenlabs.io/docs/api-reference/text-to-speech#authentication\n")
+            self.print("Enter your ElevenLabs API Key:")
+            print()
+            apikey = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.elevenlabsApi, is_password=True)
+            if apikey and not apikey.strip().lower() in (config.cancel_entry, config.exit_entry):
+                config.elevenlabsApi = apikey
+            try:
+                # testing
+                generate(
+                    api_key=config.elevenlabsApi, # Defaults to os.getenv(ELEVEN_API_KEY)
+                    text="test",
+                    voice="Rachel",
+                    model="eleven_multilingual_v2"
+                )
+                config.saveConfig()
+                self.print2("Configurations updated!")
+            except:
+                config.elevenlabsApi = ""
                 self.print2("Invalid API key entered!")
 
     def exitAction(self):
@@ -1555,8 +1600,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
 
     def setTextToSpeechConfig(self):
         ttsPlatform = self.dialogs.getValidOptions(
-            options=("google", "googlecloud", "custom"),
-            descriptions=("Google Text-to-Speech (Generic)", "Google Text-to-Speech (API)", "Custom Text-to-Speech Command [advanced]"),
+            options=("google", "googlecloud", "elevenlabs", "custom"),
+            descriptions=("Google Text-to-Speech (Generic)", "Google Text-to-Speech (API)", "ElevenLabs (API)", "Custom Text-to-Speech Command [advanced]"),
             title="Text-to-Speech Configurations",
             text="Select a text-to-speech platform:",
             default=config.ttsPlatform,
@@ -1565,7 +1610,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             if ttsPlatform == "googlecloud" and not (os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Text-to-Speech" in config.enabledGoogleAPIs):
                 self.print2("Google Cloud Text-to-Speech feature is not enabled!")
                 self.print3("Read: https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup")
-                self.print3("Text-to-Speech platform to: Google Text-to-Speech (Generic)")
+                self.print3("Text-to-Speech platform changed to: Google Text-to-Speech (Generic)")
                 config.ttsPlatform = "google"
             else:
                 config.ttsPlatform = ttsPlatform
@@ -1579,6 +1624,15 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.setGcttsSpeed()
             self.setAudioPlaybackTool()
             self.setVlcSpeed()
+        elif config.ttsPlatform == "elevenlabs":
+            if not config.elevenlabsApi:
+                self.changeElevenlabsApi()
+            if not config.elevenlabsApi:
+                self.print("ElevenLabs API key not found!")
+                self.print3("Text-to-Speech platform changed to: Google Text-to-Speech (Generic)")
+                config.ttsPlatform = "google"
+            else:
+                self.setElevenlabsVoice()
         elif config.ttsPlatform == "custom":
             self.defineTtsCommand()
         # save configs

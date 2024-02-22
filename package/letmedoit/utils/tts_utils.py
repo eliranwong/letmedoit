@@ -1,6 +1,7 @@
 from letmedoit import config
 import os, traceback, subprocess, re
 from gtts import gTTS
+from elevenlabs import generate, play
 from letmedoit.utils.vlc_utils import VlcUtil
 try:
     from google.cloud import texttospeech
@@ -56,6 +57,14 @@ class TTSUtil:
                         else:
                             command = f'''{config.ttsCommand} "{content}"{config.ttsCommandSuffix}'''
                     subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+                elif config.ttsPlatform == "elevenlabs" and config.elevenlabsApi:
+                    audio = generate(
+                        api_key=config.elevenlabsApi, # Defaults to os.getenv(ELEVEN_API_KEY)
+                        text=content,
+                        voice="Rachel",
+                        model="eleven_multilingual_v2"
+                    )
+                    play(audio)
                 else:
                     if not config.ttsPlatform == "google":
                         config.ttsPlatform == "google"

@@ -45,3 +45,4 @@ SpeechRecognition
 openai-whisper
 soundfile
 sounddevice
+elevenlabs==0.3.0b0

@@ -90,7 +90,7 @@ defaultSettings = (
     ('suggestSystemCommand', True),
     ('displayImprovedWriting', False),
     ('improvedWritingSytle', 'standard English'), # e.g. British spoken English
-    ('ttsPlatform', "google"), # "google", "googlecloud", "custom"
+    ('ttsPlatform', "google"), # "google", "googlecloud", "elevenlabs", "custom"
     ('ttsInput', False),
     ('ttsOutput', False),
     ('tts_readWhenStreamContains', "[\.\?!,:;”。，：；？！」]"), # regex pattern containing characters that LetMeDoIt AI starts reading text chunk when config.ttsOutput is set to True and the pattern is matched.  
@@ -104,6 +104,8 @@ defaultSettings = (
     ("ttsLanguages", ["en", "en-gb", "en-us", "zh", "yue", "el"]), # users can edit this item in config.py to support more or less languages
     ("ttsLanguagesCommandMap", {"en": "", "en-gb": "", "en-us": "", "zh": "", "yue": "", "el": "",}), # advanced users need to edit this item manually to support different voices with customised tts command, e.g. ttsCommand set to "say -r 200 -v Daniel" and ttsLanguagesCommandMap set to {"en": "Daniel", "en-gb": "Daniel", "en-us": "", "zh": "", "yue": "", "el": "",}
     ("openweathermapApi", ""),
+    ("elevenlabsApi", ""),
+    ("elevenlabsVoice", "Rachel"),
     ("pyaudioInstalled", False),
     ("voiceTypingPlatform", "google"), # "google", "googlecloud", "whisper"
     ("voiceTypingLanguage", "en-US"), # https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
