@@ -21,6 +21,7 @@ from letmedoit.utils.file_utils import FileUtil
 from letmedoit.utils.terminal_system_command_prompt import SystemCommandPrompt
 from letmedoit.utils.shared_utils import SharedUtil
 from letmedoit.utils.tts_utils import TTSUtil
+from letmedoit.utils.ttsLanguages import TtsLanguages
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.utils.text_utils import TextUtil
 from letmedoit.utils.sttLanguages import googleSpeeckToTextLanguages, whisperSpeeckToTextLanguages
@@ -149,6 +150,7 @@ class LetMeDoItAI:
             ".pagerview": ("change pager view", self.setPagerView),
             ".assistantname": ("change assistant name", self.setAssistantName),
             ".systemmessage": ("change custom system message", self.setCustomSystemMessage),
+            ".googleapiservice": ("change Google API service", self.selectGoogleAPIs),
             ".openweathermapapi": ("change OpenWeatherMap API key", self.changeOpenweathermapApi),
             ".ipinfo": ("change ip information integration", self.setIncludeIpInSystemMessage),
             ".storagedirectory": ("change storage directory", self.setStorageDirectory),
@@ -273,6 +275,76 @@ class LetMeDoItAI:
                 callEntry = f"[CALL_{i}]"
                 if not callEntry in config.inputSuggestions:
                     config.inputSuggestions.append(callEntry)
+
+    def setSpeechToTextLanguage(self):
+        # record in history for easy retrieval by moving arrows upwards / downwards
+        voice_typing_language_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "voice_typing_language")
+        voice_typing_language_session = PromptSession(history=FileHistory(voice_typing_language_history))
+        # input suggestion for languages
+        languages = tuple(googleSpeeckToTextLanguages.keys()) if config.voiceTypingModel in ("google", "googlecloud") else whisperSpeeckToTextLanguages
+        # default
+        default = ""
+        for i in languages:
+            if config.voiceTypingModel in ("google", "googlecloud") and googleSpeeckToTextLanguages[i] == config.voiceTypingLanguage:
+                default = i
+            elif i == config.voiceTypingLanguage:
+                default = i
+        if not default:
+            default = "English (United States)" if config.voiceTypingModel in ("google", "googlecloud") else "english"
+        # completer
+        completer = FuzzyCompleter(WordCompleter(languages, ignore_case=True))
+        self.print("Please specify the voice typing language:")
+        language = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=default, promptSession=voice_typing_language_session, completer=completer)
+        if language and not language in (config.exit_entry, config.cancel_entry):
+            config.voiceTypingLanguage = language
+        if not config.voiceTypingLanguage in languages:
+            config.voiceTypingLanguage = "en-US" if config.voiceTypingModel in ("google", "googlecloud") else "english"
+        if config.voiceTypingModel in ("google", "googlecloud") and config.voiceTypingLanguage in languages:
+            config.voiceTypingLanguage = googleSpeeckToTextLanguages[config.voiceTypingLanguage]
+
+    def setTextToSpeechLanguage(self):
+        # record in history for easy retrieval by moving arrows upwards / downwards
+        gctts_language_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "gctts_language")
+        gctts_language_session = PromptSession(history=FileHistory(gctts_language_history))
+        # input suggestion for languages
+        languages = tuple(TtsLanguages.gctts.keys())
+        # default
+        default = ""
+        for i in languages:
+            if TtsLanguages.gctts[i] == config.gcttsLang:
+                default = i
+        if not default:
+            default = "en-US"
+        # completer
+        completer = FuzzyCompleter(WordCompleter(languages, ignore_case=True))
+        self.print("Please specify the text-to-speech language:")
+        language = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=default, promptSession=gctts_language_session, completer=completer)
+        if language and not language in (config.exit_entry, config.cancel_entry):
+            config.gcttsLang = language
+        if config.gcttsLang in languages:
+            config.gcttsLang = TtsLanguages.gctts[config.gcttsLang]
+        else:
+            config.gcttsLang = "en-US"
+
+    def selectGoogleAPIs(self):
+        if os.environ["GOOGLE_APPLICATION_CREDENTIALS"]:
+            enabledGoogleAPIs = self.dialogs.getMultipleSelection(
+                title="Google Cloud Service",
+                text="Select to enable Google Cloud Service in LetMeDoIt AI:",
+                options=("Vertex AI", "Speech-to-Text", "Text-to-Speech"),
+                default_values=config.enabledGoogleAPIs,
+            )
+            if enabledGoogleAPIs is not None:
+                config.enabledGoogleAPIs = enabledGoogleAPIs
+                config.saveConfig()
+        else:
+            config.enabledGoogleAPIs = ["Vertex AI"]
+            self.print(f"API key json file '{config.google_cloud_credentials_file}' not found!")
+            self.print("Read https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup for setting up Google API.")
+        if "Speech-to-Text" in config.enabledGoogleAPIs:
+            self.setSpeechToTextLanguage()
+        if "Text-to-Speech" in config.enabledGoogleAPIs:
+            self.setTextToSpeechLanguage()
 
     def selectPlugins(self):
         plugins = []
@@ -1407,8 +1479,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
 
     def setVoiceTypingConfig(self):
         voiceTypingModel = self.dialogs.getValidOptions(
-            options=("google", "whisper"),
-            descriptions=("Google Speech-to-text Model [online]", "OpenAI Whisper [offline; slow for non-English entry]"),
+            options=("google", "googlecloud", "whisper"),
+            descriptions=("Google Speech-to-text (Generic) [online]", "Google Speech-to-text (API) [online]", "OpenAI Whisper [offline; slow for non-English entry]"),
             title="Voice Typing Configurations",
             text="Select a voice typing model:",
             default=config.voiceTypingModel,
@@ -1421,21 +1493,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 config.voiceTypingModel = "google"
             else:
                 config.voiceTypingModel = voiceTypingModel
-        # record in history for easy retrieval by moving arrows upwards / downwards
-        voice_typing_language_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "voice_typing_language")
-        voice_typing_language_session = PromptSession(history=FileHistory(voice_typing_language_history))
-        # input suggestion for languages
-        languages = googleSpeeckToTextLanguages if config.voiceTypingModel == "google" else whisperSpeeckToTextLanguages
-        completer = FuzzyCompleter(WordCompleter(languages, ignore_case=True))
-        self.print("Please specify the voice typing language:")
-        if config.voiceTypingModel == "google":
-            self.print("(Valid language codes available at https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages)")
-        language = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.voiceTypingLanguage, promptSession=voice_typing_language_session, completer=completer)
-        if language and not language in (config.exit_entry, config.cancel_entry):
-            if not language in languages:
-                config.voiceTypingLanguage = "en-US" if config.voiceTypingModel == "google" else "english"
-            else:
-                config.voiceTypingLanguage = language
+        # language
+        self.setSpeechToTextLanguage()
         # configure config.voiceTypingAdjustAmbientNoise
         voiceTypingAdjustAmbientNoise = self.dialogs.getValidOptions(
             options=("Yes", "No"),
@@ -1455,12 +1514,22 @@ Always remember that you are much more than a text-based AI. You possess both vi
         )
         if voiceTypingNotification:
             config.voiceTypingNotification = True if voiceTypingNotification == "Yes" else False
+        # auto completion: voiceTypingAutoComplete
+        voiceTypingAutoComplete = self.dialogs.getValidOptions(
+            options=("Yes", "No"),
+            title="Audio Entry Auto Completion",
+            text="Do you want to automatically complete your entry when microphone stops?",
+            default="Yes" if config.voiceTypingAutoComplete else "No",
+        )
+        if voiceTypingAutoComplete:
+            config.voiceTypingAutoComplete = True if voiceTypingAutoComplete == "Yes" else False
         # notify
         print("")
         self.print3(f"Voice Typing Model: {config.voiceTypingModel}")
         self.print3(f"Voice Typing Language: {config.voiceTypingLanguage}")
         self.print3(f"Ambient Noise Adjustment: {config.voiceTypingAdjustAmbientNoise}")
         self.print3(f"Audio Notification: {config.voiceTypingNotification}")
+        # save configs
         config.saveConfig()
 
     def saveChat(self, messages):

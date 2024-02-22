@@ -92,8 +92,9 @@ defaultSettings = (
     ('improvedWritingSytle', 'standard English'), # e.g. British spoken English
     ('ttsInput', False),
     ('ttsOutput', False),
+    ('tts_readWhenStreamContains', "[\.\?!,:;”。，：；？！」]"), # regex pattern containing characters that LetMeDoIt AI starts reading text chunk when config.ttsOutput is set to True and the pattern is matched.  
     ('vlcSpeed', 1.0),
-    ('gcttsLang', "en-GB"),
+    ('gcttsLang', "en-US"), # https://cloud.google.com/text-to-speech/docs/voices
     ('gcttsSpeed', 1.0),
     ('gttsLang', "en"), # gTTS is used by default if ttsCommand is not given
     ('gttsTld', ""), # https://gtts.readthedocs.io/en/latest/module.html#languages-gtts-lang
@@ -104,9 +105,12 @@ defaultSettings = (
     ("openweathermapApi", ""),
     ("pyaudioInstalled", False),
     ("voiceTypingModel", "google"),
-    ("voiceTypingLanguage", "en-US"),
+    ("voiceTypingLanguage", "en-US"), # https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
     ("voiceTypingAdjustAmbientNoise", False),
     ("voiceTypingNotification", True),
+    ("voiceTypingAutoComplete", False),
+    ("google_cloud_credentials", ""),
+    ("enabledGoogleAPIs", ["Vertex AI"]), # "Vertex AI", "Speech-to-Text", "Text-to-Speech"
     ("hotkey_exit", ["c-q"]),
     ("hotkey_cancel", ["c-z"]),
     ("hotkey_new", ["c-n"]),
@@ -134,12 +138,13 @@ defaultSettings = (
     ("hotkey_edit_current_entry", ["c-e"]),
     ("hotkey_edit_last_response", ["escape", "e"]),
     ("hotkey_swap_text_brightness", ["escape", "b"]),
+    ("hotkey_select_plugins", ["escape", "p"]),
+    #("hotkey_select_voice", ["escape", "v"]),
     # ["c-b"]; available
-    # ["escape", "p"]; plan for use with plugin selection
-    # ["escape", "v"]; plan for use with tts voice selection
 )
 
 temporaryConfigs = [
+    "google_cloud_credentials_file",
     "actionHelp",
     "isTermux",
     "oai_client",

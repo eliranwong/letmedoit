@@ -89,10 +89,32 @@ class HealthCheck:
 
     @staticmethod
     def setBasicConfig():
+        # Default Settings
         for key, value in defaultSettings:
             if not hasattr(config, key):
                 value = pprint.pformat(value)
                 exec(f"""config.{key} = {value} """)
+        # Google Credentials
+        if config.google_cloud_credentials and os.path.isfile(config.google_cloud_credentials):
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.google_cloud_credentials
+        else:
+            files = HealthCheck.getFiles()
+            gccfile1 = os.path.join(files, "credentials_google_cloud.json")
+            gccfile2 = os.path.join(files, "credentials_googleaistudio.json")
+            gccfile3 = os.path.join(files, "credentials_googletts.json")
+            # set required file
+            config.google_cloud_credentials_file = gccfile1
+
+            if os.path.isfile(gccfile1):
+                config.google_cloud_credentials = gccfile1
+            elif os.path.isfile(gccfile2):
+                config.google_cloud_credentials = gccfile2
+            elif os.path.isfile(gccfile3):
+                config.google_cloud_credentials = gccfile3
+            else:
+                config.google_cloud_credentials = ""
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.google_cloud_credentials if config.google_cloud_credentials else ""
+            
         # print functions
         HealthCheck.setPrint()
 
@@ -168,7 +190,18 @@ class HealthCheck:
                         return ""
                     except sr.RequestError as e:
                         return "[Error: {0}]".format(e)
-                if config.voiceTypingModel == "whisper":
+                elif config.voiceTypingModel == "googlecloud" and os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Speech-to-Text" in config.enabledGoogleAPIs:
+                    # recognize speech using Google Cloud Speech
+                    try:
+                        # check availabl languages at: https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
+                        # config.voiceTypingLanguage should be code list in column BCP-47 at https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
+                        return r.recognize_google_cloud(audio, language=config.voiceTypingLanguage, credentials_json=config.google_cloud_credentials)
+                    except sr.UnknownValueError:
+                        #return "[Speech unrecognized!]"
+                        return ""
+                    except sr.RequestError as e:
+                        return "[Error: {0}]".format(e)
+                elif config.voiceTypingModel == "whisper":
                     # recognize speech using whisper
                     try:
                         # check availabl languages at: https://github.com/openai/whisper/blob/main/whisper/tokenizer.py

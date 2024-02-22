@@ -21,10 +21,8 @@ class TTSUtil:
     def play(content, language=""):
         if config.tts:
             try:
-                credentials_GoogleCloudTextToSpeech = os.path.join(config.letMeDoItAIFolder, "credentials_GoogleCloudTextToSpeech.json")
                 # official google-cloud-texttospeech
-                if os.path.isfile(credentials_GoogleCloudTextToSpeech):
-                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = credentials_GoogleCloudTextToSpeech
+                if os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Text-to-Speech" in config.enabledGoogleAPIs:
                     audioFile = os.path.join(config.letMeDoItAIFolder, "temp", "gctts.mp3")
                     if not language:
                         language = config.gcttsLang

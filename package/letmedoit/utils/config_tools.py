@@ -58,6 +58,25 @@ if os.path.isdir(storageDir):
                 except:
                     print("Failed to restore backup!")
 setConfig(defaultSettings)
+# Google Credentials
+# set required file
+
+config.google_cloud_credentials_file = os.path.join(storageDir, "credentials_google_cloud.json")
+if config.google_cloud_credentials and os.path.isfile(config.google_cloud_credentials):
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.google_cloud_credentials
+else:
+    gccfile2 = os.path.join(storageDir, "credentials_googleaistudio.json")
+    gccfile3 = os.path.join(storageDir, "credentials_googletts.json")
+
+    if os.path.isfile(config.google_cloud_credentials_file):
+        config.google_cloud_credentials = config.google_cloud_credentials_file
+    elif os.path.isfile(gccfile2):
+        config.google_cloud_credentials = gccfile2
+    elif os.path.isfile(gccfile3):
+        config.google_cloud_credentials = gccfile3
+    else:
+        config.google_cloud_credentials = ""
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.google_cloud_credentials if config.google_cloud_credentials else ""
 # allow plugins to add customised config
 # read https://github.com/eliranwong/letmedoit/wiki/Plugins-%E2%80%90-Work-with-LetMeDoIt-AI-Configurations#example
 config.setConfig = setConfig

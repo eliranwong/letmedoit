@@ -25,12 +25,10 @@ class Codey:
 
     def __init__(self, name="Codey"):
         # authentication
-        authpath1 = os.path.join(HealthCheck.getFiles(), "credentials_googleaistudio.json")
-        if os.path.isfile(authpath1):
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = authpath1
+        if os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Vertex AI" in config.enabledGoogleAPIs:
             self.runnable = True
         else:
-            print(f"API key json file '{authpath1}' not found!")
+            print("Vertex AI is disabled!")
             print("Read https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup for setting up Google API.")
             self.runnable = False
         # initiation

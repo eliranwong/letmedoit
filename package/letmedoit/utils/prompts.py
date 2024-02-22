@@ -86,7 +86,7 @@ class Prompts:
                     # recognize speech using Google Speech Recognition
                     try:
                         # check google.recognize_legacy in SpeechRecognition package
-                        # check availabl languages at: https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
+                        # check available languages at: https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
                         # config.voiceTypingLanguage should be code list in column BCP-47 at https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
                         return r.recognize_google(audio, language=config.voiceTypingLanguage)
                     except sr.UnknownValueError:
@@ -94,7 +94,18 @@ class Prompts:
                         return ""
                     except sr.RequestError as e:
                         return "[Error: {0}]".format(e)
-                if config.voiceTypingModel == "whisper":
+                elif config.voiceTypingModel == "googlecloud" and os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Speech-to-Text" in config.enabledGoogleAPIs:
+                    # recognize speech using Google Cloud Speech
+                    try:
+                        # check availabl languages at: https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
+                        # config.voiceTypingLanguage should be code list in column BCP-47 at https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
+                        return r.recognize_google_cloud(audio, language=config.voiceTypingLanguage, credentials_json=config.google_cloud_credentials)
+                    except sr.UnknownValueError:
+                        #return "[Speech unrecognized!]"
+                        return ""
+                    except sr.RequestError as e:
+                        return "[Error: {0}]".format(e)
+                elif config.voiceTypingModel == "whisper":
                     # recognize speech using whisper
                     try:
                         # check availabl languages at: https://github.com/openai/whisper/blob/main/whisper/tokenizer.py
@@ -108,7 +119,10 @@ class Prompts:
             if config.pyaudioInstalled:
                 buffer = event.app.current_buffer
                 buffer.text = f"{buffer.text}{' ' if buffer.text else ''}{voiceTyping()}"
-                buffer.cursor_position = buffer.cursor_position + buffer.document.get_end_of_line_position()
+                if config.voiceTypingAutoComplete:
+                    buffer.validate_and_handle()
+                else:
+                    buffer.cursor_position = buffer.cursor_position + buffer.document.get_end_of_line_position()
             else:
                 run_in_terminal(lambda: config.print2("Install PyAudio first to enable voice entry!"))
         @this_key_bindings.add(*config.hotkey_voice_entry_config)
@@ -116,6 +130,12 @@ class Prompts:
             buffer = event.app.current_buffer
             config.defaultEntry = buffer.text
             buffer.text = ".voicetypingconfig"
+            buffer.validate_and_handle()
+        @this_key_bindings.add(*config.hotkey_select_plugins)
+        def _(event):
+            buffer = event.app.current_buffer
+            config.defaultEntry = buffer.text
+            buffer.text = ".plugins"
             buffer.validate_and_handle()
         @this_key_bindings.add(*config.hotkey_list_directory_content)
         def _(event):

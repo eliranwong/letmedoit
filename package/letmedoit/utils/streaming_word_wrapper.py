@@ -7,7 +7,7 @@ from letmedoit.utils.tts_utils import TTSUtil
 #from prompt_toolkit import print_formatted_text
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.input import create_input
-import asyncio, shutil, textwrap, string
+import asyncio, shutil, textwrap, re
 
 
 class StreamingWordWrapper:
@@ -156,11 +156,15 @@ class StreamingWordWrapper:
                 finishOutputs(wrapWords, chat_response)
                 return None
         
+        if config.ttsOutput and config.tempChunk:
+            TTSUtil.play(config.tempChunk)
+            config.tempChunk = ""
         finishOutputs(wrapWords, chat_response)
 
     def readAnswer(self, answer):
         # read the chunk when there is a punctuation
-        if answer in string.punctuation and config.tempChunk:
+        #if answer in string.punctuation and config.tempChunk:
+        if re.search(config.tts_readWhenStreamContains, answer) and config.tempChunk:
             # read words when there a punctuation
             chunk = config.tempChunk + answer
             # reset config.tempChunk
