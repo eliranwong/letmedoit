@@ -41,7 +41,7 @@ defaultSettings = (
     ('historyParentFolder', ""),
     ('customTextEditor', ""), # e.g. 'micro -softwrap true -wordwrap true'; built-in text editor eTextEdit is used when it is not defined.
     ('pagerView', False),
-    ('usePygame', False),
+    ('usePygame', False), # force to use pygame for audio playback even VLC player is installed
     ('wrapWords', True),
     ('mouseSupport', False),
     ('autoUpgrade', True),
@@ -90,6 +90,7 @@ defaultSettings = (
     ('suggestSystemCommand', True),
     ('displayImprovedWriting', False),
     ('improvedWritingSytle', 'standard English'), # e.g. British spoken English
+    ('ttsPlatform', "google"), # "google", "googlecloud", "custom"
     ('ttsInput', False),
     ('ttsOutput', False),
     ('tts_readWhenStreamContains', "[\.\?!,:;”。，：；？！」]"), # regex pattern containing characters that LetMeDoIt AI starts reading text chunk when config.ttsOutput is set to True and the pattern is matched.  
@@ -104,11 +105,12 @@ defaultSettings = (
     ("ttsLanguagesCommandMap", {"en": "", "en-gb": "", "en-us": "", "zh": "", "yue": "", "el": "",}), # advanced users need to edit this item manually to support different voices with customised tts command, e.g. ttsCommand set to "say -r 200 -v Daniel" and ttsLanguagesCommandMap set to {"en": "Daniel", "en-gb": "Daniel", "en-us": "", "zh": "", "yue": "", "el": "",}
     ("openweathermapApi", ""),
     ("pyaudioInstalled", False),
-    ("voiceTypingModel", "google"),
+    ("voiceTypingPlatform", "google"), # "google", "googlecloud", "whisper"
     ("voiceTypingLanguage", "en-US"), # https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
     ("voiceTypingAdjustAmbientNoise", False),
     ("voiceTypingNotification", True),
     ("voiceTypingAutoComplete", False),
+    ("voiceTypingWhisperEnglishModel", "base"), # "tiny", "base", "small", "medium", "large"; read https://github.com/openai/whisper/tree/main#available-models-and-languages
     ("google_cloud_credentials", ""),
     ("enabledGoogleAPIs", ["Vertex AI"]), # "Vertex AI", "Speech-to-Text", "Text-to-Speech"
     ("hotkey_exit", ["c-q"]),
@@ -125,6 +127,7 @@ defaultSettings = (
     ("hotkey_toggle_multiline_entry", ["escape", "l"]),
     ("hotkey_list_directory_content", ["c-l"]),
     ("hotkey_launch_system_prompt", ["escape", "t"]),
+    ("hotkey_text_to_speech_config", ["escape", "v"]),
     ("hotkey_voice_entry", ["c-s"]),
     ("hotkey_voice_entry_config", ["escape", "s"]),
     ("hotkey_display_key_combo", ["c-k"]),
@@ -139,7 +142,6 @@ defaultSettings = (
     ("hotkey_edit_last_response", ["escape", "e"]),
     ("hotkey_swap_text_brightness", ["escape", "b"]),
     ("hotkey_select_plugins", ["escape", "p"]),
-    #("hotkey_select_voice", ["escape", "v"]),
     # ["c-b"]; available
 )
 

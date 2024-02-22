@@ -150,13 +150,13 @@ class LetMeDoItAI:
             ".pagerview": ("change pager view", self.setPagerView),
             ".assistantname": ("change assistant name", self.setAssistantName),
             ".systemmessage": ("change custom system message", self.setCustomSystemMessage),
-            ".googleapiservice": ("change Google API service", self.selectGoogleAPIs),
-            ".openweathermapapi": ("change OpenWeatherMap API key", self.changeOpenweathermapApi),
             ".ipinfo": ("change ip information integration", self.setIncludeIpInSystemMessage),
             ".storagedirectory": ("change storage directory", self.setStorageDirectory),
-            ".autobuilderconfig": ("change auto builder config", self.setAutoGenBuilderConfig),
             ".voicetypingconfig": ("change voice typing config", self.setVoiceTypingConfig),
-            ".ttscommand": ("change text-to-speech command", self.defineTtsCommand),
+            ".texttospeechconfig": ("change text-to-speech config", self.setTextToSpeechConfig),
+            ".googleapiservice": ("change Google API service", self.selectGoogleAPIs),
+            ".openweathermapapi": ("change OpenWeatherMap API key", self.changeOpenweathermapApi),
+            ".autobuilderconfig": ("change auto builder config", self.setAutoGenBuilderConfig),
             ".customtexteditor": ("change custom text editor", self.setCustomTextEditor),
             ".termuxapi": ("change Termux API integration", self.setTermuxApi),
             ".autoupgrade": ("change automatic upgrade", self.setAutoUpgrade),
@@ -276,21 +276,22 @@ class LetMeDoItAI:
                 if not callEntry in config.inputSuggestions:
                     config.inputSuggestions.append(callEntry)
 
+    # Voice Typing Language
     def setSpeechToTextLanguage(self):
         # record in history for easy retrieval by moving arrows upwards / downwards
         voice_typing_language_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "voice_typing_language")
         voice_typing_language_session = PromptSession(history=FileHistory(voice_typing_language_history))
         # input suggestion for languages
-        languages = tuple(googleSpeeckToTextLanguages.keys()) if config.voiceTypingModel in ("google", "googlecloud") else whisperSpeeckToTextLanguages
+        languages = tuple(googleSpeeckToTextLanguages.keys()) if config.voiceTypingPlatform in ("google", "googlecloud") else whisperSpeeckToTextLanguages
         # default
         default = ""
         for i in languages:
-            if config.voiceTypingModel in ("google", "googlecloud") and googleSpeeckToTextLanguages[i] == config.voiceTypingLanguage:
+            if config.voiceTypingPlatform in ("google", "googlecloud") and googleSpeeckToTextLanguages[i] == config.voiceTypingLanguage:
                 default = i
             elif i == config.voiceTypingLanguage:
                 default = i
         if not default:
-            default = "English (United States)" if config.voiceTypingModel in ("google", "googlecloud") else "english"
+            default = "English (United States)" if config.voiceTypingPlatform in ("google", "googlecloud") else "english"
         # completer
         completer = FuzzyCompleter(WordCompleter(languages, ignore_case=True))
         self.print("Please specify the voice typing language:")
@@ -298,11 +299,37 @@ class LetMeDoItAI:
         if language and not language in (config.exit_entry, config.cancel_entry):
             config.voiceTypingLanguage = language
         if not config.voiceTypingLanguage in languages:
-            config.voiceTypingLanguage = "en-US" if config.voiceTypingModel in ("google", "googlecloud") else "english"
-        if config.voiceTypingModel in ("google", "googlecloud") and config.voiceTypingLanguage in languages:
+            config.voiceTypingLanguage = "en-US" if config.voiceTypingPlatform in ("google", "googlecloud") else "english"
+        if config.voiceTypingPlatform in ("google", "googlecloud") and config.voiceTypingLanguage in languages:
             config.voiceTypingLanguage = googleSpeeckToTextLanguages[config.voiceTypingLanguage]
 
-    def setTextToSpeechLanguage(self):
+    # Google Text-to-Speech (Generic)
+    def setGttsLanguage(self):
+        # record in history for easy retrieval by moving arrows upwards / downwards
+        gtts_language_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "gtts_language")
+        gtts_language_session = PromptSession(history=FileHistory(gtts_language_history))
+        # input suggestion for languages
+        languages = tuple(TtsLanguages.gtts.keys())
+        # default
+        default = ""
+        for i in languages:
+            if TtsLanguages.gtts[i] == config.gttsLang:
+                default = i
+        if not default:
+            default = "en"
+        # completer
+        completer = FuzzyCompleter(WordCompleter(languages, ignore_case=True))
+        self.print("Please specify Google Text-to-Speech language:")
+        language = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=default, promptSession=gtts_language_session, completer=completer)
+        if language and not language in (config.exit_entry, config.cancel_entry):
+            config.gttsLang = language
+        if config.gttsLang in languages:
+            config.gttsLang = TtsLanguages.gtts[config.gttsLang]
+        else:
+            config.gttsLang = "en"
+
+    # Google Cloud Text-to-Speech (API)
+    def setGcttsLanguage(self):
         # record in history for easy retrieval by moving arrows upwards / downwards
         gctts_language_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "gctts_language")
         gctts_language_session = PromptSession(history=FileHistory(gctts_language_history))
@@ -317,7 +344,7 @@ class LetMeDoItAI:
             default = "en-US"
         # completer
         completer = FuzzyCompleter(WordCompleter(languages, ignore_case=True))
-        self.print("Please specify the text-to-speech language:")
+        self.print("Please specify Google Cloud Text-to-Speech language:")
         language = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=default, promptSession=gctts_language_session, completer=completer)
         if language and not language in (config.exit_entry, config.cancel_entry):
             config.gcttsLang = language
@@ -325,6 +352,35 @@ class LetMeDoItAI:
             config.gcttsLang = TtsLanguages.gctts[config.gcttsLang]
         else:
             config.gcttsLang = "en-US"
+
+    def setVlcSpeed(self):
+        if config.isVlcPlayerInstalled and not config.usePygame:
+            self.print("Specify VLC player playback speed:")
+            self.print("(between 0.1 and 2.0)")
+            vlcSpeed = self.prompts.simplePrompt(style=self.prompts.promptStyle2, validator=FloatValidator(), default=str(config.vlcSpeed))
+            if vlcSpeed and not vlcSpeed.strip().lower() == config.exit_entry:
+                vlcSpeed = float(vlcSpeed)
+                if vlcSpeed < 0.1:
+                    vlcSpeed = 0.1
+                elif vlcSpeed > 2:
+                    vlcSpeed = 2
+                config.vlcSpeed = round(vlcSpeed, 1)
+                config.saveConfig()
+                self.print3(f"VLC player playback speed: {vlcSpeed}")
+
+    def setGcttsSpeed(self):
+        self.print("Specify Google Cloud Text-to-Speech playback speed:")
+        self.print("(between 0.1 and 2.0)")
+        gcttsSpeed = self.prompts.simplePrompt(style=self.prompts.promptStyle2, validator=FloatValidator(), default=str(config.gcttsSpeed))
+        if gcttsSpeed and not gcttsSpeed.strip().lower() == config.exit_entry:
+            gcttsSpeed = float(gcttsSpeed)
+            if gcttsSpeed < 0.1:
+                gcttsSpeed = 0.1
+            elif gcttsSpeed > 2:
+                gcttsSpeed = 2
+            config.gcttsSpeed = round(gcttsSpeed, 1)
+            config.saveConfig()
+            self.print3(f"VLC player playback speed: {gcttsSpeed}")
 
     def selectGoogleAPIs(self):
         if os.environ["GOOGLE_APPLICATION_CREDENTIALS"]:
@@ -344,7 +400,8 @@ class LetMeDoItAI:
         if "Speech-to-Text" in config.enabledGoogleAPIs:
             self.setSpeechToTextLanguage()
         if "Text-to-Speech" in config.enabledGoogleAPIs:
-            self.setTextToSpeechLanguage()
+            self.setGcttsLanguage()
+            self.setGcttsSpeed()
 
     def selectPlugins(self):
         plugins = []
@@ -1434,7 +1491,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.print3(f"Response Audio: '{'enabled' if config.ttsOutput else 'disabled'}'!")
 
     def defineTtsCommand(self):
-        self.print("Define text-to-speech command below:")
+        self.print("Define custom text-to-speech command below:")
         self.print("""* on macOS ['say -v "?"' to check voices], e.g.:\n'say' or 'say -r 200 -v Daniel'""")
         self.print("* on Ubuntu ['espeak --voices' to check voices], e.g.:\n'espeak' or 'espeak -s 175 -v en-gb'")
         self.print("* on Windows, simply enter 'windows' here to use Windows built-in speech engine") # letmedoit.ai will handle the command for Windows users
@@ -1477,22 +1534,77 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 config.saveConfig()
         self.print3(f"Improved Writing Display: '{'enabled' if config.displayImprovedWriting else 'disabled'}'!")
 
-    def setVoiceTypingConfig(self):
-        voiceTypingModel = self.dialogs.getValidOptions(
-            options=("google", "googlecloud", "whisper"),
-            descriptions=("Google Speech-to-text (Generic) [online]", "Google Speech-to-text (API) [online]", "OpenAI Whisper [offline; slow for non-English entry]"),
-            title="Voice Typing Configurations",
-            text="Select a voice typing model:",
-            default=config.voiceTypingModel,
+    def setAudioPlaybackTool(self):
+        playback = self.dialogs.getValidOptions(
+            options=("pygame", "vlc"),
+            descriptions=("PyGame", f"VLC Player (w/ speed control){' [installation required]' if not config.isVlcPlayerInstalled else ''}"),
+            title="Text-to-Speech Playback",
+            text="Select a text-to-speech plackback tool:",
+            default="vlc" if config.isVlcPlayerInstalled and not config.usePygame else "pygame",
         )
-        if voiceTypingModel:
-            if voiceTypingModel == "whisper" and not SharedUtil.isPackageInstalled("ffmpeg"):
+        if playback:
+            if playback == "vlc":
+                if not config.isVlcPlayerInstalled:
+                    self.print("VLC player not found! Install it first!")
+                    self.print3("Text-to-Speech Playback changed to: PyGame")
+                    config.usePygame = True
+                else:
+                    config.usePygame = False
+            else:
+                config.usePygame = True
+
+    def setTextToSpeechConfig(self):
+        ttsPlatform = self.dialogs.getValidOptions(
+            options=("google", "googlecloud", "custom"),
+            descriptions=("Google Text-to-Speech (Generic)", "Google Text-to-Speech (API)", "Custom Text-to-Speech Command [advanced]"),
+            title="Text-to-Speech Configurations",
+            text="Select a text-to-speech platform:",
+            default=config.ttsPlatform,
+        )
+        if ttsPlatform:
+            if ttsPlatform == "googlecloud" and not (os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Text-to-Speech" in config.enabledGoogleAPIs):
+                self.print2("Google Cloud Text-to-Speech feature is not enabled!")
+                self.print3("Read: https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup")
+                self.print3("Text-to-Speech platform to: Google Text-to-Speech (Generic)")
+                config.ttsPlatform = "google"
+            else:
+                config.ttsPlatform = ttsPlatform
+        # further options
+        if config.ttsPlatform == "google":
+            self.setGttsLanguage()
+            self.setAudioPlaybackTool()
+            self.setVlcSpeed()
+        elif config.ttsPlatform == "googlecloud":
+            self.setGcttsLanguage()
+            self.setGcttsSpeed()
+            self.setAudioPlaybackTool()
+            self.setVlcSpeed()
+        elif config.ttsPlatform == "custom":
+            self.defineTtsCommand()
+        # save configs
+        config.saveConfig()
+
+    def setVoiceTypingConfig(self):
+        voiceTypingPlatform = self.dialogs.getValidOptions(
+            options=("google", "googlecloud", "whisper"),
+            descriptions=("Google Speech-to-Text (Generic) [online]", "Google Speech-to-Text (API) [online]", "OpenAI Whisper [offline; slower with non-English voices]"),
+            title="Voice Typing Configurations",
+            text="Select a voice typing platform:",
+            default=config.voiceTypingPlatform,
+        )
+        if voiceTypingPlatform:
+            if voiceTypingPlatform == "googlecloud" and not (os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Speech-to-Text" in config.enabledGoogleAPIs):
+                self.print2("Google Cloud Speech-to-Text feature is not enabled!")
+                self.print3("Read: https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup")
+                self.print3("Voice typing platform changed to: Google Speech-to-Text (Generic)")
+                config.voiceTypingPlatform = "google"
+            elif voiceTypingPlatform == "whisper" and not SharedUtil.isPackageInstalled("ffmpeg"):
                 self.print2("Install 'ffmpeg' first to use offline openai whisper model!")
                 self.print3("Read: https://github.com/openai/whisper#setup")
-                self.print3("Voice typing model changed to: Google Speech-to-text Model")
-                config.voiceTypingModel = "google"
+                self.print3("Voice typing platform changed to: Google Speech-to-Text (Generic)")
+                config.voiceTypingPlatform = "google"
             else:
-                config.voiceTypingModel = voiceTypingModel
+                config.voiceTypingPlatform = voiceTypingPlatform
         # language
         self.setSpeechToTextLanguage()
         # configure config.voiceTypingAdjustAmbientNoise
@@ -1525,10 +1637,11 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.voiceTypingAutoComplete = True if voiceTypingAutoComplete == "Yes" else False
         # notify
         print("")
-        self.print3(f"Voice Typing Model: {config.voiceTypingModel}")
+        self.print3(f"Voice Typing Model: {config.voiceTypingPlatform}")
         self.print3(f"Voice Typing Language: {config.voiceTypingLanguage}")
         self.print3(f"Ambient Noise Adjustment: {config.voiceTypingAdjustAmbientNoise}")
         self.print3(f"Audio Notification: {config.voiceTypingNotification}")
+        self.print3(f"Auto Completion: {config.voiceTypingAutoComplete}")
         # save configs
         config.saveConfig()
 

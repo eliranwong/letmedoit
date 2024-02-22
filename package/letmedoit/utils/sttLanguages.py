@@ -1,5 +1,5 @@
 # check availabl languages at: https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
-# In case config.voiceTypingModel == "google", config.voiceTypingLanguage should be code list in column BCP-47 at https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
+# In case config.voiceTypingPlatform == "google", config.voiceTypingLanguage should be code list in column BCP-47 at https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
 googleSpeeckToTextLanguages = {
     "Afrikaans (South Africa)": "af-ZA",
     "Akan (Ghana)": "ak-GH",
@@ -157,7 +157,7 @@ googleSpeeckToTextLanguages = {
 }
 
 # check availabl languages at: https://github.com/openai/whisper/blob/main/whisper/tokenizer.py
-# In case config.voiceTypingModel == "whisper", config.voiceTypingLanguage should be uncapitalized full language name like "english" or "chinese"
+# In case config.voiceTypingPlatform == "whisper", config.voiceTypingLanguage should be uncapitalized full language name like "english" or "chinese"
 whisperSpeeckToTextLanguages = (
     "english",
     "chinese",

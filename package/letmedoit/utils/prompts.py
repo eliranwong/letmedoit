@@ -82,7 +82,7 @@ class Prompts:
                 if config.voiceTypingNotification:
                     TTSUtil.playAudioFile(os.path.join(config.letMeDoItAIFolder, "audio", "notification2_mild.mp3"))
                 #run_in_terminal(lambda: config.print2("Processing to your voice ..."))
-                if config.voiceTypingModel == "google":
+                if config.voiceTypingPlatform == "google":
                     # recognize speech using Google Speech Recognition
                     try:
                         # check google.recognize_legacy in SpeechRecognition package
@@ -94,7 +94,7 @@ class Prompts:
                         return ""
                     except sr.RequestError as e:
                         return "[Error: {0}]".format(e)
-                elif config.voiceTypingModel == "googlecloud" and os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Speech-to-Text" in config.enabledGoogleAPIs:
+                elif config.voiceTypingPlatform == "googlecloud" and os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Speech-to-Text" in config.enabledGoogleAPIs:
                     # recognize speech using Google Cloud Speech
                     try:
                         # check availabl languages at: https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
@@ -105,12 +105,12 @@ class Prompts:
                         return ""
                     except sr.RequestError as e:
                         return "[Error: {0}]".format(e)
-                elif config.voiceTypingModel == "whisper":
+                elif config.voiceTypingPlatform == "whisper":
                     # recognize speech using whisper
                     try:
                         # check availabl languages at: https://github.com/openai/whisper/blob/main/whisper/tokenizer.py
                         # config.voiceTypingLanguage should be uncapitalized full language name like "english" or "chinese"
-                        return r.recognize_whisper(audio, model="base" if config.voiceTypingLanguage == "english" else "large", language=config.voiceTypingLanguage)
+                        return r.recognize_whisper(audio, model=config.voiceTypingWhisperEnglishModel if config.voiceTypingLanguage == "english" else "large", language=config.voiceTypingLanguage)
                     except sr.UnknownValueError:
                         return ""
                     except sr.RequestError as e:
@@ -130,6 +130,12 @@ class Prompts:
             buffer = event.app.current_buffer
             config.defaultEntry = buffer.text
             buffer.text = ".voicetypingconfig"
+            buffer.validate_and_handle()
+        @this_key_bindings.add(*config.hotkey_text_to_speech_config)
+        def _(event):
+            buffer = event.app.current_buffer
+            config.defaultEntry = buffer.text
+            buffer.text = ".texttospeechconfig"
             buffer.validate_and_handle()
         @this_key_bindings.add(*config.hotkey_select_plugins)
         def _(event):

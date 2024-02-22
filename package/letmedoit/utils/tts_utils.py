@@ -22,7 +22,7 @@ class TTSUtil:
         if config.tts:
             try:
                 # official google-cloud-texttospeech
-                if os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Text-to-Speech" in config.enabledGoogleAPIs:
+                if config.ttsPlatform == "googlecloud" and os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Text-to-Speech" in config.enabledGoogleAPIs:
                     audioFile = os.path.join(config.letMeDoItAIFolder, "temp", "gctts.mp3")
                     if not language:
                         language = config.gcttsLang
@@ -33,7 +33,7 @@ class TTSUtil:
                         language = f"{language}-{accent.upper()}"
                     TTSUtil.saveCloudTTSAudio(content, language, filename=audioFile)
                     TTSUtil.playAudioFile(audioFile)
-                elif config.ttsCommand:
+                elif config.ttsPlatform == "custom" and config.ttsCommand:
                     # remove '"' from the content
                     content = re.sub('"', "", content)
 
@@ -57,6 +57,9 @@ class TTSUtil:
                             command = f'''{config.ttsCommand} "{content}"{config.ttsCommandSuffix}'''
                     subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
                 else:
+                    if not config.ttsPlatform == "google":
+                        config.ttsPlatform == "google"
+                        config.saveConfig()
                     # use gTTS as default as config.ttsCommand is empty by default
                     if not language:
                         language = config.gttsLang
