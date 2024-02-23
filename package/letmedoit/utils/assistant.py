@@ -178,6 +178,7 @@ class LetMeDoItAI:
             ".content": ("display current directory content", self.getPath.displayDirectoryContent),
             ".keys": (f"display key bindings {str(config.hotkey_display_key_combo)}", config.showKeyBindings),
             ".help": ("open LetMeDoIt wiki", lambda: SharedUtil.openURL('https://github.com/eliranwong/letmedoit/wiki')),
+            ".donate": ("donate and support LetMeDoIt AI", lambda: SharedUtil.openURL('https://www.paypal.com/paypalme/letmedoitai')),
         }
 
         config.actionHelp = f"# Quick Actions\n(entries that start with '.')\n"

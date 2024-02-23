@@ -16,7 +16,7 @@ Quick-Guide: https://github.com/eliranwong/letmedoit/wiki/Quick-Guide
 
 Wiki: https://github.com/eliranwong/letmedoit/wiki
 
-Support this project: https://www.paypal.me/MarvelBible
+Support this project: https://www.paypal.me/letmedoitai
 
 # Video Demo
 
@@ -495,4 +495,4 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki/Android-Support
 
 # Donations
 
-https://www.paypal.me/MarvelBible
+https://www.paypal.me/letmedoitai

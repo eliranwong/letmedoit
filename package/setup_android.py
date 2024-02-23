@@ -76,7 +76,7 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=f"{package}_android",
-    version="0.0.90",
+    version="0.0.91",
     python_requires=">=3.8, <3.12",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of ChatGPT API, Gemini Pro and AutoGen, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks on your local devices.",
     long_description=long_description,
@@ -168,7 +168,7 @@ setup(
         "Source": "https://github.com/eliranwong/letmedoit",
         "Tracker": "https://github.com/eliranwong/letmedoit/issues",
         "Documentation": "https://github.com/eliranwong/letmedoit/wiki",
-        "Funding": "https://www.paypal.me/MarvelBible",
+        "Funding": "https://www.paypal.me/letmedoitai",
     },
     classifiers=[
         # Reference: https://pypi.org/classifiers/
