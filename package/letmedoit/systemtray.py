@@ -1,4 +1,5 @@
 import os, sys, platform, shutil
+from letmedoit import config
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QApplication
 from PySide6.QtGui import QIcon, QAction, QGuiApplication
 from pathlib import Path
@@ -26,7 +27,7 @@ class SystemTrayIcon(QSystemTrayIcon):
 
         self.menu = QMenu(parent)
 
-        for i in (
+        commandPrefix = [
             package,
             "chatgpt",
             "geminipro",
@@ -37,9 +38,16 @@ class SystemTrayIcon(QSystemTrayIcon):
             "autoretriever",
             "automath",
             "autobuilder",
+            "ollamachat",
+        ]
+        commandSuffix = [
             "etextedit",
             "commandprompt",
-        ):
+        ]
+
+        commands = commandPrefix + config.customTrayCommands + commandSuffix if hasattr(config, "customTrayCommands") else commandPrefix + commandSuffix
+
+        for i in commands:
             action = QAction(i, self)
             action.triggered.connect(partial(self.runLetMeDoItCommand, i))
             self.menu.addAction(action)

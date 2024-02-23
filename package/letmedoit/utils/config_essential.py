@@ -46,6 +46,8 @@ defaultSettings = (
     ('mouseSupport', False),
     ('autoUpgrade', True),
     ('chatbot', 'chatgpt'),
+    ('ollamaDefaultModel', 'mistral'),
+    ('customTrayCommands', ['mistral', 'llama2', 'gemma7b', 'llava']),
     ('chatGPTApiModel', 'gpt-3.5-turbo'),
     ('chatGPTApiMaxTokens', 4000),
     ('chatGPTApiMinTokens', 256),
@@ -194,7 +196,7 @@ temporaryConfigs = [
     "letMeDoItAIFolder",
     "open",
     "inputSuggestions", # used with plugins; user input suggestions
-    "chatGPTTransformers", # used with plugins; transform ChatGPT response message
+    "outputTransformers", # used with plugins; transform output message
     "predefinedInstructions", # used with plugins; pre-defined instructions
     "predefinedContexts", # used with plugins; pre-defined contexts
     # used with plugins; function call

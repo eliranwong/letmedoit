@@ -19,4 +19,4 @@ def convertToTraditionalChinese(text):
     else:
         return text
 
-config.chatGPTTransformers.append(convertToTraditionalChinese)
+config.outputTransformers.append(convertToTraditionalChinese)

@@ -121,7 +121,7 @@ class ChatGPT:
 
         HealthCheck.print2(f"\n{self.name} closed!")
         if hasattr(config, "currentMessages"):
-            HealthCheck.print2(f"Going back to {config.letMeDoItName} prompt ...")
+            HealthCheck.print2(f"Return back to {config.letMeDoItName} prompt ...")
 
 def main():
     # Create the parser

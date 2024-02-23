@@ -250,7 +250,7 @@ class SharedUtil:
 
     @staticmethod
     def transformText(text):
-        for transformer in config.chatGPTTransformers:
+        for transformer in config.outputTransformers:
                 text = transformer(text)
         return text
 

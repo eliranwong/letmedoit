@@ -117,11 +117,18 @@ class StreamingWordWrapper:
         for event in completion:
             if not streaming_event.is_set() and not self.streaming_finished:
                 # RETRIEVE THE TEXT FROM THE RESPONSE
-                # openai or vertex
-                answer = event.choices[0].delta.content if openai else event.text
+                if openai:
+                    # openai
+                    answer = event.choices[0].delta.content
+                elif isinstance(event, dict):
+                    # ollama chat
+                    answer = event['message']['content']
+                else:
+                    # vertex ai
+                    event.text
                 # transform
-                if hasattr(config, "chatGPTTransformers"):
-                    for transformer in config.chatGPTTransformers:
+                if hasattr(config, "outputTransformers"):
+                    for transformer in config.outputTransformers:
                         answer = transformer(answer)
                 # STREAM THE ANSWER
                 if answer is not None:

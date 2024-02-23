@@ -241,7 +241,7 @@ class LetMeDoItAI:
         }
         config.predefinedInstructions = {}
         config.inputSuggestions = []
-        config.chatGPTTransformers = []
+        config.outputTransformers = []
         config.chatGPTApiFunctionSignatures = {}
         config.chatGPTApiAvailableFunctions = {}
 
@@ -565,7 +565,7 @@ class LetMeDoItAI:
 #        chat_response = completion["choices"][0]["message"]["content"]
 #        # transform response with plugins
 #        if chat_response:
-#            for t in config.chatGPTTransformers:
+#            for t in config.outputTransformers:
 #                chat_response = t(chat_response)
 #        return chat_response
 
