@@ -47,7 +47,9 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki/Installation
 # get required packages
 install_requires = []
 exclude_packages = (
-    "google-cloud-aiplatform==1.39.0",
+    "torch==2.2.1",
+    "torchvision==0.17.1",
+    "google-cloud-aiplatform==1.42.1",
     "google-cloud-speech",
     "google-cloud-texttospeech",
     "pygame",
@@ -76,7 +78,7 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=f"{package}_android",
-    version="0.0.91",
+    version="0.0.92",
     python_requires=">=3.8, <3.12",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of ChatGPT API, Gemini Pro and AutoGen, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks on your local devices.",
     long_description=long_description,

@@ -17,7 +17,7 @@ apsw
 gTTS
 google-cloud-speech
 google-cloud-texttospeech
-google-cloud-aiplatform==1.39.0
+google-cloud-aiplatform==1.42.1
 pywhatkit
 yt-dlp
 rembg
@@ -27,7 +27,9 @@ colorama
 pillow
 docker
 einops
-transformers
+transformers==4.38.1
+torch==2.2.1
+torchvision==0.17.1
 sentence-transformers
 chromadb
 unstructured[all-docs]
