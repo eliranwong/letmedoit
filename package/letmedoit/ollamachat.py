@@ -1,4 +1,5 @@
 import ollama, os, argparse, threading, shutil, json, re
+from ollama import Options
 from letmedoit import config
 from letmedoit.utils.ollama_models import ollama_models
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
@@ -50,31 +51,40 @@ class OllamaChat:
                         return False
             return True
         
-        def extractImagePath(content) -> str:
-            promptPrefix = """Write a JSON with two keys "imagePath" and "queryAboutImage" from the following request. "imagePath" is the path of a given image. "queryAboutImage" is the query about the image. Remember, return the JSON ONLY, WITHOUT any extra comment or information:
+        def extractImages(content) -> str:
+            template = {
+                "imageList": [],
+                "queryAboutImages": "",
+            }
+            promptPrefix = f"""Use this template:
 
+{template}
+
+to generate a JSON with two keys, "imageList" and "queryAboutImages" from the my request.
+"imageList" is a list of image paths specified in my request.  If no path is specified, return an empty list [] for its value.
+"queryAboutImages" is the query about the images in the list.
+
+Below is my request:
 """
-            response = ollama.chat(
+            completion = ollama.chat(
                 model="gemma:2b",
                 messages=[
                     {
                         "role": "user",
                         "content": f"{promptPrefix}{content}",
                     },
-                ])
-            answer = response["message"]["content"]
-            extract = re.findall(r"```json(.*?)```", answer, re.DOTALL)
-            if extract:
-                answer = extract[0].strip()
-            try:
-                imagePath = json.loads(answer)["imagePath"]
-                if not imagePath:
-                    return ""
-                if imagePath and os.path.isfile(imagePath) and HealthCheck.is_valid_image_file(imagePath):
-                    return imagePath
-            except:
-                return ""
-            return ""
+                ],
+                format="json",
+                stream=False,
+            )
+            output = json.loads(completion["message"]["content"])
+            if config.developer:
+                HealthCheck.print2("Input:")
+                print(output)
+            imageList = output["imageList"]
+            images = [i for i in imageList if os.path.isfile(i) and HealthCheck.is_valid_image_file(i)]
+
+            return images
 
         if not self.runnable:
             return None
@@ -131,10 +141,10 @@ class OllamaChat:
                 streamingWordWrapper = StreamingWordWrapper()
                 config.pagerContent = ""
                 if model.startswith("llava"):
-                    imagePath = extractImagePath(prompt)
-                    if imagePath:
-                        messages.append({'role': 'user', 'content': prompt, 'images': [imagePath]})
-                        HealthCheck.print3(f"Analyzing image: {imagePath}")
+                    images = extractImages(prompt)
+                    if images:
+                        messages.append({'role': 'user', 'content': prompt, 'images': images})
+                        HealthCheck.print3(f"Analyzing image: {str(images)}")
                     else:
                         messages.append({'role': 'user', 'content': prompt})
                 else:
@@ -144,6 +154,9 @@ class OllamaChat:
                         model=model,
                         messages=messages,
                         stream=True,
+                        options=Options(
+                            temperature=config.llmTemperature,
+                        ),
                     )
                     # Create a new thread for the streaming task
                     streaming_event = threading.Event()
