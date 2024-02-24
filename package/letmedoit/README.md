@@ -2,7 +2,7 @@
 
 Welcome to LetMeDoIt AI, your premier virtual assistant designed to revolutionize the way you work! More than a mere chatbot, I am equipped with the capability to conduct meaningful interactions and actively carry out computing tasks as per your directives. My real-time code generation and execution prowess guarantees not only effectiveness but also efficiency in task fulfillment. With an advanced auto-correction feature, I autonomously repair any malfunctioning code segments and automatically install necessary libraries, ensuring uninterrupted workflow. My commitment to your digital safety is paramount, with inbuilt risk assessments and tailored user confirmation protocols to protect your data and device.
 
-With LetMeDoIt AI, you can access OpenAI ChatGPT-4, Google Gemini Pro, and Microsoft AutoGen, all in one place, to enhance your productivity. [Read more ...](https://github.com/eliranwong/letmedoit/wiki#letmedoit-ai)
+With LetMeDoIt AI, you can access OpenAI ChatGPT-4, Google Gemini Pro, and Microsoft AutoGen, local LLMs, all in one place, to enhance your productivity. [Read more ...](https://github.com/eliranwong/letmedoit/wiki#letmedoit-ai)
 
 Developer: [Eliran Wong](https://github.com/eliranwong)
 
@@ -15,6 +15,8 @@ Installation: https://github.com/eliranwong/letmedoit/wiki/Installation
 Quick-Guide: https://github.com/eliranwong/letmedoit/wiki/Quick-Guide
 
 Wiki: https://github.com/eliranwong/letmedoit/wiki
+
+Video Demo: https://www.youtube.com/watch?v=Eeat6h_ktbQ&list=PLo4xQ5NqC8SEMM71xC4NNhOHJCFlW-jaJ
 
 Support this project: https://www.paypal.me/letmedoitai
 
@@ -33,6 +35,10 @@ Youtube Playlist: https://www.youtube.com/watch?v=Eeat6h_ktbQ&list=PLo4xQ5NqC8SE
 3. Supported OS: Windows / macOS / Linux / ChromeOS / Android (Termux)
 
 # Recent Additions
+
+[Run Local LLM Offline](https://github.com/eliranwong/letmedoit/wiki/Run-Local-LLM-Offline)
+
+<img width="832" alt="support_localllm" src="https://github.com/eliranwong/letmedoit/assets/25262722/587aba21-7f89-4b78-bfc4-3b32b442b287">
 
 [Talk to LetMeDoIt in Multiple Languages](https://github.com/eliranwong/letmedoit/wiki/Speak-to-LetMeDoIt-AI)
 

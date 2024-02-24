@@ -1,4 +1,4 @@
-import ollama, os, traceback, argparse, threading, shutil
+import ollama, os, traceback, argparse, threading, shutil, re
 from letmedoit import config
 from letmedoit.utils.ollama_models import ollama_models
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
@@ -36,6 +36,11 @@ class OllamaChat:
         if not self.runnable:
             return None
 
+        # check model
+        if not re.search(f"{model}[':]", str(ollama.list())):
+            # download model
+            os.system(f"ollama pull {model}")
+
         historyFolder = os.path.join(HealthCheck.getFiles(), "history")
         Path(historyFolder).mkdir(parents=True, exist_ok=True)
         chat_history = os.path.join(historyFolder, f"ollama_{model}")
@@ -44,7 +49,7 @@ class OllamaChat:
         HealthCheck.print2(f"\n{model.capitalize()} loaded!")
 
         # history
-        messages = config.currentMessages if hasattr(config, "currentMessages") else []
+        messages = config.currentMessages[:-1] if hasattr(config, "currentMessages") else []
         
         # bottom toolbar
         if hasattr(config, "currentMessages"):
@@ -92,7 +97,8 @@ class OllamaChat:
                     # update messages
                     messages.append({"role": "assistant", "content": config.new_chat_response})
                 except:
-                    self.streaming_thread.join()
+                    if hasattr(self, "streaming_thread"):
+                        self.streaming_thread.join()
                     HealthCheck.print2(traceback.format_exc())
 
             prompt = ""
@@ -101,7 +107,7 @@ class OllamaChat:
         if hasattr(config, "currentMessages"):
             HealthCheck.print2(f"Return back to {config.letMeDoItName} prompt ...")
 
-# 'mistral', 'llama2', 'llama213b', 'llama270b', 'gemma2b', 'gemma7b', 'llava', 'phi', 'vicuna'
+# available cli: 'ollamachat', 'mistral', 'llama2', 'llama213b', 'llama270b', 'gemma2b', 'gemma7b', 'llava', 'phi', 'vicuna'
 
 def mistral():
     main("mistral")
@@ -156,9 +162,10 @@ def main(thisModel=""):
 
             HealthCheck.print2("Ollama chat launched!")
             print("Select a model below:")
-            option = HealthCheck.simplePrompt(style=promptStyle, promptSession=model_session, bottom_toolbar=bottom_toolbar, default=prompt, completer=completer)
+            print("Note: You should have at least 8 GB of RAM available to run the 7B models, 16 GB to run the 13B models, and 32 GB to run the 33B models.")
+            option = HealthCheck.simplePrompt(style=promptStyle, promptSession=model_session, bottom_toolbar=bottom_toolbar, default=config.ollamaDefaultModel, completer=completer)
             if option and option in ollama_models:
-                model = option
+                model = config.ollamaDefaultModel = option
             else:
                 model = config.ollamaDefaultModel
 

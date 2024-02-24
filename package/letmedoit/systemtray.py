@@ -45,7 +45,7 @@ class SystemTrayIcon(QSystemTrayIcon):
             "commandprompt",
         ]
 
-        commands = commandPrefix + config.customTrayCommands + commandSuffix if hasattr(config, "customTrayCommands") else commandPrefix + commandSuffix
+        commands = commandPrefix + config.customTrayCommands + commandSuffix if hasattr(config, "customTrayCommands") and config.customTrayCommands else commandPrefix + commandSuffix
 
         for i in commands:
             action = QAction(i, self)
