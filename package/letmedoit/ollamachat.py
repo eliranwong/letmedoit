@@ -49,8 +49,12 @@ class OllamaChat:
         HealthCheck.print2(f"\n{model.capitalize()} loaded!")
 
         # history
-        messages = config.currentMessages[:-1] if hasattr(config, "currentMessages") else []
-        
+        messages = []
+        if hasattr(config, "currentMessages"):
+            for i in config.currentMessages[:-1]:
+                if "role" in i and i["role"] in ("system", "user", "assistant") and "content" in i and i.get("content"):
+                    messages.append(i)
+
         # bottom toolbar
         if hasattr(config, "currentMessages"):
             bottom_toolbar = f""" {str(config.hotkey_exit).replace("'", "")} {config.exit_entry}"""

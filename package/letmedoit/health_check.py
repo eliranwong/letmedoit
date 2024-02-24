@@ -163,6 +163,11 @@ class HealthCheck:
         def _(event):
             buffer = event.app.current_buffer
             buffer.newline()
+        @this_key_bindings.add(*config.hotkey_toggle_word_wrap)
+        def _(_):
+            config.wrapWords = not config.wrapWords
+            HealthCheck.saveConfig()
+            run_in_terminal(lambda: config.print3(f"Word Wrap: '{'enabled' if config.wrapWords else 'disabled'}'!"))
         @this_key_bindings.add(*config.hotkey_voice_entry)
         def _(event):
             # reference: https://github.com/Uberi/speech_recognition/blob/master/examples/microphone_recognition.py
