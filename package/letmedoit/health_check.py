@@ -1,4 +1,4 @@
-import os, shutil
+import os
 thisFile = os.path.realpath(__file__)
 packageFolder = os.path.dirname(thisFile)
 package = os.path.basename(packageFolder)
@@ -24,6 +24,7 @@ from prompt_toolkit.application import run_in_terminal
 from letmedoit.utils.tts_utils import TTSUtil
 from letmedoit.utils.config_essential import defaultSettings, temporaryConfigs
 from pathlib import Path
+from PIL import Image
 import speech_recognition as sr
 # a dummy import line to resolve ALSA error display
 import sounddevice
@@ -146,6 +147,18 @@ class HealthCheck:
             config.spinner_thread.join()
         except:
             pass
+
+    @staticmethod
+    def is_valid_image_file(file_path):
+        try:
+            # Open the image file
+            with Image.open(file_path) as img:
+                # Check if the file format is supported by PIL
+                img.verify()
+                return True
+        except (IOError, SyntaxError) as e:
+            # The file path is not a valid image file path
+            return False
 
     @staticmethod
     def simplePrompt(inputIndicator="", validator=None, default="", accept_default=False, completer=None, promptSession=None, style=None, is_password=False, bottom_toolbar=None):

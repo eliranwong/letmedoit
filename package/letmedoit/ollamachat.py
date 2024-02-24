@@ -1,4 +1,4 @@
-import ollama, os, traceback, argparse, threading, shutil
+import ollama, os, argparse, threading, shutil, json, re
 from letmedoit import config
 from letmedoit.utils.ollama_models import ollama_models
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
@@ -32,14 +32,65 @@ class OllamaChat:
             print("Read https://ollama.com/.")
             self.runnable = False
 
-    def run(self, prompt="", model="mistral"):
+    def run(self, prompt="", model="mistral") -> None:
+        def checkModel(thisModel) -> bool:
+            # check model
+            if not f"'model': '{thisModel}'" in str(ollama.list()).replace(":latest", ""):
+                # download model
+                if thisModel in ollama_models: # known models
+                    # display progress
+                    os.system(f"ollama pull {thisModel}")
+                else:
+                    # attempt to download unknown models; handle error
+                    try:
+                        HealthCheck.print3(f"Downloading '{thisModel}' ...")
+                        ollama.pull(thisModel)
+                    except ollama.ResponseError as e:
+                        print('Error:', e.error)
+                        return False
+            return True
+        
+        def extractImagePath(content) -> str:
+            promptPrefix = """Write a JSON with two keys "imagePath" and "queryAboutImage" from the following request. "imagePath" is the path of a given image. "queryAboutImage" is the query about the image. Remember, return the JSON ONLY, WITHOUT any extra comment or information:
+
+"""
+            response = ollama.chat(
+                model="gemma:2b",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"{promptPrefix}{content}",
+                    },
+                ])
+            answer = response["message"]["content"]
+            extract = re.findall(r"```json(.*?)```", answer, re.DOTALL)
+            if extract:
+                answer = extract[0].strip()
+            try:
+                imagePath = json.loads(answer)["imagePath"]
+                if not imagePath:
+                    return ""
+                if imagePath and os.path.isfile(imagePath) and HealthCheck.is_valid_image_file(imagePath):
+                    return imagePath
+            except:
+                return ""
+            return ""
+
         if not self.runnable:
             return None
 
         # check model
-        if not f"'model': '{model}'" in str(ollama.list()).replace(":latest", ""):
-            # download model
-            os.system(f"ollama pull {model}")
+        if not checkModel(model):
+            return None
+        if model.startswith("llava"):
+            checkModel("gemma:2b")
+        
+        previoiusModel = config.ollamaDefaultModel
+        config.ollamaDefaultModel = model
+        if not config.ollamaDefaultModel:
+            config.ollamaDefaultModel = "mistral"
+        if not config.ollamaDefaultModel == previoiusModel:
+            HealthCheck.saveConfig()
 
         historyFolder = os.path.join(HealthCheck.getFiles(), "history")
         Path(historyFolder).mkdir(parents=True, exist_ok=True)
@@ -79,7 +130,15 @@ class OllamaChat:
             elif prompt := prompt.strip():
                 streamingWordWrapper = StreamingWordWrapper()
                 config.pagerContent = ""
-                messages.append({'role': 'user', 'content': prompt})
+                if model.startswith("llava"):
+                    imagePath = extractImagePath(prompt)
+                    if imagePath:
+                        messages.append({'role': 'user', 'content': prompt, 'images': [imagePath]})
+                        HealthCheck.print3(f"Analyzing image: {imagePath}")
+                    else:
+                        messages.append({'role': 'user', 'content': prompt})
+                else:
+                    messages.append({'role': 'user', 'content': prompt})
                 try:
                     completion = ollama.chat(
                         model=model,
@@ -100,10 +159,10 @@ class OllamaChat:
 
                     # update messages
                     messages.append({"role": "assistant", "content": config.new_chat_response})
-                except:
+                except ollama.ResponseError as e:
                     if hasattr(self, "streaming_thread"):
                         self.streaming_thread.join()
-                    HealthCheck.print2(traceback.format_exc())
+                    print('Error:', e.error)
 
             prompt = ""
 
@@ -164,23 +223,25 @@ def main(thisModel=""):
             Path(historyFolder).mkdir(parents=True, exist_ok=True)
             model_history = os.path.join(historyFolder, "ollama_default")
             model_session = PromptSession(history=FileHistory(model_history))
-            completer = FuzzyCompleter(WordCompleter(ollama_models, ignore_case=True))
+            completer = FuzzyCompleter(WordCompleter(sorted(ollama_models), ignore_case=True))
             bottom_toolbar = f""" {str(config.hotkey_exit).replace("'", "")} {config.exit_entry}"""
 
             HealthCheck.print2("Ollama chat launched!")
             print("Select a model below:")
             print("Note: You should have at least 8 GB of RAM available to run the 7B models, 16 GB to run the 13B models, and 32 GB to run the 33B models.")
-            option = HealthCheck.simplePrompt(style=promptStyle, promptSession=model_session, bottom_toolbar=bottom_toolbar, default=config.ollamaDefaultModel, completer=completer)
-            if option and option in ollama_models:
-                model = config.ollamaDefaultModel = option
-            else:
-                model = config.ollamaDefaultModel
+            model = HealthCheck.simplePrompt(style=promptStyle, promptSession=model_session, bottom_toolbar=bottom_toolbar, default=config.ollamaDefaultModel, completer=completer)
+            if model and model.lower() == config.exit_entry:
+                HealthCheck.print2("\nOllama chat closed!")
+                return None
 
+    if not model:
+        model = config.ollamaDefaultModel
     # Run chat bot
     OllamaChat().run(
         prompt=prompt,
         model=model,
     )
+        
 
 if __name__ == '__main__':
     main()

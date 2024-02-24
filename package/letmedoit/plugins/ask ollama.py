@@ -13,6 +13,9 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter, FuzzyCompleter
 from prompt_toolkit.styles import Style
+from letmedoit.health_check import HealthCheck
+from pathlib import Path
+import os
 
 
 def ask_ollama(function_args):
@@ -30,18 +33,18 @@ def ask_ollama(function_args):
     Path(historyFolder).mkdir(parents=True, exist_ok=True)
     model_history = os.path.join(historyFolder, "ollama_default")
     model_session = PromptSession(history=FileHistory(model_history))
-    completer = FuzzyCompleter(WordCompleter(ollama_models, ignore_case=True))
+    completer = FuzzyCompleter(WordCompleter(sorted(ollama_models), ignore_case=True))
     bottom_toolbar = f""" {str(config.hotkey_exit).replace("'", "")} {config.exit_entry}"""
 
     HealthCheck.print2("Ollama chat launched!")
     print("Select a model below:")
     print("Note: You should have at least 8 GB of RAM available to run the 7B models, 16 GB to run the 13B models, and 32 GB to run the 33B models.")
-    option = HealthCheck.simplePrompt(style=promptStyle, promptSession=model_session, bottom_toolbar=bottom_toolbar, default=config.ollamaDefaultModel, completer=completer)
-    if option and option in ollama_models:
-        model = config.ollamaDefaultModel = option
+    model = HealthCheck.simplePrompt(style=promptStyle, promptSession=model_session, bottom_toolbar=bottom_toolbar, default=config.ollamaDefaultModel, completer=completer)
+    if model:
+        if model.lower() == config.exit_entry:
+            return ""
     else:
         model = config.ollamaDefaultModel
-
     OllamaChat().run(query, model=model)
     return ""
 
