@@ -1,4 +1,4 @@
-import ollama, os, traceback, argparse, threading, shutil, re
+import ollama, os, traceback, argparse, threading, shutil
 from letmedoit import config
 from letmedoit.utils.ollama_models import ollama_models
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
@@ -37,7 +37,7 @@ class OllamaChat:
             return None
 
         # check model
-        if not re.search(f"{model}[':]", str(ollama.list())):
+        if not f"'model': '{model}'" in str(ollama.list()).replace(":latest", ""):
             # download model
             os.system(f"ollama pull {model}")
 
@@ -120,6 +120,9 @@ def llama213b():
 
 def llama270b():
     main("llama2:70b")
+
+def codellama():
+    main("codellama")
 
 def gemma2b():
     main("gemma:2b")

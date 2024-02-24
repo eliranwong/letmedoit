@@ -19,6 +19,18 @@ if not config.isTermux:
     config.aliases["!geminipro"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'geminipro.py')}"
     config.aliases["!palm2"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'palm2.py')}"
     config.aliases["!codey"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'codey.py')}"
+    # integrated Ollama chatbots
+    config.aliases["!ollamachat"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'ollamachat.py')}"
+    config.aliases["!mistral"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'ollamachat.py -m mistral')}"
+    config.aliases["!llama2"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'ollamachat.py -m llama2')}"
+    config.aliases["!llama213b"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'ollamachat.py -m llama213b')}"
+    config.aliases["!llama270b"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'ollamachat.py -m llama270b')}"
+    config.aliases["!codellama"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'ollamachat.py -m codellama')}"
+    config.aliases["!gemma2b"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'ollamachat.py -m gemma2b')}"
+    config.aliases["!gemma7b"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'ollamachat.py -m gemma7b')}"
+    config.aliases["!llava"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'ollamachat.py -m llava')}"
+    config.aliases["!phi"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'ollamachat.py -m phi')}"
+    config.aliases["!vicuna"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'ollamachat.py -m vicuna')}"
 # integrated text editor
 config.aliases["!etextedit"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
 config.aliases["!chatgpt"] = f"!{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'chatgpt.py')}"

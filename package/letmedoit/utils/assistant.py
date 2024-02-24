@@ -1846,9 +1846,10 @@ Always remember that you are much more than a text-based AI. You possess both vi
         storagedirectory, config.currentMessages = startChat()
         config.multilineInput = False
         featuresLower = list(self.actions.keys()) + ["..."]
+        # input suggestions
         config.inputSuggestions += featuresLower
-        if config.developer:
-            config.inputSuggestions += [f"config.{i}" for i in dir(config) if not i.startswith("__")]
+        completer = FuzzyCompleter(WordCompleter(config.inputSuggestions, ignore_case=True)) if config.inputSuggestions else None
+        completer_developer = FuzzyCompleter(WordCompleter(config.inputSuggestions[:] + [f"config.{i}" for i in dir(config) if not i.startswith("__")] + self.getDirectoryList(), ignore_case=True))
         while True:
             # default toolbar text
             config.dynamicToolBarText = f""" {str(config.hotkey_exit).replace("'", "")} exit {str(config.hotkey_display_key_combo).replace("'", "")} shortcuts """
@@ -1868,10 +1869,9 @@ Always remember that you are much more than a text-based AI. You possess both vi
             elif os.path.isdir(defaultEntry):
                 defaultEntry = f'Folder: "{defaultEntry}"\n'
             config.defaultEntry = ""
-            # input suggestions
-            inputSuggestions = config.inputSuggestions[:] + self.getDirectoryList() if config.developer else config.inputSuggestions
-            completer = FuzzyCompleter(WordCompleter(inputSuggestions, ignore_case=True)) if inputSuggestions else None
-            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, completer=completer, default=defaultEntry, accept_default=accept_default, validator=tokenValidator, bottom_toolbar=getDynamicToolBar)
+
+            # user input
+            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, completer=completer_developer if config.developer else completer, default=defaultEntry, accept_default=accept_default, validator=tokenValidator, bottom_toolbar=getDynamicToolBar)
             
             # update system message when user enter a new input
             config.currentMessages = self.updateSystemMessage(config.currentMessages)
@@ -1922,7 +1922,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                     pass
 
             # try eval
-            if not userInput == "...":
+            if config.developer and not userInput == "...":
                 try:
                     value = eval(userInput) # it solve simple math, e.g. 1+1, or read variables, e.g. dir(config)
                     if value is not None:
@@ -1936,17 +1936,18 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 except:
                     pass
             # try to run as a python script first
-            try:
-                exec(userInput, globals())
-                print("")
-                continue
-            except:
-                pass
+            if config.developer:
+                try:
+                    exec(userInput, globals())
+                    print("")
+                    continue
+                except:
+                    pass
 
             if userInput.startswith("!"):
                 self.runSystemCommand(userInput)
                 print("")
-            elif userInput.startswith("```") and userInput.endswith("```") and not userInput == "``````":
+            elif config.developer and userInput.startswith("```") and userInput.endswith("```") and not userInput == "``````":
                 userInput = re.sub("```python", "```", userInput)
                 self.runPythonScript(userInput)
                 print("")
