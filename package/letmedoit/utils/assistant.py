@@ -120,10 +120,6 @@ class LetMeDoItAI:
         self.terminal_chat_session = PromptSession(history=FileHistory(chat_history))
 
         # check if tts is ready
-        if not config.isVlcPlayerInstalled and not config.isPygameInstalled and not config.ttsCommand:
-            config.tts = False
-        else:
-            config.tts = True
         self.isTtsAvailable()
 
         self.actions = {
@@ -1518,11 +1514,13 @@ Always remember that you are much more than a text-based AI. You possess both vi
             run_in_terminal(lambda: self.print("Use 'escape + enter' to complete your entry."))
 
     def isTtsAvailable(self):
-        if config.tts:
-            return True
-        self.print("Text-to-speech feature not ready!\nTo, set up, either:\n* install 'VLC player'\n* install 'pygame'\n* define 'ttsCommand' in config.py")
-        self.print("Read more at:\nhttps://github.com/eliranwong/letmedoit/wiki/letMeDoIt-Speaks")
-        return False
+        if not config.isVlcPlayerInstalled and not config.isPygameInstalled and not config.ttsCommand and not config.elevenlabsApi:
+            self.print2("Text-to-speech feature is not enabled!")
+            self.print3("Read: https://github.com/eliranwong/letmedoit/wiki/letMeDoIt-Speaks")
+            config.tts = False
+        else:
+            config.tts = True
+        return config.tts
 
     def toggleinputaudio(self):
         if self.isTtsAvailable:

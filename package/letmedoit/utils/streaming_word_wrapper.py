@@ -125,7 +125,7 @@ class StreamingWordWrapper:
                     answer = event['message']['content']
                 else:
                     # vertex ai
-                    event.text
+                    answer = event.text
                 # transform
                 if hasattr(config, "outputTransformers"):
                     for transformer in config.outputTransformers:

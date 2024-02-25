@@ -21,6 +21,7 @@ from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings, ConditionalKeyBindings
 from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 from prompt_toolkit.application import run_in_terminal
+from letmedoit.utils.vlc_utils import VlcUtil
 from letmedoit.utils.tts_utils import TTSUtil
 from letmedoit.utils.config_essential import defaultSettings, temporaryConfigs
 from pathlib import Path
@@ -90,34 +91,42 @@ class HealthCheck:
 
     @staticmethod
     def setBasicConfig():
-        # Default Settings
-        for key, value in defaultSettings:
-            if not hasattr(config, key):
-                value = pprint.pformat(value)
-                exec(f"""config.{key} = {value} """)
-        # Google Credentials
-        if config.google_cloud_credentials and os.path.isfile(config.google_cloud_credentials):
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.google_cloud_credentials
-        else:
-            files = HealthCheck.getFiles()
-            gccfile1 = os.path.join(files, "credentials_google_cloud.json")
-            gccfile2 = os.path.join(files, "credentials_googleaistudio.json")
-            gccfile3 = os.path.join(files, "credentials_googletts.json")
-            # set required file
-            config.google_cloud_credentials_file = gccfile1
-
-            if os.path.isfile(gccfile1):
-                config.google_cloud_credentials = gccfile1
-            elif os.path.isfile(gccfile2):
-                config.google_cloud_credentials = gccfile2
-            elif os.path.isfile(gccfile3):
-                config.google_cloud_credentials = gccfile3
+        if not hasattr(config, "setBasicConfigDone") or not config.setBasicConfigDone:
+            # package folder
+            config.letMeDoItAIFolder = packageFolder
+            # Default Settings
+            for key, value in defaultSettings:
+                if not hasattr(config, key):
+                    value = pprint.pformat(value)
+                    exec(f"""config.{key} = {value} """)
+            # tts
+            config.isVlcPlayerInstalled = VlcUtil.isVlcPlayerInstalled()
+            config.tts = False if not config.isVlcPlayerInstalled and not config.isPygameInstalled and not config.ttsCommand and not config.elevenlabsApi else True
+            # Google Credentials
+            if config.google_cloud_credentials and os.path.isfile(config.google_cloud_credentials):
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.google_cloud_credentials
             else:
-                config.google_cloud_credentials = ""
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.google_cloud_credentials if config.google_cloud_credentials else ""
-            
-        # print functions
-        HealthCheck.setPrint()
+                files = HealthCheck.getFiles()
+                gccfile1 = os.path.join(files, "credentials_google_cloud.json")
+                gccfile2 = os.path.join(files, "credentials_googleaistudio.json")
+                gccfile3 = os.path.join(files, "credentials_googletts.json")
+                # set required file
+                config.google_cloud_credentials_file = gccfile1
+
+                if os.path.isfile(gccfile1):
+                    config.google_cloud_credentials = gccfile1
+                elif os.path.isfile(gccfile2):
+                    config.google_cloud_credentials = gccfile2
+                elif os.path.isfile(gccfile3):
+                    config.google_cloud_credentials = gccfile3
+                else:
+                    config.google_cloud_credentials = ""
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.google_cloud_credentials if config.google_cloud_credentials else ""
+                
+            # print functions
+            HealthCheck.setPrint()
+
+            config.setBasicConfigDone = True
 
     @staticmethod
     def showErrors():
@@ -181,6 +190,12 @@ class HealthCheck:
             config.wrapWords = not config.wrapWords
             HealthCheck.saveConfig()
             run_in_terminal(lambda: config.print3(f"Word Wrap: '{'enabled' if config.wrapWords else 'disabled'}'!"))
+        @this_key_bindings.add(*config.hotkey_toggle_response_audio)
+        def _(_):
+            if config.tts:
+                config.ttsOutput = not config.ttsOutput
+                HealthCheck.saveConfig()
+                run_in_terminal(lambda: config.print3(f"Response Audio: '{'enabled' if config.ttsOutput else 'disabled'}'!"))
         @this_key_bindings.add(*config.hotkey_voice_entry)
         def _(event):
             # reference: https://github.com/Uberi/speech_recognition/blob/master/examples/microphone_recognition.py

@@ -51,7 +51,7 @@ class OllamaChat:
                         return False
             return True
         
-        def extractImages(content) -> str:
+        def extractImages(content) -> list:
             template = {
                 "imageList": [],
                 "queryAboutImages": "",
@@ -60,11 +60,11 @@ class OllamaChat:
 
 {template}
 
-to generate a JSON with two keys, "imageList" and "queryAboutImages" from the my request.
+To generate a JSON that contains two keys, "imageList" and "queryAboutImages", based on my request.
 "imageList" is a list of image paths specified in my request.  If no path is specified, return an empty list [] for its value.
 "queryAboutImages" is the query about the images in the list.
 
-Below is my request:
+Here is my request:
 """
             completion = ollama.chat(
                 model="gemma:2b",

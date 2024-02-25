@@ -150,6 +150,7 @@ defaultSettings = (
 )
 
 temporaryConfigs = [
+    "setBasicConfigDone",
     "google_cloud_credentials_file",
     "actionHelp",
     "isTermux",

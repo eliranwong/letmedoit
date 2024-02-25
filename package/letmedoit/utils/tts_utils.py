@@ -1,5 +1,5 @@
 from letmedoit import config
-import os, traceback, subprocess, re
+import os, traceback, subprocess, re, sounddevice, soundfile
 from gtts import gTTS
 from elevenlabs import generate, play
 from letmedoit.utils.vlc_utils import VlcUtil
@@ -13,8 +13,10 @@ try:
     import pygame
     if pygame.mixer.get_init() is None:
         pygame.mixer.init()
+    config.isPygameInstalled = True
 except:
     config.usePygame = False
+    config.isPygameInstalled = True
 
 class TTSUtil:
 
@@ -92,9 +94,12 @@ class TTSUtil:
             if config.isVlcPlayerInstalled and not config.usePygame:
                 # vlc is preferred as it allows speed control with config.vlcSpeed
                 VlcUtil.playMediaFile(audioFile)
-            else:
+            elif config.isPygameInstalled:
                 # use pygame if config.usePygame or vlc player is not installed
                 TTSUtil.playAudioFilePygame(audioFile)
+            else:
+                sounddevice.play(*soundfile.read(audioFile)) 
+                sounddevice.wait()
         except:
             command = f"{config.open} {audioFile}"
             subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
