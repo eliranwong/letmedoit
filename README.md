@@ -1,15 +1,3 @@
-# Looking for a FREE and OFFLINE Alternative WITHOUT OpenAI API key?
-
-Some users have expressed requests for the LetMeDoIt AI to support free and offline open-source LLMs, with concerns primarily revolving around privacy, cost, and extensibility. I have taken note of these concerns and truly appreciate your constructive feedback. As a result, I plan to incorporate these modifications in a separate project, which will be titled FreeGenius AI:
-
-https://github.com/eliranwong/freegenius
-
-Please consider to support its development:
-
-https://www.paypal.me/letmedoitai
-
-Much appreciated!
-
 # LetMeDoIt AI
 
 Welcome to LetMeDoIt AI, your premier virtual assistant designed to revolutionize the way you work! More than a mere chatbot, I am equipped with the capability to conduct meaningful interactions and actively carry out computing tasks as per your directives. My real-time code generation and execution prowess guarantees not only effectiveness but also efficiency in task fulfillment. With an advanced auto-correction feature, I autonomously repair any malfunctioning code segments and automatically install necessary libraries, ensuring uninterrupted workflow. My commitment to your digital safety is paramount, with inbuilt risk assessments and tailored user confirmation protocols to protect your data and device.
