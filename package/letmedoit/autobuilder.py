@@ -40,7 +40,7 @@ class AutoGenBuilder:
 
     def __init__(self):
         #config_list = autogen.get_config_list(
-        #    [config.openaiApiKey], # assume openaiApiKey is in place in config.py
+        #    [config.openaiApiKey], # assume openaiApiKey is in config.py
         #    api_type="openai",
         #    api_version=None,
         #)

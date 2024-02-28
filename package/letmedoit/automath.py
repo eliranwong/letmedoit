@@ -36,8 +36,10 @@ class AutoGenMath:
         #    api_version=None,
         #)
         oai_config_list = []
-        for model in ("gpt-4-turbo-preview", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k"):
+        for model in HealthCheck.tokenLimits.keys():
             oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
+        if not config.chatGPTApiModel in HealthCheck.tokenLimits:
+            oai_config_list.append({"model": config.chatGPTApiModel, "api_key": config.openaiApiKey})
         os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
         """
         Code execution is set to be run in docker (default behaviour) but docker is not running.
