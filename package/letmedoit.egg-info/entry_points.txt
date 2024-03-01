@@ -1,0 +1,28 @@
+[console_scripts]
+autoassist = letmedoit.autoassist:main
+autobuilder = letmedoit.autobuilder:main
+automath = letmedoit.automath:main
+autoretriever = letmedoit.autoretriever:main
+chatgpt = letmedoit.chatgpt:main
+codellama = letmedoit.ollamachat:codellama
+codey = letmedoit.codey:main
+commandprompt = letmedoit.commandprompt:main
+etextedit = letmedoit.eTextEdit:main
+geminipro = letmedoit.geminipro:main
+geminiprovision = letmedoit.geminiprovision:main
+gemma2b = letmedoit.ollamachat:gemma2b
+gemma7b = letmedoit.ollamachat:gemma7b
+letmedoit = letmedoit.main:main
+letmedoittray = letmedoit.systemtray:main
+llama2 = letmedoit.ollamachat:llama2
+llama213b = letmedoit.ollamachat:llama213b
+llama270b = letmedoit.ollamachat:llama270b
+llava = letmedoit.ollamachat:llava
+mistral = letmedoit.ollamachat:mistral
+ollamachat = letmedoit.ollamachat:main
+orca2 = letmedoit.ollamachat:orca2
+palm2 = letmedoit.palm2:main
+phi = letmedoit.ollamachat:phi
+starlinglm = letmedoit.ollamachat:starlinglm
+vicuna = letmedoit.ollamachat:vicuna
+

@@ -1,0 +1,144 @@
+setup.py
+letmedoit/README.md
+letmedoit/__init__.py
+letmedoit/autoassist.py
+letmedoit/autobuilder.py
+letmedoit/automath.py
+letmedoit/autoretriever.py
+letmedoit/chatgpt.py
+letmedoit/codey.py
+letmedoit/commandprompt.py
+letmedoit/config.py
+letmedoit/eTextEdit.py
+letmedoit/geminipro.py
+letmedoit/geminiprovision.py
+letmedoit/health_check.py
+letmedoit/main.py
+letmedoit/ollamachat.py
+letmedoit/package_name.txt
+letmedoit/palm2.py
+letmedoit/requirements.txt
+letmedoit/systemtray.py
+letmedoit.egg-info/PKG-INFO
+letmedoit.egg-info/SOURCES.txt
+letmedoit.egg-info/dependency_links.txt
+letmedoit.egg-info/entry_points.txt
+letmedoit.egg-info/requires.txt
+letmedoit.egg-info/top_level.txt
+letmedoit/audio/notification1.mp3
+letmedoit/audio/notification1_mild.mp3
+letmedoit/audio/notification2.mp3
+letmedoit/audio/notification2_mild.mp3
+letmedoit/files/Readme.md
+letmedoit/history/Readme.md
+letmedoit/icons/CyberTask.ico
+letmedoit/icons/CyberTask.png
+letmedoit/icons/GeminiPro.ico
+letmedoit/icons/GeminiPro.png
+letmedoit/icons/LetMeDoIt.ico
+letmedoit/icons/LetMeDoIt.png
+letmedoit/icons/MyHand.ico
+letmedoit/icons/MyHand.png
+letmedoit/icons/TaskWiz.ico
+letmedoit/icons/TaskWiz.png
+letmedoit/icons/systemtray.ico
+letmedoit/icons/systemtray.png
+letmedoit/macOS_service/LetMeDoIt_Download_workflow/Contents/Info.plist
+letmedoit/macOS_service/LetMeDoIt_Download_workflow/Contents/document.wflow
+letmedoit/macOS_service/LetMeDoIt_Download_workflow/Contents/QuickLook/Thumbnail.png
+letmedoit/macOS_service/LetMeDoIt_Explanation_workflow/Contents/Info.plist
+letmedoit/macOS_service/LetMeDoIt_Explanation_workflow/Contents/document.wflow
+letmedoit/macOS_service/LetMeDoIt_Explanation_workflow/Contents/QuickLook/Thumbnail.png
+letmedoit/macOS_service/LetMeDoIt_Files_workflow/Contents/Info.plist
+letmedoit/macOS_service/LetMeDoIt_Files_workflow/Contents/document.wflow
+letmedoit/macOS_service/LetMeDoIt_Files_workflow/Contents/QuickLook/Thumbnail.png
+letmedoit/macOS_service/LetMeDoIt_Pronounce_workflow/Contents/Info.plist
+letmedoit/macOS_service/LetMeDoIt_Pronounce_workflow/Contents/document.wflow
+letmedoit/macOS_service/LetMeDoIt_Pronounce_workflow/Contents/QuickLook/Thumbnail.png
+letmedoit/macOS_service/LetMeDoIt_Summary_workflow/Contents/Info.plist
+letmedoit/macOS_service/LetMeDoIt_Summary_workflow/Contents/document.wflow
+letmedoit/macOS_service/LetMeDoIt_Summary_workflow/Contents/QuickLook/Thumbnail.png
+letmedoit/macOS_service/LetMeDoIt_Text_workflow/Contents/Info.plist
+letmedoit/macOS_service/LetMeDoIt_Text_workflow/Contents/document.wflow
+letmedoit/macOS_service/LetMeDoIt_Text_workflow/Contents/QuickLook/Thumbnail.png
+letmedoit/macOS_service/LetMeDoIt_Translation_workflow/Contents/Info.plist
+letmedoit/macOS_service/LetMeDoIt_Translation_workflow/Contents/document.wflow
+letmedoit/macOS_service/LetMeDoIt_Translation_workflow/Contents/QuickLook/Thumbnail.png
+letmedoit/macOS_service/LetMeDoIt_YoutubeMP3_workflow/Contents/Info.plist
+letmedoit/macOS_service/LetMeDoIt_YoutubeMP3_workflow/Contents/document.wflow
+letmedoit/macOS_service/LetMeDoIt_YoutubeMP3_workflow/Contents/QuickLook/Thumbnail.png
+letmedoit/plugins/000_check_ffmpeg.py
+letmedoit/plugins/000_check_pyaudio.py
+letmedoit/plugins/000_check_vlc.py
+letmedoit/plugins/Readme.md
+letmedoit/plugins/add calendar event.py
+letmedoit/plugins/aliases.py
+letmedoit/plugins/analyze audio.py
+letmedoit/plugins/analyze files.py
+letmedoit/plugins/analyze images with gemini.py
+letmedoit/plugins/analyze images.py
+letmedoit/plugins/analyze web content.py
+letmedoit/plugins/ask chatgpt.py
+letmedoit/plugins/ask codey.py
+letmedoit/plugins/ask gemini pro.py
+letmedoit/plugins/ask gemma.py
+letmedoit/plugins/ask llama2.py
+letmedoit/plugins/ask llava.py
+letmedoit/plugins/ask mistral.py
+letmedoit/plugins/ask ollama.py
+letmedoit/plugins/ask palm2.py
+letmedoit/plugins/ask sqlite.py
+letmedoit/plugins/auto heal python code.py
+letmedoit/plugins/awesome prompts.py
+letmedoit/plugins/character analysis.py
+letmedoit/plugins/contexts.py
+letmedoit/plugins/counselling.py
+letmedoit/plugins/create ai assistants.py
+letmedoit/plugins/create images.py
+letmedoit/plugins/create maps.py
+letmedoit/plugins/create qrcode.py
+letmedoit/plugins/create statistical graphics.py
+letmedoit/plugins/dates and times.py
+letmedoit/plugins/download youtube or web content.py
+letmedoit/plugins/edit text.py
+letmedoit/plugins/global finance.py
+letmedoit/plugins/improve British English.py
+letmedoit/plugins/input suggestions.py
+letmedoit/plugins/install python package.py
+letmedoit/plugins/integrate google searches.py
+letmedoit/plugins/manipulate files.py
+letmedoit/plugins/memory.py
+letmedoit/plugins/modify images.py
+letmedoit/plugins/open web browser.py
+letmedoit/plugins/pronounce words.py
+letmedoit/plugins/remove image background.py
+letmedoit/plugins/search chat records.py
+letmedoit/plugins/search financial data.py
+letmedoit/plugins/search latest news.py
+letmedoit/plugins/search weather info.py
+letmedoit/plugins/send email.py
+letmedoit/plugins/send whatsapp messages.py
+letmedoit/plugins/simplified Chinese to traditional Chinese.py
+letmedoit/plugins/solve math problems.py
+letmedoit/temp/Readme.md
+letmedoit/utils/assistant.py
+letmedoit/utils/config_essential.py
+letmedoit/utils/config_tools.py
+letmedoit/utils/file_utils.py
+letmedoit/utils/get_path_prompt.py
+letmedoit/utils/install.py
+letmedoit/utils/ollama_models.py
+letmedoit/utils/promptValidator.py
+letmedoit/utils/prompt_multiline_shared_key_bindings.py
+letmedoit/utils/prompt_shared_key_bindings.py
+letmedoit/utils/prompts.py
+letmedoit/utils/shared_utils.py
+letmedoit/utils/shortcuts.py
+letmedoit/utils/streaming_word_wrapper.py
+letmedoit/utils/sttLanguages.py
+letmedoit/utils/terminal_mode_dialogs.py
+letmedoit/utils/terminal_system_command_prompt.py
+letmedoit/utils/text_utils.py
+letmedoit/utils/ttsLanguages.py
+letmedoit/utils/tts_utils.py
+letmedoit/utils/vlc_utils.py
