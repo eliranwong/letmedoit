@@ -44,4 +44,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="create_map", signature=functionSignature, method=create_map)
+config.addFunctionCall(signature=functionSignature, method=create_map)

@@ -18,7 +18,7 @@ def manipulate_files(function_args):
 
 functionSignature = {
     "intent": [
-        "read or change files",
+        "change files",
     ],
     "examples": [
         "Edit test.txt",
@@ -37,4 +37,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="manipulate_files", signature=functionSignature, method=manipulate_files)
+config.addFunctionCall(signature=functionSignature, method=manipulate_files)

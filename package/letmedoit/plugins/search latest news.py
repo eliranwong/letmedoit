@@ -34,7 +34,7 @@ def search_latest_news(function_args: dict) -> str:
 # Function signature to work with ChatGPT function calling
 functionSignature = {
     "intent": [
-        "access to internet or real-time information",
+        "access to internet real-time information",
     ],
     "examples": [
         "Tell me latest news about",
@@ -54,7 +54,7 @@ functionSignature = {
 }
 
 # The following line integrate the function method and signature into LetMeDoIt AI
-config.addFunctionCall(name="search_latest_news", signature=functionSignature, method=search_latest_news)
+config.addFunctionCall(signature=functionSignature, method=search_latest_news)
 
 # The following line is optional. It adds an input suggestion to LetMeDoIt AI user input prompt
 config.inputSuggestions.append("Tell me the latest news about ")

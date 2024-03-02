@@ -117,4 +117,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="create_image", signature=functionSignature, method=create_image)
+config.addFunctionCall(signature=functionSignature, method=create_image)

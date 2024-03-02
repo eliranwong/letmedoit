@@ -19,7 +19,7 @@ def analyze_images_with_gemini(function_args):
 
 functionSignature = {
     "intent": [
-        "analyze files or multimedia",
+        "analyze files",
     ],
     "examples": [
         "analyze image with Gemini",
@@ -42,5 +42,5 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="analyze_images_with_gemini", signature=functionSignature, method=analyze_images_with_gemini)
+config.addFunctionCall(signature=functionSignature, method=analyze_images_with_gemini)
 config.inputSuggestions.append("Ask Gemini Pro Vision to describe this image in detail: ")

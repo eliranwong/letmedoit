@@ -95,7 +95,7 @@ def retrieve_memory(function_args):
 functionSignature1 = {
     "intent": [
         "memory / record access",
-        "arrange personal or work activities",
+        "arrange activities",
     ],
     "examples": [
         "Remember that",
@@ -128,7 +128,7 @@ functionSignature1 = {
 functionSignature2 = {
     "intent": [
         "memory / record access",
-        "arrange personal or work activities",
+        "arrange activities",
     ],
     "examples": [
         "Do you remember that",
@@ -148,5 +148,5 @@ functionSignature2 = {
 }
 
 config.inputSuggestions += ["Remember, ", "Do you remember?"]
-config.addFunctionCall(name="save_memory", signature=functionSignature1, method=save_memory)
-config.addFunctionCall(name="retrieve_memory", signature=functionSignature2, method=retrieve_memory)
+config.addFunctionCall(signature=functionSignature1, method=save_memory)
+config.addFunctionCall(signature=functionSignature2, method=retrieve_memory)

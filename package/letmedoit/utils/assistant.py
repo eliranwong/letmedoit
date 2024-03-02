@@ -266,7 +266,7 @@ class LetMeDoItAI:
                     if not run:
                         config.pluginExcludeList.append(plugin)
         if internetSeraches in config.pluginExcludeList:
-            del config.chatGPTApiFunctionSignatures["integrate google searches"]
+            del config.chatGPTApiFunctionSignatures["integrate_google_searches"]
         self.setupPythonExecution()
         if config.terminalEnableTermuxAPI:
             self.setupTermuxExecution()
@@ -628,7 +628,7 @@ class LetMeDoItAI:
             "intent": [
                 "access to device information",
                 "execute a computing task or run a command",
-                "generate or correct code",
+                "generate code",
             ],
             "examples": [
                 "Run Termux command",
@@ -656,7 +656,7 @@ class LetMeDoItAI:
             },
         }
 
-        self.addFunctionCall(name="execute_termux_command", signature=functionSignature, method=execute_termux_command)
+        self.addFunctionCall(signature=functionSignature, method=execute_termux_command)
 
     def setupPythonExecution(self):
         def execute_python_code(function_args):
@@ -694,7 +694,7 @@ class LetMeDoItAI:
             "intent": [
                 "access to device information",
                 "execute a computing task or run a command",
-                "generate or correct code",
+                "generate code",
             ],
             "examples": [
                 "What is my operating system",
@@ -725,7 +725,7 @@ class LetMeDoItAI:
             },
         }
 
-        self.addFunctionCall(name="execute_python_code", signature=functionSignature, method=execute_python_code)
+        self.addFunctionCall(signature=functionSignature, method=execute_python_code)
 
         ### A dummy function to redirect q&a task about python, otherwise, it may be mistaken by execute_python_code
         def python_qa(_):
@@ -749,11 +749,12 @@ class LetMeDoItAI:
                 },
             },
         }
-        self.addFunctionCall(name="python_qa", signature=functionSignature, method=python_qa)
+        self.addFunctionCall(signature=functionSignature, method=python_qa)
 
     # integrate function call plugin
-    def addFunctionCall(self, name: str, signature: str, method: Callable[[dict], str]):
-        config.chatGPTApiFunctionSignatures[name] = signature
+    def addFunctionCall(self, signature: str, method: Callable[[dict], str]):
+        name = signature["name"]
+        config.chatGPTApiFunctionSignatures[name] = {key: value for key, value in signature.items() if not key in ("intent", "examples")}
         config.chatGPTApiAvailableFunctions[name] = method
 
     # call a specific function and return messages

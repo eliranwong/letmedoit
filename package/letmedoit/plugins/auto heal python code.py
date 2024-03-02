@@ -41,7 +41,7 @@ def heal_python(function_args):
 
 functionSignature = {
     "intent": [
-        "generate or correct code",
+        "generate code",
     ],
     "examples": [
         "Fix python code",
@@ -75,4 +75,4 @@ persistentConfigs = (
 )
 config.setConfig(persistentConfigs)
 
-config.addFunctionCall(name="heal_python", signature=functionSignature, method=heal_python)
+config.addFunctionCall(signature=functionSignature, method=heal_python)

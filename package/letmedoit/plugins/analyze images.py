@@ -86,7 +86,7 @@ def analyze_images(function_args):
 
 functionSignature = {
     "intent": [
-        "analyze files or multimedia",
+        "analyze files",
     ],
     "examples": [
         "analyze image",
@@ -109,6 +109,6 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="analyze_images", signature=functionSignature, method=analyze_images)
+config.addFunctionCall(signature=functionSignature, method=analyze_images)
 config.inputSuggestions.append("Describe this image in detail: ")
 config.inputSuggestions.append("Extract text from this image: ")

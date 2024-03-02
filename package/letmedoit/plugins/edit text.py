@@ -38,7 +38,7 @@ def edit_text(function_args):
 
 functionSignature = {
     "intent": [
-        "read or change files",
+        "change files",
     ],
     "examples": [
         "Edit test.txt",
@@ -57,4 +57,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="edit_text", signature=functionSignature, method=edit_text)
+config.addFunctionCall(signature=functionSignature, method=edit_text)

@@ -38,5 +38,5 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="ask_chatgpt", signature=functionSignature, method=ask_chatgpt)
+config.addFunctionCall(signature=functionSignature, method=ask_chatgpt)
 config.inputSuggestions.append("Ask ChatGPT: ")

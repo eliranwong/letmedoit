@@ -10,7 +10,7 @@ from letmedoit import config
 from letmedoit.utils.shared_utils import SharedUtil
 import os, sqlite3, json, pprint
 
-def ask_sqlite(function_args):
+def search_sqlite(function_args):
     db = function_args.get("path") # required
     request = function_args.get("request") # required
     if not os.path.isfile(db):
@@ -68,13 +68,13 @@ Please consider individual table information below for code generation:
 functionSignature = {
     "intent": [
         "database access",
-        "analyze files or multimedia",
+        "analyze files",
     ],
     "examples": [
         "Connect to SQLite file",
         "Search SQLite file",
     ],
-    "name": "ask_sqlite",
+    "name": "search_sqlite",
     "description": f'''Ask SQLite file. To retrieve information from or make changes in a sqlite file, e.g. fetch data, update records, etc. Remember, use this function ONLY IF I provide you with a sqlite file path.''',
     "parameters": {
         "type": "object",
@@ -92,8 +92,8 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="ask_sqlite", signature=functionSignature, method=ask_sqlite)
+config.addFunctionCall(signature=functionSignature, method=search_sqlite)
 
 config.inputSuggestions.append("""Connect the following SQLite file and tell me about the tables that it contains:
-[CALL_ask_sqlite]
+[CALL_search_sqlite]
 \n""")

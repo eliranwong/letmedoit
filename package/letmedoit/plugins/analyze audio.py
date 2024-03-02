@@ -50,7 +50,7 @@ def analyze_audio(function_args):
 # Function Signature
 functionSignature = {
     "intent": [
-        "analyze files or multimedia",
+        "analyze files",
     ],
     "examples": [
         "analyze audio",
@@ -70,4 +70,4 @@ functionSignature = {
 }
 
 # Integrate the signature and method into LetMeDoIt AI
-config.addFunctionCall(name="analyze_audio", signature=functionSignature, method=analyze_audio)
+config.addFunctionCall(signature=functionSignature, method=analyze_audio)

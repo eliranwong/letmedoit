@@ -33,7 +33,7 @@ def integrate_google_searches(function_args):
 
 functionSignature = {
     "intent": [
-        "access to internet or real-time information",
+        "access to internet real-time information",
     ],
     "examples": [
         "Search internet",
@@ -52,4 +52,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="integrate_google_searches", signature=functionSignature, method=integrate_google_searches)
+config.addFunctionCall(signature=functionSignature, method=integrate_google_searches)

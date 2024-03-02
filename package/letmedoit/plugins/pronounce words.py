@@ -51,5 +51,5 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="pronunce_words", signature=functionSignature, method=pronunce_words)
+config.addFunctionCall(signature=functionSignature, method=pronunce_words)
 config.inputSuggestions.append("pronunce ")

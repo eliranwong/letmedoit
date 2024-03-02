@@ -94,8 +94,8 @@ def send_email(function_args):
 
 functionSignature = {
     "intent": [
-        "arrange personal or work activities",
-        "access to internet or real-time information",
+        "arrange activities",
+        "access to internet real-time information",
     ],
     "examples": [
         "Send email",
@@ -127,4 +127,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="send_email", signature=functionSignature, method=send_email)
+config.addFunctionCall(signature=functionSignature, method=send_email)

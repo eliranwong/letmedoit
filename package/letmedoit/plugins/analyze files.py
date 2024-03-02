@@ -47,7 +47,7 @@ def analyze_files(function_args):
 
 functionSignature = {
     "intent": [
-        "analyze files or multimedia",
+        "analyze files",
     ],
     "examples": [
         "analyze files",
@@ -70,4 +70,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="analyze_files", signature=functionSignature, method=analyze_files)
+config.addFunctionCall(signature=functionSignature, method=analyze_files)

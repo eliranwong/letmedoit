@@ -19,7 +19,7 @@ def open_browser(function_args):
 # Function Signature
 functionSignature = {
     "intent": [
-        "access to internet or real-time information",
+        "access to internet real-time information",
     ],
     "examples": [
         "Open web browser",
@@ -41,5 +41,5 @@ functionSignature = {
 }
 
 # Integrate the signature and method into LetMeDoIt AI
-config.addFunctionCall(name="open_browser", signature=functionSignature, method=open_browser)
+config.addFunctionCall(signature=functionSignature, method=open_browser)
 config.inputSuggestions.append("Open url: ")

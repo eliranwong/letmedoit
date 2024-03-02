@@ -37,5 +37,5 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="ask_mistral", signature=functionSignature, method=ask_mistral)
+config.addFunctionCall(signature=functionSignature, method=ask_mistral)
 config.inputSuggestions.append("Ask Mistral: ")

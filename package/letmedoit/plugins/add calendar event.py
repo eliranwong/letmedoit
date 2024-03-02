@@ -124,8 +124,8 @@ def add_calendar_event(function_args):
 
 functionSignature = {
     "intent": [
-        "arrange personal or work activities",
-        "access to internet or real-time information",
+        "arrange activities",
+        "access to internet real-time information",
     ],
     "examples": [
         "Add a calender event",
@@ -169,4 +169,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="add_calendar_event", signature=functionSignature, method=add_calendar_event)
+config.addFunctionCall(signature=functionSignature, method=add_calendar_event)

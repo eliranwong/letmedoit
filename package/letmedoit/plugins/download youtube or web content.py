@@ -74,7 +74,7 @@ def download_web_content(function_args):
 
 functionSignature = {
     "intent": [
-        "access to internet or real-time information",
+        "access to internet real-time information",
     ],
     "examples": [
         "Download Youtube video",
@@ -104,4 +104,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="download_web_content", signature=functionSignature, method=download_web_content)
+config.addFunctionCall(signature=functionSignature, method=download_web_content)

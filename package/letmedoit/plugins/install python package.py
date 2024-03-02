@@ -41,4 +41,4 @@ functionSignature = {
 }
 
 # Integrate the signature and method into LetMeDoIt AI
-config.addFunctionCall(name="install_package", signature=functionSignature, method=install_package)
+config.addFunctionCall(signature=functionSignature, method=install_package)

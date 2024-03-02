@@ -21,8 +21,8 @@ def send_whatsapp(function_args):
 
 functionSignature = {
     "intent": [
-        "arrange personal or work activities",
-        "access to internet or real-time information",
+        "arrange activities",
+        "access to internet real-time information",
     ],
     "examples": [
         "Send WhatsApp",
@@ -45,4 +45,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="send_whatsapp", signature=functionSignature, method=send_whatsapp)
+config.addFunctionCall(signature=functionSignature, method=send_whatsapp)

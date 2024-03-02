@@ -23,7 +23,7 @@ if config.openweathermapApi:
 
     functionSignature = {
         "intent": [
-            "access to internet or real-time information",
+            "access to internet real-time information",
         ],
         "examples": [
             "What's the current weather",
@@ -44,7 +44,7 @@ In the last line of your code, use 'print' function to print the requested infor
         },
     }
 
-    config.addFunctionCall(name="search_weather_info", signature=functionSignature, method=search_weather_info)
+    config.addFunctionCall(signature=functionSignature, method=search_weather_info)
 else:
     config.print("To use plugin 'search weather info', you need to set up an OpenWeatherMap API key first.")
     config.print3("Read: https://github.com/eliranwong/letmedoit/wiki/OpenWeatherMap-API-Setup")

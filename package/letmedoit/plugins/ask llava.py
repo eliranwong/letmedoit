@@ -37,5 +37,5 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="ask_llava", signature=functionSignature, method=ask_llava)
+config.addFunctionCall(signature=functionSignature, method=ask_llava)
 config.inputSuggestions.append("Ask LLava: ")

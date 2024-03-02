@@ -37,5 +37,5 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="ask_gemini_pro", signature=functionSignature, method=ask_gemini_pro)
+config.addFunctionCall(signature=functionSignature, method=ask_gemini_pro)
 config.inputSuggestions.append("Ask Gemini Pro: ")

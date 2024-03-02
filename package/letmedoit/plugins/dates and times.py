@@ -16,7 +16,7 @@ def datetimes(function_args):
 
 functionSignature = {
     "intent": [
-        "access to internet or real-time information",
+        "access to internet real-time information",
     ],
     "examples": [
         "What is the current time in Hong Kong?",
@@ -36,4 +36,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="datetimes", signature=functionSignature, method=datetimes)
+config.addFunctionCall(signature=functionSignature, method=datetimes)

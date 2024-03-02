@@ -37,5 +37,5 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="ask_palm2", signature=functionSignature, method=ask_palm2)
+config.addFunctionCall(signature=functionSignature, method=ask_palm2)
 config.inputSuggestions.append("Ask PaLM 2: ")

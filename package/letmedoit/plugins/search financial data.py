@@ -22,7 +22,7 @@ def search_finance(function_args):
 
 functionSignature = {
     "intent": [
-        "access to internet or real-time information",
+        "access to internet real-time information",
     ],
     "examples": [
         "Check stock price",
@@ -41,4 +41,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="search_finance", signature=functionSignature, method=search_finance)
+config.addFunctionCall(signature=functionSignature, method=search_finance)

@@ -174,5 +174,5 @@ functionSignature2 = {
 }
 
 config.inputSuggestions += ["Search chat records: ", "Load chat records with this ID: ", "Load chat records in this file: "]
-config.addFunctionCall(name="search_chats", signature=functionSignature1, method=search_chats)
-config.addFunctionCall(name="load_chats", signature=functionSignature2, method=load_chats)
+config.addFunctionCall(signature=functionSignature1, method=search_chats)
+config.addFunctionCall(signature=functionSignature2, method=load_chats)

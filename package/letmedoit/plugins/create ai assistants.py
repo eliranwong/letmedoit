@@ -51,4 +51,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="build_agents", signature=functionSignature, method=build_agents)
+config.addFunctionCall(signature=functionSignature, method=build_agents)

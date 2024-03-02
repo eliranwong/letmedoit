@@ -186,7 +186,7 @@ def create_image(description, original_filename):
 
 functionSignature = {
     "intent": [
-        "read or change files",
+        "change files",
     ],
     "examples": [
         "Modify image",
@@ -209,4 +209,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="modify_images", signature=functionSignature, method=modify_images)
+config.addFunctionCall(signature=functionSignature, method=modify_images)

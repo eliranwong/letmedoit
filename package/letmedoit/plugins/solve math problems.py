@@ -40,4 +40,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="solve_math", signature=functionSignature, method=solve_math)
+config.addFunctionCall(signature=functionSignature, method=solve_math)

@@ -56,7 +56,7 @@ def remove_image_background2(function_args):
 
 functionSignature = {
     "intent": [
-        "read or change files",
+        "change files",
     ],
     "examples": [
         "Remove image background",
@@ -75,4 +75,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="remove_image_background", signature=functionSignature, method=remove_image_background)
+config.addFunctionCall(signature=functionSignature, method=remove_image_background)

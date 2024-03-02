@@ -40,8 +40,8 @@ def analyze_web_content(function_args):
 
 functionSignature = {
     "intent": [
-        "analyze files or multimedia",
-        "access to internet or real-time information",
+        "analyze files",
+        "access to internet real-time information",
     ],
     "examples": [
         "summarize this webpage",
@@ -64,4 +64,4 @@ functionSignature = {
     },
 }
 
-config.addFunctionCall(name="analyze_web_content", signature=functionSignature, method=analyze_web_content)
+config.addFunctionCall(signature=functionSignature, method=analyze_web_content)
