@@ -1,5 +1,5 @@
 from letmedoit import config
-import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, shutil, datetime, pprint
+import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, shutil, datetime, pprint, sys
 from pathlib import Path
 import pygments
 from pygments.lexers.python import PythonLexer
