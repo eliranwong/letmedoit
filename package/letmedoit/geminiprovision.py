@@ -10,7 +10,7 @@ from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
 if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
-    HealthCheck.saveConfig()
+    config.saveConfig()
     #print("Configurations updated!")
 
 import shutil, textwrap

@@ -1,5 +1,5 @@
 from letmedoit import config
-import shutil
+import shutil, os, pprint
 
 pluginExcludeList = [
     "awesome prompts",
@@ -150,6 +150,7 @@ defaultSettings = (
 )
 
 temporaryConfigs = [
+    "runPython",
     "freeGeniusActions",
     "freeGeniusActionExamples",
     "freeGeniusActionParameters",
@@ -166,7 +167,6 @@ temporaryConfigs = [
     "runSpecificFuntion",
     "pluginsWithFunctionCall",
     "restartApp",
-    "getStorageDir",
     "saveConfig",
     "aliases",
     "addPathAt",
@@ -209,7 +209,7 @@ temporaryConfigs = [
     "chatGPTApiAvailableFunctions",
     "pythonFunctionResponse", # used with plugins; function call when function name is 'python'
     # LetMeDoItAI methods shared from Class LetMeDoItAI
-    "getFiles",
+    "getLocalStorage",
     "stopSpinning",
     "toggleMultiline",
     "print",
@@ -222,3 +222,17 @@ temporaryConfigs = [
     "getFunctionMessageAndResponse",
     "isTermux",
 ]
+
+def saveConfig():
+    configFile = os.path.join(config.letMeDoItAIFolder, "config.py")
+    with open(configFile, "w", encoding="utf-8") as fileObj:
+        for name in dir(config):
+            excludeConfigList = temporaryConfigs + config.excludeConfigList
+            if not name.startswith("__") and not name in excludeConfigList:
+                try:
+                    value = eval(f"config.{name}")
+                    if not callable(value) and not str(value).startswith("<"):
+                        fileObj.write("{0} = {1}\n".format(name, pprint.pformat(value)))
+                except:
+                    pass
+config.saveConfig = saveConfig

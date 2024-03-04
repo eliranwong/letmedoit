@@ -48,7 +48,7 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="2.1.69",
+    version="2.1.70",
     python_requires=">=3.8, <3.12",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of ChatGPT API, Gemini Pro and AutoGen, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks on your local devices.",
     long_description=long_description,
@@ -130,6 +130,7 @@ setup(
         "console_scripts": [
             f"{package}={package}.main:main",
             f"{package}tray={package}.systemtray:main",
+            f"quicktask={package}.quicktask:main",
             f"commandprompt={package}.commandprompt:main",
             f"etextedit={package}.eTextEdit:main",
             f"autoassist={package}.autoassist:main",
@@ -143,6 +144,7 @@ setup(
             f"chatgpt={package}.chatgpt:main",
             f"ollamachat={package}.ollamachat:main",
             f"mistral={package}.ollamachat:mistral",
+            f"mixtral={package}.ollamachat:mixtral",
             f"llama2={package}.ollamachat:llama2",
             f"llama213b={package}.ollamachat:llama213b",
             f"llama270b={package}.ollamachat:llama270b",

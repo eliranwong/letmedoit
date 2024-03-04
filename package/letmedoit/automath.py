@@ -14,7 +14,7 @@ if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
     if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
         HealthCheck.changeAPIkey()
-    HealthCheck.saveConfig()
+    config.saveConfig()
     #print("Configurations updated!")
 HealthCheck.checkCompletion()
 

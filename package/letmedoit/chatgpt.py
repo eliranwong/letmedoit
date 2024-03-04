@@ -5,7 +5,7 @@ if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
     if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
         HealthCheck.changeAPIkey()
-    HealthCheck.saveConfig()
+    config.saveConfig()
     #print("Configurations updated!")
 HealthCheck.checkCompletion()
 
@@ -48,7 +48,7 @@ class ChatGPT:
     def run(self, prompt=""):
         if self.defaultPrompt:
             prompt, self.defaultPrompt = self.defaultPrompt, ""
-        historyFolder = os.path.join(HealthCheck.getFiles(), "history")
+        historyFolder = os.path.join(HealthCheck.getLocalStorage(), "history")
         Path(historyFolder).mkdir(parents=True, exist_ok=True)
         chat_history = os.path.join(historyFolder, "chatgpt")
         chat_session = PromptSession(history=FileHistory(chat_history))

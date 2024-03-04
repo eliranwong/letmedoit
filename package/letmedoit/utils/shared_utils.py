@@ -1,4 +1,5 @@
 from letmedoit import config
+from letmedoit.utils.file_utils import FileUtil
 from packaging import version
 from bs4 import BeautifulSoup
 import platform, shutil, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, html2text
@@ -18,7 +19,7 @@ from pathlib import Path
 from PIL import Image
 if not config.isTermux:
     from autogen.retrieve_utils import TEXT_FORMATS
-
+from typing import Callable
 
 def check_openai_errors(func):
     def wrapper(*args, **kwargs):
@@ -150,6 +151,134 @@ class SharedUtil:
         trace = traceback.format_exc()
         print(trace if config.developer else "Error encountered!")
         return trace
+
+    @staticmethod
+    def showRisk(risk):
+        if not config.confirmExecution in ("always", "medium_risk_or_above", "high_risk_only", "none"):
+            config.confirmExecution = "always"
+        config.print(f"[risk level: {risk}]")
+
+    @staticmethod
+    def confirmExecution(risk):
+        if config.confirmExecution == "always" or (risk == "high" and config.confirmExecution == "high_risk_only") or (not risk == "low" and config.confirmExecution == "medium_risk_or_above"):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def runPlugins():
+        storageDir = SharedUtil.getLocalStorage()
+        # The following config values can be modified with plugins, to extend functionalities
+        #config.pluginsWithFunctionCall = []
+        config.aliases = {}
+        config.predefinedContexts = {
+            "[none]": "",
+            "[custom]": "",
+        }
+        config.predefinedInstructions = {}
+        config.inputSuggestions = []
+        config.outputTransformers = []
+        config.chatGPTApiFunctionSignatures = {}
+        config.chatGPTApiAvailableFunctions = {}
+
+        pluginFolder = os.path.join(config.letMeDoItAIFolder, "plugins")
+        if storageDir:
+            customPluginFoler = os.path.join(storageDir, "plugins")
+            Path(customPluginFoler).mkdir(parents=True, exist_ok=True)
+            pluginFolders = (pluginFolder, customPluginFoler)
+        else:
+            pluginFolders = (pluginFolder,)
+        # always run 'integrate google searches'
+        internetSeraches = "integrate google searches"
+        script = os.path.join(pluginFolder, "{0}.py".format(internetSeraches))
+        SharedUtil.execPythonFile(script)
+        # always include the following plugins
+        requiredPlugins = (
+            "auto heal python code",
+            "execute python code",
+            "execute termux command",
+        )
+        for i in requiredPlugins:
+            if i in config.pluginExcludeList:
+                config.pluginExcludeList.remove(i)
+        # execute enabled plugins
+        for folder in pluginFolders:
+            for plugin in FileUtil.fileNamesWithoutExtension(folder, "py"):
+                if not plugin in config.pluginExcludeList:
+                    script = os.path.join(folder, "{0}.py".format(plugin))
+                    run = SharedUtil.execPythonFile(script)
+                    if not run:
+                        config.pluginExcludeList.append(plugin)
+        if internetSeraches in config.pluginExcludeList:
+            del config.chatGPTApiFunctionSignatures["integrate_google_searches"]
+        for i in config.chatGPTApiAvailableFunctions:
+            if not i in ("python_qa",):
+                callEntry = f"[CALL_{i}]"
+                if not callEntry in config.inputSuggestions:
+                    config.inputSuggestions.append(callEntry)
+
+    # integrate function call plugin
+    @staticmethod
+    def addFunctionCall(signature: str, method: Callable[[dict], str]):
+        name = signature["name"]
+        config.chatGPTApiFunctionSignatures[name] = {key: value for key, value in signature.items() if not key in ("intent", "examples")}
+        config.chatGPTApiAvailableFunctions[name] = method
+
+    @staticmethod
+    def runPythonScript(script):
+        script = script.strip()[3:-3]
+        try:
+            exec(script, globals())
+        except:
+            trace = traceback.format_exc()
+            print(trace if config.developer else "Error encountered!")
+            config.print(config.divider)
+            if config.max_consecutive_auto_heal > 0:
+                SharedUtil.autoHealPythonCode(script, trace)
+
+    @staticmethod
+    def execPythonFile(script="", content=""):
+        if script or content:
+            try:
+                def runCode(text):
+                    code = compile(text, script, 'exec')
+                    exec(code, globals())
+                if content:
+                    runCode(content)
+                else:
+                    with open(script, 'r', encoding='utf8') as f:
+                        runCode(f.read())
+                return True
+            except:
+                config.print("Failed to run '{0}'!".format(os.path.basename(script)))
+                SharedUtil.showErrors()
+        return False
+
+    # reset message when a new chart is started or context is changed
+    @staticmethod
+    def resetMessages(prompt="") -> list[dict]:
+        systemMessage = config.systemMessage_letmedoit if config.systemMessage_letmedoit else f'''You’re {config.letMeDoItName}, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.
+I am providing the basic information of my device below in case you need it:
+```
+{SharedUtil.getDeviceInfo()}
+```
+Please use the current time and date that I have provided above as a reference point for any relative dates and times mentioned in my prompt.
+You have all the necessary permissions to execute system commands and Python code on my behalf. Your functionality expands as I add more plugins to you. You respond to my prompts and perform tasks based on your own knowledge, the context I provide, as well as the additional knowledge and capabilities provided by plugins.
+
+When replying to my requests, please follow these steps:
+Step 1: Consider our previous conversations, particularly your last response, if any, as the context for these requests.
+Step 2: Estimate my intent based on the request and context. The intent can be a code generation task, an executable computing task, a math-solving task, a translation task, or a question answering task.
+Step 3: Reply based on the estimated intent.
+Remember, do not use function call if it is a translation task.
+
+Always remember that you are much more than a text-based AI. You possess both vision and speech capabilities and have direct access to my device's system, enabling you to execute tasks at my command. Please do not state otherwise.
+'''
+        messages = [
+            {"role": "system", "content": systemMessage}
+        ]
+        if prompt:
+            messages.append({"role": "user", "content": prompt})
+        return messages
 
     @staticmethod
     def addTimeStamp(content):
@@ -670,7 +799,10 @@ City: {g.city}"""
             webbrowser.open(url)
 
     @staticmethod
-    def getStorageDir():
+    def getHomeStorage():
+        """
+        Get default storage directory located at home directory
+        """
         storageDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
         try:
             Path(storageDir).mkdir(parents=True, exist_ok=True)
@@ -679,9 +811,27 @@ City: {g.city}"""
         return storageDir if os.path.isdir(storageDir) else ""
 
     @staticmethod
-    def getFiles():
-        storageDir = SharedUtil.getStorageDir()
+    def getLocalStorage():
+        # get default storage path located at home directory
+        storageDir = SharedUtil.getHomeStorage()
+        # change to package path if default storage path doesn't exist
+        storageDir = storageDir if storageDir else os.path.join(config.letMeDoItAIFolder, "files")
+        # check if custom storage path exists if it is defined
         if config.storagedirectory and not os.path.isdir(config.storagedirectory):
             config.storagedirectory = ""
-        storageDir = storageDir if storageDir else os.path.join(config.letMeDoItAIFolder, "files")
+        # use custom storage path, if defined, instead of the default one
         return config.storagedirectory if config.storagedirectory else storageDir
+
+    @staticmethod
+    def setOsOpenCmd(thisPlatform=""):
+        if not thisPlatform:
+            thisPlatform = platform.system()
+        config.thisPlatform = "macOS" if thisPlatform == "Darwin" else thisPlatform
+        if config.terminalEnableTermuxAPI:
+            config.open = "termux-share"
+        elif thisPlatform == "Linux":
+            config.open = "xdg-open"
+        elif thisPlatform == "Darwin":
+            config.open = "open"
+        elif thisPlatform == "Windows":
+            config.open = "start"

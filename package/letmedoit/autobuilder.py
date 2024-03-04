@@ -20,7 +20,7 @@ if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
     if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
         HealthCheck.changeAPIkey()
-    HealthCheck.saveConfig()
+    config.saveConfig()
     #print("Configurations updated!")
 HealthCheck.checkCompletion()
 
@@ -152,7 +152,7 @@ class AutoGenBuilder:
         userInput = self.prompts.simplePrompt(style=self.promptStyle, default="y" if config.use_oai_assistant else "NO")
         if userInput:
             config.use_oai_assistant = True if userInput.strip().lower() in ("y", "yes") else False
-        HealthCheck.saveConfig()
+        config.saveConfig()
 
     def run(self):
         self.promptConfig()

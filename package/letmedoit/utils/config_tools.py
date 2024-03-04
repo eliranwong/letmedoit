@@ -1,6 +1,7 @@
 from letmedoit import config
 import pprint, re, os, shutil
 from letmedoit.utils.config_essential import defaultSettings
+from letmedoit.utils.shared_utils import SharedUtil
 from prompt_toolkit.shortcuts import yes_no_dialog
 
 def loadConfig(configPath):
@@ -21,11 +22,9 @@ def setConfig(defaultSettings, thisTranslation={}, temporary=False):
         for i in thisTranslation:
             if not i in config.thisTranslation:
                 config.thisTranslation[i] = thisTranslation[i]
+config.setConfig = setConfig
 
-def isPackageInstalled(package):
-    return True if shutil.which(package.split(" ", 1)[0]) else False
-
-storageDir = config.getStorageDir()
+storageDir = SharedUtil.getLocalStorage()
 if os.path.isdir(storageDir):
     configFile = os.path.join(config.letMeDoItAIFolder, "config.py")
     if os.path.getsize(configFile) == 0:
@@ -77,6 +76,3 @@ else:
     else:
         config.google_cloud_credentials = ""
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.google_cloud_credentials if config.google_cloud_credentials else ""
-# allow plugins to add customised config
-# read https://github.com/eliranwong/letmedoit/wiki/Plugins-%E2%80%90-Work-with-LetMeDoIt-AI-Configurations#example
-config.setConfig = setConfig

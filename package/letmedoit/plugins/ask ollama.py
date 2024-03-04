@@ -29,7 +29,7 @@ def ask_ollama(function_args):
         # Prompt.
         "indicator": config.terminalPromptIndicatorColor2,
     })
-    historyFolder = os.path.join(HealthCheck.getFiles(), "history")
+    historyFolder = os.path.join(HealthCheck.getLocalStorage(), "history")
     Path(historyFolder).mkdir(parents=True, exist_ok=True)
     model_history = os.path.join(historyFolder, "ollama_default")
     model_session = PromptSession(history=FileHistory(model_history))

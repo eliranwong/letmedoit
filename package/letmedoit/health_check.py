@@ -94,6 +94,7 @@ class HealthCheck:
         if not hasattr(config, "setBasicConfigDone") or not config.setBasicConfigDone:
             # package folder
             config.letMeDoItAIFolder = packageFolder
+            config.excludeConfigList = []
             # Default Settings
             for key, value in defaultSettings:
                 if not hasattr(config, key):
@@ -106,7 +107,7 @@ class HealthCheck:
             if config.google_cloud_credentials and os.path.isfile(config.google_cloud_credentials):
                 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.google_cloud_credentials
             else:
-                files = HealthCheck.getFiles()
+                files = HealthCheck.getLocalStorage()
                 gccfile1 = os.path.join(files, "credentials_google_cloud.json")
                 gccfile2 = os.path.join(files, "credentials_googleaistudio.json")
                 gccfile3 = os.path.join(files, "credentials_googletts.json")
@@ -188,13 +189,13 @@ class HealthCheck:
         @this_key_bindings.add(*config.hotkey_toggle_word_wrap)
         def _(_):
             config.wrapWords = not config.wrapWords
-            HealthCheck.saveConfig()
+            config.saveConfig()
             run_in_terminal(lambda: config.print3(f"Word Wrap: '{'enabled' if config.wrapWords else 'disabled'}'!"))
         @this_key_bindings.add(*config.hotkey_toggle_response_audio)
         def _(_):
             if config.tts:
                 config.ttsOutput = not config.ttsOutput
-                HealthCheck.saveConfig()
+                config.saveConfig()
                 run_in_terminal(lambda: config.print3(f"Response Audio: '{'enabled' if config.ttsOutput else 'disabled'}'!"))
         @this_key_bindings.add(*config.hotkey_voice_entry)
         def _(event):
@@ -319,7 +320,7 @@ class HealthCheck:
         return style_from_pygments_cls(get_style_by_name(theme))
 
     @staticmethod
-    def getFiles():
+    def getLocalStorage():
         apps = {
             "myhand": ("MyHand", "MyHand Bot"),
             "letmedoit": ("LetMeDoIt", "LetMeDoIt AI"),
@@ -404,18 +405,6 @@ class HealthCheck:
         for model in HealthCheck.models:
             oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
         os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
-
-    @staticmethod
-    def saveConfig():
-        with open(configFile, "w", encoding="utf-8") as fileObj:
-            for name in dir(config):
-                if not name.startswith("__") and not name in temporaryConfigs:
-                    try:
-                        value = eval(f"config.{name}")
-                        if not callable(value) and not str(value).startswith("<"):
-                            fileObj.write("{0} = {1}\n".format(name, pprint.pformat(value)))
-                    except:
-                        pass
 
     # The following method was modified from source:
     # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb

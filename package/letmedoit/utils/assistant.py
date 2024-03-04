@@ -3,7 +3,7 @@ import openai, threading, os, time, traceback, re, subprocess, json, pydoc, text
 from pathlib import Path
 import pygments
 from pygments.lexers.python import PythonLexer
-from pygments.lexers.shell import BashLexer
+#from pygments.lexers.shell import BashLexer
 #from pygments.lexers.markup import MarkdownLexer
 from prompt_toolkit.formatted_text import PygmentsTokens
 from prompt_toolkit import PromptSession
@@ -32,7 +32,6 @@ if not config.isTermux:
     from letmedoit.geminipro import GeminiPro
     from letmedoit.palm2 import Palm2
     from letmedoit.codey import Codey
-from typing import Callable
 from elevenlabs import generate, voices
 
 
@@ -43,12 +42,12 @@ class LetMeDoItAI:
         self.prompts = Prompts()
         self.dialogs = TerminalModeDialogs(self)
         self.setup()
-        self.runPlugins()
+        SharedUtil.runPlugins()
 
     def setup(self):
         self.models = list(SharedUtil.tokenLimits.keys())
         config.divider = self.divider = "--------------------"
-        self.runPython = True
+        config.runPython = True
         if not hasattr(config, "accept_default"):
             config.accept_default = False
         if not hasattr(config, "defaultEntry"):
@@ -61,8 +60,8 @@ class LetMeDoItAI:
         config.pagerContent = ""
         #self.addPagerContent = False
         # share the following methods in config so that they are accessible via plugins
-        config.addFunctionCall = self.addFunctionCall
-        config.getFiles = self.getFiles
+        config.addFunctionCall = SharedUtil.addFunctionCall
+        config.getLocalStorage = SharedUtil.getLocalStorage
         config.stopSpinning = self.stopSpinning
         config.toggleMultiline = self.toggleMultiline
         config.print = self.print
@@ -88,7 +87,9 @@ class LetMeDoItAI:
             itemColor=config.terminalColors[config.terminalCommandEntryColor2],
         )
 
-        self.storageDir = self.getStorageDir()
+        # local storage directory
+        self.storageDir = SharedUtil.getLocalStorage()
+        # hisotry directory
         if (not config.historyParentFolder or not os.path.isdir(config.historyParentFolder)) and self.storageDir:
             try:
                 historyParentFolder = os.path.join(self.storageDir, "history")
@@ -182,20 +183,6 @@ class LetMeDoItAI:
             config.actionHelp += f"{key}: {value[0]}\n"
         config.actionHelp += "\n## Read more at:\nhttps://github.com/eliranwong/letmedoit/wiki/Action-Menu"
 
-    def getStorageDir(self):
-        storageDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
-        try:
-            Path(storageDir).mkdir(parents=True, exist_ok=True)
-        except:
-            pass
-        return storageDir if os.path.isdir(storageDir) else ""
-
-    def getFiles(self):
-        if config.storagedirectory and not os.path.isdir(config.storagedirectory):
-            config.storagedirectory = ""
-        storageDir = self.storageDir if self.storageDir else os.path.join(config.letMeDoItAIFolder, "files")
-        return config.storagedirectory if config.storagedirectory else storageDir
-
     def getFolderPath(self, default=""):
         return self.getPath.getFolderPath(
             check_isdir=True,
@@ -207,25 +194,8 @@ class LetMeDoItAI:
             message=f"{self.divider}\nSetting a startup directory ...\nEnter a folder name or path below:",
             bottom_toolbar="",
             promptIndicator = "",
-            default="",
+            default=default,
         )
-
-    def execPythonFile(self, script="", content=""):
-        if script or content:
-            try:
-                def runCode(text):
-                    code = compile(text, script, 'exec')
-                    exec(code, globals())
-                if content:
-                    runCode(content)
-                else:
-                    with open(script, 'r', encoding='utf8') as f:
-                        runCode(f.read())
-                return True
-            except:
-                self.print("Failed to run '{0}'!".format(os.path.basename(script)))
-                SharedUtil.showErrors()
-        return False
 
     def runPlugins(self):
         # The following config values can be modified with plugins, to extend functionalities
@@ -450,7 +420,7 @@ class LetMeDoItAI:
                     config.pluginExcludeList.remove(p)
                 elif not p in enabledPlugins and not p in config.pluginExcludeList:
                     config.pluginExcludeList.append(p)
-            self.runPlugins()
+            SharedUtil.runPlugins()
             config.saveConfig()
             self.print("Plugin selection updated!")
 
@@ -557,206 +527,6 @@ class LetMeDoItAI:
         #print("\r", end="")
         #print(" ", end="")
 
-#    def getChatResponse(self, completion):
-#        chat_response = completion["choices"][0]["message"]["content"]
-#        # transform response with plugins
-#        if chat_response:
-#            for t in config.outputTransformers:
-#                chat_response = t(chat_response)
-#        return chat_response
-
-    def confirmExecution(self, risk):
-        if config.confirmExecution == "always" or (risk == "high" and config.confirmExecution == "high_risk_only") or (not risk == "low" and config.confirmExecution == "medium_risk_or_above"):
-            return True
-        else:
-            return False
-
-    def showRisk(self, risk):
-        if not config.confirmExecution in ("always", "medium_risk_or_above", "high_risk_only", "none"):
-            config.confirmExecution = "always"
-        self.print(f"[risk level: {risk}]")
-
-    def setupTermuxExecution(self):
-        def execute_termux_command(function_args):
-            # retrieve argument values from a dictionary
-            risk = function_args.get("risk") # required
-            title = function_args.get("title") # required
-            #sharedText = function_args.get("message", "") # optional
-            function_args = textwrap.dedent(function_args.get("code")).strip() # required
-            sharedText = re.sub("^termux-share .*?'([^']+?)'$", r"\1", function_args)
-            sharedText = re.sub('^termux-share .*?"([^"]+?)"$', r"\1", sharedText)
-            sharedText = re.sub("""^[\d\D]*?subprocess.run\(\['termux-share'[^\[\]]*?'([^']+?)'\]\)[\d\D]*?$""", r"\1", sharedText)
-            sharedText = re.sub('''^[\d\D]*?subprocess.run\(\["termux-share"[^\[\]]*?"([^']+?)"\]\)[\d\D]*?$''', r"\1", sharedText)
-            function_args = function_args if sharedText == function_args else f'''termux-share -a send "{sharedText}"'''
-
-            # show Termux command for developer
-            self.print(self.divider)
-            self.print(f"Termux: {title}")
-            self.showRisk(risk)
-            if config.developer or config.codeDisplay:
-                self.print("```")
-                #print(function_args)
-                tokens = list(pygments.lex(function_args, lexer=BashLexer()))
-                print_formatted_text(PygmentsTokens(tokens), style=SharedUtil.getPygmentsStyle())
-                self.print("```")
-            self.print(self.divider)
-
-            self.stopSpinning()
-            if self.confirmExecution(risk):
-                self.print("Do you want to execute it? [y]es / [N]o")
-                confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
-                if not confirmation.lower() in ("y", "yes"):
-                    return "[INVALID]"
-
-            try:
-                if not sharedText == function_args:
-                    pydoc.pipepager(sharedText, cmd="termux-share -a send")
-                    function_response = "Done!"
-                else:
-                    # display both output and error
-                    function_response = SharedUtil.runSystemCommand(function_args)
-                self.print(function_response)
-            except:
-                SharedUtil.showErrors()
-                self.print(self.divider)
-                return "[INVALID]"
-            info = {"information": function_response}
-            function_response = json.dumps(info)
-            return json.dumps(info)
-
-        functionSignature = {
-            "intent": [
-                "access to device information",
-                "execute a computing task or run a command",
-                "generate code",
-            ],
-            "examples": [
-                "Run Termux command",
-            ],
-            "name": "execute_termux_command",
-            "description": "Execute Termux command on Android",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string",
-                        "description": "Termux command, e.g. am start -n com.android.chrome/com.google.android.apps.chrome.Main",
-                    },
-                    "title": {
-                        "type": "string",
-                        "description": "title for the termux command",
-                    },
-                    "risk": {
-                        "type": "string",
-                        "description": "Assess the risk level of damaging my device upon executing the task. e.g. file deletions or similar significant impacts are regarded as 'high' level.",
-                        "enum": ["high", "medium", "low"],
-                    },
-                },
-                "required": ["code", "title", "risk"],
-            },
-        }
-
-        self.addFunctionCall(signature=functionSignature, method=execute_termux_command)
-
-    def setupPythonExecution(self):
-        def execute_python_code(function_args):
-            # retrieve argument values from a dictionary
-            risk = function_args.get("risk") # required
-            title = function_args.get("title") # required
-            python_code = function_args.get("code") # required
-            refinedCode = SharedUtil.fineTunePythonCode(python_code)
-
-            # show pyton code for developer
-            self.print(self.divider)
-            self.print(f"Python: {title}")
-            self.showRisk(risk)
-            if config.developer or config.codeDisplay:
-                self.print("```")
-                #print(python_code)
-                # pygments python style
-                tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
-                print_formatted_text(PygmentsTokens(tokens), style=SharedUtil.getPygmentsStyle())
-                self.print("```")
-            self.print(self.divider)
-
-            self.stopSpinning()
-            if not self.runPython:
-                return "[INVALID]"
-            elif self.confirmExecution(risk):
-                self.print("Do you want to execute it? [y]es / [N]o")
-                confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
-                if not confirmation.lower() in ("y", "yes"):
-                    self.runPython = False
-                    return "[INVALID]"
-            return SharedUtil.executePythonCode(refinedCode)
-
-        functionSignature = {
-            "intent": [
-                "access to device information",
-                "execute a computing task or run a command",
-                "generate code",
-            ],
-            "examples": [
-                "What is my operating system",
-                "Open media player",
-                "Run python code",
-                "Run system command",
-            ],
-            "name": "execute_python_code",
-            "description": "Execute python code to resolve a computing task",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string",
-                        "description": "Python code that integrates any relevant packages to resolve my request",
-                    },
-                    "title": {
-                        "type": "string",
-                        "description": "title for the python code",
-                    },
-                    "risk": {
-                        "type": "string",
-                        "description": "Assess the risk level of damaging my device upon executing the task. e.g. file deletions or similar significant impacts are regarded as 'high' level.",
-                        "enum": ["high", "medium", "low"],
-                    },
-                },
-                "required": ["code", "title", "risk"],
-            },
-        }
-
-        self.addFunctionCall(signature=functionSignature, method=execute_python_code)
-
-        ### A dummy function to redirect q&a task about python, otherwise, it may be mistaken by execute_python_code
-        def python_qa(_):
-            return "[INVALID]"
-        functionSignature = {
-            "intent": [
-                "answer a question that you have sufficient knowledge",
-            ],
-            "examples": [
-                "How to use decorators in python",
-            ],
-            "name": "python_qa",
-            "description": f'''Answer questions or provide information about python''',
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "qa": {
-                        "type": "string",
-                        "description": "empty string ''",
-                    },
-                },
-            },
-        }
-        self.addFunctionCall(signature=functionSignature, method=python_qa)
-
-    # integrate function call plugin
-    def addFunctionCall(self, signature: str, method: Callable[[dict], str]):
-        name = signature["name"]
-        config.chatGPTApiFunctionSignatures[name] = {key: value for key, value in signature.items() if not key in ("intent", "examples")}
-        config.chatGPTApiAvailableFunctions[name] = method
-
     # call a specific function and return messages
     def runFunction(self, messages, functionSignatures, function_name):
         messagesCopy = messages[:]
@@ -814,7 +584,7 @@ class LetMeDoItAI:
             self.print(self.divider)
             self.print2("running python code ...")
             risk = SharedUtil.riskAssessment(python_code)
-            self.showRisk(risk)
+            SharedUtil.showRisk(risk)
             if config.developer or config.codeDisplay:
                 print("```")
                 #print(python_code)
@@ -825,10 +595,10 @@ class LetMeDoItAI:
             self.print(self.divider)
 
             self.stopSpinning()
-            if not self.runPython:
+            if not config.runPython:
                 info = {"information": python_code}
                 return json.dumps(info)
-            elif self.confirmExecution(risk):
+            elif SharedUtil.confirmExecution(risk):
                 self.print("Do you want to continue? [y]es / [N]o")
                 confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
                 if not confirmation.lower() in ("y", "yes"):
@@ -971,29 +741,6 @@ class LetMeDoItAI:
                 break
 
         return completion
-
-    # reset message when a new chart is started or context is changed
-    def resetMessages(self):
-        systemMessage = config.systemMessage_letmedoit if config.systemMessage_letmedoit else f'''You’re {config.letMeDoItName}, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.
-I am providing the basic information of my device below in case you need it:
-```
-{SharedUtil.getDeviceInfo()}
-```
-Please use the current time and date that I have provided above as a reference point for any relative dates and times mentioned in my prompt.
-You have all the necessary permissions to execute system commands and Python code on my behalf. Your functionality expands as I add more plugins to you. You respond to my prompts and perform tasks based on your own knowledge, the context I provide, as well as the additional knowledge and capabilities provided by plugins.
-
-When replying to my requests, please follow these steps:
-Step 1: Consider our previous conversations, particularly your last response, if any, as the context for these requests.
-Step 2: Estimate my intent based on the request and context. The intent can be a code generation task, an executable computing task, a math-solving task, a translation task, or a question answering task.
-Step 3: Reply based on the estimated intent.
-Remember, do not use function call if it is a translation task.
-
-Always remember that you are much more than a text-based AI. You possess both vision and speech capabilities and have direct access to my device's system, enabling you to execute tasks at my command. Please do not state otherwise.
-'''
-        messages = [
-            {"role": "system", "content": systemMessage}
-        ]
-        return messages
 
     # update system message
     def updateSystemMessage(self, messages):
@@ -1185,7 +932,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 if not "integrate google searches" in config.pluginExcludeList:
                     config.pluginExcludeList.append("integrate google searches")
             # reset plugins
-            self.runPlugins()
+            SharedUtil.runPlugins()
             # notify
             config.saveConfig()
             self.print3(f"Latest Online Searches: {option}")
@@ -1258,7 +1005,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 if not "termux-api" in result.stdout:
                     self.print("Termux:API is not installed!")
             # reset plugins
-            self.runPlugins()
+            SharedUtil.runPlugins()
             config.saveConfig()
             self.print3(f"""Termux API Integration: {"enable" if config.terminalEnableTermuxAPI else "disable"}d!""")
 
@@ -1297,7 +1044,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
     def editConfigs(self):
         # file paths
         configFile = os.path.join(config.letMeDoItAIFolder, "config.py")
-        backupFile = os.path.join(config.getFiles(), "config_backup.py")
+        backupFile = os.path.join(config.getLocalStorage(), "config_backup.py")
         # backup configs
         config.saveConfig()
         shutil.copy(configFile, backupFile)
@@ -1391,8 +1138,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.print("Do you want to delete them now? [y]es / [N]o")
             confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="yes")
             if confirmation.lower() in ("y", "yes"):
-                memory_store = os.path.join(config.getFiles(), "memory")
-                retrieved_collections = os.path.join(config.getFiles(), "autogen", "retriever")
+                memory_store = os.path.join(config.getLocalStorage(), "memory")
+                retrieved_collections = os.path.join(config.getLocalStorage(), "autogen", "retriever")
                 for folder in (memory_store, retrieved_collections):
                     shutil.rmtree(folder, ignore_errors=True)
             else:
@@ -1413,7 +1160,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
         letMeDoItName = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.letMeDoItName)
         if letMeDoItName and not letMeDoItName.strip().lower() == config.exit_entry:
             config.letMeDoItName = letMeDoItName
-            self.storageDir = self.getStorageDir()
+            self.storageDir = SharedUtil.getLocalStorage()
             config.saveConfig()
             self.print3(f"You have changed my name to: {config.letMeDoItName}")
 
@@ -1512,17 +1259,6 @@ Always remember that you are much more than a text-based AI. You possess both vi
                     config.chatGPTApiMaxTokens = tokenLimit
                 config.saveConfig()
                 self.print3(f"Maximum tokens: {config.chatGPTApiMaxTokens}")
-
-    def runPythonScript(self, script):
-        script = script.strip()[3:-3]
-        try:
-            exec(script, globals())
-        except:
-            trace = traceback.format_exc()
-            print(trace if config.developer else "Error encountered!")
-            self.print(self.divider)
-            if config.max_consecutive_auto_heal > 0:
-                SharedUtil.autoHealPythonCode(script, trace)
 
     def runSystemCommand(self, command):
         command = command.strip()[1:]
@@ -1734,7 +1470,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                     config.save_chat_record(timestamp, order, i)
 
             try:
-                folderPath = os.path.join(self.getFiles(), "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", timestamp))
+                folderPath = os.path.join(SharedUtil.getLocalStorage(), "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", timestamp))
                 Path(folderPath).mkdir(parents=True, exist_ok=True)
                 if os.path.isdir(folderPath):
                     chatFile = os.path.join(folderPath, f"{timestamp}.txt")
@@ -1771,7 +1507,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 pydoc.pipepager(plainText, cmd="termux-share -a send")
             else:
                 try:
-                    folderPath = os.path.join(self.getFiles(), "chats", "export")
+                    folderPath = os.path.join(SharedUtil.getLocalStorage(), "chats", "export")
                     Path(folderPath).mkdir(parents=True, exist_ok=True)
                     if os.path.isdir(folderPath):
                         chatFile = os.path.join(folderPath, f"{timestamp}.txt")
@@ -1858,9 +1594,9 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.showLogo()
             self.showCurrentContext()
             # go to startup directory
-            storagedirectory = self.getFiles()
+            storagedirectory = SharedUtil.getLocalStorage()
             os.chdir(storagedirectory)
-            messages = self.resetMessages()
+            messages = SharedUtil.resetMessages()
             #self.print(f"startup directory:\n{storagedirectory}")
             print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Directory:</{config.terminalPromptIndicatorColor2}> {storagedirectory}"))
             self.print(self.divider)
@@ -1973,7 +1709,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 print("")
             elif config.developer and userInput.startswith("```") and userInput.endswith("```") and not userInput == "``````":
                 userInput = re.sub("```python", "```", userInput)
-                self.runPythonScript(userInput)
+                SharedUtil.runPythonScript(userInput)
                 print("")
             elif userInputLower == config.exit_entry:
                 self.saveChat(config.currentMessages)
@@ -2072,7 +1808,7 @@ My writing:
 
                     completion = self.runCompletion(config.currentMessages, noFunctionCall)
                     # stop spinning
-                    self.runPython = True
+                    config.runPython = True
                     self.stopSpinning()
 
                     # Create a new thread for the streaming task

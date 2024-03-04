@@ -36,6 +36,10 @@ Youtube Playlist: https://www.youtube.com/watch?v=Eeat6h_ktbQ&list=PLo4xQ5NqC8SE
 
 # Recent Additions
 
+[Generate tweets](https://github.com/eliranwong/letmedoit/wiki/Social-Media)
+
+<img width="798" alt="twitter" src="https://github.com/eliranwong/letmedoit/assets/25262722/d19c7bca-3bdc-48be-a907-b75afb34615b">
+
 [Run Local LLM Offline](https://github.com/eliranwong/letmedoit/wiki/Run-Local-LLM-Offline)
 
 <img width="832" alt="support_localllm" src="https://github.com/eliranwong/letmedoit/assets/25262722/587aba21-7f89-4b78-bfc4-3b32b442b287">
@@ -141,6 +145,14 @@ LetMeDoIt AI just got smarter with memory retention!
 # Examples of Plugin Features (selective only):
 
 Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural language:
+
+* [NEW] generate tweets
+
+> Post a short tweet about LetMeDoIt AI
+
+* [NEW] analyze audio
+
+> transcribe "meeting_records.mp3"
 
 * [NEW] search / analyze financial data
 

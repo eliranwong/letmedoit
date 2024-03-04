@@ -4,7 +4,7 @@ from letmedoit import config
 from letmedoit.health_check import HealthCheck
 if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
-    HealthCheck.saveConfig()
+    config.saveConfig()
     #print("Configurations updated!")
 import pygments
 from pygments.lexers.markup import MarkdownLexer
@@ -36,7 +36,7 @@ class Codey:
         self.name = name
 
     def run(self, prompt="", model="codechat-bison-32k", temperature=0.2, max_output_tokens=2048):
-        historyFolder = os.path.join(HealthCheck.getFiles(), "history")
+        historyFolder = os.path.join(HealthCheck.getLocalStorage(), "history")
         Path(historyFolder).mkdir(parents=True, exist_ok=True)
         chat_history = os.path.join(historyFolder, self.name.replace(" ", "_"))
         chat_session = PromptSession(history=FileHistory(chat_history))

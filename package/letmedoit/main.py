@@ -52,15 +52,6 @@ config.isTermux = True if os.path.isdir("/data/data/com.termux/files/home") else
 with open(os.path.join(config.letMeDoItAIFolder, "package_name.txt"), "r", encoding="utf-8") as fileObj:
     package = fileObj.read()
 
-def getStorageDir():
-    storageDir = os.path.join(os.path.expanduser('~'), package)
-    try:
-        Path(storageDir).mkdir(parents=True, exist_ok=True)
-    except:
-        pass
-    return storageDir if os.path.isdir(storageDir) else ""
-config.getStorageDir = getStorageDir
-
 def restartApp():
     print(f"Restarting {config.letMeDoItName} ...")
     os.system(f"{sys.executable} {config.letMeDoItFile}")
@@ -68,7 +59,6 @@ def restartApp():
 config.restartApp = restartApp
 
 from letmedoit.utils.config_tools import *
-from letmedoit.utils.config_essential import temporaryConfigs
 from letmedoit.utils.install import installmodule
 from letmedoit.utils.shared_utils import SharedUtil
 
@@ -113,33 +103,6 @@ try:
     config.isPygameInstalled = True
 except:
     config.isPygameInstalled = False
-
-def setOsOpenCmd():
-    config.thisPlatform = thisPlatform
-    if config.terminalEnableTermuxAPI:
-        config.open = "termux-share"
-    elif thisPlatform == "Linux":
-        config.open = "xdg-open"
-    elif thisPlatform == "Darwin":
-        config.open = "open"
-    elif thisPlatform == "Windows":
-        config.open = "start"
-    # name macOS
-    if config.thisPlatform == "Darwin":
-        config.thisPlatform = "macOS"
-
-def saveConfig():
-    with open(configFile, "w", encoding="utf-8") as fileObj:
-        for name in dir(config):
-            excludeConfigList = temporaryConfigs + config.excludeConfigList
-            if not name.startswith("__") and not name in excludeConfigList:
-                try:
-                    value = eval(f"config.{name}")
-                    if not callable(value) and not str(value).startswith("<"):
-                        fileObj.write("{0} = {1}\n".format(name, pprint.pformat(value)))
-                except:
-                    pass
-config.saveConfig = saveConfig
 
 def set_log_file_max_lines(log_file, max_lines):
     if os.path.isfile(log_file):
@@ -243,12 +206,12 @@ def main():
         config.accept_default = False
 
     set_title(config.letMeDoItName)
-    setOsOpenCmd()
+    SharedUtil.setOsOpenCmd(thisPlatform)
     createShortcuts()
     config.excludeConfigList = []
     config.isVlcPlayerInstalled = VlcUtil.isVlcPlayerInstalled()
     # save loaded configs
-    saveConfig()
+    config.saveConfig()
     # check log files; remove old lines if more than 3000 lines is found in a log file
     for i in ("chats", "paths", "commands"):
         filepath = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", i)
@@ -256,8 +219,8 @@ def main():
     LetMeDoItAI().startChats()
     # Do the following tasks before exit
     # backup configurations
-    saveConfig()
-    storageDir = getStorageDir()
+    config.saveConfig()
+    storageDir = SharedUtil.getLocalStorage()
     if os.path.isdir(storageDir):
         shutil.copy(configFile, os.path.join(storageDir, "config_backup.py"))
     # delete temporary content

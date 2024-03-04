@@ -5,7 +5,7 @@ from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
 if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
-    HealthCheck.saveConfig()
+    config.saveConfig()
     #print("Configurations updated!")
 from prompt_toolkit.styles import Style
 from prompt_toolkit import PromptSession
@@ -33,7 +33,7 @@ class Palm2:
         self.name = name
 
     def run(self, prompt="", model="chat-bison-32k", temperature=0.0, max_output_tokens=2048):
-        historyFolder = os.path.join(HealthCheck.getFiles(), "history")
+        historyFolder = os.path.join(HealthCheck.getLocalStorage(), "history")
         Path(historyFolder).mkdir(parents=True, exist_ok=True)
         chat_history = os.path.join(historyFolder, self.name.replace(" ", "_"))
         chat_session = PromptSession(history=FileHistory(chat_history))

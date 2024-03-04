@@ -6,7 +6,7 @@ from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
 if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
-    HealthCheck.saveConfig()
+    config.saveConfig()
     #print("Configurations updated!")
 from prompt_toolkit.styles import Style
 from prompt_toolkit import PromptSession
@@ -117,9 +117,9 @@ Here is my request:
         if not config.ollamaDefaultModel:
             config.ollamaDefaultModel = "mistral"
         if not config.ollamaDefaultModel == previoiusModel:
-            HealthCheck.saveConfig()
+            config.saveConfig()
 
-        historyFolder = os.path.join(HealthCheck.getFiles(), "history")
+        historyFolder = os.path.join(HealthCheck.getLocalStorage(), "history")
         Path(historyFolder).mkdir(parents=True, exist_ok=True)
         chat_history = os.path.join(historyFolder, f"ollama_{model}")
         chat_session = PromptSession(history=FileHistory(chat_history))
@@ -211,6 +211,9 @@ def orca2():
 def mistral():
     main("mistral")
 
+def mixtral():
+    main("mixtral")
+
 def llama2():
     main("llama2")
 
@@ -255,7 +258,7 @@ def main(thisModel=""):
         if args.model and args.model.strip():
             model = args.model.strip()
         else:
-            historyFolder = os.path.join(HealthCheck.getFiles(), "history")
+            historyFolder = os.path.join(HealthCheck.getLocalStorage(), "history")
             Path(historyFolder).mkdir(parents=True, exist_ok=True)
             model_history = os.path.join(historyFolder, "ollama_default")
             model_session = PromptSession(history=FileHistory(model_history))
