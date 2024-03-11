@@ -212,8 +212,10 @@ class CentralWidget(QWidget):
         return extendChat
 
 class ChatGui(QMainWindow):
-    def __init__(self) -> None:
+    def __init__(self, standalone=False) -> None:
         super().__init__()
+        # check if running standalone
+        self.standalone = standalone
         # set title
         self.setWindowTitle(config.letMeDoItName)
         # set variables
@@ -224,10 +226,12 @@ class ChatGui(QMainWindow):
         self.initUI()
 
     def closeEvent(self, event):
-        # hiding it, instead of closing it, to save from reloading time
-        event.ignore()
-        self.hide()
-        #config.mainWindowHidden = True
+        if self.standalone:
+            event.accept()
+        else:
+            # hiding it, instead of closing it, to save from reloading time
+            event.ignore()
+            self.hide()
 
     def setupVariables(self):
         SharedUtil.setAPIkey() # create a gui for it later
