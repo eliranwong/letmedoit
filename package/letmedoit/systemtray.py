@@ -29,7 +29,6 @@ config.divider = "--------------------"
 SharedUtil.setOsOpenCmd()
 
 import os, sys, platform, shutil
-from letmedoit.quicktask import QuickTask
 from letmedoit.gui.chatgui import ChatGui
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QApplication
 from PySide6.QtGui import QIcon, QAction, QGuiApplication
