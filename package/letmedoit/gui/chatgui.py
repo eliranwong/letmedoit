@@ -2,7 +2,6 @@ from letmedoit import config
 from letmedoit.utils.shared_utils import SharedUtil
 from letmedoit.gui.worker import Worker
 import json, getpass
-from typing import Tuple
 
 from PySide6.QtPrintSupport import QPrinter, QPrintDialog
 from PySide6.QtCore import Qt, QThread, QRegularExpression, QRunnable, Slot, Signal, QObject, QThreadPool
@@ -14,18 +13,21 @@ class CentralWidget(QWidget):
     def __init__(self, parent):
         super().__init__()
         self.parent = parent
-        # set up variables
-        self.setupVariables()
         # set up interface
         self.setupUI()
+        # set up variables
+        self.setupVariables()
     
     def setupVariables(self):
         # username
-        self.user = getpass.getuser()
+        self.user = getpass.getuser().split(" ")[0].capitalize()
+        self.assistant = config.letMeDoItName.split(" ")[0]
         # load LetMeDoIt AI system message
         config.currentMessages=SharedUtil.resetMessages()
         # thread pool
         self.threadpool = QThreadPool()
+        # scroll bar
+        self.contentScrollBar = self.contentView.verticalScrollBar()
 
     def setupUI(self):
         # a layout with left and right columns and a splitter placed between them
@@ -72,9 +74,14 @@ class CentralWidget(QWidget):
         # Connections
         self.userInput.returnPressed.connect(self.submit)
 
-    def workOnGetResponse(self):
+    def submit(self):
+        if request := self.userInput.text().strip():
+            self.userInput.setDisabled(True)
+            self.addContent(request)
+
+        self.progressBar.show()
         # Pass the function to execute
-        worker = Worker(self.submit) # Any other args, kwargs are passed to the run function
+        worker = Worker(self.go_submit, request) # Any other args, kwargs are passed to the run function
         worker.signals.result.connect(self.processResponse)
         worker.signals.progress.connect(self.printStream)
         # Connection
@@ -82,34 +89,29 @@ class CentralWidget(QWidget):
         # Execute
         self.threadpool.start(worker)
 
+    def go_submit(self, request, progress_callback) -> None:
+        if self.chat_tools(request, progress_callback):
+            # extend chat conversation
+            self.chat(progress_callback)
+
     def processResponse(self):
-        ...
+        self.userInput.setText("")
+        self.userInput.setEnabled(True)
+        self.progressBar.hide()
+        self.userInput.setFocus()
 
-    def printStream(self):
-        ...
-
-    def submit(self, progress_callback="") -> None:
-        request = self.userInput.text().strip()
-        if request:
-            self.userInput.setDisabled(True)
-            self.addContent(request)
-            extendChat, response = self.chat_tools(request)
-            if extendChat:
-                response = self.chat()
-            self.addContent(response, False)
-            # reset user input field
-            self.userInput.setText("")
-            self.userInput.setEnabled(True)
-            self.userInput.setFocus()
+    def printStream(self, content):
+        self.contentView.insertPlainText(content)
+        self.contentScrollBar.setValue(self.contentScrollBar.maximum())
 
     def addContent(self, newContent, user=True) -> None:
         content = self.contentView.toPlainText()
         if content:
             self.contentView.insertPlainText("\n\n")
-        self.contentView.insertPlainText(f"[{self.user}] " if user else f"[{config.letMeDoItName}] ")
+        self.contentView.insertPlainText(f"[{self.user}] " if user else f"[{self.assistant}] ")
         self.contentView.insertPlainText(newContent)
 
-    def chat(self) -> str:
+    def chat(self, progress_callback) -> None:
         # run completion
         completion = config.oai_client.chat.completions.create(
             model=config.chatGPTApiModel,
@@ -117,15 +119,20 @@ class CentralWidget(QWidget):
             n=1,
             temperature=config.llmTemperature,
             max_tokens=SharedUtil.getDynamicTokens(config.currentMessages, config.chatGPTApiFunctionSignatures.values()),
-            #stream=True,
+            stream=True,
         )
+        # display response
+        self.addContent("", user=False)
+        response = ""
+        for chunk in completion:
+            if delta_content := chunk.choices[0].delta.content:
+                progress_callback.emit(delta_content)
+                response += delta_content
         # update message chain
-        if response := completion.choices[0].message.content:
+        if response:
             config.currentMessages.append({"role": "assistant", "content": response})
-            return response
-        return ""
 
-    def chat_tools(self, request) -> Tuple[bool, str]:
+    def chat_tools(self, request, progress_callback) -> bool:
         user_request = {"role": "user", "content": request}
         # temporary update of messages
         messages = config.currentMessages + [user_request]
@@ -138,33 +145,34 @@ class CentralWidget(QWidget):
             max_tokens=SharedUtil.getDynamicTokens(messages, config.chatGPTApiFunctionSignatures.values()),
             tools=SharedUtil.convertFunctionSignaturesIntoTools(config.chatGPTApiFunctionSignatures.values()),
             tool_choice="auto",
-            #stream=True,
+            stream=True,
         )
-        output = completion.choices[0].message
-        if output.content:
-            # direct answer
-            response = output.content
-            extendChat = False
-            # update message chain
-            config.currentMessages += [user_request, {"role": "assistant", "content": response}]
-        elif output.tool_calls:
-            for tool_call in output.tool_calls:
-                tool = tool_call.function
-                name, arguments = tool.name, tool.arguments
-                response = config.chatGPTApiAvailableFunctions[name](json.loads(arguments))
+        #output = completion.choices[0].message
+        for chunk in completion:
+            first_delta = chunk.choices[0].delta
+            break # consume the first chunk only at this point; just for initial check if this is a tool call or not
+
+        if first_delta.tool_calls:
+            function_calls = [i for i in first_delta.tool_calls if i.type == "function"]
+            function_arguments = SharedUtil.getToolArgumentsFromStreams(completion)
+            for function_call in function_calls:
+                function_index = function_call.index
+                function_name = function_call.function.name
+                func_argument = function_arguments[function_index]
+                response = config.chatGPTApiAvailableFunctions[function_name](json.loads(func_argument))
 
                 function_call_message = {
                     "role": "assistant",
                     "content": "",
                     "function_call": {
-                        "name": name,
-                        "arguments": arguments,
+                        "name": function_name,
+                        "arguments": func_argument,
                     }
                 }
 
                 function_call_response = {
                     "role": "function",
-                    "name": name,
+                    "name": function_name,
                     "content": response if response else config.tempContent,
                 }
                 # empty tempContent
@@ -180,7 +188,6 @@ class CentralWidget(QWidget):
                     # update message chain
                     config.currentMessages.append(user_request)
                     # function attempted to be executed but found invalid tool applied
-                    response = request
                     extendChat = True
                 else:
                     # update message chain
@@ -188,10 +195,21 @@ class CentralWidget(QWidget):
                     # function executed with chat extension
                     extendChat = True
         else:
+            # direct answer
             response = ""
+            if first_delta_content := first_delta.content:
+                response += first_delta_content
+            self.addContent(response, user=False)
+            # display the rest of the stream
+            for chunk in completion:
+                if delta_content := chunk.choices[0].delta.content:
+                    progress_callback.emit(delta_content)
+                    response += delta_content
+            # update message chain
+            config.currentMessages += [user_request, {"role": "assistant", "content": response}]
+            # finish chat
             extendChat = False
-        # ignore response for now
-        return (extendChat, response)
+        return extendChat
 
 class ChatGui(QMainWindow):
     def __init__(self) -> None:

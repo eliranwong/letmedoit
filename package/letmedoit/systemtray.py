@@ -52,6 +52,7 @@ thisOS = platform.system()
 
 
 class SystemTrayIcon(QSystemTrayIcon):
+
     def __init__(self, icon, parent=None):
         super().__init__(icon, parent)
 
@@ -66,7 +67,7 @@ class SystemTrayIcon(QSystemTrayIcon):
 
         if config.developer:
             chatgui = QAction("Desktop Assistant [experimental]", self)
-            chatgui.triggered.connect(lambda: self.chatGui.show())
+            chatgui.triggered.connect(self.showGui)
             self.menu.addAction(chatgui)
 
             self.menu.addSeparator()
@@ -107,6 +108,11 @@ class SystemTrayIcon(QSystemTrayIcon):
     def exit(self):
         self.setVisible(False)
         QGuiApplication.instance().quit()
+
+    def showGui(self):
+        # to work with mutliple virtual desktops
+        self.chatGui.hide()
+        self.chatGui.show()
 
     def runLetMeDoItCommand(self, command):
         def createShortcutFile(filePath, content):

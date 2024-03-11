@@ -23,7 +23,7 @@ from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 from prompt_toolkit.application import run_in_terminal
 from letmedoit.utils.vlc_utils import VlcUtil
 from letmedoit.utils.tts_utils import TTSUtil
-from letmedoit.utils.config_essential import defaultSettings, temporaryConfigs
+from letmedoit.utils.config_essential import defaultSettings
 from pathlib import Path
 from PIL import Image
 import speech_recognition as sr

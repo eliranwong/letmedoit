@@ -817,7 +817,7 @@ City: {g.city}"""
         # change to package path if default storage path doesn't exist
         storageDir = storageDir if storageDir else os.path.join(config.letMeDoItAIFolder, "files")
         # check if custom storage path exists if it is defined
-        if config.storagedirectory and not os.path.isdir(config.storagedirectory):
+        if not hasattr(config, "storagedirectory") or (config.storagedirectory and not os.path.isdir(config.storagedirectory)):
             config.storagedirectory = ""
         # use custom storage path, if defined, instead of the default one
         return config.storagedirectory if config.storagedirectory else storageDir
