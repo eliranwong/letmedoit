@@ -1,5 +1,36 @@
-import os, sys, platform, shutil
+import os
+thisFile = os.path.realpath(__file__)
+packageFolder = os.path.dirname(thisFile)
+package = os.path.basename(packageFolder)
+if os.getcwd() != packageFolder:
+    os.chdir(packageFolder)
+
 from letmedoit import config
+config.isTermux = True if os.path.isdir("/data/data/com.termux/files/home") else False
+config.letMeDoItAIFolder = packageFolder
+apps = {
+    "myhand": ("MyHand", "MyHand Bot"),
+    "letmedoit": ("LetMeDoIt", "LetMeDoIt AI"),
+    "taskwiz": ("TaskWiz", "TaskWiz AI"),
+    "cybertask": ("CyberTask", "CyberTask AI"),
+}
+if not hasattr(config, "letMeDoItName") or not config.letMeDoItName:
+    config.letMeDoItName = apps[package][-1] if package in apps else "LetMeDoIt AI"
+from letmedoit.utils.config_tools import setConfig
+config.setConfig = setConfig
+## alternative to include config restoration method
+#from letmedoit.utils.config_tools import *
+from letmedoit.utils.shared_utils import SharedUtil
+config.includeIpInSystemMessageTemp = True
+config.getLocalStorage = SharedUtil.getLocalStorage
+config.print = config.print2 = config.print3 = print
+config.addFunctionCall = SharedUtil.addFunctionCall
+config.divider = "--------------------"
+SharedUtil.setOsOpenCmd()
+
+import os, sys, platform, shutil
+from letmedoit.quicktask import QuickTask
+from letmedoit.gui.chatgui import ChatGui
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QApplication
 from PySide6.QtGui import QIcon, QAction, QGuiApplication
 from pathlib import Path
@@ -25,7 +56,21 @@ class SystemTrayIcon(QSystemTrayIcon):
     def __init__(self, icon, parent=None):
         super().__init__(icon, parent)
 
+        # pre-load the main gui
+        self.chatGui = ChatGui()
+
         self.menu = QMenu(parent)
+
+        #quickTask = QAction("Quick Task", self)
+        #quickTask.triggered.connect(lambda: QuickTask().run(standalone=False))
+        #self.menu.addAction(quickTask)
+
+        if config.developer:
+            chatgui = QAction("Desktop Assistant [experimental]", self)
+            chatgui.triggered.connect(lambda: self.chatGui.show())
+            self.menu.addAction(chatgui)
+
+            self.menu.addSeparator()
 
         commandPrefix = [
             package,
@@ -118,11 +163,15 @@ Name={command}"""
         if opencommand:
             os.system(f"{opencommand} {filePath}")
 
-if __name__ == "__main__":
+def main():
     app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
 
     icon = QIcon(iconFile)
     trayIcon = SystemTrayIcon(icon)
     trayIcon.show()
 
     sys.exit(app.exec())
+
+if __name__ == "__main__":
+    main()

@@ -1,52 +1,21 @@
-import os
-thisFile = os.path.realpath(__file__)
-packageFolder = os.path.dirname(thisFile)
-package = os.path.basename(packageFolder)
-if os.getcwd() != packageFolder:
-    os.chdir(packageFolder)
-
 from letmedoit import config
-config.isTermux = True if os.path.isdir("/data/data/com.termux/files/home") else False
-config.letMeDoItAIFolder = packageFolder
-apps = {
-    "myhand": ("MyHand", "MyHand Bot"),
-    "letmedoit": ("LetMeDoIt", "LetMeDoIt AI"),
-    "taskwiz": ("TaskWiz", "TaskWiz AI"),
-    "cybertask": ("CyberTask", "CyberTask AI"),
-}
-basename = os.path.basename(packageFolder)
-if not hasattr(config, "letMeDoItName") or not config.letMeDoItName:
-    config.letMeDoItName = apps[basename][-1] if basename in apps else "LetMeDoIt AI"
-from letmedoit.utils.config_tools import setConfig
-config.setConfig = setConfig
-## alternative to include config restoration method
-#from letmedoit.utils.config_tools import *
 from letmedoit.utils.shared_utils import SharedUtil
-config.includeIpInSystemMessageTemp = True
-config.getLocalStorage = SharedUtil.getLocalStorage
-config.print = config.print2 = config.print3 = print
-config.addFunctionCall = SharedUtil.addFunctionCall
-config.divider = "--------------------"
-SharedUtil.setOsOpenCmd()
-
 from PySide6.QtWidgets import QApplication, QInputDialog
-from prompt_toolkit import print_formatted_text, HTML
-from prompt_toolkit.formatted_text import PygmentsTokens
-from pygments.lexers.python import PythonLexer
-import json, argparse, sys
+import json, sys
 
 
-class JustDoIt:
+class QuickTask:
 
     def __init__(self) -> None:
-        SharedUtil.setAPIkey()
+        SharedUtil.setAPIkey() # create a gui for it later
         SharedUtil.runPlugins()
         def stopSpinning():
             ...
         config.stopSpinning = stopSpinning
 
-    def run(self, default="") -> None:
-        QApplication(sys.argv)
+    def run(self, default="", standalone=True) -> None:
+        if standalone:
+            QApplication(sys.argv)
         gui_title = "LetMeDoIt AI"
         about = "Enter your request:"
         def runGui(thisDefault) -> bool:
@@ -100,18 +69,3 @@ class JustDoIt:
             response = ""
         # ignore response for now
         return response
-
-def main():
-    # Create the parser
-    parser = argparse.ArgumentParser(description="justdoit cli options")
-    # Add arguments
-    parser.add_argument("default", nargs="?", default=None, help="default entry")
-    # Parse arguments
-    args = parser.parse_args()
-    # Get options
-    default = args.default.strip() if args.default and args.default.strip() else ""
-    # gui
-    JustDoIt().run(default)
-
-if __name__ == '__main__':
-    main()
