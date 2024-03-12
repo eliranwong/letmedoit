@@ -71,7 +71,6 @@ class LetMeDoItAI:
         config.fineTuneUserInput = self.fineTuneUserInput
         config.launchPager = self.launchPager
         config.addPagerText = self.addPagerText
-        config.getFunctionMessageAndResponse = self.getFunctionMessageAndResponse
         config.changeOpenweathermapApi = self.changeOpenweathermapApi
         config.runSpecificFuntion = ""
         # env variables
@@ -196,55 +195,6 @@ class LetMeDoItAI:
             promptIndicator = "",
             default=default,
         )
-
-    def runPlugins(self):
-        # The following config values can be modified with plugins, to extend functionalities
-        #config.pluginsWithFunctionCall = []
-        config.aliases = {}
-        config.predefinedContexts = {
-            "[none]": "",
-            "[custom]": "",
-        }
-        config.predefinedInstructions = {}
-        config.inputSuggestions = []
-        config.outputTransformers = []
-        config.chatGPTApiFunctionSignatures = {}
-        config.chatGPTApiAvailableFunctions = {}
-
-        pluginFolder = os.path.join(config.letMeDoItAIFolder, "plugins")
-        if self.storageDir:
-            customPluginFoler = os.path.join(self.storageDir, "plugins")
-            Path(customPluginFoler).mkdir(parents=True, exist_ok=True)
-            pluginFolders = (pluginFolder, customPluginFoler)
-        else:
-            pluginFolders = (pluginFolder,)
-        # always run 'integrate google searches'
-        internetSeraches = "integrate google searches"
-        script = os.path.join(pluginFolder, "{0}.py".format(internetSeraches))
-        self.execPythonFile(script)
-        # always include the following plugins
-        requiredPlugins = ("auto heal python code",)
-        for i in requiredPlugins:
-            if i in config.pluginExcludeList:
-                config.pluginExcludeList.remove(i)
-        # execute enabled plugins
-        for folder in pluginFolders:
-            for plugin in FileUtil.fileNamesWithoutExtension(folder, "py"):
-                if not plugin in config.pluginExcludeList:
-                    script = os.path.join(folder, "{0}.py".format(plugin))
-                    run = self.execPythonFile(script)
-                    if not run:
-                        config.pluginExcludeList.append(plugin)
-        if internetSeraches in config.pluginExcludeList:
-            del config.chatGPTApiFunctionSignatures["integrate_google_searches"]
-        self.setupPythonExecution()
-        if config.terminalEnableTermuxAPI:
-            self.setupTermuxExecution()
-        for i in config.chatGPTApiAvailableFunctions:
-            if not i in ("python_qa",):
-                callEntry = f"[CALL_{i}]"
-                if not callEntry in config.inputSuggestions:
-                    config.inputSuggestions.append(callEntry)
 
     # Voice Typing Language
     def setSpeechToTextLanguage(self):
@@ -526,221 +476,6 @@ class LetMeDoItAI:
                 time.sleep(0.1)
         #print("\r", end="")
         #print(" ", end="")
-
-    # call a specific function and return messages
-    def runFunction(self, messages, functionSignatures, function_name):
-        messagesCopy = messages[:]
-        try:
-            function_call_message, function_call_response = self.getFunctionMessageAndResponse(messages, functionSignatures, function_name)
-            messages.append(function_call_message)
-            messages.append(
-                {
-                    "role": "function",
-                    "name": function_name,
-                    "content": function_call_response if function_call_response else config.tempContent,
-                }
-            )
-            config.tempContent = ""
-        except:
-            SharedUtil.showErrors()
-            return messagesCopy
-        return messages
-
-    def getFunctionMessageAndResponse(self, messages, functionSignatures, function_name, temperature=None):
-        completion = config.oai_client.chat.completions.create(
-            model=config.chatGPTApiModel,
-            messages=messages,
-            max_tokens=SharedUtil.getDynamicTokens(messages, functionSignatures),
-            temperature=temperature if temperature is not None else config.llmTemperature,
-            n=1,
-            tools=SharedUtil.convertFunctionSignaturesIntoTools(functionSignatures),
-            tool_choice={"type": "function", "function": {"name": function_name}},
-        )
-        function_call_message = completion.choices[0].message
-        tool_call = function_call_message.tool_calls[0]
-        func_arguments = tool_call.function.arguments
-        function_call_message_mini = {
-            "role": "assistant",
-            "content": "",
-            "function_call": {
-                "name": tool_call.function.name,
-                "arguments": func_arguments,
-            }
-        }
-        function_call_response = self.getFunctionResponse(func_arguments, function_name)
-        return function_call_message_mini, function_call_response
-
-    def getFunctionResponse(self, func_arguments, function_name):
-        def notifyDeveloper(func_name):
-            if config.developer:
-                #self.print(f"running function '{func_name}' ...")
-                print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Running function</{config.terminalPromptIndicatorColor2}> <{config.terminalCommandEntryColor2}>'{func_name}'</{config.terminalCommandEntryColor2}> <{config.terminalPromptIndicatorColor2}>...</{config.terminalPromptIndicatorColor2}>"))
-        # ChatGPT's built-in function named "python"
-        if function_name == "python":
-            notifyDeveloper(function_name)
-            python_code = textwrap.dedent(func_arguments)
-            refinedCode = SharedUtil.fineTunePythonCode(python_code)
-
-            self.print(self.divider)
-            self.print2("running python code ...")
-            risk = SharedUtil.riskAssessment(python_code)
-            SharedUtil.showRisk(risk)
-            if config.developer or config.codeDisplay:
-                print("```")
-                #print(python_code)
-                # pygments python style
-                tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
-                print_formatted_text(PygmentsTokens(tokens), style=SharedUtil.getPygmentsStyle())
-                print("```")
-            self.print(self.divider)
-
-            self.stopSpinning()
-            if not config.runPython:
-                info = {"information": python_code}
-                return json.dumps(info)
-            elif SharedUtil.confirmExecution(risk):
-                self.print("Do you want to continue? [y]es / [N]o")
-                confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
-                if not confirmation.lower() in ("y", "yes"):
-                    info = {"information": python_code}
-                    return json.dumps(info)
-            try:
-                exec(refinedCode, globals())
-                function_response = SharedUtil.getPythonFunctionResponse(refinedCode)
-            except:
-                trace = SharedUtil.showErrors()
-                self.print(self.divider)
-                if config.max_consecutive_auto_heal > 0:
-                    return SharedUtil.autoHealPythonCode(refinedCode, trace)
-                else:
-                    return "[INVALID]"
-            if function_response:
-                info = {"information": function_response}
-                function_response = json.dumps(info)
-        # known unwanted functions are handled here
-        elif function_name in ("translate_text",):
-            # "translate_text" has two arguments, "text", "target_language"
-            # handle known and unwanted function
-            function_response = "[INVALID]" 
-        # handle unexpected function
-        elif not function_name in config.chatGPTApiAvailableFunctions:
-            if config.developer:
-                self.print(f"Unexpected function: {function_name}")
-                self.print(self.divider)
-                print(func_arguments)
-                self.print(self.divider)
-            function_response = "[INVALID]"
-        else:
-            notifyDeveloper(function_name)
-            fuction_to_call = config.chatGPTApiAvailableFunctions[function_name]
-            # convert the arguments from json into a dict
-            function_args = json.loads(func_arguments)
-            function_response = fuction_to_call(function_args)
-        return function_response
-
-    def runCompletion(self, thisMessage, noFunctionCall=False):
-        self.functionJustCalled = False
-        def runThisCompletion(thisThisMessage):
-            if config.chatGPTApiFunctionSignatures and not self.functionJustCalled and not noFunctionCall:
-                return config.oai_client.chat.completions.create(
-                    model=config.chatGPTApiModel,
-                    messages=thisThisMessage,
-                    n=1,
-                    temperature=config.llmTemperature,
-                    max_tokens=SharedUtil.getDynamicTokens(thisThisMessage, config.chatGPTApiFunctionSignatures.values()),
-                    tools=SharedUtil.convertFunctionSignaturesIntoTools([config.chatGPTApiFunctionSignatures[config.runSpecificFuntion]] if config.runSpecificFuntion and config.runSpecificFuntion in config.chatGPTApiFunctionSignatures else config.chatGPTApiFunctionSignatures.values()),
-                    tool_choice={"type": "function", "function": {"name": config.runSpecificFuntion}} if config.runSpecificFuntion else config.chatGPTApiFunctionCall,
-                    stream=True,
-                )
-            return config.oai_client.chat.completions.create(
-                model=config.chatGPTApiModel,
-                messages=thisThisMessage,
-                n=1,
-                temperature=config.llmTemperature,
-                max_tokens=SharedUtil.getDynamicTokens(thisThisMessage),
-                stream=True,
-            )
-
-        while True:
-            completion = runThisCompletion(thisMessage)
-            config.runSpecificFuntion = ""
-            try:
-                # consume the first delta
-                for event in completion:
-                    first_delta = event.choices[0].delta
-                    # check if a tool is called
-                    if first_delta.tool_calls: # a tool is called
-                        function_calls = [i for i in first_delta.tool_calls if i.type == "function"]
-                        # non_function_calls = [i for i in first_delta.tool_calls if not i.type == "function"]
-                    else: # no tool is called; same handling as tools finished calling; which break the loop later
-                        self.functionJustCalled = True
-                    # consume the first delta only at this point
-                    break
-                # Continue only when a function is called
-                if self.functionJustCalled:
-                    break
-
-                # get all tool arguments, both of functions and non-functions
-                toolArguments = SharedUtil.getToolArgumentsFromStreams(completion)
-
-                func_responses = ""
-                bypassFunctionCall = False
-                # handle function calls
-                for func in function_calls:
-                    func_index = func.index
-                    func_id = func.id
-                    func_name = func.function.name
-                    func_arguments = toolArguments[func_index]
-
-                    # get function response
-                    func_response = self.getFunctionResponse(func_arguments, func_name)
-
-                    # "[INVALID]" practically mean that it ignores previously called function and continues chat without function calling
-                    if func_response == "[INVALID]":
-                        bypassFunctionCall = True
-                    elif func_response or config.tempContent:
-                        # send the function call info and response to GPT
-                        function_call_message = {
-                            "role": "assistant",
-                            "content": "",
-                            "function_call": {
-                                "name": func_name,
-                                "arguments": func_arguments,
-                            }
-                        }
-                        thisMessage.append(function_call_message) # extend conversation with assistant's reply
-                        thisMessage.append(
-                            {
-                                "tool_call_id": func_id,
-                                "role": "function",
-                                "name": func_name,
-                                "content": func_response if func_response else config.tempContent,
-                            }
-                        )  # extend conversation with function response
-                        config.tempContent = ""
-                        if func_response:
-                            func_responses += f"\n{func_response}\n{config.divider}"
-
-                self.functionJustCalled = True
-
-                # bypassFunctionCall is set to True, usually when a function is called by mistake
-                if bypassFunctionCall:
-                    pass
-                # two cases that breaks the loop at this point
-                # 1. func_responses == ""
-                # 2. config.passFunctionCallReturnToChatGPT = False
-                elif not config.passFunctionCallReturnToChatGPT or not func_responses:
-                    if func_responses:
-                        self.print(f"{config.divider}\n{func_responses}")
-                    # A break here means that no information from the called function is passed back to ChatGPT
-                    # 1. config.passFunctionCallReturnToChatGPT is set to True
-                    # 2. func_responses = "" or None; can be specified in plugins
-                    break
-            except:
-                SharedUtil.showErrors()
-                break
-
-        return completion
 
     # update system message
     def updateSystemMessage(self, messages):
@@ -1801,12 +1536,12 @@ My writing:
                     # force loading internet searches
                     if config.loadingInternetSearches == "always":
                         try:
-                            config.currentMessages = self.runFunction(config.currentMessages, [config.chatGPTApiFunctionSignatures["integrate_google_searches"]], "integrate_google_searches")
+                            config.currentMessages = SharedUtil.runFunction(config.currentMessages, [config.chatGPTApiFunctionSignatures["integrate_google_searches"]], "integrate_google_searches")
                         except:
                             self.print("Unable to load internet resources.")
                             SharedUtil.showErrors()
 
-                    completion = self.runCompletion(config.currentMessages, noFunctionCall)
+                    completion = SharedUtil.runCompletion(config.currentMessages, noFunctionCall)
                     # stop spinning
                     config.runPython = True
                     self.stopSpinning()

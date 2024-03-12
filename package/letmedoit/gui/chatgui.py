@@ -234,7 +234,7 @@ class ChatGui(QMainWindow):
             self.hide()
 
     def setupVariables(self):
-        SharedUtil.setAPIkey() # create a gui for it later
+        SharedUtil.setAPIkey()
         def stopSpinning():
             ...
         config.stopSpinning = stopSpinning

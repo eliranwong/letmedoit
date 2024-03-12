@@ -219,7 +219,6 @@ temporaryConfigs = [
     "fineTuneUserInput",
     "launchPager",
     "addPagerText",
-    "getFunctionMessageAndResponse",
     "isTermux",
 ]
 
