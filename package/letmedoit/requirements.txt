@@ -33,3 +33,5 @@ unstructured[all-docs]
 pyautogen[retrievechat,teachable,mathchat]==0.2.0
 tiktoken
 pygame
+joblib>=1.1.1 # not directly required, pinned by Snyk to avoid a vulnerability
+certifi>=2023.7.22 # not directly required, pinned by Snyk to avoid a vulnerability
