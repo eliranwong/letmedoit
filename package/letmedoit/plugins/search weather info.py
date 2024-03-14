@@ -36,7 +36,7 @@ if config.openweathermapApi:
                 "code": {
                     "type": "string",
                     "description": f"""Python code that use my OpenWeatherMap API key '{config.openweathermapApi}' to resolve my request.
-To work with OpenWeatherMap API key, you may integrWhat is the current weather in New York?ate python package geocoder in the code to find the required Latitude and Longitude.
+To work with OpenWeatherMap API key, you may integrate python package geocoder in the code to find the required Latitude and Longitude.
 In the last line of your code, use 'print' function to print the requested information, without additional description or comment.""",
                 },
             },

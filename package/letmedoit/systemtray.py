@@ -28,7 +28,7 @@ config.addFunctionCall = SharedUtil.addFunctionCall
 config.divider = "--------------------"
 SharedUtil.setOsOpenCmd()
 
-import sys, platform, shutil
+import sys, platform, shutil, webbrowser
 from letmedoit.gui.chatgui import ChatGui
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QApplication
 from PySide6.QtGui import QIcon, QAction, QGuiApplication
@@ -96,6 +96,12 @@ class SystemTrayIcon(QSystemTrayIcon):
             action = QAction(i, self)
             action.triggered.connect(partial(self.runLetMeDoItCommand, i))
             self.menu.addAction(action)
+
+        self.menu.addSeparator()
+
+        helpAction = QAction("Wiki", self)
+        helpAction.triggered.connect(lambda: webbrowser.open("https://github.com/eliranwong/letmedoit/wiki"))
+        self.menu.addAction(helpAction)
 
         self.menu.addSeparator()
 

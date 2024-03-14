@@ -1,7 +1,7 @@
 """
-LetMeDoIt AI Plugin - dates and times
+LetMeDoIt AI Plugin - create statistical graphics
 
-Retrieve information about dates and times
+Create statistical graphics to visulize data
 
 [FUNCTION_CALL]
 """
