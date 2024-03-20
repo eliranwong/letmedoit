@@ -976,13 +976,14 @@ City: {g.city}"""
         def runThisCompletion(thisThisMessage):
             nonlocal functionJustCalled
             if config.chatGPTApiFunctionSignatures and not functionJustCalled and not noFunctionCall:
+                chatGPTApiFunctionSignatures = [config.chatGPTApiFunctionSignatures[config.runSpecificFuntion]] if config.runSpecificFuntion and config.runSpecificFuntion in config.chatGPTApiFunctionSignatures else config.chatGPTApiFunctionSignatures.values()
                 return config.oai_client.chat.completions.create(
                     model=config.chatGPTApiModel,
                     messages=thisThisMessage,
                     n=1,
                     temperature=config.llmTemperature,
-                    max_tokens=SharedUtil.getDynamicTokens(thisThisMessage, config.chatGPTApiFunctionSignatures.values()),
-                    tools=SharedUtil.convertFunctionSignaturesIntoTools([config.chatGPTApiFunctionSignatures[config.runSpecificFuntion]] if config.runSpecificFuntion and config.runSpecificFuntion in config.chatGPTApiFunctionSignatures else config.chatGPTApiFunctionSignatures.values()),
+                    max_tokens=SharedUtil.getDynamicTokens(thisThisMessage, chatGPTApiFunctionSignatures),
+                    tools=SharedUtil.convertFunctionSignaturesIntoTools(chatGPTApiFunctionSignatures),
                     tool_choice={"type": "function", "function": {"name": config.runSpecificFuntion}} if config.runSpecificFuntion else config.chatGPTApiFunctionCall,
                     stream=True,
                 )

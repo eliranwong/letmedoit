@@ -26,6 +26,14 @@ Support this project: https://www.paypal.me/letmedoitai
 
 Youtube Playlist: https://www.youtube.com/watch?v=Eeat6h_ktbQ&list=PLo4xQ5NqC8SEMM71xC4NNhOHJCFlW-jaJ
 
+# LetMeDoIt Features without OpenAI?
+
+You can utilize Google Gemini or open-source LLMs through Ollama for chat features in the LetMeDoIt AI.
+
+If you're seeking the complete functionality of LetMeDoIt, which includes both chat and task execution features, without the need for an Open AI API key, we offer support for Gemini Pro, Ollama, and Llama.cpp in our related project, FreeGenius AI:
+
+https://github.com/eliranwong/freegenius
+
 # Requirements
 
 1. ChatGPT API key (read https://github.com/eliranwong/letmedoit/wiki/ChatGPT-API-Key)
