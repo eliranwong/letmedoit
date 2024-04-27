@@ -32,8 +32,7 @@ if not config.isTermux:
     from letmedoit.geminipro import GeminiPro
     from letmedoit.palm2 import Palm2
     from letmedoit.codey import Codey
-from elevenlabs import generate, voices
-
+from elevenlabs.client import ElevenLabs
 
 class LetMeDoItAI:
 
@@ -226,18 +225,22 @@ class LetMeDoItAI:
     # ElevenLabs Text-to-Speech Voice
     def setElevenlabsVoice(self):
         # record in history for easy retrieval by moving arrows upwards / downwards
-        elevenlabsVoice_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "elevenlabsVoice")
+        elevenlabsVoice_history = os.path.join(config.localStorage, "history", "elevenlabsVoice")
         elevenlabsVoice_session = PromptSession(history=FileHistory(elevenlabsVoice_history))
         # input suggestion for options
-        options = [voice.name for voice in voices()]
+        options = {}
+        ids = {}
+        for voice in list(ElevenLabs(api_key=config.elevenlabsApi).voices.get_all())[0][-1]:
+            options[voice.name] = voice.voice_id
+            ids[voice.voice_id] = voice.name
         # default
-        default = config.elevenlabsVoice if config.elevenlabsVoice in options else "Rachel"
+        default = ids[config.elevenlabsVoice] if config.elevenlabsVoice in ids else "Rachel"
         # completer
-        completer = FuzzyCompleter(WordCompleter(options, ignore_case=True))
+        completer = FuzzyCompleter(WordCompleter(options.keys(), ignore_case=True))
         self.print("Please specify ElevenLabs Text-to-Speech Voice:")
         option = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=default, promptSession=elevenlabsVoice_session, completer=completer)
         if option and not option in (config.exit_entry, config.cancel_entry):
-            config.elevenlabsVoice = option if option in options else "Rachel"
+            config.elevenlabsVoice = options[option] if option in options else "21m00Tcm4TlvDq8ikWAM" # Rachel's voice id
 
     # Google Text-to-Speech (Generic)
     def setGttsLanguage(self):
@@ -439,6 +442,29 @@ class LetMeDoItAI:
             except:
                 config.elevenlabsApi = ""
                 self.print2("Invalid API key entered!")
+
+    def changeElevenlabsApi(self):
+        if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
+            self.print("# ElevenLabs API Key: allows access to voice generation feature offered by ElevenLabs")
+            self.print("To set up ElevenLabs API Key, read:\nhttps://elevenlabs.io/docs/api-reference/text-to-speech#authentication\n")
+            self.print("Enter your ElevenLabs API Key:")
+            print()
+            apikey = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.elevenlabsApi, is_password=True)
+            if apikey and not apikey.strip().lower() in (config.cancel_entry, config.exit_entry):
+                config.elevenlabsApi = apikey
+            try:
+                # testing
+                ElevenLabs(api_key=config.elevenlabsApi).generate(
+                    #api_key=config.elevenlabsApi, # Defaults to os.getenv(ELEVEN_API_KEY)
+                    text="test",
+                    voice=config.elevenlabsVoice,
+                    model="eleven_multilingual_v2"
+                )
+                self.print2("Configurations updated!")
+            except:
+                config.elevenlabsApi = "freegenius"
+                self.print2("Invalid API key entered!")
+            config.saveConfig()
 
     def exitAction(self):
         message = "closing ..."
