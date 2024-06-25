@@ -4,7 +4,7 @@ from letmedoit.utils.get_path_prompt import GetPath
 from letmedoit.utils.prompt_shared_key_bindings import prompt_shared_key_bindings
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
-from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.completion import WordCompleter, FuzzyCompleter
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.styles import Style
@@ -35,7 +35,7 @@ class SystemCommandPrompt:
         self.openCommand = config.open
 
     def getToolBar(self):
-        return " [ctrl+q] exit [ctrl+l] list content [ctrl+i] insert path "
+        return f""" {str(config.hotkey_exit).replace("'", "")} exit {str(config.hotkey_list_directory_content).replace("'", "")} list content {str(config.hotkey_insert_filepath).replace("'", "")} insert path """
 
     def getSystemCommands(self):
         try:
@@ -51,32 +51,37 @@ class SystemCommandPrompt:
         self.runSystemCommandPrompt = True
         # initial message
         print_formatted_text(HTML(f"<{config.terminalCommandEntryColor1}>You are currently running system command prompt!</{config.terminalCommandEntryColor1}>"))
-        config.print(f"To exit, either press 'ctrl+q' or enter '{config.exit_entry}'.")
+        config.print(f"""To exit, either press '{str(config.hotkey_exit).replace("'", "")[1:-1]}' or enter '{config.exit_entry}'.""")
         # keep current path in case users change directory
         startupDirectory = self.previousDirectory = self.currentDirectory = os.getcwd()
 
         this_key_bindings = KeyBindings()
 
-        @this_key_bindings.add("c-q")
+        @this_key_bindings.add(*config.hotkey_exit)
         def _(event):
-            event.app.current_buffer.text = config.exit_entry
-            event.app.current_buffer.validate_and_handle()
-        @this_key_bindings.add("c-l")
+            buffer = event.app.current_buffer
+            buffer.text = config.exit_entry
+            buffer.validate_and_handle()
+        @this_key_bindings.add(*config.hotkey_cancel)
+        def _(event):
+            buffer = event.app.current_buffer
+            buffer.reset()
+        @this_key_bindings.add(*config.hotkey_list_directory_content)
         def _(_):
             config.print("")
             run_in_terminal(lambda: self.getPath.displayDirectoryContent())
-        @this_key_bindings.add("c-i")
+        @this_key_bindings.add(*config.hotkey_insert_filepath)
         def _(event):
             self.addPath = True
             buffer = event.app.current_buffer
             self.systemCommandPromptEntry = buffer.text
             self.systemCommandPromptPosition = buffer.cursor_position
             buffer.validate_and_handle()
-        @this_key_bindings.add("c-r")
+        @this_key_bindings.add(*config.hotkey_insert_newline)
         def _(event):
             buffer = event.app.current_buffer
-            buffer.insert_text("\n")
-        @this_key_bindings.add("escape", "m")
+            buffer.newline()
+        @this_key_bindings.add(*config.hotkey_toggle_mouse_support)
         def _(_):
             config.mouseSupport = not config.mouseSupport
             run_in_terminal(lambda: config.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))
@@ -98,9 +103,9 @@ class SystemCommandPrompt:
                 inputIndicator = [("class:indicator", indicator)]
                 dirIndicator = "\\" if platform.system() == "Windows" else "/"
                 if config.suggestSystemCommand:
-                    completer = WordCompleter(sorted(set(systemCommands + [f"{i}{dirIndicator}" if os.path.isdir(i) else i for i in os.listdir()])))
+                    completer = FuzzyCompleter(WordCompleter(sorted(set(systemCommands + [f"{i}{dirIndicator}" if os.path.isdir(i) else i for i in os.listdir()]))))
                 else:
-                    completer = WordCompleter(sorted([f"{i}{dirIndicator}" if os.path.isdir(i) else i for i in os.listdir()]))
+                    completer = FuzzyCompleter(WordCompleter(sorted([f"{i}{dirIndicator}" if os.path.isdir(i) else i for i in os.listdir()])))
                 auto_suggestion=AutoSuggestFromHistory()
                 userInput = self.terminal_system_command_session.prompt(inputIndicator, swap_light_and_dark_colors=Condition(lambda: not config.terminalResourceLinkColor.startswith("ansibright")), mouse_support=Condition(lambda: config.mouseSupport), style=self.promptStyle, key_bindings=this_key_bindings, auto_suggest=auto_suggestion, completer=completer, bottom_toolbar=self.getToolBar(), default=self.systemCommandPromptEntry).strip()
                 if self.addPath:

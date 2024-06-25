@@ -1,7 +1,7 @@
 """
-LetMeDoIt AI Plugin - dates and times
+LetMeDoIt AI Plugin - create statistical graphics
 
-Retrieve information about dates and times
+Create statistical graphics to visulize data
 
 [FUNCTION_CALL]
 """
@@ -27,6 +27,13 @@ def create_statistical_graphics(function_args):
     return ""
 
 functionSignature = {
+    "intent": [
+        "create content",
+    ],
+    "examples": [
+        "Create a plot / graph / chart",
+        "Visualize data",
+    ],
     "name": "create_statistical_graphics",
     "description": f'''Create statistical plots, such as pie charts or bar charts, to visualize statistical data''',
     "parameters": {
@@ -41,6 +48,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("create_statistical_graphics")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["create_statistical_graphics"] = create_statistical_graphics
+config.addFunctionCall(signature=functionSignature, method=create_statistical_graphics)

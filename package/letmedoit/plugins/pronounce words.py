@@ -1,7 +1,7 @@
 """
 LetMeDoIt AI Plugin - pronunce words
 
-add predefined contexts about pastoral care
+pronunce words
 
 [FUNCTION_CALL]
 """
@@ -9,7 +9,7 @@ add predefined contexts about pastoral care
 try:
     from gtts import gTTS
 except:
-    from letmedoit.utils.install import *
+    from letmedoit.utils.install import installmodule
     installmodule(f"--upgrade gTTS")
 
 from letmedoit import config
@@ -26,6 +26,12 @@ def pronunce_words(function_args):
     return "Finished! Speech engine closed!"
 
 functionSignature = {
+    "intent": [
+        "interact with user",
+    ],
+    "examples": [
+        "Pronunce",
+    ],
     "name": "pronunce_words",
     "description": "pronounce words or sentences",
     "parameters": {
@@ -45,6 +51,5 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("pronunce_words")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["pronunce_words"] = pronunce_words
+config.addFunctionCall(signature=functionSignature, method=pronunce_words)
+config.inputSuggestions.append("pronunce ")

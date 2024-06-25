@@ -13,13 +13,18 @@ from letmedoit.health_check import HealthCheck
 from pathlib import Path
 from chromadb.config import Settings
 import uuid, os, chromadb, getpass, geocoder, datetime, json
-import numpy as np
-from numpy.linalg import norm
 
-memory_store = os.path.join(config.getFiles(), "memory")
+persistentConfigs = (
+    ("memory_categories", ["general", "instruction", "fact", "event", "concept"]),
+)
+config.setConfig(persistentConfigs)
+
+memory_store = os.path.join(config.getLocalStorage(), "memory")
 Path(memory_store).mkdir(parents=True, exist_ok=True)
 chroma_client = chromadb.PersistentClient(memory_store, Settings(anonymized_telemetry=False))
 
+#import numpy as np
+#from numpy.linalg import norm
 #def cosine_similarity(A, B):
 #    cosine = np.dot(A, B) / (norm(A) * norm(B))
 #    return cosine
@@ -46,6 +51,7 @@ def save_memory(function_args):
     memory_type = function_args.get("type") # required
     memory_tags = function_args.get("tags") # required
     if not isinstance(memory_tags, str):
+        print(type(memory_tags), memory_tags)
         memory_tags = str(memory_tags)
     collection = get_or_create_collection("memories")
     g = geocoder.ip('me')
@@ -75,10 +81,10 @@ def query_vectors(collection, query, n):
         n_results = n,
     )
 
-def retrieve_memories(function_args):
+def retrieve_memory(function_args):
     query = function_args.get("query") # required
     collection = get_or_create_collection("memories")
-    res = query_vectors(collection, query, config.memoryClosestMatchesNumber)
+    res = query_vectors(collection, query, config.memoryClosestMatches)
     if config.developer:
         config.print(config.divider)
         print(">>> retrieved memories: ") 
@@ -93,6 +99,13 @@ def retrieve_memories(function_args):
     return json.dumps(info)
 
 functionSignature1 = {
+    "intent": [
+        "memory / record access",
+        "arrange activities",
+    ],
+    "examples": [
+        "Remember that",
+    ],
     "name": "save_memory",
     "description": """Use this function if I mention something which you think would be useful in the future and should be saved as a memory. Saved memories will allow you to retrieve snippets of past conversations when needed.""",
     "parameters": {
@@ -100,26 +113,34 @@ functionSignature1 = {
         "properties": {
             "memory": {
                 "type": "string",
-                "description": "Full description of the memory to be saved. I would like you to help me with converting relative dates and times, if any, into exact dates and times based on the given current date and time."
+                "description": "Full description of the memory to be saved. I would like you to help me with converting relative dates and times, if any, into exact dates and times based on the given current date and time.",
             },
             "title": {
                 "type": "string",
-                "description": "Title of the memory"
+                "description": "Title of the memory",
             },
             "type": {
                 "type": "string",
-                "description": "Type of the memory, return either 'general', 'instruction', 'fact', 'event', or 'concept'"
+                "description": "Type of the memory, return either 'general', 'instruction', 'fact', 'event', or 'concept'",
+                "enum": config.memory_categories,
             },
             "tags": {
                 "type": "string",
-                "description": """Return a list of tags about the memory, e.g. '["work", "to_do", "follow_up"]'"""
+                "description": """Return a list of tags about the memory, e.g. '["work", "to_do", "follow_up"]'""",
             },
         },
         "required": ["memory", "title", "type", "tags"]
     }
 }
 functionSignature2 = {
-    "name": "retrieve_memories",
+    "intent": [
+        "memory / record access",
+        "arrange activities",
+    ],
+    "examples": [
+        "Do you remember that",
+    ],
+    "name": "retrieve_memory",
     "description": """Use this function to query and retrieve memories of important conversation snippets that we had in the past. Use this function if the information you require is not in the current prompt or you need additional information to refresh your memory.""",
     "parameters": {
         "type": "object",
@@ -133,8 +154,6 @@ functionSignature2 = {
     }
 }
 
-config.inputSuggestions += ["Remember, "]
-config.pluginsWithFunctionCall += ["save_memory", "retrieve_memories"]
-config.chatGPTApiFunctionSignatures += [functionSignature1, functionSignature2]
-config.chatGPTApiAvailableFunctions["save_memory"] = save_memory
-config.chatGPTApiAvailableFunctions["retrieve_memories"] = retrieve_memories
+config.inputSuggestions += ["Remember, ", "Do you remember?"]
+config.addFunctionCall(signature=functionSignature1, method=save_memory)
+config.addFunctionCall(signature=functionSignature2, method=retrieve_memory)

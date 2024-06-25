@@ -20,6 +20,12 @@ def solve_math(function_args):
     return ""
 
 functionSignature = {
+    "intent": [
+        "resolve a math question",
+    ],
+    "examples": [
+        "Calculate",
+    ],
     "name": "solve_math",
     "description": "solve math problems",
     "parameters": {
@@ -34,6 +40,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("solve_math")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["solve_math"] = solve_math
+config.addFunctionCall(signature=functionSignature, method=solve_math)

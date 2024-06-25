@@ -32,8 +32,14 @@ def integrate_google_searches(function_args):
     return json.dumps(info)
 
 functionSignature = {
+    "intent": [
+        "access to internet real-time information",
+    ],
+    "examples": [
+        "Search internet",
+    ],
     "name": "integrate_google_searches",
-    "description": "Search internet for keywords when ChatGPT lacks information or when user ask about news or latest updates",
+    "description": "Search internet for keywords when ChatGPT lacks information or when user ask about latest updates",
     "parameters": {
         "type": "object",
         "properties": {
@@ -46,7 +52,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("integrate_google_searches")
-config.integrate_google_searches_signature = [functionSignature]
-config.chatGPTApiFunctionSignatures.insert(0, functionSignature)
-config.chatGPTApiAvailableFunctions["integrate_google_searches"] = integrate_google_searches
+config.addFunctionCall(signature=functionSignature, method=integrate_google_searches)

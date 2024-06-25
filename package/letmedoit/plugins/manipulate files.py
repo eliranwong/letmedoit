@@ -17,6 +17,12 @@ def manipulate_files(function_args):
     return SharedUtil.showAndExecutePythonCode(code)
 
 functionSignature = {
+    "intent": [
+        "change files",
+    ],
+    "examples": [
+        "Edit test.txt",
+    ],
     "name": "manipulate_files",
     "description": f'''Manipulate files, such as opening, launching, navigation, renaming, editing, removal, conversion, etc.''',
     "parameters": {
@@ -31,6 +37,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("manipulate_files")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["manipulate_files"] = manipulate_files
+config.addFunctionCall(signature=functionSignature, method=manipulate_files)

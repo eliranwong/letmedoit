@@ -2,7 +2,7 @@
 
 Welcome to LetMeDoIt AI, your premier virtual assistant designed to revolutionize the way you work! More than a mere chatbot, I am equipped with the capability to conduct meaningful interactions and actively carry out computing tasks as per your directives. My real-time code generation and execution prowess guarantees not only effectiveness but also efficiency in task fulfillment. With an advanced auto-correction feature, I autonomously repair any malfunctioning code segments and automatically install necessary libraries, ensuring uninterrupted workflow. My commitment to your digital safety is paramount, with inbuilt risk assessments and tailored user confirmation protocols to protect your data and device.
 
-With LetMeDoIt AI, you can access OpenAI ChatGPT-4, Google Gemini Pro, and Microsoft AutoGen, all in one place, to enhance your productivity. [Read more ...](https://github.com/eliranwong/letmedoit/wiki#letmedoit-ai)
+With LetMeDoIt AI, you can access OpenAI ChatGPT-4, Google Gemini Pro, and Microsoft AutoGen, local LLMs, all in one place, to enhance your productivity. [Read more ...](https://github.com/eliranwong/letmedoit/wiki#letmedoit-ai)
 
 Developer: [Eliran Wong](https://github.com/eliranwong)
 
@@ -16,13 +16,23 @@ Quick-Guide: https://github.com/eliranwong/letmedoit/wiki/Quick-Guide
 
 Wiki: https://github.com/eliranwong/letmedoit/wiki
 
-Support this project: https://www.paypal.me/MarvelBible
+Video Demo: https://www.youtube.com/watch?v=Eeat6h_ktbQ&list=PLo4xQ5NqC8SEMM71xC4NNhOHJCFlW-jaJ
 
-# An Interview
+Support this project: https://www.paypal.me/letmedoitai
 
-[![Watch the video](https://img.youtube.com/vi/Dfsl-Cxx0bQ/maxresdefault.jpg)](https://youtu.be/Dfsl-Cxx0bQ)
+# Video Demo
 
-Read more at: https://github.com/eliranwong/letmedoit/wiki#an-interview
+[![Watch the video](https://img.youtube.com/vi/Eeat6h_ktbQ/maxresdefault.jpg)](https://youtu.be/Eeat6h_ktbQ)
+
+Youtube Playlist: https://www.youtube.com/watch?v=Eeat6h_ktbQ&list=PLo4xQ5NqC8SEMM71xC4NNhOHJCFlW-jaJ
+
+# LetMeDoIt Features without OpenAI?
+
+You can utilize Google Gemini or open-source LLMs through Ollama for chat features in the LetMeDoIt AI.
+
+If you're seeking the complete functionality of LetMeDoIt, which includes both chat and task execution features, without the need for an Open AI API key, we offer support for Gemini Pro, Ollama, and Llama.cpp in our related project, FreeGenius AI:
+
+https://github.com/eliranwong/freegenius
 
 # Requirements
 
@@ -33,6 +43,38 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki#an-interview
 3. Supported OS: Windows / macOS / Linux / ChromeOS / Android (Termux)
 
 # Recent Additions
+
+[Generate tweets](https://github.com/eliranwong/letmedoit/wiki/Social-Media)
+
+<img width="798" alt="twitter" src="https://github.com/eliranwong/letmedoit/assets/25262722/d19c7bca-3bdc-48be-a907-b75afb34615b">
+
+[Run Local LLM Offline](https://github.com/eliranwong/letmedoit/wiki/Run-Local-LLM-Offline)
+
+<img width="832" alt="support_localllm" src="https://github.com/eliranwong/letmedoit/assets/25262722/587aba21-7f89-4b78-bfc4-3b32b442b287">
+
+[Talk to LetMeDoIt in Multiple Languages](https://github.com/eliranwong/letmedoit/wiki/Speak-to-LetMeDoIt-AI)
+
+![talk_to_letmedoit](https://github.com/eliranwong/letmedoit/assets/25262722/6aa33f2d-8971-45ad-b5ac-e8f4e290bff5)
+
+[Analyze audio](https://github.com/eliranwong/letmedoit/wiki/Analyze-Audio)
+
+<img width="1440" alt="analyze_audio" src="https://github.com/eliranwong/letmedoit/assets/25262722/24e49f3b-289d-40f6-bf9c-45ed1e0eeed6">
+
+[Search / Analyze Financial Data](https://github.com/eliranwong/letmedoit/wiki/Search-Financial-Data)
+
+<img width="1312" alt="search_financial_data" src="https://github.com/eliranwong/letmedoit/assets/25262722/9976f15b-85e1-4c5b-97a0-5124c04ffa8a">
+
+[Access Weather Information](https://github.com/eliranwong/letmedoit/wiki/Search-Weather-Information)
+
+![test_weather_plugin](https://github.com/eliranwong/letmedoit/assets/25262722/e9fd4376-1579-40e0-b1b2-a2b7c5583f0c)
+
+[Search and Load Old Conversations](https://github.com/eliranwong/letmedoit/wiki/Search-and-Load-Old-Conversations)
+
+![search_chat_records_0](https://github.com/eliranwong/letmedoit/assets/25262722/f2fb9c1c-d239-4723-b9ff-65634863d96f)
+
+[System Tray for Quick Access](https://github.com/eliranwong/letmedoit/wiki/System-Tray-for-Quick-Access)
+
+<img width="1440" alt="system_tray" src="https://github.com/eliranwong/letmedoit/assets/25262722/639d9cd4-a42a-4ca6-85bb-c290f38c023d">
 
 [Work with Database Files](https://github.com/eliranwong/letmedoit/wiki/Work-with-Database-Files)
 
@@ -90,7 +132,9 @@ LetMeDoIt AI just got smarter with memory retention!
 
 * higly customizable, e.g. [you can even change the assistant name](https://github.com/eliranwong/letmedoit/wiki/Change-Assistant-Name)
 
-* Support predefined contexts and instructions
+* Support predefined contexts
+
+* [Searchable Chat Records](https://github.com/eliranwong/letmedoit/wiki/Search-and-Load-Old-Conversations)
 
 * [Audio Input and Output](https://github.com/eliranwong/letmedoit/wiki/LetMeDoIt-Speaks)
 
@@ -109,6 +153,40 @@ LetMeDoIt AI just got smarter with memory retention!
 # Examples of Plugin Features (selective only):
 
 Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural language:
+
+* [NEW] generate tweets
+
+> Post a short tweet about LetMeDoIt AI
+
+* [NEW] analyze audio
+
+> transcribe "meeting_records.mp3"
+
+* [NEW] search / analyze financial data
+
+> What was the average stock price of Apple Inc. in 2023?
+
+> Analyze Apple Inc's stock price over last 5 years.
+
+* [NEW] search weather information
+
+> what is the current weather in New York?
+
+* [NEW] search latest news
+
+> tell me the latest news about ChatGPT
+
+* [NEW] search old conversations
+
+> search for "joke" in chat records
+
+* [NEW] load old conversations
+
+> load chat records with this ID: 2024-01-20_19_21_04
+
+* [NEW] connect a sqlite file and fetch data or make changes
+
+> connect /temp/my_database.sqlite and tell me about the tables that it contains
 
 * [NEW] integrated Google Gemini Pro (+Vision) multiturn chat, e.g.
 
@@ -240,10 +318,6 @@ Latest LetMeDoIt Plugins allow you to acheive variety of tasks with natural lang
 
 > Improve my writing according to British English style
 
-* search literature or database, e.g. bibles
-
-> Search for bible verses that contain both 'Jesus' and 'love'
-
 * convert text display, e.g. from simplified Chinese to traditional Chinese, e.g.
 
 > Translate your last response into Chinese
@@ -374,7 +448,7 @@ Check our built-in plugins at: https://github.com/eliranwong/letmedoit/tree/main
 
 # Highlight - Command Execution
 
-Latest: LetMeDoIt AI is now equipped with an [auto-healing feature for Python code](https://github.com/eliranwong/letmedoit/wiki/Python-Code-Auto%E2%80%90heal-Feature).
+LetMeDoIt AI is now equipped with an [auto-healing feature for Python code](https://github.com/eliranwong/letmedoit/wiki/Python-Code-Auto%E2%80%90heal-Feature).
 
 Overview: Command execution enables you to:
 
@@ -447,4 +521,4 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki/Android-Support
 
 # Donations
 
-https://www.paypal.me/MarvelBible
+https://www.paypal.me/letmedoitai

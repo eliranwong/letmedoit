@@ -93,6 +93,13 @@ def send_email(function_args):
     return "Done!"
 
 functionSignature = {
+    "intent": [
+        "arrange activities",
+        "access to internet real-time information",
+    ],
+    "examples": [
+        "Send email",
+    ],
     "name": "send_email",
     "description": "send email",
     "parameters": {
@@ -120,6 +127,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("send_email")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["send_email"] = send_email
+config.addFunctionCall(signature=functionSignature, method=send_email)

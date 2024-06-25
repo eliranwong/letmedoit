@@ -17,21 +17,25 @@ def ask_gemini_pro(function_args):
     return ""
 
 functionSignature = {
+    "intent": [
+        "ask a chatbot",
+    ],
+    "examples": [
+        "Ask Gemini about",
+    ],
     "name": "ask_gemini_pro",
-    "description": "Ask Gemini Pro to provide information or analyze an image",
+    "description": "Ask Gemini Pro to chat or provide information",
     "parameters": {
         "type": "object",
         "properties": {
             "query": {
                 "type": "string",
-                "description": "The original request in detail, including all file paths or urls, if any.",
+                "description": "The original request in detail, including any supplementary information",
             },
         },
         "required": ["query"],
     },
 }
 
-config.pluginsWithFunctionCall.append("ask_gemini_pro")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["ask_gemini_pro"] = ask_gemini_pro
+config.addFunctionCall(signature=functionSignature, method=ask_gemini_pro)
 config.inputSuggestions.append("Ask Gemini Pro: ")

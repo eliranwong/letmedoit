@@ -1,6 +1,6 @@
 from letmedoit import config
 import traceback
-from letmedoit.utils.install import *
+from letmedoit.utils.install import installmodule
 from letmedoit.utils.shared_utils import SharedUtil
 
 """
@@ -40,6 +40,12 @@ def heal_python(function_args):
         return traceback.format_exc()
 
 functionSignature = {
+    "intent": [
+        "generate code",
+    ],
+    "examples": [
+        "Fix python code",
+    ],
     "name": "heal_python",
     "description": "Fix python code if both original code and traceback error are provided",
     "parameters": {
@@ -69,7 +75,4 @@ persistentConfigs = (
 )
 config.setConfig(persistentConfigs)
 
-config.pluginsWithFunctionCall.append("heal_python")
-config.heal_python_signature = [functionSignature]
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["heal_python"] = heal_python
+config.addFunctionCall(signature=functionSignature, method=heal_python)

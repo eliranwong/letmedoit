@@ -16,16 +16,16 @@ if not hasattr(config, "use_oai_assistant"):
     config.use_oai_assistant = False
 
 from letmedoit.health_check import HealthCheck
-if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
+if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
-    HealthCheck.changeAPIkey()
-    HealthCheck.saveConfig()
-    print("Updated!")
+    if not hasattr(config, "openaiApiKey") or not config.openaiApiKey:
+        HealthCheck.changeAPIkey()
+    config.saveConfig()
+    #print("Configurations updated!")
 HealthCheck.checkCompletion()
-HealthCheck.setPrint()
 
-#from autogen.agentchat.contrib.agent_builder import AgentBuilder
-from letmedoit.utils.agent_builder import AgentBuilder
+from autogen.agentchat.contrib.agent_builder import AgentBuilder
+#from letmedoit.utils.agent_builder import AgentBuilder
 import autogen, os, json, traceback, re, datetime, argparse
 from pathlib import Path
 from urllib.parse import quote
@@ -40,16 +40,24 @@ class AutoGenBuilder:
 
     def __init__(self):
         #config_list = autogen.get_config_list(
-        #    [config.openaiApiKey], # assume openaiApiKey is in place in config.py
+        #    [config.openaiApiKey], # assume openaiApiKey is in config.py
         #    api_type="openai",
         #    api_version=None,
         #)
+        # assign ChatGPT4 to run the builder
+        self.chatGPTmodel = "gpt-4-turbo-preview"
         oai_config_list = []
-        for model in ("gpt-4-1106-preview", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k"):
+        for model in (self.chatGPTmodel,):
             oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
         os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
-        # assign ChatGPT4 to run the builder
-        self.chatGPTmodel = "gpt-4-1106-preview"
+        """
+        Code execution is set to be run in docker (default behaviour) but docker is not running.
+        The options available are:
+        - Make sure docker is running (advised approach for code execution)
+        - Set "use_docker": False in code_execution_config
+        - Set AUTOGEN_USE_DOCKER to "0/False/no" in your environment variables
+        """
+        os.environ["AUTOGEN_USE_DOCKER"] = "False"
         # prompt style
         self.promptStyle = Style.from_dict({
             # User input (default text).
@@ -98,6 +106,8 @@ class AutoGenBuilder:
             #config_path=config_path, # use default
             builder_model=self.chatGPTmodel,
             agent_model=self.chatGPTmodel,
+            max_tokens=4096,
+            max_agents=config.max_agents,
         )
 
         # e.g.
@@ -106,7 +116,7 @@ class AutoGenBuilder:
         #agent_list, agent_configs = builder.build(building_task, llm_config, coding=True)
         
         if load_path:
-            agent_list, _ = builder.load(load_path)
+            agent_list, _ = builder.load(load_path, use_oai_assistant=config.use_oai_assistant)
         else:
             agent_list, _ = builder.build(building_task, llm_config, use_oai_assistant=config.use_oai_assistant) # Coding=None; determined by CODING_PROMPT
 
@@ -142,13 +152,13 @@ class AutoGenBuilder:
         userInput = self.prompts.simplePrompt(style=self.promptStyle, default="y" if config.use_oai_assistant else "NO")
         if userInput:
             config.use_oai_assistant = True if userInput.strip().lower() in ("y", "yes") else False
-        HealthCheck.saveConfig()
+        config.saveConfig()
 
     def run(self):
         self.promptConfig()
 
         self.print(f"<{config.terminalCommandEntryColor1}>AutoGen Agent Builder launched!</{config.terminalCommandEntryColor1}>")
-        self.print("[press 'ctrl+q' to exit]")
+        self.print(f"""[press '{str(config.hotkey_exit).replace("'", "")[1:-1]}' to exit]""")
         while True:
             self.print(f"<{config.terminalCommandEntryColor1}>Hi! I am ready for a new task.</{config.terminalCommandEntryColor1}>")
             task = self.promptTask()
@@ -159,7 +169,9 @@ class AutoGenBuilder:
             except:
                 self.print(traceback.format_exc())
                 break
-        self.print(f"\n\n<{config.terminalCommandEntryColor1}>AutoGen Agent Builder closed!</{config.terminalCommandEntryColor1}>")
+
+        HealthCheck.print2("\n\nAutoGen Agent Builder closed!")
+
 
 
     def print(self, message):
@@ -191,8 +203,12 @@ def main():
         except:
             config.print2("Integer required for setting round of group chat!")
 
-    if args.oaiassistant:
-        config.use_oai_assistant = True if args.oaiassistant.lower() == "true" else False
+    if oaiassistant := args.oaiassistant:
+        oaiassistant = oaiassistant.lower().strip()
+        if oaiassistant == "true":
+            config.use_oai_assistant = True
+        elif oaiassistant == "false":
+            config.use_oai_assistant = False
 
     if args.config and not os.path.isfile(args.config):
         config.print2(f"'{args.config}' does not exist!")

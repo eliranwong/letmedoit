@@ -1,7 +1,7 @@
 """
-LetMeDoIt AI Plugin - analyze images
+LetMeDoIt AI Plugin - analyze images with gemini
 
-analyze images with model "gpt-4-vision-preview"
+analyze images with model "gemini pro vision"
 
 reference: https://platform.openai.com/docs/guides/vision
 
@@ -18,6 +18,12 @@ def analyze_images_with_gemini(function_args):
     return "[INVALID]" if not answer else ""
 
 functionSignature = {
+    "intent": [
+        "analyze files",
+    ],
+    "examples": [
+        "analyze image with Gemini",
+    ],
     "name": "analyze_images_with_gemini",
     "description": "Use Gemini Pro Vision to describe or analyze images",
     "parameters": {
@@ -36,7 +42,5 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("analyze_images_with_gemini")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["analyze_images_with_gemini"] = analyze_images_with_gemini
+config.addFunctionCall(signature=functionSignature, method=analyze_images_with_gemini)
 config.inputSuggestions.append("Ask Gemini Pro Vision to describe this image in detail: ")

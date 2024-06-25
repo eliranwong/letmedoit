@@ -7,10 +7,10 @@ from vertexai.generative_models._generative_models import (
 )
 from letmedoit import config
 from letmedoit.health_check import HealthCheck
-if not hasattr(config, "exit_entry"):
+if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
-    HealthCheck.saveConfig()
-    print("Updated!")
+    config.saveConfig()
+    #print("Configurations updated!")
 HealthCheck.setPrint()
 #import pygments
 #from pygments.lexers.markup import MarkdownLexer
@@ -21,7 +21,7 @@ from prompt_toolkit.keys import Keys
 from prompt_toolkit.input import create_input
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
-from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.completion import WordCompleter, FuzzyCompleter
 from prompt_toolkit.shortcuts import clear
 from pathlib import Path
 import asyncio, threading, shutil, textwrap
@@ -49,12 +49,10 @@ class GeminiPro:
 
     def __init__(self, name="Gemini Pro", temperature=0.9, max_output_tokens=8192):
         # authentication
-        authpath1 = os.path.join(HealthCheck.getFiles(), "credentials_googleaistudio.json")
-        if os.path.isfile(authpath1):
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = authpath1
+        if os.environ["GOOGLE_APPLICATION_CREDENTIALS"]:
             self.runnable = True
         else:
-            print(f"API key json file '{authpath1}' not found!")
+            print("Vertex AI is disabled!")
             print("Read https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup for setting up Google API.")
             self.runnable = False
         # initiation
@@ -224,7 +222,7 @@ class GeminiPro:
     def run(self, prompt=""):
         if self.defaultPrompt:
             prompt, self.defaultPrompt = self.defaultPrompt, ""
-        historyFolder = os.path.join(HealthCheck.getFiles(), "history")
+        historyFolder = os.path.join(HealthCheck.getLocalStorage(), "history")
         Path(historyFolder).mkdir(parents=True, exist_ok=True)
         chat_history = os.path.join(historyFolder, "geminipro")
         chat_session = PromptSession(history=FileHistory(chat_history))
@@ -236,7 +234,7 @@ class GeminiPro:
             "indicator": config.terminalPromptIndicatorColor2,
         })
 
-        completer = WordCompleter(["[", "[NO_FUNCTION_CALL]"], ignore_case=True) if self.enableVision else None
+        completer = FuzzyCompleter(WordCompleter(["[", "[NO_FUNCTION_CALL]"], ignore_case=True) if self.enableVision else None)
 
         if not self.runnable:
             print(f"{self.name} is not running due to missing configurations!")
@@ -410,7 +408,7 @@ class GeminiPro:
 
         if imageFiles:
             HealthCheck.print3(f"Reading: '{', '.join(imageFiles)}'")
-            model = GenerativeModel("gemini-pro-vision")
+            model = GenerativeModel("gemini-1.0-pro-vision")
             response = model.generate_content(
                 content,
                 generation_config=GenerationConfig(

@@ -1,18 +1,13 @@
 from letmedoit import config
 from letmedoit.health_check import HealthCheck
 from letmedoit.utils.tts_utils import TTSUtil
-if not hasattr(config, "exit_entry"):
-    HealthCheck.setBasicConfig()
-    HealthCheck.saveConfig()
-    print("Updated!")
-HealthCheck.setPrint()
 #import pygments
 #from pygments.lexers.markup import MarkdownLexer
 #from prompt_toolkit.formatted_text import PygmentsTokens
 #from prompt_toolkit import print_formatted_text
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.input import create_input
-import asyncio, shutil, textwrap, string
+import asyncio, shutil, textwrap, re
 
 
 class StreamingWordWrapper:
@@ -91,6 +86,7 @@ class StreamingWordWrapper:
 
     def streamOutputs(self, streaming_event, completion, openai=False):
         terminal_width = shutil.get_terminal_size().columns
+        config.new_chat_response = ""
 
         def finishOutputs(wrapWords, chat_response, terminal_width=terminal_width):
             config.wrapWords = wrapWords
@@ -98,6 +94,8 @@ class StreamingWordWrapper:
             config.tempChunk = ""
             print("\n")
             # add chat response to messages
+            if chat_response:
+                config.new_chat_response = chat_response
             if hasattr(config, "currentMessages") and chat_response:
                 config.currentMessages.append({"role": "assistant", "content": chat_response})
             # auto pager feature
@@ -119,11 +117,18 @@ class StreamingWordWrapper:
         for event in completion:
             if not streaming_event.is_set() and not self.streaming_finished:
                 # RETRIEVE THE TEXT FROM THE RESPONSE
-                # openai or vertex
-                answer = event.choices[0].delta.content if openai else event.text
+                if openai:
+                    # openai
+                    answer = event.choices[0].delta.content
+                elif isinstance(event, dict):
+                    # ollama chat
+                    answer = event['message']['content']
+                else:
+                    # vertex ai
+                    answer = event.text
                 # transform
-                if hasattr(config, "chatGPTTransformers"):
-                    for transformer in config.chatGPTTransformers:
+                if hasattr(config, "outputTransformers"):
+                    for transformer in config.outputTransformers:
                         answer = transformer(answer)
                 # STREAM THE ANSWER
                 if answer is not None:
@@ -158,11 +163,15 @@ class StreamingWordWrapper:
                 finishOutputs(wrapWords, chat_response)
                 return None
         
+        if config.ttsOutput and config.tempChunk:
+            TTSUtil.play(config.tempChunk)
+            config.tempChunk = ""
         finishOutputs(wrapWords, chat_response)
 
     def readAnswer(self, answer):
         # read the chunk when there is a punctuation
-        if answer in string.punctuation and config.tempChunk:
+        #if answer in string.punctuation and config.tempChunk:
+        if re.search(config.tts_readWhenStreamContains, answer) and config.tempChunk:
             # read words when there a punctuation
             chunk = config.tempChunk + answer
             # reset config.tempChunk

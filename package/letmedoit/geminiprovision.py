@@ -8,11 +8,10 @@ from vertexai.generative_models._generative_models import (
 from letmedoit import config
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
-if not hasattr(config, "exit_entry"):
+if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
-    HealthCheck.saveConfig()
-    print("Updated!")
-HealthCheck.setPrint()
+    config.saveConfig()
+    #print("Configurations updated!")
 
 import shutil, textwrap
 from PIL import Image as im
@@ -32,12 +31,10 @@ class GeminiProVision:
 
     def __init__(self, temperature=0.9, max_output_tokens=2048):
         # authentication
-        authpath1 = os.path.join(HealthCheck.getFiles(), "credentials_googleaistudio.json")
-        if os.path.isfile(authpath1):
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = authpath1
+        if os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Vertex AI" in config.enabledGoogleAPIs:
             self.runnable = True
         else:
-            print(f"API key json file '{authpath1}' not found!")
+            print("Vertex AI is disabled!")
             print("Read https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup for setting up Google API.")
             self.runnable = False
         # initiation
@@ -48,10 +45,11 @@ class GeminiProVision:
             candidate_count=1,
         )
         self.safety_settings={
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_UNSPECIFIED: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
         }
 
     def refinePath(self, img_path):
@@ -71,7 +69,7 @@ class GeminiProVision:
         })
 
         HealthCheck.print2("\nGemini Pro Vision loaded!")
-        print("[press 'ctrl+q' to exit]")
+        print(f"""[press '{str(config.hotkey_exit).replace("'", "")[1:-1]}' to exit]""")
         if not files:
             HealthCheck.print2("Enter image path below (file / folder):")
             files = HealthCheck.simplePrompt(style=promptStyle)

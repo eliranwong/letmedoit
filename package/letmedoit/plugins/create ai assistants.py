@@ -8,7 +8,6 @@ build a group of agents to execute a task with integrated "AutoGen Agent Builder
 
 
 from letmedoit import config
-import os
 from letmedoit.autobuilder import AutoGenBuilder
 
 def build_agents(function_args):
@@ -26,6 +25,14 @@ def build_agents(function_args):
     return ""
 
 functionSignature = {
+    "intent": [
+        "ask an auto assistant",
+        "create content",
+    ],
+    "examples": [
+        "Ask autobuilder to",
+        "Create a team of agents / assistants to",
+    ],
     "name": "build_agents",
     "description": "build a group of AI assistants or agents to execute a complicated task that other functions cannot resolve",
     "parameters": {
@@ -44,6 +51,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("build_agents")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["build_agents"] = build_agents
+config.addFunctionCall(signature=functionSignature, method=build_agents)

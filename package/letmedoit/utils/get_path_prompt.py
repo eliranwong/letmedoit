@@ -155,13 +155,8 @@ class GetPath:
 
                 # key bindings
                 this_key_bindings = KeyBindings()
-                """
-                if self.ctrl_s_to_system:
-                    @this_key_bindings.add("c-s")
-                    def _(event):
-                        event.app.current_buffer.text = ".system"
-                        event.app.current_buffer.validate_and_handle()"""
-                @this_key_bindings.add("c-q")
+
+                @this_key_bindings.add(*config.hotkey_exit)
                 def _(event):
                     #if self.ctrl_q_to_exit:
                     #    event.app.current_buffer.text = ".quit"
@@ -169,15 +164,15 @@ class GetPath:
                     #    event.app.current_buffer.text = self.cancel_entry
                     event.app.current_buffer.text = self.cancel_entry
                     event.app.current_buffer.validate_and_handle()
-                @this_key_bindings.add("c-z")
+                @this_key_bindings.add(*config.hotkey_cancel)
                 def _(event):
                     buffer = event.app.current_buffer
                     buffer.reset()
-                @this_key_bindings.add("c-l")
+                @this_key_bindings.add(*config.hotkey_list_directory_content)
                 def _(_):
                     # list directories and files
                     run_in_terminal(lambda: self.displayDirectoryContent(display_dir_only=display_dir_only))
-                @this_key_bindings.add("escape", "m")
+                @this_key_bindings.add(*config.hotkey_toggle_mouse_support)
                 def _(_):
                     config.mouseSupport = not config.mouseSupport
                     run_in_terminal(lambda: config.print(f"Entry Mouse Support '{'enabled' if config.mouseSupport else 'disabled'}'!"))
@@ -196,7 +191,7 @@ class GetPath:
                     #prompt_shared_key_bindings,
                 ])
                 if not bottom_toolbar:
-                    bottom_toolbar = " [ctrl+q] exit [ctrl+l] list content [cd <dir>] change dir "
+                    bottom_toolbar = f""" {str(config.hotkey_exit).replace("'", "")} exit {str(config.hotkey_list_directory_content).replace("'", "")} list content [cd <dir>] change dir """
                 userInput = filePathSession.prompt(
                     inputIndicator,
                     default=default,

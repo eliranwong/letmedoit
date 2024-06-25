@@ -55,6 +55,12 @@ def remove_image_background2(function_args):
     return ""
 
 functionSignature = {
+    "intent": [
+        "change files",
+    ],
+    "examples": [
+        "Remove image background",
+    ],
     "name": "remove_image_background",
     "description": f'''Remove image background''',
     "parameters": {
@@ -69,6 +75,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("remove_image_background")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["remove_image_background"] = remove_image_background
+config.addFunctionCall(signature=functionSignature, method=remove_image_background)

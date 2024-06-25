@@ -10,12 +10,25 @@ analyze files with integrated "AutoGen Retriever"
 from letmedoit import config
 import os
 from letmedoit.autoretriever import AutoGenRetriever
+from PIL import Image
+
 
 def analyze_files(function_args):
+    def is_valid_image_file(file_path):
+        try:
+            # Open the image file
+            with Image.open(file_path) as img:
+                # Check if the file format is supported by PIL
+                img.verify()
+                return True
+        except (IOError, SyntaxError) as e:
+            # The file path is not a valid image file path
+            return False
+
     query = function_args.get("query") # required
     files = function_args.get("files") # required
     if os.path.exists(files):
-        if os.path.isfile(files) and SharedUtil.is_valid_image_file(files):
+        if os.path.isfile(files) and is_valid_image_file(files):
             # call function "analyze image" instead if it is an image
             function_args = {
                 "query": query,
@@ -25,7 +38,7 @@ def analyze_files(function_args):
             return config.chatGPTApiAvailableFunctions["analyze_images"](function_args)
         config.stopSpinning()
         config.print2("AutoGen Retriever launched!")
-        last_message = AutoGenRetriever().getResponse(files, query)
+        last_message = AutoGenRetriever().getResponse(files, query, True)
         config.currentMessages += last_message
         config.print2("AutoGen Retriever closed!")
         return ""
@@ -33,6 +46,12 @@ def analyze_files(function_args):
     return "[INVALID]"
 
 functionSignature = {
+    "intent": [
+        "analyze files",
+    ],
+    "examples": [
+        "analyze files",
+    ],
     "name": "analyze_files",
     "description": "retrieve information from files",
     "parameters": {
@@ -51,6 +70,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("analyze_files")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["analyze_files"] = analyze_files
+config.addFunctionCall(signature=functionSignature, method=analyze_files)

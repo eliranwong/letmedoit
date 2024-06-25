@@ -18,38 +18,6 @@ if os.getcwd() != letMeDoItAIFolder:
 # check current platform
 thisPlatform = platform.system()
 
-# the following code block is not for pip installation
-## Activate virtual environment, if any
-#venvDir = "venv"
-#venvDirFullPath = os.path.join(letMeDoItAIFolder, venvDir)
-#if os.path.isdir(venvDirFullPath) and not sys.executable.startswith(venvDirFullPath):
-#    try:
-#        python = os.path.basename(sys.executable)
-#        binDir = "Scripts" if thisPlatform == "Windows" else "bin"
-#        if thisPlatform == "Windows":
-#            if python.endswith(".exe"):
-#                python = python[:-4]
-#            # Activate virtual environment
-#            activator = os.path.join(venvDirFullPath, binDir, "activate")
-#            # Run main.py
-#            os.system(f"{activator} & {python} {letMeDoItFile}")
-#        else:
-#            # Activate virtual environment
-#            activator = os.path.join(venvDirFullPath, binDir, "activate_this.py")
-#            if not os.path.exists(activator):
-#                copyfile("activate_this.py", activator)
-#            with open(activator) as f:
-#                code = compile(f.read(), activator, 'exec')
-#                exec(code, dict(__file__=activator))
-#            # Run main.py
-#            os.system(f"{python} {letMeDoItFile}")
-#        venvActivated = True
-#    except:
-#        venvActivated = False
-#    if venvActivated:
-#        # exit non-venv process
-#        exit(0)
-
 # set up config
 # create config.py if it does not exist
 configFile = os.path.join(letMeDoItAIFolder, "config.py")
@@ -58,7 +26,12 @@ if not os.path.isfile(configFile):
 
 # import config and setup default
 #import traceback
-from letmedoit import config
+try:
+    from letmedoit import config
+except:
+    # write off problematic configFile
+    open(configFile, "w", encoding="utf-8").close()
+    from letmedoit import config
 from pathlib import Path
 
 apps = {
@@ -79,23 +52,14 @@ config.isTermux = True if os.path.isdir("/data/data/com.termux/files/home") else
 with open(os.path.join(config.letMeDoItAIFolder, "package_name.txt"), "r", encoding="utf-8") as fileObj:
     package = fileObj.read()
 
-def getStorageDir():
-    storageDir = os.path.join(os.path.expanduser('~'), package)
-    try:
-        Path(storageDir).mkdir(parents=True, exist_ok=True)
-    except:
-        pass
-    return storageDir if os.path.isdir(storageDir) else ""
-config.getStorageDir = getStorageDir
-
 def restartApp():
     print(f"Restarting {config.letMeDoItName} ...")
     os.system(f"{sys.executable} {config.letMeDoItFile}")
     exit(0)
 config.restartApp = restartApp
 
-from letmedoit.utils.configDefault import *
-from letmedoit.utils.install import *
+from letmedoit.utils.config_tools import *
+from letmedoit.utils.install import installmodule
 from letmedoit.utils.shared_utils import SharedUtil
 
 # automatic update
@@ -119,13 +83,6 @@ def updateApp():
                 print(f"Run 'pip install --upgrade {thisPackage}' to manually upgrade this app!")
             else:
                 try:
-                    # delete old shortcut files
-                    appName = config.letMeDoItName.split()[0]
-                    shortcutFiles = (f"{appName}.bat", f"{appName}.command", f"{appName}.desktop")
-                    for shortcutFile in shortcutFiles:
-                        shortcut = os.path.join(config.letMeDoItAIFolder, shortcutFile)
-                        if os.path.isfile(shortcut):
-                            os.remove(shortcut)
                     # upgrade package
                     installmodule(f"--upgrade {thisPackage}")
                     restartApp()
@@ -146,100 +103,6 @@ try:
     config.isPygameInstalled = True
 except:
     config.isPygameInstalled = False
-
-def setOsOpenCmd():
-    config.thisPlatform = thisPlatform
-    if config.terminalEnableTermuxAPI:
-        config.open = "termux-share"
-    elif thisPlatform == "Linux":
-        config.open = "xdg-open"
-    elif thisPlatform == "Darwin":
-        config.open = "open"
-    elif thisPlatform == "Windows":
-        config.open = "start"
-    # name macOS
-    if config.thisPlatform == "Darwin":
-        config.thisPlatform = "macOS"
-
-def saveConfig():
-    with open(configFile, "w", encoding="utf-8") as fileObj:
-        for name in dir(config):
-            excludeConfigList = [
-                "includeIpInSystemMessageTemp",
-                "initialCompletionCheck",
-                "promptStyle1",
-                "promptStyle2",
-                "runSpecificFuntion",
-                "pluginsWithFunctionCall",
-                "restartApp",
-                "getStorageDir",
-                "saveConfig",
-                "aliases",
-                "addPathAt",
-                "multilineInput",
-                "conversationStarted",
-                "dynamicToolBarText",
-                "tokenLimits",
-                "currentMessages",
-                "pagerContent",
-                "selectAll",
-                "clipboard",
-                "showKeyBindings",
-                "divider",
-                "systemCommandPromptEntry",
-                "stop_event",
-                "spinner_thread",
-                "tts",
-                "isPygameInstalled",
-                "isVlcPlayerInstalled",
-                "accept_default",
-                "defaultEntry",
-                "pipIsUpdated",
-                "setConfig",
-                "excludeConfigList",
-                "tempContent",
-                "tempChunk",
-                "predefinedContextTemp",
-                "thisPlatform",
-                "letMeDoItAI",
-                "terminalColors",
-                "letMeDoItFile",
-                "letMeDoItAIFolder",
-                "open",
-                "inputSuggestions", # used with plugins; user input suggestions
-                "chatGPTTransformers", # used with plugins; transform ChatGPT response message
-                "predefinedInstructions", # used with plugins; pre-defined instructions
-                "predefinedContexts", # used with plugins; pre-defined contexts
-                # used with plugins; function call
-                "execute_python_code_signature",
-                "execute_termux_command_signature",
-                "integrate_google_searches_signature",
-                "heal_python_signature",
-                "chatGPTApiFunctionSignatures",
-                "chatGPTApiAvailableFunctions",
-                "pythonFunctionResponse", # used with plugins; function call when function name is 'python'
-                # LetMeDoItAI methods shared from Class LetMeDoItAI
-                "getFiles",
-                "stopSpinning",
-                "toggleMultiline",
-                "print",
-                "print2",
-                "print3",
-                "getWrappedHTMLText",
-                "fineTuneUserInput",
-                "launchPager",
-                "addPagerText",
-                "getFunctionMessageAndResponse",
-            ]
-            excludeConfigList = excludeConfigList + config.excludeConfigList
-            if not name.startswith("__") and not name in excludeConfigList:
-                try:
-                    value = eval(f"config.{name}")
-                    if not callable(value):
-                        fileObj.write("{0} = {1}\n".format(name, pprint.pformat(value)))
-                except:
-                    pass
-config.saveConfig = saveConfig
 
 def set_log_file_max_lines(log_file, max_lines):
     if os.path.isfile(log_file):
@@ -265,13 +128,14 @@ def main():
     # Create the parser
     parser = argparse.ArgumentParser(description="LetMeDoIt AI cli options")
     # Add arguments
-    parser.add_argument("default", nargs="?", default=None, help="default entry")
-    parser.add_argument('-c', '--context', action='store', dest='context', help="specify pre-defined context with -r flag")
-    parser.add_argument('-f', '--file', action='store', dest='file', help="read file text as default entry with -f flag")
-    parser.add_argument('-i', '--ip', action='store', dest='ip', help="set 'true' to include or 'false' to exclude ip in system message with -i flag")
+    parser.add_argument("default", nargs="?", default=None, help="default entry; accepts a string; ignored when -l/rf/f/r flag is used")
+    parser.add_argument('-c', '--context', action='store', dest='context', help="specify pre-defined context with -r flag; accepts a string")
+    parser.add_argument('-f', '--file', action='store', dest='file', help="read file text as default entry with -f flag; accepts a file path; ignored when -l/rf flag is used")
+    parser.add_argument('-i', '--ip', action='store', dest='ip', help="set 'true' to include or 'false' to exclude ip information in system message with -i flag")
+    parser.add_argument('-l', '--load', action='store', dest='load', help="load file that contains saved chat records with -l flag; accepts either a chat ID or a file path; required plugin 'search chat records'")
     parser.add_argument('-n', '--nocheck', action='store', dest='nocheck', help="set 'true' to bypass completion check at startup with -n flag")
-    parser.add_argument('-r', '--run', action='store', dest='run', help="run default entry with -r flag")
-    parser.add_argument('-rf', '--runfile', action='store', dest='runfile', help="read file text as default entry and run with -rf flag")
+    parser.add_argument('-r', '--run', action='store', dest='run', help="run default entry with -r flag; accepts a string; ignored when -l/rf/f flag is used")
+    parser.add_argument('-rf', '--runfile', action='store', dest='runfile', help="read file text as default entry and run with -rf flag; accepts a file path; ignored when -l flag is used")
     parser.add_argument('-u', '--update', action='store', dest='update', help="set 'true' to force or 'false' to bypass automatic update with -u flag")
     # Parse arguments
     args = parser.parse_args()
@@ -296,7 +160,12 @@ def main():
         config.predefinedContextTemp = config.predefinedContext
         config.predefinedContext = args.context
 
-    if args.runfile or args.file:
+    # priority: load > runfile > file > run > default
+    if args.load:
+        load = args.load.strip()
+        config.defaultEntry = f"Load chat records with this ID: {load}"
+        config.accept_default = True
+    elif args.runfile or args.file:
         try:
             filename = args.runfile if args.runfile else args.file
             filename = os.path.expanduser(filename)
@@ -337,10 +206,12 @@ def main():
         config.accept_default = False
 
     set_title(config.letMeDoItName)
-    setOsOpenCmd()
+    SharedUtil.setOsOpenCmd(thisPlatform)
     createShortcuts()
     config.excludeConfigList = []
     config.isVlcPlayerInstalled = VlcUtil.isVlcPlayerInstalled()
+    # save loaded configs
+    config.saveConfig()
     # check log files; remove old lines if more than 3000 lines is found in a log file
     for i in ("chats", "paths", "commands"):
         filepath = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", i)
@@ -348,8 +219,8 @@ def main():
     LetMeDoItAI().startChats()
     # Do the following tasks before exit
     # backup configurations
-    saveConfig()
-    storageDir = getStorageDir()
+    config.saveConfig()
+    storageDir = SharedUtil.getLocalStorage()
     if os.path.isdir(storageDir):
         shutil.copy(configFile, os.path.join(storageDir, "config_backup.py"))
     # delete temporary content

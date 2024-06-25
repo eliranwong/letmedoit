@@ -53,14 +53,14 @@ def download_web_content(function_args):
         format = function_args.get("format") # required
         location = function_args.get("location", "") # optional
         if not (location and os.path.isdir(location)):
-            location = os.path.join(config.getFiles(), "audio" if format == "audio" else "video")
+            location = os.path.join(config.getLocalStorage(), "audio" if format == "audio" else "video")
             Path(location).mkdir(parents=True, exist_ok=True)
         downloadCommand = "yt-dlp -x --audio-format mp3" if format == "audio" else "yt-dlp -f bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4"
         terminalDownloadYoutubeFile(downloadCommand, url, location)
         return "Finished! Youtube downloader closed!"
     elif SharedUtil.is_valid_url(url):
         try:
-            folder = config.getFiles()
+            folder = config.getLocalStorage()
             folder = os.path.join(folder, "Downloads")
             Path(folder).mkdir(parents=True, exist_ok=True)
             SharedUtil.downloadWebContent(url, folder=folder, ignoreKind=True)
@@ -73,6 +73,14 @@ def download_web_content(function_args):
         return "[INVALID]"
 
 functionSignature = {
+    "intent": [
+        "access to internet real-time information",
+    ],
+    "examples": [
+        "Download Youtube video",
+        "Download Youtube audio into mp3 format",
+        "Download this webpage",
+    ],
     "name": "download_web_content",
     "description": "download Youtube video into mp4 file or download audio into mp3 file or download webcontent",
     "parameters": {
@@ -96,6 +104,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("download_web_content")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["download_web_content"] = download_web_content
+config.addFunctionCall(signature=functionSignature, method=download_web_content)

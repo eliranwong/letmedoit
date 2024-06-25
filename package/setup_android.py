@@ -47,10 +47,13 @@ Read more at: https://github.com/eliranwong/letmedoit/wiki/Installation
 # get required packages
 install_requires = []
 exclude_packages = (
-    "google-cloud-aiplatform",
+    "torch==2.2.1",
+    "torchvision==0.17.1",
+    "google-cloud-aiplatform==1.42.1",
+    "google-cloud-speech",
     "google-cloud-texttospeech",
     "pygame",
-    "pyautogen[retrievechat,teachable,mathchat]==0.2.0",
+    "pyautogen[retrievechat,autobuild,mathchat]==0.2.14",
     "unstructured[all-docs]",
     "chromadb",
     "docker",
@@ -58,6 +61,10 @@ exclude_packages = (
     "numpy",
     "seaborn[stats]",
     "sentence-transformers",
+    "PySide6",
+    "PyMuPDF",
+    "yfinance",
+    "openai-whisper",
 )
 with open(os.path.join(package, "requirements.txt"), "r") as fileObj:
     for line in fileObj.readlines():
@@ -71,7 +78,7 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=f"{package}_android",
-    version="0.0.33",
+    version="0.0.99",
     python_requires=">=3.8, <3.12",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of ChatGPT API, Gemini Pro and AutoGen, capable of engaging in conversations, executing codes with auto-healing, and assisting you with a wide range of tasks on your local devices.",
     long_description=long_description,
@@ -79,14 +86,11 @@ setup(
     author_email="support@letmedoit.ai",
     packages=[
         package,
+        f"{package}.audio",
         f"{package}.files",
         f"{package}.history",
         f"{package}.icons",
         f"{package}.plugins",
-        f"{package}.plugins.bibleTools.",
-        f"{package}.plugins.bibleTools.bibleData.bibles",
-        f"{package}.plugins.bibleTools.bibleData.",
-        f"{package}.plugins.bibleTools.utils",
         f"{package}.temp",
         f"{package}.utils",
         f"{package}.macOS_service",
@@ -117,14 +121,11 @@ setup(
     ],
     package_data={
         package: ["*.*"],
+        f"{package}.audio": ["*.*"],
         f"{package}.files": ["*.*"],
         f"{package}.history": ["*.*"],
         f"{package}.icons": ["*.*"],
         f"{package}.plugins": ["*.*"],
-        f"{package}.plugins.bibleTools.": ["*.*"],
-        f"{package}.plugins.bibleTools.bibleData.bibles": ["*.*"],
-        f"{package}.plugins.bibleTools.bibleData.": ["*.*"],
-        f"{package}.plugins.bibleTools.utils": ["*.*"],
         f"{package}.temp": ["*.*"],
         f"{package}.utils": ["*.*"],
         f"{package}.macOS_service": ["*.*"],
@@ -158,7 +159,9 @@ setup(
     entry_points={
         "console_scripts": [
             f"{package}={package}.main:main",
+            f"commandprompt={package}.commandprompt:main",
             f"etextedit={package}.eTextEdit:main",
+            f"chatgpt={package}.chatgpt:main",
         ],
     },
     keywords="ai assistant openai chatgpt gemini autogen rag interpreter auto-heal",
@@ -167,7 +170,7 @@ setup(
         "Source": "https://github.com/eliranwong/letmedoit",
         "Tracker": "https://github.com/eliranwong/letmedoit/issues",
         "Documentation": "https://github.com/eliranwong/letmedoit/wiki",
-        "Funding": "https://www.paypal.me/MarvelBible",
+        "Funding": "https://www.paypal.me/letmedoitai",
     },
     classifiers=[
         # Reference: https://pypi.org/classifiers/

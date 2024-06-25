@@ -2,13 +2,8 @@ from letmedoit import config
 from letmedoit.utils.shared_utils import SharedUtil
 from prompt_toolkit.validation import Validator, ValidationError
 from prompt_toolkit.application import run_in_terminal
-#from prompt_toolkit.application import get_app
-try:
-    import tiktoken
-    tiktokenImported = True
-except:
-    tiktokenImported = False
-
+import tiktoken
+import re
 
 class TokenValidator(Validator):
     def validate(self, document):
@@ -16,14 +11,17 @@ class TokenValidator(Validator):
         currentInput = document.text
         if not config.dynamicTokenCount or not currentInput or currentInput.lower() in (config.exit_entry, config.cancel_entry, ".new", ".share", ".save"):
             pass
-        elif tiktokenImported:
+        else:
             try:
                 encoding = tiktoken.encoding_for_model(config.chatGPTApiModel)
             except:
                 encoding = tiktoken.get_encoding("cl100k_base")
-            if "[NO_FUNCTION_CALL]" in currentInput:
+            no_function_call_pattern = "\[NO_FUNCTION_CALL\]|\[CHAT\]|\[CHAT_[^\[\]]+?\]"
+            #if "[NO_FUNCTION_CALL]" in currentInput:
+            if re.search(no_function_call_pattern, currentInput):
                 availableFunctionTokens = 0
-                currentInput = currentInput.replace("[NO_FUNCTION_CALL]", "")
+                #currentInput = currentInput.replace("[NO_FUNCTION_CALL]", "")
+                currentInput = re.sub(no_function_call_pattern, "", currentInput)
             else:
                 availableFunctionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
             currentInputTokens = len(encoding.encode(config.fineTuneUserInput(currentInput)))
@@ -31,16 +29,14 @@ class TokenValidator(Validator):
             selectedModelLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
             #estimatedAvailableTokens = selectedModelLimit - availableFunctionTokens - loadedMessageTokens - currentInputTokens
 
-            config.dynamicToolBarText = f" Tokens: {(availableFunctionTokens + loadedMessageTokens + currentInputTokens)}/{selectedModelLimit} [ctrl+k] shortcut keys "
+            config.dynamicToolBarText = f""" Tokens: {(availableFunctionTokens + loadedMessageTokens + currentInputTokens)}/{selectedModelLimit} {str(config.hotkey_display_key_combo).replace("'", "")} shortcuts """
             #if config.conversationStarted:
             #    config.dynamicToolBarText = config.dynamicToolBarText + " [ctrl+n] new"
             if selectedModelLimit - (availableFunctionTokens + loadedMessageTokens + currentInputTokens) >= config.chatGPTApiMinTokens:
                 pass
             else:
-                run_in_terminal(lambda: print("Press 'ctrl+n' to start a new chat!"))
+                run_in_terminal(lambda: print(f"""Press '{str(config.hotkey_new).replace("'", "")[1:-1]}' to start a new chat!"""))
                 raise ValidationError(message='Token limit reached!', cursor_position=document.cursor_position)
-        else:
-            pass
 
 class NumberValidator(Validator):
     def validate(self, document):

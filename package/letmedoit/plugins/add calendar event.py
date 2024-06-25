@@ -123,6 +123,13 @@ def add_calendar_event(function_args):
     return "Done!"
 
 functionSignature = {
+    "intent": [
+        "arrange activities",
+        "access to internet real-time information",
+    ],
+    "examples": [
+        "Add a calender event",
+    ],
     "name": "add_calendar_event",
     "description": "add calendar event",
     "parameters": {
@@ -162,6 +169,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("add_calendar_event")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["add_calendar_event"] = add_calendar_event
+config.addFunctionCall(signature=functionSignature, method=add_calendar_event)

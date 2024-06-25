@@ -1,6 +1,8 @@
 from letmedoit import config
-import os, traceback, subprocess, re
+import os, traceback, subprocess, re, sounddevice, soundfile
 from gtts import gTTS
+from elevenlabs.client import ElevenLabs
+from elevenlabs import play
 from letmedoit.utils.vlc_utils import VlcUtil
 try:
     from google.cloud import texttospeech
@@ -10,8 +12,12 @@ try:
     # hide pygame welcome message
     os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
     import pygame
+    if pygame.mixer.get_init() is None:
+        pygame.mixer.init()
+    config.isPygameInstalled = True
 except:
     config.usePygame = False
+    config.isPygameInstalled = True
 
 class TTSUtil:
 
@@ -19,10 +25,8 @@ class TTSUtil:
     def play(content, language=""):
         if config.tts:
             try:
-                credentials_GoogleCloudTextToSpeech = os.path.join(config.letMeDoItAIFolder, "credentials_GoogleCloudTextToSpeech.json")
                 # official google-cloud-texttospeech
-                if os.path.isfile(credentials_GoogleCloudTextToSpeech):
-                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = credentials_GoogleCloudTextToSpeech
+                if config.ttsPlatform == "googlecloud" and os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Text-to-Speech" in config.enabledGoogleAPIs:
                     audioFile = os.path.join(config.letMeDoItAIFolder, "temp", "gctts.mp3")
                     if not language:
                         language = config.gcttsLang
@@ -33,7 +37,7 @@ class TTSUtil:
                         language = f"{language}-{accent.upper()}"
                     TTSUtil.saveCloudTTSAudio(content, language, filename=audioFile)
                     TTSUtil.playAudioFile(audioFile)
-                elif config.ttsCommand:
+                elif config.ttsPlatform == "custom" and config.ttsCommand:
                     # remove '"' from the content
                     content = re.sub('"', "", content)
 
@@ -56,7 +60,18 @@ class TTSUtil:
                         else:
                             command = f'''{config.ttsCommand} "{content}"{config.ttsCommandSuffix}'''
                     subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+                elif config.ttsPlatform == "elevenlabs" and config.elevenlabsApi:
+                    audio = ElevenLabs(api_key=config.elevenlabsApi).generate(
+                        #api_key=config.elevenlabsApi, # Defaults to os.getenv(ELEVEN_API_KEY)
+                        text=content,
+                        voice=config.elevenlabsVoice,
+                        model="eleven_multilingual_v2"
+                    )
+                    play(audio)
                 else:
+                    if not config.ttsPlatform == "google":
+                        config.ttsPlatform == "google"
+                        config.saveConfig()
                     # use gTTS as default as config.ttsCommand is empty by default
                     if not language:
                         language = config.gttsLang
@@ -80,9 +95,12 @@ class TTSUtil:
             if config.isVlcPlayerInstalled and not config.usePygame:
                 # vlc is preferred as it allows speed control with config.vlcSpeed
                 VlcUtil.playMediaFile(audioFile)
-            else:
+            elif config.isPygameInstalled:
                 # use pygame if config.usePygame or vlc player is not installed
                 TTSUtil.playAudioFilePygame(audioFile)
+            else:
+                sounddevice.play(*soundfile.read(audioFile)) 
+                sounddevice.wait()
         except:
             command = f"{config.open} {audioFile}"
             subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()

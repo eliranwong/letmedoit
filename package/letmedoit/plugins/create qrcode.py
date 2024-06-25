@@ -24,6 +24,12 @@ def create_qrcode(function_args):
     return ""
 
 functionSignature = {
+    "intent": [
+        "create content",
+    ],
+    "examples": [
+        "Create a QR code",
+    ],
     "name": "create_qrcode",
     "description": f'''Create QR code''',
     "parameters": {
@@ -38,6 +44,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("create_qrcode")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["create_qrcode"] = create_qrcode
+config.addFunctionCall(signature=functionSignature, method=create_qrcode)

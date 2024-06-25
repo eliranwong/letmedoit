@@ -39,6 +39,13 @@ def analyze_web_content(function_args):
     return ""
 
 functionSignature = {
+    "intent": [
+        "analyze files",
+        "access to internet real-time information",
+    ],
+    "examples": [
+        "summarize this webpage",
+    ],
     "name": "analyze_web_content",
     "description": "retrieve information from a webpage if an url is provided",
     "parameters": {
@@ -57,6 +64,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("analyze_web_content")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["analyze_web_content"] = analyze_web_content
+config.addFunctionCall(signature=functionSignature, method=analyze_web_content)

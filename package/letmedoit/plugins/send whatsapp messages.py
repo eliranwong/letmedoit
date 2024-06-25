@@ -20,6 +20,13 @@ def send_whatsapp(function_args):
     return "Done!"
 
 functionSignature = {
+    "intent": [
+        "arrange activities",
+        "access to internet real-time information",
+    ],
+    "examples": [
+        "Send WhatsApp",
+    ],
     "name": "send_whatsapp",
     "description": f'''Send WhatsApp messages''',
     "parameters": {
@@ -38,6 +45,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("send_whatsapp")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["send_whatsapp"] = send_whatsapp
+config.addFunctionCall(signature=functionSignature, method=send_whatsapp)

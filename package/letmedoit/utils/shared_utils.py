@@ -1,41 +1,118 @@
 from letmedoit import config
+from letmedoit.utils.file_utils import FileUtil
 from packaging import version
 from bs4 import BeautifulSoup
-import platform, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback
+import platform, shutil, subprocess, os, pydoc, webbrowser, re, socket, wcwidth, unicodedata, traceback, html2text
 import datetime, requests, netifaces, textwrap, json, geocoder, base64, getpass, pendulum, pkg_resources
 import pygments
 from pygments.lexers.python import PythonLexer
 from pygments.styles import get_style_by_name
 from prompt_toolkit.styles.pygments import style_from_pygments_cls
-from prompt_toolkit import print_formatted_text
+from prompt_toolkit import print_formatted_text, HTML
 from prompt_toolkit.formatted_text import PygmentsTokens
 from prompt_toolkit import prompt
-try:
-    import tiktoken
-    tiktokenImported = True
-except:
-    tiktokenImported = False
+import tiktoken
+import openai
 from openai import OpenAI
 from urllib.parse import quote
 from pathlib import Path
 from PIL import Image
 if not config.isTermux:
     from autogen.retrieve_utils import TEXT_FORMATS
+from typing import Callable
 
+def check_openai_errors(func):
+    def wrapper(*args, **kwargs):
+        def finishError():
+            config.stopSpinning()
+            return "[INVALID]"
+        try:
+            return func(*args, **kwargs)
+        except openai.APIError as e:
+            print("Error: Issue on OpenAI side.")
+            print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
+            return finishError()
+        except openai.APIConnectionError as e:
+            print("Error: Issue connecting to our services.")
+            print("Solution: Check your network settings, proxy configuration, SSL certificates, or firewall rules.")
+            return finishError()
+        except openai.APITimeoutError as e:
+            print("Error: Request timed out.")
+            print("Solution: Retry your request after a brief wait and contact us if the issue persists.")
+            return finishError()
+        except openai.AuthenticationError as e:
+            print("Error: Your API key or token was invalid, expired, or revoked.")
+            print("Solution: Check your API key or token and make sure it is correct and active. You may need to generate a new one from your account dashboard.")
+            return finishError()
+            #HealthCheck.changeAPIkey()
+        except openai.BadRequestError as e:
+            print("Error: Your request was malformed or missing some required parameters, such as a token or an input.")
+            print("Solution: The error message should advise you on the specific error made. Check the [documentation](https://platform.openai.com/docs/api-reference/) for the specific API method you are calling and make sure you are sending valid and complete parameters. You may also need to check the encoding, format, or size of your request data.")
+            return finishError()
+        except openai.ConflictError as e:
+            print("Error: The resource was updated by another request.")
+            print("Solution: Try to update the resource again and ensure no other requests are trying to update it.")
+            return finishError()
+        except openai.InternalServerError as e:
+            print("Error: Issue on OpenAI servers.")
+            print("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
+            return finishError()
+        except openai.NotFoundError as e:
+            print("Error: Requested resource does not exist.")
+            print("Solution: Ensure you are the correct resource identifier.")
+            return finishError()
+        except openai.PermissionDeniedError as e:
+            print("Error: You don't have access to the requested resource.")
+            print("Solution: Ensure you are using the correct API key, organization ID, and resource ID.")
+            return finishError()
+        except openai.RateLimitError as e:
+            print("Error: You have hit your assigned rate limit.")
+            print("Solution: Pace your requests. Read more in OpenAI [Rate limit guide](https://platform.openai.com/docs/guides/rate-limits).")
+            return finishError()
+        except openai.UnprocessableEntityError as e:
+            print("Error: Unable to process the request despite the format being correct.")
+            print("Solution: Please try the request again.")
+            return finishError()
+        except:
+            print(traceback.format_exc())
+            return finishError()
+    return wrapper
 
 class SharedUtil:
 
     # token limit
     # reference: https://platform.openai.com/docs/models/gpt-4
     tokenLimits = {
-        #"gpt-3.5-turbo-instruct": 4097,
-        "gpt-3.5-turbo": 4097,
+        "gpt-4-turbo-preview": 128000, # Returns a maximum of 4,096 output tokens.
+        "gpt-4-0125-preview": 128000, # Returns a maximum of 4,096 output tokens.
+        "gpt-4-1106-preview": 128000, # Returns a maximum of 4,096 output tokens.
+        "gpt-3.5-turbo": 16385, # Returns a maximum of 4,096 output tokens.
         "gpt-3.5-turbo-16k": 16385,
-        "gpt-4-1106-preview": 128000, # official 128,000; but "This model supports at most 4096 completion tokens"; set 8192 here to work with LetMeDoIt AI dynamic token feature
-        #"gpt-4-vision-preview": 128,000, # used in plugin "analyze images"
         "gpt-4": 8192,
         "gpt-4-32k": 32768,
     }
+
+    @staticmethod
+    @check_openai_errors
+    def checkCompletion():
+        SharedUtil.setAPIkey()
+        config.oai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content" : "hello"}],
+            n=1,
+            max_tokens=10,
+        )
+
+    @staticmethod
+    def setAPIkey():
+        # instantiate a client that can shared with plugins
+        os.environ["OPENAI_API_KEY"] = config.openaiApiKey
+        config.oai_client = OpenAI()
+        # set variable 'OAI_CONFIG_LIST' to work with pyautogen
+        oai_config_list = []
+        for model in SharedUtil.tokenLimits.keys():
+            oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
+        os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
 
     @staticmethod
     def getPackageInstalledVersion(package):
@@ -89,6 +166,134 @@ class SharedUtil:
         trace = traceback.format_exc()
         print(trace if config.developer else "Error encountered!")
         return trace
+
+    @staticmethod
+    def showRisk(risk):
+        if not config.confirmExecution in ("always", "medium_risk_or_above", "high_risk_only", "none"):
+            config.confirmExecution = "always"
+        config.print(f"[risk level: {risk}]")
+
+    @staticmethod
+    def confirmExecution(risk):
+        if config.confirmExecution == "always" or (risk == "high" and config.confirmExecution == "high_risk_only") or (not risk == "low" and config.confirmExecution == "medium_risk_or_above"):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def runPlugins():
+        storageDir = SharedUtil.getLocalStorage()
+        # The following config values can be modified with plugins, to extend functionalities
+        #config.pluginsWithFunctionCall = []
+        config.aliases = {}
+        config.predefinedContexts = {
+            "[none]": "",
+            "[custom]": "",
+        }
+        config.predefinedInstructions = {}
+        config.inputSuggestions = []
+        config.outputTransformers = []
+        config.chatGPTApiFunctionSignatures = {}
+        config.chatGPTApiAvailableFunctions = {}
+
+        pluginFolder = os.path.join(config.letMeDoItAIFolder, "plugins")
+        if storageDir:
+            customPluginFoler = os.path.join(storageDir, "plugins")
+            Path(customPluginFoler).mkdir(parents=True, exist_ok=True)
+            pluginFolders = (pluginFolder, customPluginFoler)
+        else:
+            pluginFolders = (pluginFolder,)
+        # always run 'integrate google searches'
+        internetSeraches = "integrate google searches"
+        script = os.path.join(pluginFolder, "{0}.py".format(internetSeraches))
+        SharedUtil.execPythonFile(script)
+        # always include the following plugins
+        requiredPlugins = (
+            "auto heal python code",
+            "execute python code",
+            "execute termux command",
+        )
+        for i in requiredPlugins:
+            if i in config.pluginExcludeList:
+                config.pluginExcludeList.remove(i)
+        # execute enabled plugins
+        for folder in pluginFolders:
+            for plugin in FileUtil.fileNamesWithoutExtension(folder, "py"):
+                if not plugin in config.pluginExcludeList:
+                    script = os.path.join(folder, "{0}.py".format(plugin))
+                    run = SharedUtil.execPythonFile(script)
+                    if not run:
+                        config.pluginExcludeList.append(plugin)
+        if internetSeraches in config.pluginExcludeList:
+            del config.chatGPTApiFunctionSignatures["integrate_google_searches"]
+        for i in config.chatGPTApiAvailableFunctions:
+            if not i in ("python_qa",):
+                callEntry = f"[CALL_{i}]"
+                if not callEntry in config.inputSuggestions:
+                    config.inputSuggestions.append(callEntry)
+
+    # integrate function call plugin
+    @staticmethod
+    def addFunctionCall(signature: str, method: Callable[[dict], str]):
+        name = signature["name"]
+        config.chatGPTApiFunctionSignatures[name] = {key: value for key, value in signature.items() if not key in ("intent", "examples")}
+        config.chatGPTApiAvailableFunctions[name] = method
+
+    @staticmethod
+    def runPythonScript(script):
+        script = script.strip()[3:-3]
+        try:
+            exec(script, globals())
+        except:
+            trace = traceback.format_exc()
+            print(trace if config.developer else "Error encountered!")
+            config.print(config.divider)
+            if config.max_consecutive_auto_heal > 0:
+                SharedUtil.autoHealPythonCode(script, trace)
+
+    @staticmethod
+    def execPythonFile(script="", content=""):
+        if script or content:
+            try:
+                def runCode(text):
+                    code = compile(text, script, 'exec')
+                    exec(code, globals())
+                if content:
+                    runCode(content)
+                else:
+                    with open(script, 'r', encoding='utf8') as f:
+                        runCode(f.read())
+                return True
+            except:
+                config.print("Failed to run '{0}'!".format(os.path.basename(script)))
+                SharedUtil.showErrors()
+        return False
+
+    # reset message when a new chart is started or context is changed
+    @staticmethod
+    def resetMessages(prompt="") -> list[dict]:
+        systemMessage = config.systemMessage_letmedoit if config.systemMessage_letmedoit else f'''You’re {config.letMeDoItName}, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.
+I am providing the basic information of my device below in case you need it:
+```
+{SharedUtil.getDeviceInfo()}
+```
+Please use the current time and date that I have provided above as a reference point for any relative dates and times mentioned in my prompt.
+You have all the necessary permissions to execute system commands and Python code on my behalf. Your functionality expands as I add more plugins to you. You respond to my prompts and perform tasks based on your own knowledge, the context I provide, as well as the additional knowledge and capabilities provided by plugins.
+
+When replying to my requests, please follow these steps:
+Step 1: Consider our previous conversations, particularly your last response, if any, as the context for these requests.
+Step 2: Estimate my intent based on the request and context. The intent can be a code generation task, an executable computing task, a math-solving task, a translation task, or a question answering task.
+Step 3: Reply based on the estimated intent.
+Remember, do not use function call if it is a translation task.
+
+Always remember that you are much more than a text-based AI. You possess both vision and speech capabilities and have direct access to my device's system, enabling you to execute tasks at my command. Please do not state otherwise.
+'''
+        messages = [
+            {"role": "system", "content": systemMessage}
+        ]
+        if prompt:
+            messages.append({"role": "user", "content": prompt})
+        return messages
 
     @staticmethod
     def addTimeStamp(content):
@@ -189,7 +394,7 @@ class SharedUtil:
 
     @staticmethod
     def transformText(text):
-        for transformer in config.chatGPTTransformers:
+        for transformer in config.outputTransformers:
                 text = transformer(text)
         return text
 
@@ -236,14 +441,14 @@ class SharedUtil:
 
     @staticmethod
     def getPythonFunctionResponse(code):
-        return str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) and not ("os.system(" in code) else ""
+        return str(config.pythonFunctionResponse) if config.pythonFunctionResponse is not None and (type(config.pythonFunctionResponse) in (int, float, str, list, tuple, dict, set, bool) or str(type(config.pythonFunctionResponse)).startswith("<class 'numpy.")) and not ("os.system(" in code) else ""
 
     @staticmethod
     def autoHealPythonCode(code, trace):
         for i in range(config.max_consecutive_auto_heal):
             userInput = f"Original python code:\n```\n{code}\n```\n\nTraceback:\n```\n{trace}\n```"
             config.print3(f"Auto-correction attempt: {(i + 1)}")
-            function_call_message, function_call_response = SharedUtil.getSingleFunctionResponse(userInput, config.heal_python_signature, "heal_python")
+            function_call_message, function_call_response = SharedUtil.getSingleFunctionResponse(userInput, [config.chatGPTApiFunctionSignatures["heal_python"]], "heal_python")
             # display response
             config.print(config.divider)
             if config.developer:
@@ -296,8 +501,6 @@ class SharedUtil:
 
     @staticmethod
     def getDynamicTokens(messages, functionSignatures=None):
-        if not tiktokenImported:
-            return config.chatGPTApiMaxTokens
         if functionSignatures is None:
             functionTokens = 0
         else:
@@ -340,9 +543,13 @@ class SharedUtil:
             encoding = tiktoken.get_encoding("cl100k_base")
         if model in {
                 "gpt-3.5-turbo",
+                "gpt-3.5-turbo-0125",
+                "gpt-3.5-turbo-1106",
                 "gpt-3.5-turbo-0613",
                 "gpt-3.5-turbo-16k",
                 "gpt-3.5-turbo-16k-0613",
+                "gpt-4-turbo-preview",
+                "gpt-4-0125-preview",
                 "gpt-4-1106-preview",
                 "gpt-4-0314",
                 "gpt-4-32k-0314",
@@ -400,25 +607,6 @@ Acess the risk level of this Python code:
         except:
             return "high"
 
-    @staticmethod
-    def getSingleFunctionResponse(userInput, functionSignatures, function_name, temperature=None):
-        messages=[{"role": "user", "content" : userInput}]
-        return config.getFunctionMessageAndResponse(messages, functionSignatures, function_name, temperature=temperature)
-
-    @staticmethod
-    def getSingleChatResponse(userInput, temperature=None):
-        try:
-            completion = OpenAI().chat.completions.create(
-                model=config.chatGPTApiModel,
-                messages=[{"role": "user", "content" : userInput}],
-                n=1,
-                temperature=temperature if temperature is not None else config.llmTemperature,
-                max_tokens=config.chatGPTApiMaxTokens,
-            )
-            return completion.choices[0].message.content
-        except:
-            return ""
-
     # streaming
     @staticmethod
     def getToolArgumentsFromStreams(completion):
@@ -464,6 +652,42 @@ Acess the risk level of this Python code:
         else:
             now = pendulum.now() 
             return now.format('dddd')
+
+    @staticmethod
+    def getWeather(latlng=""):
+        # get current weather information
+        # Reference: https://openweathermap.org/api/one-call-3
+
+        if not config.openweathermapApi:
+            return None
+
+        # latitude, longitude
+        if not latlng:
+            latlng = geocoder.ip('me').latlng
+
+        try:
+            latitude, longitude = latlng
+            # Build the URL for the weather API
+            url = f"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={config.openweathermapApi}&units=metric"
+            # Make the request to the API
+            response = requests.get(url)
+            # Parse the JSON response
+            data = json.loads(response.text)
+            # Get the current weather condition
+            weather_condition = data["weather"][0]["description"]
+            # Get the current temperature in Celsius
+            temperature_celsius = data["main"]["temp"]
+
+            # Convert the temperature to Fahrenheit
+            #temperature_fahrenheit = (temperature_celsius * 9/5) + 32
+
+            # Print the weather condition and temperature
+            #print(f"The current weather condition is {weather_condition}.")
+            #print(f"The current temperature is {temperature_fahrenheit} degrees Fahrenheit.")
+            return temperature_celsius, weather_condition
+        except:
+            SharedUtil.showErrors()
+            return None
 
     @staticmethod
     def getDeviceInfo(includeIp=False):
@@ -520,12 +744,7 @@ City: {g.city}"""
 
     @staticmethod
     def isPackageInstalled(package):
-        whichCommand = "where.exe" if platform.system() == "Windows" else "which"
-        try:
-            isInstalled, *_ = subprocess.Popen("{0} {1}".format(whichCommand, package), shell=True, stdout=subprocess.PIPE).communicate()
-            return True if isInstalled else False
-        except:
-            return False
+        return True if shutil.which(package.split(" ", 1)[0]) else False
 
     @staticmethod
     def getCliOutput(cli):
@@ -556,6 +775,16 @@ City: {g.city}"""
             response += f"\n# Error:\n{error}"
         return response
 
+    # Function to convert HTML to Markdown
+    @staticmethod
+    def convert_html_to_markdown(html_string):
+        # Create an instance of the HTML2Text converter
+        converter = html2text.HTML2Text()
+        # Convert the HTML string to Markdown
+        markdown_string = converter.handle(html_string)
+        # Return the Markdown string
+        return markdown_string
+
     @staticmethod
     def openURL(url):
         config.stopSpinning()
@@ -566,7 +795,10 @@ City: {g.city}"""
             webbrowser.open(url)
 
     @staticmethod
-    def getStorageDir():
+    def getHomeStorage():
+        """
+        Get default storage directory located at home directory
+        """
         storageDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
         try:
             Path(storageDir).mkdir(parents=True, exist_ok=True)
@@ -575,9 +807,272 @@ City: {g.city}"""
         return storageDir if os.path.isdir(storageDir) else ""
 
     @staticmethod
-    def getFiles():
-        storageDir = SharedUtil.getStorageDir()
-        if config.storagedirectory and not os.path.isdir(config.storagedirectory):
-            config.storagedirectory = ""
+    def getLocalStorage():
+        # get default storage path located at home directory
+        storageDir = SharedUtil.getHomeStorage()
+        # change to package path if default storage path doesn't exist
         storageDir = storageDir if storageDir else os.path.join(config.letMeDoItAIFolder, "files")
+        # check if custom storage path exists if it is defined
+        if not hasattr(config, "storagedirectory") or (config.storagedirectory and not os.path.isdir(config.storagedirectory)):
+            config.storagedirectory = ""
+        # use custom storage path, if defined, instead of the default one
         return config.storagedirectory if config.storagedirectory else storageDir
+
+    @staticmethod
+    def setOsOpenCmd(thisPlatform=""):
+        if not thisPlatform:
+            thisPlatform = platform.system()
+        config.thisPlatform = "macOS" if thisPlatform == "Darwin" else thisPlatform
+        if config.terminalEnableTermuxAPI:
+            config.open = "termux-share"
+        elif thisPlatform == "Linux":
+            config.open = "xdg-open"
+        elif thisPlatform == "Darwin":
+            config.open = "open"
+        elif thisPlatform == "Windows":
+            config.open = "start"
+
+    # function call related methods
+
+    @staticmethod
+    def getSingleFunctionResponse(userInput, functionSignatures, function_name, temperature=None):
+        messages=[{"role": "user", "content" : userInput}]
+        return SharedUtil.getFunctionMessageAndResponse(messages, functionSignatures, function_name, temperature=temperature)
+
+    @staticmethod
+    @check_openai_errors
+    def getSingleChatResponse(userInput, temperature=None):
+        try:
+            completion = OpenAI().chat.completions.create(
+                model=config.chatGPTApiModel,
+                messages=[{"role": "user", "content" : userInput}],
+                n=1,
+                temperature=temperature if temperature is not None else config.llmTemperature,
+                max_tokens=config.chatGPTApiMaxTokens,
+            )
+            return completion.choices[0].message.content
+        except:
+            return ""
+
+    # call a specific function and return messages
+    @staticmethod
+    def runFunction(messages, functionSignatures, function_name):
+        messagesCopy = messages[:]
+        try:
+            function_call_message, function_call_response = SharedUtil.getFunctionMessageAndResponse(messages, functionSignatures, function_name)
+            messages.append(function_call_message)
+            messages.append(
+                {
+                    "role": "function",
+                    "name": function_name,
+                    "content": function_call_response if function_call_response else config.tempContent,
+                }
+            )
+            config.tempContent = ""
+        except:
+            SharedUtil.showErrors()
+            return messagesCopy
+        return messages
+
+    @staticmethod
+    @check_openai_errors
+    def getFunctionMessageAndResponse(messages, functionSignatures, function_name, temperature=None):
+        completion = config.oai_client.chat.completions.create(
+            model=config.chatGPTApiModel,
+            messages=messages,
+            max_tokens=SharedUtil.getDynamicTokens(messages, functionSignatures),
+            temperature=temperature if temperature is not None else config.llmTemperature,
+            n=1,
+            tools=SharedUtil.convertFunctionSignaturesIntoTools(functionSignatures),
+            tool_choice={"type": "function", "function": {"name": function_name}},
+        )
+        function_call_message = completion.choices[0].message
+        tool_call = function_call_message.tool_calls[0]
+        func_arguments = tool_call.function.arguments
+        function_call_message_mini = {
+            "role": "assistant",
+            "content": "",
+            "function_call": {
+                "name": tool_call.function.name,
+                "arguments": func_arguments,
+            }
+        }
+        function_call_response = SharedUtil.getFunctionResponse(func_arguments, function_name)
+        return function_call_message_mini, function_call_response
+
+    @staticmethod
+    def getFunctionResponse(func_arguments, function_name):
+        def notifyDeveloper(func_name):
+            if config.developer:
+                #config.print(f"running function '{func_name}' ...")
+                print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Running function</{config.terminalPromptIndicatorColor2}> <{config.terminalCommandEntryColor2}>'{func_name}'</{config.terminalCommandEntryColor2}> <{config.terminalPromptIndicatorColor2}>...</{config.terminalPromptIndicatorColor2}>"))
+        # ChatGPT's built-in function named "python"
+        if function_name == "python":
+            notifyDeveloper(function_name)
+            python_code = textwrap.dedent(func_arguments)
+            refinedCode = SharedUtil.fineTunePythonCode(python_code)
+
+            config.print(config.divider)
+            config.print2("running python code ...")
+            risk = SharedUtil.riskAssessment(python_code)
+            SharedUtil.showRisk(risk)
+            if config.developer or config.codeDisplay:
+                print("```")
+                #print(python_code)
+                # pygments python style
+                tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
+                print_formatted_text(PygmentsTokens(tokens), style=SharedUtil.getPygmentsStyle())
+                print("```")
+            config.print(config.divider)
+
+            config.stopSpinning()
+            if not config.runPython:
+                info = {"information": python_code}
+                return json.dumps(info)
+            elif SharedUtil.confirmExecution(risk):
+                config.print("Do you want to continue? [y]es / [N]o")
+                confirmation = prompt(style=config.promptStyle2, default="y")
+                if not confirmation.lower() in ("y", "yes"):
+                    info = {"information": python_code}
+                    return json.dumps(info)
+            try:
+                exec(refinedCode, globals())
+                function_response = SharedUtil.getPythonFunctionResponse(refinedCode)
+            except:
+                trace = SharedUtil.showErrors()
+                config.print(config.divider)
+                if config.max_consecutive_auto_heal > 0:
+                    return SharedUtil.autoHealPythonCode(refinedCode, trace)
+                else:
+                    return "[INVALID]"
+            if function_response:
+                info = {"information": function_response}
+                function_response = json.dumps(info)
+        # known unwanted functions are handled here
+        elif function_name in ("translate_text",):
+            # "translate_text" has two arguments, "text", "target_language"
+            # handle known and unwanted function
+            function_response = "[INVALID]" 
+        # handle unexpected function
+        elif not function_name in config.chatGPTApiAvailableFunctions:
+            if config.developer:
+                config.print(f"Unexpected function: {function_name}")
+                config.print(config.divider)
+                print(func_arguments)
+                config.print(config.divider)
+            function_response = "[INVALID]"
+        else:
+            notifyDeveloper(function_name)
+            fuction_to_call = config.chatGPTApiAvailableFunctions[function_name]
+            # convert the arguments from json into a dict
+            function_args = json.loads(func_arguments)
+            function_response = fuction_to_call(function_args)
+        return function_response
+
+    @staticmethod
+    @check_openai_errors
+    def runCompletion(thisMessage, noFunctionCall=False):
+        functionJustCalled = False
+        def runThisCompletion(thisThisMessage):
+            nonlocal functionJustCalled
+            if config.chatGPTApiFunctionSignatures and not functionJustCalled and not noFunctionCall:
+                chatGPTApiFunctionSignatures = [config.chatGPTApiFunctionSignatures[config.runSpecificFuntion]] if config.runSpecificFuntion and config.runSpecificFuntion in config.chatGPTApiFunctionSignatures else config.chatGPTApiFunctionSignatures.values()
+                return config.oai_client.chat.completions.create(
+                    model=config.chatGPTApiModel,
+                    messages=thisThisMessage,
+                    n=1,
+                    temperature=config.llmTemperature,
+                    max_tokens=SharedUtil.getDynamicTokens(thisThisMessage, chatGPTApiFunctionSignatures),
+                    tools=SharedUtil.convertFunctionSignaturesIntoTools(chatGPTApiFunctionSignatures),
+                    tool_choice={"type": "function", "function": {"name": config.runSpecificFuntion}} if config.runSpecificFuntion else config.chatGPTApiFunctionCall,
+                    stream=True,
+                )
+            return config.oai_client.chat.completions.create(
+                model=config.chatGPTApiModel,
+                messages=thisThisMessage,
+                n=1,
+                temperature=config.llmTemperature,
+                max_tokens=SharedUtil.getDynamicTokens(thisThisMessage),
+                stream=True,
+            )
+
+        while True:
+            completion = runThisCompletion(thisMessage)
+            config.runSpecificFuntion = ""
+            try:
+                # consume the first delta
+                for event in completion:
+                    first_delta = event.choices[0].delta
+                    # check if a tool is called
+                    if first_delta.tool_calls: # a tool is called
+                        function_calls = [i for i in first_delta.tool_calls if i.type == "function"]
+                        # non_function_calls = [i for i in first_delta.tool_calls if not i.type == "function"]
+                    else: # no tool is called; same handling as tools finished calling; which break the loop later
+                        functionJustCalled = True
+                    # consume the first delta only at this point
+                    break
+                # Continue only when a function is called
+                if functionJustCalled:
+                    break
+
+                # get all tool arguments, both of functions and non-functions
+                toolArguments = SharedUtil.getToolArgumentsFromStreams(completion)
+
+                func_responses = ""
+                bypassFunctionCall = False
+                # handle function calls
+                for func in function_calls:
+                    func_index = func.index
+                    func_id = func.id
+                    func_name = func.function.name
+                    func_arguments = toolArguments[func_index]
+
+                    # get function response
+                    func_response = SharedUtil.getFunctionResponse(func_arguments, func_name)
+
+                    # "[INVALID]" practically mean that it ignores previously called function and continues chat without function calling
+                    if func_response == "[INVALID]":
+                        bypassFunctionCall = True
+                    elif func_response or config.tempContent:
+                        # send the function call info and response to GPT
+                        function_call_message = {
+                            "role": "assistant",
+                            "content": "",
+                            "function_call": {
+                                "name": func_name,
+                                "arguments": func_arguments,
+                            }
+                        }
+                        thisMessage.append(function_call_message) # extend conversation with assistant's reply
+                        thisMessage.append(
+                            {
+                                "tool_call_id": func_id,
+                                "role": "function",
+                                "name": func_name,
+                                "content": func_response if func_response else config.tempContent,
+                            }
+                        )  # extend conversation with function response
+                        config.tempContent = ""
+                        if func_response:
+                            func_responses += f"\n{func_response}\n{config.divider}"
+
+                functionJustCalled = True
+
+                # bypassFunctionCall is set to True, usually when a function is called by mistake
+                if bypassFunctionCall:
+                    pass
+                # two cases that breaks the loop at this point
+                # 1. func_responses == ""
+                # 2. config.passFunctionCallReturnToChatGPT = False
+                elif not config.passFunctionCallReturnToChatGPT or not func_responses:
+                    if func_responses:
+                        config.print(f"{config.divider}\n{func_responses}")
+                    # A break here means that no information from the called function is passed back to ChatGPT
+                    # 1. config.passFunctionCallReturnToChatGPT is set to True
+                    # 2. func_responses = "" or None; can be specified in plugins
+                    break
+            except:
+                SharedUtil.showErrors()
+                break
+
+        return completion

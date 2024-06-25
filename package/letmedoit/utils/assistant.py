@@ -1,25 +1,17 @@
 from letmedoit import config
-import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, string, shutil, asyncio, datetime, pprint
-from openai import OpenAI
-try:
-    import tiktoken
-    tiktokenImported = True
-except:
-    tiktokenImported = False
+import openai, threading, os, time, traceback, re, subprocess, json, pydoc, textwrap, shutil, datetime, pprint, sys
 from pathlib import Path
 import pygments
 from pygments.lexers.python import PythonLexer
-from pygments.lexers.shell import BashLexer
+#from pygments.lexers.shell import BashLexer
 #from pygments.lexers.markup import MarkdownLexer
 from prompt_toolkit.formatted_text import PygmentsTokens
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
-from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit.shortcuts import clear
+from prompt_toolkit.completion import WordCompleter, FuzzyCompleter
+from prompt_toolkit.shortcuts import clear, set_title
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit import print_formatted_text, HTML
-from prompt_toolkit.input import create_input
-from prompt_toolkit.keys import Keys
 from letmedoit.utils.terminal_mode_dialogs import TerminalModeDialogs
 from letmedoit.utils.prompts import Prompts
 from letmedoit.utils.promptValidator import FloatValidator, TokenValidator
@@ -29,11 +21,18 @@ from letmedoit.utils.file_utils import FileUtil
 from letmedoit.utils.terminal_system_command_prompt import SystemCommandPrompt
 from letmedoit.utils.shared_utils import SharedUtil
 from letmedoit.utils.tts_utils import TTSUtil
+from letmedoit.utils.ttsLanguages import TtsLanguages
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
-from letmedoit.plugins.bibleTools.utils.TextUtil import TextUtil
+from letmedoit.utils.text_utils import TextUtil
+from letmedoit.utils.sttLanguages import googleSpeeckToTextLanguages, whisperSpeeckToTextLanguages
+from letmedoit.chatgpt import ChatGPT
+from letmedoit.utils.install import installmodule
 if not config.isTermux:
     from letmedoit.autobuilder import AutoGenBuilder
-
+    from letmedoit.geminipro import GeminiPro
+    from letmedoit.palm2 import Palm2
+    from letmedoit.codey import Codey
+from elevenlabs.client import ElevenLabs
 
 class LetMeDoItAI:
 
@@ -42,12 +41,12 @@ class LetMeDoItAI:
         self.prompts = Prompts()
         self.dialogs = TerminalModeDialogs(self)
         self.setup()
-        self.runPlugins()
+        SharedUtil.runPlugins()
 
     def setup(self):
         self.models = list(SharedUtil.tokenLimits.keys())
         config.divider = self.divider = "--------------------"
-        self.runPython = True
+        config.runPython = True
         if not hasattr(config, "accept_default"):
             config.accept_default = False
         if not hasattr(config, "defaultEntry"):
@@ -60,7 +59,8 @@ class LetMeDoItAI:
         config.pagerContent = ""
         #self.addPagerContent = False
         # share the following methods in config so that they are accessible via plugins
-        config.getFiles = self.getFiles
+        config.addFunctionCall = SharedUtil.addFunctionCall
+        config.getLocalStorage = SharedUtil.getLocalStorage
         config.stopSpinning = self.stopSpinning
         config.toggleMultiline = self.toggleMultiline
         config.print = self.print
@@ -70,7 +70,7 @@ class LetMeDoItAI:
         config.fineTuneUserInput = self.fineTuneUserInput
         config.launchPager = self.launchPager
         config.addPagerText = self.addPagerText
-        config.getFunctionMessageAndResponse = self.getFunctionMessageAndResponse
+        config.changeOpenweathermapApi = self.changeOpenweathermapApi
         config.runSpecificFuntion = ""
         # env variables
         os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = config.env_QT_QPA_PLATFORM_PLUGIN_PATH
@@ -85,7 +85,9 @@ class LetMeDoItAI:
             itemColor=config.terminalColors[config.terminalCommandEntryColor2],
         )
 
-        self.storageDir = self.getStorageDir()
+        # local storage directory
+        self.storageDir = SharedUtil.getLocalStorage()
+        # hisotry directory
         if (not config.historyParentFolder or not os.path.isdir(config.historyParentFolder)) and self.storageDir:
             try:
                 historyParentFolder = os.path.join(self.storageDir, "history")
@@ -109,80 +111,77 @@ class LetMeDoItAI:
 
         # initial completion check at startup
         if config.initialCompletionCheck:
-            self.checkCompletion()
+            SharedUtil.checkCompletion()
         else:
-            self.setAPIkey()
+            SharedUtil.setAPIkey()
 
         chat_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "chats")
         self.terminal_chat_session = PromptSession(history=FileHistory(chat_history))
 
         # check if tts is ready
-        if not config.isVlcPlayerInstalled and not config.isPygameInstalled and not config.ttsCommand:
-            config.tts = False
-        else:
-            config.tts = True
         self.isTtsAvailable()
 
         self.actions = {
-            '.new': 'start a new chat [ctrl+n]',
-            '.save': 'save content [ctrl+s]',
-            '.swaptextbrightness': 'swap text brightness [esc+s]',
-            '.instruction': 'run an instruction',
-            '.context': 'change chat context [ctrl+o]',
-            '.contextinclusion': 'change chat context inclusion',
-            '.changeapikey': 'change API key',
-            '.chatgptmodel': 'change ChatGPT model',
-            '.temperature': 'change ChatGPT temperature',
-            '.maxtokens': 'change maximum response tokens',
-            '.mintokens': 'change minimum response tokens',
-            '.dynamictokencount': 'change dynamic token count',
-            '.maxautoheal': 'change maximum consecutive auto-heal',
-            '.maxmemorymatches': 'change maximum memory matches',
-            '.plugins': 'change plugins',
-            '.functioncall': 'change function call',
-            '.functionresponse': 'change function call response integration',
-            '.latestSearches': 'change online searches',
-            #'.enhanceexecution': 'change code execution mode [ctrl+e]',
-            '.confirmexecution': 'change code confirmation protocol',
-            '.codedisplay': 'change code display',
-            '.pagerview': 'change pager view',
-            '.embeddingmodel': 'change embedding model',
-            '.assistantname': 'change assistant name',
-            '.systemmessage': 'change custom system message',
-            '.ipinfo': 'change ip information inclusion',
-            '.storagedirectory': 'change storage directory',
-            '.autobuilderconfig': 'change auto builder config',
-            '.customtexteditor': 'change custom text editor',
-            '.termuxapi': 'change Termux API integration',
-            '.autoupgrade': 'change automatic upgrade',
-            '.developer': 'change developer mode [ctrl+d]',
-            '.togglemultiline': 'toggle multi-line input [ctrl+l]',
-            '.togglemousesupport': 'toogle mouse support [esc+m]',
-            '.togglewordwrap': 'toggle word wrap [ctrl+w]',
-            '.toggleimprovedwriting': 'toggle improved writing [esc+i]',
-            '.toggleinputaudio': 'toggle input audio [ctrl+b]',
-            '.toggleresponseaudio': 'toggle response audio [ctrl+p]',
-            '.ttscommand': 'configure text-to-speech command',
-            '.system': 'open system command prompt',
-            '.help': 'open LetMeDoIt wiki',
-            '.keys': 'display key bindings',
+            ".new": (f"start a new chat {str(config.hotkey_new)}", None),
+            ".save": ("save content", lambda: self.saveChat(config.currentMessages)),
+            ".export": (f"export content {str(config.hotkey_export)}", lambda: self.exportChat(config.currentMessages)),
+            ".context": (f"change chat context {str(config.hotkey_select_context)}", None),
+            ".contextintegration": ("change chat context integration", self.setContextIntegration),
+            ".changeapikey": ("change OpenAI API key", self.changeAPIkey),
+            ".functionmodel": ("change function call model", self.setLlmModel),
+            ".chatmodel": ("change chat-only model", self.setChatbot),
+            ".embeddingmodel": ("change embedding model", self.setEmbeddingModel),
+            ".temperature": ("change temperature", self.setTemperature),
+            ".maxtokens": ("change maximum response tokens", self.setMaxTokens),
+            ".mintokens": ("change minimum response tokens", self.setMinTokens),
+            ".dynamictokencount": ("change dynamic token count", self.setDynamicTokenCount),
+            ".maxautoheal": ("change maximum consecutive auto-heal", self.setMaxAutoHeal),
+            ".maxmemorymatches": ("change maximum memory matches", self.setMemoryClosestMatches),
+            ".maxchatrecordmatches": ("change maximum chat record matches", self.setChatRecordClosestMatches),
+            ".plugins": ("change plugins", self.selectPlugins),
+            ".functioncall": ("change function call", self.setFunctionCall),
+            ".functioncallintegration": ("change function call integration", self.setFunctionResponse),
+            ".latestSearches": ("change online searches", self.setLatestSearches),
+            ".userconfirmation": ("change code confirmation protocol", self.setUserConfirmation),
+            ".codedisplay": ("change code display", self.setCodeDisplay),
+            ".pagerview": ("change pager view", self.setPagerView),
+            ".assistantname": ("change assistant name", self.setAssistantName),
+            ".systemmessage": ("change custom system message", self.setCustomSystemMessage),
+            ".ipinfo": ("change ip information integration", self.setIncludeIpInSystemMessage),
+            ".storagedirectory": ("change storage directory", self.setStorageDirectory),
+            ".voicetypingconfig": ("change voice typing config", self.setVoiceTypingConfig),
+            ".texttospeechconfig": ("change text-to-speech config", self.setTextToSpeechConfig),
+            ".googleapiservice": ("change Google API service", self.selectGoogleAPIs),
+            ".openweathermapapi": ("change OpenWeatherMap API key", self.changeOpenweathermapApi),
+            ".elevenlabsapi": ("change ElevenLabs API key", self.changeElevenlabsApi),
+            ".autobuilderconfig": ("change auto builder config", self.setAutoGenBuilderConfig),
+            ".customtexteditor": ("change custom text editor", self.setCustomTextEditor),
+            ".termuxapi": ("change Termux API integration", self.setTermuxApi),
+            ".autoupgrade": ("change automatic upgrade", self.setAutoUpgrade),
+            ".developer": (f"change developer mode {str(config.hotkey_toggle_developer_mode)}", self.setDeveloperMode),
+            ".togglemultiline": (f"toggle multi-line input {str(config.hotkey_toggle_multiline_entry)}", self.toggleMultiline),
+            ".togglemousesupport": (f"toogle mouse support {str(config.hotkey_toggle_mouse_support)}", self.toggleMouseSupport),
+            ".toggletextbrightness": (f"swap text brightness {str(config.hotkey_swap_text_brightness)}", swapTerminalColors),
+            ".togglewordwrap": (f"toggle word wrap {str(config.hotkey_toggle_word_wrap)}", self.toggleWordWrap),
+            ".toggleimprovedwriting": (f"toggle improved writing {str(config.hotkey_toggle_writing_improvement)}", self.toggleImprovedWriting),
+            ".toggleinputaudio": (f"toggle input audio {str(config.hotkey_toggle_input_audio)}", self.toggleinputaudio),
+            ".toggleresponseaudio": (f"toggle response audio {str(config.hotkey_toggle_response_audio)}", self.toggleresponseaudio),
+            ".editresponse": (f"edit the last response {str(config.hotkey_edit_last_response)}", self.editLastResponse),
+            ".editconfigs": ("edit configuration settings", self.editConfigs),
+            ".install": ("install python package", self.installPythonPackage),
+            ".system": (f"open system command prompt {str(config.hotkey_launch_system_prompt)}", lambda: SystemCommandPrompt().run(allowPathChanges=True)),
+            ".content": ("display current directory content", self.getPath.displayDirectoryContent),
+            ".keys": (f"display key bindings {str(config.hotkey_display_key_combo)}", config.showKeyBindings),
+            ".help": ("open LetMeDoIt wiki", lambda: SharedUtil.openURL('https://github.com/eliranwong/letmedoit/wiki')),
+            ".donate": ("donate and support LetMeDoIt AI", lambda: SharedUtil.openURL('https://www.paypal.com/paypalme/letmedoitai')),
         }
 
-    def getStorageDir(self):
-        storageDir = os.path.join(os.path.expanduser('~'), config.letMeDoItName.split()[0].lower())
-        try:
-            Path(storageDir).mkdir(parents=True, exist_ok=True)
-        except:
-            pass
-        return storageDir if os.path.isdir(storageDir) else ""
+        config.actionHelp = f"# Quick Actions\n(entries that start with '.')\n"
+        for key, value in self.actions.items():
+            config.actionHelp += f"{key}: {value[0]}\n"
+        config.actionHelp += "\n## Read more at:\nhttps://github.com/eliranwong/letmedoit/wiki/Action-Menu"
 
-    def getFiles(self):
-        if config.storagedirectory and not os.path.isdir(config.storagedirectory):
-            config.storagedirectory = ""
-        storageDir = self.storageDir if self.storageDir else os.path.join(config.letMeDoItAIFolder, "files")
-        return config.storagedirectory if config.storagedirectory else storageDir
-
-    def getFolderPath(self):
+    def getFolderPath(self, default=""):
         return self.getPath.getFolderPath(
             check_isdir=True,
             display_dir_only=True,
@@ -192,75 +191,160 @@ class LetMeDoItAI:
             keep_startup_directory=True,
             message=f"{self.divider}\nSetting a startup directory ...\nEnter a folder name or path below:",
             bottom_toolbar="",
-            promptIndicator = ""
+            promptIndicator = "",
+            default=default,
         )
 
-    def execPythonFile(self, script="", content=""):
-        if script or content:
-            try:
-                def runCode(text):
-                    code = compile(text, script, 'exec')
-                    exec(code, globals())
-                if content:
-                    runCode(content)
-                else:
-                    with open(script, 'r', encoding='utf8') as f:
-                        runCode(f.read())
-            except:
-                self.print("Failed to run '{0}'!".format(os.path.basename(script)))
-                SharedUtil.showErrors()
+    # Voice Typing Language
+    def setSpeechToTextLanguage(self):
+        # record in history for easy retrieval by moving arrows upwards / downwards
+        voice_typing_language_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "voice_typing_language")
+        voice_typing_language_session = PromptSession(history=FileHistory(voice_typing_language_history))
+        # input suggestion for languages
+        languages = tuple(googleSpeeckToTextLanguages.keys()) if config.voiceTypingPlatform in ("google", "googlecloud") else whisperSpeeckToTextLanguages
+        # default
+        default = ""
+        for i in languages:
+            if config.voiceTypingPlatform in ("google", "googlecloud") and googleSpeeckToTextLanguages[i] == config.voiceTypingLanguage:
+                default = i
+            elif i == config.voiceTypingLanguage:
+                default = i
+        if not default:
+            default = "English (United States)" if config.voiceTypingPlatform in ("google", "googlecloud") else "english"
+        # completer
+        completer = FuzzyCompleter(WordCompleter(languages, ignore_case=True))
+        self.print("Please specify the voice typing language:")
+        language = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=default, promptSession=voice_typing_language_session, completer=completer)
+        if language and not language in (config.exit_entry, config.cancel_entry):
+            config.voiceTypingLanguage = language
+        if not config.voiceTypingLanguage in languages:
+            config.voiceTypingLanguage = "en-US" if config.voiceTypingPlatform in ("google", "googlecloud") else "english"
+        if config.voiceTypingPlatform in ("google", "googlecloud") and config.voiceTypingLanguage in languages:
+            config.voiceTypingLanguage = googleSpeeckToTextLanguages[config.voiceTypingLanguage]
 
-    def runPlugins(self):
-        # The following config values can be modified with plugins, to extend functionalities
-        config.pluginsWithFunctionCall = []
-        config.aliases = {}
-        config.predefinedContexts = {
-            "[none]": "",
-            "[custom]": "",
-        }
-        config.predefinedInstructions = {}
-        config.inputSuggestions = []
-        config.chatGPTTransformers = []
-        config.chatGPTApiFunctionSignatures = []
-        config.chatGPTApiAvailableFunctions = {}
+    # ElevenLabs Text-to-Speech Voice
+    def setElevenlabsVoice(self):
+        # record in history for easy retrieval by moving arrows upwards / downwards
+        elevenlabsVoice_history = os.path.join(config.localStorage, "history", "elevenlabsVoice")
+        elevenlabsVoice_session = PromptSession(history=FileHistory(elevenlabsVoice_history))
+        # input suggestion for options
+        options = {}
+        ids = {}
+        for voice in list(ElevenLabs(api_key=config.elevenlabsApi).voices.get_all())[0][-1]:
+            options[voice.name] = voice.voice_id
+            ids[voice.voice_id] = voice.name
+        # default
+        default = ids[config.elevenlabsVoice] if config.elevenlabsVoice in ids else "Rachel"
+        # completer
+        completer = FuzzyCompleter(WordCompleter(options.keys(), ignore_case=True))
+        self.print("Please specify ElevenLabs Text-to-Speech Voice:")
+        option = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=default, promptSession=elevenlabsVoice_session, completer=completer)
+        if option and not option in (config.exit_entry, config.cancel_entry):
+            config.elevenlabsVoice = options[option] if option in options else "21m00Tcm4TlvDq8ikWAM" # Rachel's voice id
 
-        # built-in functions
-        config.pluginsWithFunctionCall.append("execute_python_code")
-        config.inputSuggestions.append("[CALL_execute_python_code]")
-        if config.terminalEnableTermuxAPI:
-            config.pluginsWithFunctionCall.append("execute_termux_command")
-            config.inputSuggestions.append("[CALL_execute_termux_command]")
-
-        pluginFolder = os.path.join(config.letMeDoItAIFolder, "plugins")
-        if self.storageDir:
-            customPluginFoler = os.path.join(self.storageDir, "plugins")
-            Path(customPluginFoler).mkdir(parents=True, exist_ok=True)
-            pluginFolders = (pluginFolder, customPluginFoler)
+    # Google Text-to-Speech (Generic)
+    def setGttsLanguage(self):
+        # record in history for easy retrieval by moving arrows upwards / downwards
+        gtts_language_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "gtts_language")
+        gtts_language_session = PromptSession(history=FileHistory(gtts_language_history))
+        # input suggestion for languages
+        languages = tuple(TtsLanguages.gtts.keys())
+        # default
+        default = ""
+        for i in languages:
+            if TtsLanguages.gtts[i] == config.gttsLang:
+                default = i
+        if not default:
+            default = "en"
+        # completer
+        completer = FuzzyCompleter(WordCompleter(languages, ignore_case=True))
+        self.print("Please specify Google Text-to-Speech language:")
+        language = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=default, promptSession=gtts_language_session, completer=completer)
+        if language and not language in (config.exit_entry, config.cancel_entry):
+            config.gttsLang = language
+        if config.gttsLang in languages:
+            config.gttsLang = TtsLanguages.gtts[config.gttsLang]
         else:
-            pluginFolders = (pluginFolder,)
-        # always run 'integrate google searches'
-        internetSeraches = "integrate google searches"
-        script = os.path.join(pluginFolder, "{0}.py".format(internetSeraches))
-        self.execPythonFile(script)
-        # always include the following plugins
-        requiredPlugins = ("auto heal python code",)
-        for i in requiredPlugins:
-            if i in config.pluginExcludeList:
-                config.pluginExcludeList.remove(i)
-        # execute enabled plugins
-        for folder in pluginFolders:
-            for plugin in FileUtil.fileNamesWithoutExtension(folder, "py"):
-                if not plugin in config.pluginExcludeList:
-                    script = os.path.join(folder, "{0}.py".format(plugin))
-                    self.execPythonFile(script)
-        if internetSeraches in config.pluginExcludeList:
-            del config.chatGPTApiFunctionSignatures[0]
-        self.setupPythonExecution()
-        if config.terminalEnableTermuxAPI:
-            self.setupTermuxExecution()
-        for i in config.pluginsWithFunctionCall:
-            config.inputSuggestions.append(f"[CALL_{i}]")
-            config.inputSuggestions.append(f"CALL_{i}]")
+            config.gttsLang = "en"
+
+    # Google Cloud Text-to-Speech (API)
+    def setGcttsLanguage(self):
+        # record in history for easy retrieval by moving arrows upwards / downwards
+        gctts_language_history = os.path.join(config.historyParentFolder if config.historyParentFolder else config.letMeDoItAIFolder, "history", "gctts_language")
+        gctts_language_session = PromptSession(history=FileHistory(gctts_language_history))
+        # input suggestion for languages
+        languages = tuple(TtsLanguages.gctts.keys())
+        # default
+        default = ""
+        for i in languages:
+            if TtsLanguages.gctts[i] == config.gcttsLang:
+                default = i
+        if not default:
+            default = "en-US"
+        # completer
+        completer = FuzzyCompleter(WordCompleter(languages, ignore_case=True))
+        self.print("Please specify Google Cloud Text-to-Speech language:")
+        language = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=default, promptSession=gctts_language_session, completer=completer)
+        if language and not language in (config.exit_entry, config.cancel_entry):
+            config.gcttsLang = language
+        if config.gcttsLang in languages:
+            config.gcttsLang = TtsLanguages.gctts[config.gcttsLang]
+        else:
+            config.gcttsLang = "en-US"
+
+    def setVlcSpeed(self):
+        if config.isVlcPlayerInstalled and not config.usePygame:
+            self.print("Specify VLC player playback speed:")
+            self.print("(between 0.1 and 2.0)")
+            vlcSpeed = self.prompts.simplePrompt(style=self.prompts.promptStyle2, validator=FloatValidator(), default=str(config.vlcSpeed))
+            if vlcSpeed and not vlcSpeed.strip().lower() == config.exit_entry:
+                vlcSpeed = float(vlcSpeed)
+                if vlcSpeed < 0.1:
+                    vlcSpeed = 0.1
+                elif vlcSpeed > 2:
+                    vlcSpeed = 2
+                config.vlcSpeed = round(vlcSpeed, 1)
+                self.print3(f"VLC player playback speed: {vlcSpeed}")
+
+    def setGcttsSpeed(self):
+        self.print("Specify Google Cloud Text-to-Speech playback speed:")
+        self.print("(between 0.1 and 2.0)")
+        gcttsSpeed = self.prompts.simplePrompt(style=self.prompts.promptStyle2, validator=FloatValidator(), default=str(config.gcttsSpeed))
+        if gcttsSpeed and not gcttsSpeed.strip().lower() == config.exit_entry:
+            gcttsSpeed = float(gcttsSpeed)
+            if gcttsSpeed < 0.1:
+                gcttsSpeed = 0.1
+            elif gcttsSpeed > 2:
+                gcttsSpeed = 2
+            config.gcttsSpeed = round(gcttsSpeed, 1)
+            self.print3(f"Google Cloud Text-to-Speech playback speed: {gcttsSpeed}")
+
+    def selectGoogleAPIs(self):
+        if os.environ["GOOGLE_APPLICATION_CREDENTIALS"]:
+            enabledGoogleAPIs = self.dialogs.getMultipleSelection(
+                title="Google Cloud Service",
+                text="Select to enable Google Cloud Service in LetMeDoIt AI:",
+                options=("Vertex AI", "Speech-to-Text", "Text-to-Speech"),
+                default_values=config.enabledGoogleAPIs,
+            )
+            if enabledGoogleAPIs is not None:
+                config.enabledGoogleAPIs = enabledGoogleAPIs
+        else:
+            config.enabledGoogleAPIs = ["Vertex AI"]
+            self.print(f"API key json file '{config.google_cloud_credentials_file}' not found!")
+            self.print("Read https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup for setting up Google API.")
+        if "Speech-to-Text" in config.enabledGoogleAPIs:
+            if not config.voiceTypingPlatform == "googlecloud":
+                config.voiceTypingPlatform = "googlecloud"
+                self.print3("Voice typing platform changed to: Google Text-to-Speech (API)")
+            self.setSpeechToTextLanguage()
+        if "Text-to-Speech" in config.enabledGoogleAPIs:
+            if not config.ttsPlatform == "googlecloud":
+                config.ttsPlatform = "googlecloud"
+                self.print3("Text-to-Speech platform changed to: Google Text-to-Speech (API)")
+            self.setGcttsLanguage()
+            self.setGcttsSpeed()
+        config.saveConfig()
 
     def selectPlugins(self):
         plugins = []
@@ -289,7 +373,7 @@ class LetMeDoItAI:
                     config.pluginExcludeList.remove(p)
                 elif not p in enabledPlugins and not p in config.pluginExcludeList:
                     config.pluginExcludeList.append(p)
-            self.runPlugins()
+            SharedUtil.runPlugins()
             config.saveConfig()
             self.print("Plugin selection updated!")
 
@@ -308,19 +392,9 @@ class LetMeDoItAI:
         except:
             return False
 
-    def setAPIkey(self):
-        # instantiate a client that can shared with plugins
-        os.environ["OPENAI_API_KEY"] = config.openaiApiKey
-        self.client = OpenAI()
-        # set variable 'OAI_CONFIG_LIST' to work with pyautogen
-        oai_config_list = []
-        for model in self.models:
-            oai_config_list.append({"model": model, "api_key": config.openaiApiKey})
-        os.environ["OAI_CONFIG_LIST"] = json.dumps(oai_config_list)
-
     def changeAPIkey(self):
         if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
-            print("Enter your OpenAI API Key [required]:")
+            self.print("Enter your OpenAI API Key [required]:")
             apikey = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.openaiApiKey, is_password=True)
             if apikey and not apikey.strip().lower() in (config.cancel_entry, config.exit_entry):
                 config.openaiApiKey = apikey
@@ -328,9 +402,69 @@ class LetMeDoItAI:
             #oid = self.prompts.simplePrompt(default=config.openaiApiOrganization, is_password=True)
             #if oid and not oid.strip().lower() in (config.cancel_entry, config.exit_entry):
             #    config.openaiApiOrganization = oid
-            self.checkCompletion()
+            SharedUtil.checkCompletion()
             config.saveConfig()
-            self.print2("Updated!")
+            self.print2("Configurations updated!")
+
+    def changeOpenweathermapApi(self):
+        if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
+            self.print("To set up OpenWeatherMap API Key, read:\nhttps://github.com/eliranwong/letmedoit/wiki/OpenWeatherMap-API-Setup\n")
+            self.print("Enter your OpenWeatherMap API Key:")
+            print()
+            apikey = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.openweathermapApi, is_password=True)
+            if apikey and not apikey.strip().lower() in (config.cancel_entry, config.exit_entry):
+                config.openweathermapApi = apikey
+            if SharedUtil.getWeather() is not None:
+                config.saveConfig()
+                self.print2("Configurations updated!")
+            else:
+                config.openweathermapApi = ""
+                self.print2("Invalid API key entered!")
+
+    def changeElevenlabsApi(self):
+        if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
+            self.print("To set up ElevenLabs API Key, read:\nhttps://elevenlabs.io/docs/api-reference/text-to-speech#authentication\n")
+            self.print("Enter your ElevenLabs API Key:")
+            print()
+            apikey = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.elevenlabsApi, is_password=True)
+            if apikey and not apikey.strip().lower() in (config.cancel_entry, config.exit_entry):
+                config.elevenlabsApi = apikey
+            try:
+                # testing
+                generate(
+                    api_key=config.elevenlabsApi, # Defaults to os.getenv(ELEVEN_API_KEY)
+                    text="test",
+                    voice="Rachel",
+                    model="eleven_multilingual_v2"
+                )
+                config.saveConfig()
+                self.print2("Configurations updated!")
+            except:
+                config.elevenlabsApi = ""
+                self.print2("Invalid API key entered!")
+
+    def changeElevenlabsApi(self):
+        if not config.terminalEnableTermuxAPI or (config.terminalEnableTermuxAPI and self.fingerprint()):
+            self.print("# ElevenLabs API Key: allows access to voice generation feature offered by ElevenLabs")
+            self.print("To set up ElevenLabs API Key, read:\nhttps://elevenlabs.io/docs/api-reference/text-to-speech#authentication\n")
+            self.print("Enter your ElevenLabs API Key:")
+            print()
+            apikey = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.elevenlabsApi, is_password=True)
+            if apikey and not apikey.strip().lower() in (config.cancel_entry, config.exit_entry):
+                config.elevenlabsApi = apikey
+            try:
+                # testing
+                ElevenLabs(api_key=config.elevenlabsApi).generate(
+                    #api_key=config.elevenlabsApi, # Defaults to os.getenv(ELEVEN_API_KEY)
+                    text="test",
+                    voice=config.elevenlabsVoice,
+                    model="eleven_multilingual_v2"
+                )
+                self.print2("Configurations updated!")
+            except:
+                config.elevenlabsApi = "freegenius"
+                self.print2("Invalid API key entered!")
+            config.saveConfig()
 
     def exitAction(self):
         message = "closing ..."
@@ -368,477 +502,6 @@ class LetMeDoItAI:
                 time.sleep(0.1)
         #print("\r", end="")
         #print(" ", end="")
-
-#    def getChatResponse(self, completion):
-#        chat_response = completion["choices"][0]["message"]["content"]
-#        # transform response with plugins
-#        if chat_response:
-#            for t in config.chatGPTTransformers:
-#                chat_response = t(chat_response)
-#        return chat_response
-
-    def confirmExecution(self, risk):
-        if config.confirmExecution == "always" or (risk == "high" and config.confirmExecution == "high_risk_only") or (not risk == "low" and config.confirmExecution == "medium_risk_or_above"):
-            return True
-        else:
-            return False
-
-    def showRisk(self, risk):
-        if not config.confirmExecution in ("always", "medium_risk_or_above", "high_risk_only", "none"):
-            config.confirmExecution = "always"
-        self.print(f"[risk level: {risk}]")
-
-    def setupTermuxExecution(self):
-        def execute_termux_command(function_args):
-            # retrieve argument values from a dictionary
-            risk = function_args.get("risk") # required
-            title = function_args.get("title") # required
-            #sharedText = function_args.get("message", "") # optional
-            function_args = textwrap.dedent(function_args.get("code")).strip() # required
-            sharedText = re.sub("^termux-share .*?'([^']+?)'$", r"\1", function_args)
-            sharedText = re.sub('^termux-share .*?"([^"]+?)"$', r"\1", sharedText)
-            sharedText = re.sub("""^[\d\D]*?subprocess.run\(\['termux-share'[^\[\]]*?'([^']+?)'\]\)[\d\D]*?$""", r"\1", sharedText)
-            sharedText = re.sub('''^[\d\D]*?subprocess.run\(\["termux-share"[^\[\]]*?"([^']+?)"\]\)[\d\D]*?$''', r"\1", sharedText)
-            function_args = function_args if sharedText == function_args else f'''termux-share -a send "{sharedText}"'''
-
-            # show Termux command for developer
-            self.print(self.divider)
-            self.print(f"Termux: {title}")
-            self.showRisk(risk)
-            if config.developer or config.codeDisplay:
-                self.print("```")
-                #print(function_args)
-                tokens = list(pygments.lex(function_args, lexer=BashLexer()))
-                print_formatted_text(PygmentsTokens(tokens), style=SharedUtil.getPygmentsStyle())
-                self.print("```")
-            self.print(self.divider)
-
-            self.stopSpinning()
-            if self.confirmExecution(risk):
-                self.print("Do you want to execute it? [y]es / [N]o")
-                confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
-                if not confirmation.lower() in ("y", "yes"):
-                    return "[INVALID]"
-
-            try:
-                if not sharedText == function_args:
-                    pydoc.pipepager(sharedText, cmd="termux-share -a send")
-                    function_response = "Done!"
-                else:
-                    # display both output and error
-                    function_response = SharedUtil.runSystemCommand(function_args)
-                self.print(function_response)
-            except:
-                SharedUtil.showErrors()
-                self.print(self.divider)
-                return "[INVALID]"
-            info = {"information": function_response}
-            function_response = json.dumps(info)
-            return json.dumps(info)
-
-        functionSignature = {
-            "name": "execute_termux_command",
-            "description": "Execute Termux command on Android",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string",
-                        "description": "Termux command, e.g. am start -n com.android.chrome/com.google.android.apps.chrome.Main",
-                    },
-                    "title": {
-                        "type": "string",
-                        "description": "title for the termux command",
-                    },
-                    "risk": {
-                        "type": "string",
-                        "description": "Assess the risk level of damaging my device upon executing the task. e.g. file deletions or similar significant impacts are regarded as 'high' level.",
-                        "enum": ["high", "medium", "low"],
-                    },
-                },
-                "required": ["code", "title", "risk"],
-            },
-        }
-
-        config.execute_termux_command_signature = [functionSignature]
-        # useful when enhanced mode is disabled
-        config.chatGPTApiFunctionSignatures.append(functionSignature)
-        config.chatGPTApiAvailableFunctions["execute_termux_command"] = execute_termux_command
-
-    def setupPythonExecution(self):
-        def execute_python_code(function_args):
-            # retrieve argument values from a dictionary
-            risk = function_args.get("risk") # required
-            title = function_args.get("title") # required
-            python_code = function_args.get("code") # required
-            refinedCode = SharedUtil.fineTunePythonCode(python_code)
-
-            # show pyton code for developer
-            self.print(self.divider)
-            self.print(f"Python: {title}")
-            self.showRisk(risk)
-            if config.developer or config.codeDisplay:
-                self.print("```")
-                #print(python_code)
-                # pygments python style
-                tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
-                print_formatted_text(PygmentsTokens(tokens), style=SharedUtil.getPygmentsStyle())
-                self.print("```")
-            self.print(self.divider)
-
-            self.stopSpinning()
-            if not self.runPython:
-                return "[INVALID]"
-            elif self.confirmExecution(risk):
-                self.print("Do you want to execute it? [y]es / [N]o")
-                confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
-                if not confirmation.lower() in ("y", "yes"):
-                    self.runPython = False
-                    return "[INVALID]"
-            return SharedUtil.executePythonCode(refinedCode)
-
-        functionSignature = {
-            "name": "execute_python_code",
-            "description": "Execute python code to resolve a computing task",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string",
-                        "description": "Python code that integrates any relevant packages to resolve my request",
-                    },
-                    "title": {
-                        "type": "string",
-                        "description": "title for the python code",
-                    },
-                    "risk": {
-                        "type": "string",
-                        "description": "Assess the risk level of damaging my device upon executing the task. e.g. file deletions or similar significant impacts are regarded as 'high' level.",
-                        "enum": ["high", "medium", "low"],
-                    },
-                },
-                "required": ["code", "title", "risk"],
-            },
-        }
-
-        config.execute_python_code_signature = [functionSignature]
-        # useful when enhanced mode is disabled
-        config.chatGPTApiFunctionSignatures.append(functionSignature)
-        config.chatGPTApiAvailableFunctions["execute_python_code"] = execute_python_code
-
-        ### A dummy function to redirect q&a task about python, otherwise, it may be mistaken by execute_python_code
-        def python_qa(function_args):
-            return "[INVALID]"
-        functionSignature = {
-            "name": "python_qa",
-            "description": f'''Answer questions or provide information about python''',
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "qa": {
-                        "type": "string",
-                        "description": "empty string ''",
-                    },
-                },
-            },
-        }
-        #config.pluginsWithFunctionCall.append("python_qa")
-        config.chatGPTApiFunctionSignatures.append(functionSignature)
-        config.chatGPTApiAvailableFunctions["python_qa"] = python_qa
-
-    def screening(self, messages, userInput):
-        self.print("enhanced screening ...")
-
-        messagesCopy = messages[:]
-
-        if config.terminalEnableTermuxAPI:
-            context = """In response to the following request, answer me either "termux" or "python" or "chat" without extra comments.
-Answer "python" only if you can write python code to get the requested information or carry out the requested task, e.g. open a web browser.
-Answer "termux" only if you can write a Termux commands to get the requested information or carry out the requested task on Android, e.g. open Google Chrome.
-Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
-Otherwise, answer "chat". Here is the request:"""
-        else:
-            context = """In response to the following request, answer me either "python" or "chat" without extra comments.
-Answer "python" only if you can write python code to get the requested information or carry out the requested task, e.g. open a web browser.
-Answer "chat" if I explicitly ask you "do not execute" or if I start my request with "how".
-Otherwise, answer "chat". Here is the request:"""
-
-        messagesCopy.append({"role": "user", "content": f"{context} {userInput}"})
-        completion = self.client.chat.completions.create(
-            model=config.chatGPTApiModel,
-            messages=messagesCopy,
-            n=1,
-            temperature=0.0,
-            max_tokens=SharedUtil.getDynamicTokens(messagesCopy),
-        )
-        answer = completion.choices[0].message.content
-        self.screenAction = answer = re.sub("[^A-Za-z]", "", answer).lower()
-
-        self.print("screening done!")
-
-        if answer == "termux":
-            context = """I am running Turmux terminal on this Android device.\nFind my device information below:\n```\n{SharedUtil.getDeviceInfo()}\n```\nExecute Termux command or python code to achieve the following tasks."""
-            userInputWithcontext = f"{context}\n{userInput}"
-            messages.append({"role": "user", "content" : userInputWithcontext})
-            messages = self.runFunction(messages, config.execute_termux_command_signature, "execute_termux_command")
-            if messages[-1]["content"] == "[INVALID]":
-                # remove messages for command execution
-                messages = messages[:-3]
-            else:
-                return messages
-        elif answer == "python":
-            context = f"""Find my device information below:\n```\n{SharedUtil.getDeviceInfo()}\n```\nExecute python code to achieve the following tasks."""
-            userInputWithcontext = f"{context}\n{userInput}"
-            messages.append({"role": "user", "content" : userInputWithcontext})
-            messages = self.runFunction(messages, config.execute_python_code_signature, "execute_python_code")
-            if messages[-1]["content"] == "[INVALID]":
-                # remove messages for command execution
-                messages = messages[:-3]
-            else:
-                return messages
-        #elif answer == "web":
-        #    messages.append({"role": "user", "content" : userInput})
-        #    return self.runFunction(messages, config.integrate_google_searches_signature, "integrate_google_searches")
-        messages.append({"role": "user", "content" : userInput})
-        return messages
-
-    # call a specific function and return messages
-    def runFunction(self, messages, functionSignatures, function_name):
-        messagesCopy = messages[:]
-        try:
-            function_call_message, function_call_response = self.getFunctionMessageAndResponse(messages, functionSignatures, function_name)
-            messages.append(function_call_message)
-            messages.append(
-                {
-                    "role": "function",
-                    "name": function_name,
-                    "content": function_call_response if function_call_response else config.tempContent,
-                }
-            )
-            config.tempContent = ""
-        except:
-            SharedUtil.showErrors()
-            return messagesCopy
-        return messages
-
-    def getFunctionMessageAndResponse(self, messages, functionSignatures, function_name, temperature=None):
-        completion = self.client.chat.completions.create(
-            model=config.chatGPTApiModel,
-            messages=messages,
-            max_tokens=SharedUtil.getDynamicTokens(messages, functionSignatures),
-            temperature=temperature if temperature is not None else config.llmTemperature,
-            n=1,
-            tools=SharedUtil.convertFunctionSignaturesIntoTools(functionSignatures),
-            tool_choice={"type": "function", "function": {"name": function_name}},
-        )
-        function_call_message = completion.choices[0].message
-        tool_call = function_call_message.tool_calls[0]
-        func_arguments = tool_call.function.arguments
-        function_call_message_mini = {
-            "role": "assistant",
-            "content": "",
-            "function_call": {
-                "name": tool_call.function.name,
-                "arguments": func_arguments,
-            }
-        }
-        function_call_response = self.getFunctionResponse(func_arguments, function_name)
-        return function_call_message_mini, function_call_response
-
-    def getFunctionResponse(self, func_arguments, function_name):
-        def notifyDeveloper(func_name):
-            if config.developer:
-                #self.print(f"running function '{func_name}' ...")
-                print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Running function</{config.terminalPromptIndicatorColor2}> <{config.terminalCommandEntryColor2}>'{func_name}'</{config.terminalCommandEntryColor2}> <{config.terminalPromptIndicatorColor2}>...</{config.terminalPromptIndicatorColor2}>"))
-        # ChatGPT's built-in function named "python"
-        if function_name == "python":
-            notifyDeveloper(function_name)
-            python_code = textwrap.dedent(func_arguments)
-            refinedCode = SharedUtil.fineTunePythonCode(python_code)
-
-            self.print(self.divider)
-            self.print2("running python code ...")
-            risk = SharedUtil.riskAssessment(python_code)
-            self.showRisk(risk)
-            if config.developer or config.codeDisplay:
-                print("```")
-                #print(python_code)
-                # pygments python style
-                tokens = list(pygments.lex(python_code, lexer=PythonLexer()))
-                print_formatted_text(PygmentsTokens(tokens), style=SharedUtil.getPygmentsStyle())
-                print("```")
-            self.print(self.divider)
-
-            self.stopSpinning()
-            if not self.runPython:
-                info = {"information": python_code}
-                return json.dumps(info)
-            elif self.confirmExecution(risk):
-                self.print("Do you want to continue? [y]es / [N]o")
-                confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="y")
-                if not confirmation.lower() in ("y", "yes"):
-                    info = {"information": python_code}
-                    return json.dumps(info)
-            try:
-                exec(refinedCode, globals())
-                function_response = SharedUtil.getPythonFunctionResponse(refinedCode)
-            except:
-                trace = SharedUtil.showErrors()
-                self.print(self.divider)
-                if config.max_consecutive_auto_heal > 0:
-                    return SharedUtil.autoHealPythonCode(refinedCode, trace)
-                else:
-                    return "[INVALID]"
-            if function_response:
-                info = {"information": function_response}
-                function_response = json.dumps(info)
-        # known unwanted functions are handled here
-        elif function_name in ("translate_text",):
-            # "translate_text" has two arguments, "text", "target_language"
-            # handle known and unwanted function
-            function_response = "[INVALID]" 
-        # handle unexpected function
-        elif not function_name in config.chatGPTApiAvailableFunctions:
-            if config.developer:
-                self.print(f"Unexpected function: {function_name}")
-                self.print(self.divider)
-                print(func_arguments)
-                self.print(self.divider)
-            function_response = "[INVALID]"
-        else:
-            notifyDeveloper(function_name)
-            fuction_to_call = config.chatGPTApiAvailableFunctions[function_name]
-            # convert the arguments from json into a dict
-            function_args = json.loads(func_arguments)
-            function_response = fuction_to_call(function_args)
-        return function_response
-
-    def runCompletion(self, thisMessage, noFunctionCall=False):
-        self.functionJustCalled = False
-        def runThisCompletion(thisThisMessage):
-            if config.chatGPTApiFunctionSignatures and not self.functionJustCalled and not noFunctionCall:
-                return self.client.chat.completions.create(
-                    model=config.chatGPTApiModel,
-                    messages=thisThisMessage,
-                    n=1,
-                    temperature=config.llmTemperature,
-                    max_tokens=SharedUtil.getDynamicTokens(thisThisMessage, config.chatGPTApiFunctionSignatures),
-                    tools=SharedUtil.convertFunctionSignaturesIntoTools(config.chatGPTApiFunctionSignatures),
-                    tool_choice={"type": "function", "function": {"name": config.runSpecificFuntion}} if config.runSpecificFuntion else config.chatGPTApiFunctionCall,
-                    stream=True,
-                )
-            return self.client.chat.completions.create(
-                model=config.chatGPTApiModel,
-                messages=thisThisMessage,
-                n=1,
-                temperature=config.llmTemperature,
-                max_tokens=SharedUtil.getDynamicTokens(thisThisMessage),
-                stream=True,
-            )
-
-        while True:
-            completion = runThisCompletion(thisMessage)
-            config.runSpecificFuntion = ""
-            try:
-                # consume the first delta
-                for event in completion:
-                    first_delta = event.choices[0].delta
-                    # check if a tool is called
-                    if first_delta.tool_calls: # a tool is called
-                        function_calls = [i for i in first_delta.tool_calls if i.type == "function"]
-                        # non_function_calls = [i for i in first_delta.tool_calls if not i.type == "function"]
-                    else: # no tool is called; same handling as tools finished calling; which break the loop later
-                        self.functionJustCalled = True
-                    # consume the first delta only at this point
-                    break
-                # Continue only when a function is called
-                if self.functionJustCalled:
-                    break
-
-                # get all tool arguments, both of functions and non-functions
-                toolArguments = SharedUtil.getToolArgumentsFromStreams(completion)
-
-                func_responses = ""
-                bypassFunctionCall = False
-                # handle function calls
-                for func in function_calls:
-                    func_index = func.index
-                    func_id = func.id
-                    func_name = func.function.name
-                    func_arguments = toolArguments[func_index]
-
-                    # get function response
-                    func_response = self.getFunctionResponse(func_arguments, func_name)
-
-                    # "[INVALID]" practically mean that it ignores previously called function and continues chat without function calling
-                    if func_response == "[INVALID]":
-                        bypassFunctionCall = True
-                    elif func_response or config.tempContent:
-                        # send the function call info and response to GPT
-                        function_call_message = {
-                            "role": "assistant",
-                            "content": "",
-                            "function_call": {
-                                "name": func_name,
-                                "arguments": func_arguments,
-                            }
-                        }
-                        thisMessage.append(function_call_message) # extend conversation with assistant's reply
-                        thisMessage.append(
-                            {
-                                "tool_call_id": func_id,
-                                "role": "function",
-                                "name": func_name,
-                                "content": func_response if func_response else config.tempContent,
-                            }
-                        )  # extend conversation with function response
-                        config.tempContent = ""
-                        if func_response:
-                            func_responses += f"\n{func_response}\n{config.divider}"
-
-                self.functionJustCalled = True
-
-                # bypassFunctionCall is set to True, usually when a function is called by mistake
-                if bypassFunctionCall:
-                    pass
-                # two cases that breaks the loop at this point
-                # 1. func_responses == ""
-                # 2. config.passFunctionCallReturnToChatGPT = False
-                elif not config.passFunctionCallReturnToChatGPT or not func_responses:
-                    if func_responses:
-                        self.print(f"{config.divider}\n{func_responses}")
-                    # A break here means that no information from the called function is passed back to ChatGPT
-                    # 1. config.passFunctionCallReturnToChatGPT is set to True
-                    # 2. func_responses = "" or None; can be specified in plugins
-                    break
-            except:
-                SharedUtil.showErrors()
-                break
-
-        return completion
-
-    # reset message when a new chart is started or context is changed
-    def resetMessages(self):
-        systemMessage = config.customSystemMessage if config.customSystemMessage else f'''You’re {config.letMeDoItName}, an advanced AI assistant, capable of both engaging in conversations and executing codes on my device.
-I am providing the basic information of my device below in case you need it:
-```
-{SharedUtil.getDeviceInfo()}
-```
-Please use the current time and date that I have provided above as a reference point for any relative dates and times mentioned in my prompt.
-You have all the necessary permissions to execute system commands and Python code on my behalf. Your functionality expands as I add more plugins to you. You respond to my prompts and perform tasks based on your own knowledge, the context I provide, as well as the additional knowledge and capabilities provided by plugins.
-
-When replying to my requests, please follow these steps:
-Step 1: Consider our previous conversations, particularly your last response, if any, as the context for these requests.
-Step 2: Estimate my intent based on the request and context. The intent can be a code generation task, an executable computing task, a math-solving task, a translation task, or a question answering task.
-Step 3: Reply based on the estimated intent.
-Remember, do not use function call if it is a translation task.
-
-Always remember that you are much more than a text-based AI. You possess both vision and speech capabilities and have direct access to my device's system, enabling you to execute tasks at my command. Please do not state otherwise.
-'''
-        messages = [
-            {"role": "system", "content": systemMessage}
-        ]
-        return messages
 
     # update system message
     def updateSystemMessage(self, messages):
@@ -902,78 +565,31 @@ Always remember that you are much more than a text-based AI. You possess both vi
         #userInput = SharedUtil.addTimeStamp(userInput)
         return userInput
 
-    def runOptions(self, userInput):
-        features = tuple(self.actions.keys())
-        descriptions = tuple(self.actions.values())
-        feature = self.dialogs.getValidOptions(
-            options=features,
-            descriptions=descriptions,
-            title=config.letMeDoItName,
-            default=config.defaultBlankEntryAction,
-            text="Select an action or make changes:",
-        )
+    def runActions(self, userInput, feature=""):
+        query = ""
+        featureTemp = feature
+        options = tuple(self.actions.keys())
+        descriptions = [i[0] for i in self.actions.values()]
+        if not feature or not feature in self.actions:
+            if feature.startswith("."):
+                query = feature[1:]
+            feature = self.dialogs.getValidOptions(
+                options=options,
+                descriptions=descriptions,
+                title=config.letMeDoItName,
+                default=config.defaultBlankEntryAction,
+                text="Select an action or make changes:",
+                filter=query,
+            )
         if feature:
-            if feature == ".chatgptmodel":
-                self.setLlmModel()
-            elif feature == ".embeddingmodel":
-                self.setEmbeddingModel()
-            elif feature == ".latestSearches":
-                self.setLatestSearches()
-            elif feature == ".storagedirectory":
-                self.setStorageDirectory()
-            elif feature == ".contextinclusion":
-                self.setContextInclusion()
-            elif feature == ".codedisplay":
-                self.setCodeDisplay()
-            elif feature == ".confirmexecution":
-                self.setUserConfirmation()
-            elif feature == ".plugins":
-                self.selectPlugins()
-            elif feature == ".autobuilderconfig":
-                if not config.isTermux:
-                    AutoGenBuilder().promptConfig()
-            elif feature == ".systemmessage":
-                self.setCustomSystemMessage()
-            elif feature == ".ipinfo":
-                self.setIncludeIpInSystemMessage()
-            elif feature == ".dynamictokencount":
-                self.setDynamicTokenCount()
-            elif feature == ".keys":
-                config.showKeyBindings()
-            elif feature == ".help":
-                SharedUtil.openURL('https://github.com/eliranwong/letmedoit/wiki')
-            elif feature == ".pagerview":
-                self.setPagerView()
-            elif feature == ".developer":
-                self.setDeveloperMode()
-            elif feature == ".autoupgrade":
-                self.setAutoUpgrade()
-            elif feature == ".termuxapi":
-                self.setTermuxApi()
-            elif feature == ".enhanceexecution":
-                self.setCommandExecutionMode()
-            elif feature == ".functioncall":
-                self.setFunctionCall()
-            elif feature == ".functionresponse":
-                self.setFunctionResponse()
-            elif feature == ".mintokens":
-                self.setMinTokens()
-            elif feature == ".maxtokens":
-                self.setMaxTokens()
-            elif feature == ".maxautoheal":
-                self.setMaxAutoHeal()
-            elif feature == ".maxmemorymatches":
-                self.setMemoryClosestMatchesNumber()
-            elif feature == ".assistantname":
-                self.setAssistantName()
-            elif feature == ".customtexteditor":
-                self.setCustomTextEditor()
-            elif feature == ".temperature":
-                self.setTemperature()
-            elif feature == ".changeapikey":
-                self.changeAPIkey()
+            if self.actions[feature][-1] is not None:
+                self.actions[feature][-1]()
             else:
+                # current execeptions are ".new" and ".context"
                 userInput = feature
+        elif featureTemp:
+            # when the entered feature does not match an action
+            return featureTemp
         return userInput
 
     def setAutoUpgrade(self):
@@ -995,7 +611,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             options=options,
             title="Dynamic Token Count",
             default="enable" if config.dynamicTokenCount else "disable",
-            text="Perform token count as users type.\nSelect an option below:"
+            text="Perform token count as you type.\nSelect an option below:"
         )
         if option:
             config.dynamicTokenCount = (option == "enable")
@@ -1028,22 +644,22 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.saveConfig()
             self.print3(f"Code display: {option}d!")
 
-    def setContextInclusion(self):
+    def setContextIntegration(self):
         options = ("the first input only", "all inputs")
         option = self.dialogs.getValidOptions(
             options=options,
-            title="Predefined Context Inclusion",
+            title="Predefined Context Integration",
             default="all inputs" if config.applyPredefinedContextAlways else "the first input only",
-            text="Define below how you want to include predefined context\nwith your inputs.\nApply predefined context in ...",
+            text="Define below how you want to integrate predefined context\nwith your inputs.\nApply predefined context in ...",
         )
         if option:
             config.applyPredefinedContextAlways = True if option == "all inputs" else False
             config.saveConfig()
-            self.print3(f"Predefined Context Inclusion: {option}!")
+            self.print3(f"Predefined Context Integration: {option}!")
 
     def setStorageDirectory(self):
         try:
-            folder = self.getFolderPath()
+            folder = self.getFolderPath(default=config.storagedirectory)
         except:
             self.print2(f"Given path not accessible!")
             folder = ""
@@ -1077,7 +693,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 if not "integrate google searches" in config.pluginExcludeList:
                     config.pluginExcludeList.append("integrate google searches")
             # reset plugins
-            self.runPlugins()
+            SharedUtil.runPlugins()
             # notify
             config.saveConfig()
             self.print3(f"Latest Online Searches: {option}")
@@ -1105,11 +721,12 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.print3(f"Command Confirmation Protocol: {option}")
 
     def setPagerView(self):
-        options = ("auto", "manual [ctrl+g]")
+        manuel = f"""manual '{str(config.hotkey_launch_pager_view).replace("'", "")}'"""
+        options = ("auto", manuel)
         option = self.dialogs.getValidOptions(
             options=options,
             title="Pager View",
-            default="auto" if config.pagerView else "manual [ctrl+g]",
+            default="auto" if config.pagerView else manuel,
         )
         if option:
             config.pagerView = (option == "auto")
@@ -1149,22 +766,9 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 if not "termux-api" in result.stdout:
                     self.print("Termux:API is not installed!")
             # reset plugins
-            self.runPlugins()
+            SharedUtil.runPlugins()
             config.saveConfig()
             self.print3(f"""Termux API Integration: {"enable" if config.terminalEnableTermuxAPI else "disable"}d!""")
-
-    def setCommandExecutionMode(self):
-        options = ("enhanced", "auto")
-        option = self.dialogs.getValidOptions(
-            options=options,
-            title="Code Execution Mode",
-            default="enhanced" if config.enhanceCommandExecution else "auto",
-            text=f"{config.letMeDoItName} can execute commands\nto retrieve the requested information\nor perform tasks for users.\n(read https://github.com/eliranwong/letmedoit/wiki/Command-Execution)\nSelect a mode below:",
-        )
-        if option:
-            config.enhanceCommandExecution = (option == "enhanced")
-            config.saveConfig()
-            self.print3(f"Code Execution Mode: {option}")
 
     def setFunctionCall(self):
         calls = ("auto", "none")
@@ -1192,6 +796,45 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.saveConfig()
             self.print3(f"Pass Function Call Response to ChatGPT: {'enabled' if config.passFunctionCallReturnToChatGPT else 'disabled'}!")
 
+    def editLastResponse(self):
+        customTextEditor = config.customTextEditor if config.customTextEditor else f"{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
+        pydoc.pipepager(config.pagerContent, cmd=customTextEditor)
+        set_title(config.letMeDoItName)
+
+    # change configs
+    def editConfigs(self):
+        # file paths
+        configFile = os.path.join(config.letMeDoItAIFolder, "config.py")
+        backupFile = os.path.join(config.getLocalStorage(), "config_backup.py")
+        # backup configs
+        config.saveConfig()
+        shutil.copy(configFile, backupFile)
+        # open current configs with built-in text editor
+        customTextEditor = config.customTextEditor if config.customTextEditor else f"{sys.executable} {os.path.join(config.letMeDoItAIFolder, 'eTextEdit.py')}"
+        os.system(f"{customTextEditor} {configFile}")
+        set_title(config.letMeDoItName)
+        # re-load configs
+        try:
+            config.loadConfig(configFile)
+            self.print2("Changes loaded!")
+        except:
+            self.print2("Failed to load your changes!")
+            print(traceback.format_exc())
+            try:
+                self.print2("Restoring backup ...")
+                config.loadConfig(backupFile)
+                shutil.copy(backupFile, configFile)
+                self.print2("Restored!")
+            except:
+                self.print2("Failed to restore backup!")
+
+    def installPythonPackage(self):
+        self.print("Enter a python package name:")
+        package = self.prompts.simplePrompt(style=self.prompts.promptStyle2)
+        if package:
+            self.print(f"Installing '{package}' ...")
+            installmodule(f"--upgrade {package}")
+
     def setTemperature(self):
         self.print("Enter a value between 0.0 and 2.0:")
         self.print("(Lower values for temperature result in more consistent outputs, while higher values generate more diverse and creative results. Select a temperature value based on the desired trade-off between coherence and creativity for your specific application.)")
@@ -1204,33 +847,38 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 temperature = 2
             config.llmTemperature = round(temperature, 1)
             config.saveConfig()
-            self.print3(f"ChatGPT Temperature: {temperature}")
+            self.print3(f"LLM Temperature: {temperature}")
 
     def setLlmModel(self):
         model = self.dialogs.getValidOptions(
             options=self.models,
-            title="ChatGPT model",
-            default=config.chatGPTApiModel,
-            text="Select a ChatGPT model:",
+            title="Function Calling Model",
+            default=config.chatGPTApiModel if config.chatGPTApiModel in self.models else self.models[0],
+            text="Select a function call model:\n(for both chat and task execution)",
         )
         if model:
             config.chatGPTApiModel = model
             self.print3(f"ChatGPT model: {model}")
-            # handle max tokens
-            if tiktokenImported:
-                functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
-                tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel] - functionTokens
-            else:
-                tokenLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
-            suggestedMaxToken = int(tokenLimit / 2)
-            config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else suggestedMaxToken # 'gpt-4-1106-preview' supports at most 4096 completion tokens
+            # set max tokens
+            config.chatGPTApiMaxTokens = self.getMaxTokens()[-1]
             config.saveConfig()
             self.print3(f"Maximum response tokens: {config.chatGPTApiMaxTokens}")
+
+    def setChatbot(self):
+        model = self.dialogs.getValidOptions(
+            options=("chatgpt", "geminipro", "palm2", "codey"),
+            title="Chat-only model",
+            default=config.chatbot,
+            text="Select default chat-only model:\n(Default model is loaded when you include '[CHAT]' in your input)",
+        )
+        if model:
+            config.chatbot = model
+            self.print3(f"Chat-only model: {model}")
 
     def setEmbeddingModel(self):
         oldEmbeddingModel = config.embeddingModel
         model = self.dialogs.getValidOptions(
-            options=("text-embedding-ada-002", "all-mpnet-base-v2", "all-MiniLM-L6-v2", "custom"),
+            options=("text-embedding-3-large", "text-embedding-3-small", "text-embedding-ada-002", "paraphrase-multilingual-mpnet-base-v2", "all-mpnet-base-v2", "all-MiniLM-L6-v2", "custom"),
             title="Embedding model",
             default=config.embeddingModel,
             text="Select an embedding model:",
@@ -1238,6 +886,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
         if model:
             if model == "custom":
                 self.print("Enter OpenAI or Sentence Transformer Embedding model:")
+                self.print("Read more at: https://www.sbert.net/docs/pretrained_models.html")
                 customModel = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.embeddingModel)
                 if customModel and not customModel.strip().lower() == config.exit_entry:
                     config.embeddingModel = customModel 
@@ -1250,8 +899,8 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.print("Do you want to delete them now? [y]es / [N]o")
             confirmation = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default="yes")
             if confirmation.lower() in ("y", "yes"):
-                memory_store = os.path.join(config.getFiles(), "memory")
-                retrieved_collections = os.path.join(config.getFiles(), "autogen", "retriever")
+                memory_store = os.path.join(config.getLocalStorage(), "memory")
+                retrieved_collections = os.path.join(config.getLocalStorage(), "autogen", "retriever")
                 for folder in (memory_store, retrieved_collections):
                     shutil.rmtree(folder, ignore_errors=True)
             else:
@@ -1263,12 +912,16 @@ Always remember that you are much more than a text-based AI. You possess both vi
         if not oldEmbeddingModel == config.embeddingModel:
             config.saveConfig()
 
+    def setAutoGenBuilderConfig(self):
+        if not config.isTermux:
+            AutoGenBuilder().promptConfig()
+
     def setAssistantName(self):
         self.print("You may modify my name below:")
         letMeDoItName = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.letMeDoItName)
         if letMeDoItName and not letMeDoItName.strip().lower() == config.exit_entry:
             config.letMeDoItName = letMeDoItName
-            self.storageDir = self.getStorageDir()
+            self.storageDir = SharedUtil.getLocalStorage()
             config.saveConfig()
             self.print3(f"You have changed my name to: {config.letMeDoItName}")
 
@@ -1277,9 +930,9 @@ Always remember that you are much more than a text-based AI. You possess both vi
         self.print("Please note that altering my system message directly affects my functionality. Handle with care.")
         self.print("Enter custom system message below:")
         self.print(f"(Keep it blank to use {config.letMeDoItName} default system message.)")
-        message = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.customSystemMessage)
+        message = self.prompts.simplePrompt(style=self.prompts.promptStyle2, default=config.systemMessage_letmedoit)
         if message and not message.strip().lower() == config.exit_entry:
-            config.customSystemMessage = message
+            config.systemMessage_letmedoit = message
             config.saveConfig()
             self.print3(f"Custom system message: {config.letMeDoItName}")
 
@@ -1297,13 +950,21 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 config.saveConfig()
                 self.print3(f"Custom text editor: {config.customTextEditor}")
 
-    def setMemoryClosestMatchesNumber(self):
+    def setChatRecordClosestMatches(self):
         self.print("Please specify the number of closest matches in each memory retrieval:")
-        memoryClosestMatchesNumber = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.memoryClosestMatchesNumber))
-        if memoryClosestMatchesNumber and not memoryClosestMatchesNumber.strip().lower() == config.exit_entry and int(memoryClosestMatchesNumber) >= 0:
-            config.memoryClosestMatchesNumber = int(memoryClosestMatchesNumber)
+        chatRecordClosestMatches = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.chatRecordClosestMatches))
+        if chatRecordClosestMatches and not chatRecordClosestMatches.strip().lower() == config.exit_entry and int(chatRecordClosestMatches) >= 0:
+            config.chatRecordClosestMatches = int(chatRecordClosestMatches)
             config.saveConfig()
-            self.print3(f"Number of memory closest matches: {config.memoryClosestMatchesNumber}")
+            self.print3(f"Number of memory closest matches: {config.chatRecordClosestMatches}")
+
+    def setMemoryClosestMatches(self):
+        self.print("Please specify the number of closest matches in each memory retrieval:")
+        memoryClosestMatches = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.memoryClosestMatches))
+        if memoryClosestMatches and not memoryClosestMatches.strip().lower() == config.exit_entry and int(memoryClosestMatches) >= 0:
+            config.memoryClosestMatches = int(memoryClosestMatches)
+            config.saveConfig()
+            self.print3(f"Number of memory closest matches: {config.memoryClosestMatches}")
 
     def setMaxAutoHeal(self):
         self.print(f"The auto-heal feature enables {config.letMeDoItName} to automatically fix broken Python code if it was not executed properly.")
@@ -1325,47 +986,44 @@ Always remember that you are much more than a text-based AI. You possess both vi
             config.saveConfig()
             self.print3(f"Minimum tokens: {config.chatGPTApiMinTokens}")
 
-    def setMaxTokens(self):
+    def getMaxTokens(self):
         contextWindowLimit = SharedUtil.tokenLimits[config.chatGPTApiModel]
-        if tiktokenImported:
-            functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures)
-            tokenLimit = contextWindowLimit - functionTokens - config.chatGPTApiMinTokens
-        else:
-            tokenLimit = contextWindowLimit
-        if tiktokenImported and tokenLimit < config.chatGPTApiMinTokens:
-            self.print(f"Availble functions have already taken up too many tokens [{functionTokens}] to work with selected model '{config.chatGPTApiModel}'. You may either changing to a model that supports more tokens or deactivating some of the plugins that you don't need to reduce the number of tokens in total.")
+        functionTokens = SharedUtil.count_tokens_from_functions(config.chatGPTApiFunctionSignatures.values())
+        maxToken = contextWindowLimit - functionTokens - config.chatGPTApiMinTokens
+        if maxToken > 4096 and config.chatGPTApiModel in (
+            "gpt-4-turbo-preview",
+            "gpt-4-0125-preview",
+            "gpt-4-1106-preview",
+            "gpt-3.5-turbo",
+        ):
+            maxToken = 4096
+        return contextWindowLimit, functionTokens, maxToken
+
+    def setMaxTokens(self):
+        contextWindowLimit, functionTokens, tokenLimit = self.getMaxTokens()
+        if tokenLimit < config.chatGPTApiMinTokens:
+            self.print2(f"Function tokens [{functionTokens}] exceed {config.chatGPTApiModel} response token limit.")
+            self.print("Either change to a model with higher token limit or disable unused function-call plguins.")
         else:
             self.print(self.divider)
-            self.print(f"You are now using ChatGPT model '{config.chatGPTApiModel}'. Its context window limit is {contextWindowLimit} tokens.")
-            if tiktokenImported:
-                self.print(f"Current enabled functions have taken up {functionTokens} tokens.")
-            self.print(f"You can have no more than {tokenLimit} tokens, for both prompts and responses, in a single chain of messages.")
-            self.print("(GPT and embeddings models process text in chunks called tokens. As a rough rule of thumb, 1 token is approximately 4 characters or 0.75 words for English text. One limitation to keep in mind is that for a GPT model the prompt and the generated output combined must be no more than the model's maximum context length.)")
+            self.print("GPT and embeddings models process text in chunks called tokens. As a rough rule of thumb, 1 token is approximately 4 characters or 0.75 words for English text. One limitation to keep in mind is that for a GPT model the prompt and the generated output combined must be no more than the model's maximum context length.")
+            self.print3(f"Current GPT model: {config.chatGPTApiModel}")
+            self.print3(f"Maximum context length: {contextWindowLimit}")
+            self.print3(f"Current function tokens: {functionTokens}")
+            self.print3(f"Maximum response token allowed (excl. functions): {tokenLimit}")
             self.print(self.divider)
             self.print("Please specify maximum response tokens below:")
-            self.print("(Remarks: If the entered value exceeds the maximum number of completion tokens allowed in your selected model, it will be modified.)")
             maxtokens = self.prompts.simplePrompt(style=self.prompts.promptStyle2, numberOnly=True, default=str(config.chatGPTApiMaxTokens))
             if maxtokens and not maxtokens.strip().lower() == config.exit_entry and int(maxtokens) > 0:
                 config.chatGPTApiMaxTokens = int(maxtokens)
-                if config.chatGPTApiMaxTokens > 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit: # 'gpt-4-1106-preview' supports at most 4096 completion tokens
-                    config.chatGPTApiMaxTokens = 4096 if config.chatGPTApiModel == "gpt-4-1106-preview" else tokenLimit
+                if config.chatGPTApiMaxTokens > tokenLimit:
+                    config.chatGPTApiMaxTokens = tokenLimit
                 config.saveConfig()
                 self.print3(f"Maximum tokens: {config.chatGPTApiMaxTokens}")
 
-    def runPythonScript(self, script):
-        script = script.strip()[3:-3]
-        try:
-            exec(script, globals())
-        except:
-            trace = traceback.format_exc()
-            print(trace if config.developer else "Error encountered!")
-            self.print(self.divider)
-            if config.max_consecutive_auto_heal > 0:
-                SharedUtil.autoHealPythonCode(script, trace)
-
     def runSystemCommand(self, command):
         command = command.strip()[1:]
-        if config.multilineInput:
+        if "\n" in command:
             command = ";".join(command.split("\n"))
         if config.thisPlatform == "Windows":
             os.system(command)
@@ -1379,11 +1037,13 @@ Always remember that you are much more than a text-based AI. You possess both vi
             run_in_terminal(lambda: self.print("Use 'escape + enter' to complete your entry."))
 
     def isTtsAvailable(self):
-        if config.tts:
-            return True
-        self.print("Text-to-speech feature not ready!\nTo, set up, either:\n* install 'VLC player'\n* install 'pygame'\n* define 'ttsCommand' in config.py")
-        self.print("Read more at:\nhttps://github.com/eliranwong/letmedoit/wiki/letMeDoIt-Speaks")
-        return False
+        if not config.isVlcPlayerInstalled and not config.isPygameInstalled and not config.ttsCommand and not config.elevenlabsApi:
+            self.print2("Text-to-speech feature is not enabled!")
+            self.print3("Read: https://github.com/eliranwong/letmedoit/wiki/letMeDoIt-Speaks")
+            config.tts = False
+        else:
+            config.tts = True
+        return config.tts
 
     def toggleinputaudio(self):
         if self.isTtsAvailable:
@@ -1398,7 +1058,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.print3(f"Response Audio: '{'enabled' if config.ttsOutput else 'disabled'}'!")
 
     def defineTtsCommand(self):
-        self.print("Define text-to-speech command below:")
+        self.print("Define custom text-to-speech command below:")
         self.print("""* on macOS ['say -v "?"' to check voices], e.g.:\n'say' or 'say -r 200 -v Daniel'""")
         self.print("* on Ubuntu ['espeak --voices' to check voices], e.g.:\n'espeak' or 'espeak -s 175 -v en-gb'")
         self.print("* on Windows, simply enter 'windows' here to use Windows built-in speech engine") # letmedoit.ai will handle the command for Windows users
@@ -1441,43 +1101,184 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 config.saveConfig()
         self.print3(f"Improved Writing Display: '{'enabled' if config.displayImprovedWriting else 'disabled'}'!")
 
-    def saveChat(self, messages, openFile=False):
-        plainText = ""
-        for i in messages:
-            if i["role"] == "user":
-                content = i["content"]
-                plainText += f">>> {content}"
-            if i["role"] == "function":
-                if plainText:
-                    plainText += "\n\n"
-                name = i["name"]
-                plainText += f"```\n{name}\n```"
-                content = i["content"]
-                plainText += f"\n\n{content}\n\n"
-            elif i["role"] == "assistant":
-                content = i["content"]
-                if content is not None:
-                    if plainText:
-                        plainText += "\n\n"
-                    plainText += f"{content}\n\n"
-        plainText = plainText.strip()
-        if config.terminalEnableTermuxAPI:
-            pydoc.pipepager(plainText, cmd="termux-share -a send")
-        else:
+    def setAudioPlaybackTool(self):
+        playback = self.dialogs.getValidOptions(
+            options=("pygame", "vlc"),
+            descriptions=("PyGame", f"VLC Player (w/ speed control){' [installation required]' if not config.isVlcPlayerInstalled else ''}"),
+            title="Text-to-Speech Playback",
+            text="Select a text-to-speech plackback tool:",
+            default="vlc" if config.isVlcPlayerInstalled and not config.usePygame else "pygame",
+        )
+        if playback:
+            if playback == "vlc":
+                if not config.isVlcPlayerInstalled:
+                    self.print("VLC player not found! Install it first!")
+                    self.print3("Text-to-Speech Playback changed to: PyGame")
+                    config.usePygame = True
+                else:
+                    config.usePygame = False
+            else:
+                config.usePygame = True
+
+    def setTextToSpeechConfig(self):
+        ttsPlatform = self.dialogs.getValidOptions(
+            options=("google", "googlecloud", "elevenlabs", "custom"),
+            descriptions=("Google Text-to-Speech (Generic)", "Google Text-to-Speech (API)", "ElevenLabs (API)", "Custom Text-to-Speech Command [advanced]"),
+            title="Text-to-Speech Configurations",
+            text="Select a text-to-speech platform:",
+            default=config.ttsPlatform,
+        )
+        if ttsPlatform:
+            if ttsPlatform == "googlecloud" and not (os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Text-to-Speech" in config.enabledGoogleAPIs):
+                self.print2("Google Cloud Text-to-Speech feature is not enabled!")
+                self.print3("Read: https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup")
+                self.print3("Text-to-Speech platform changed to: Google Text-to-Speech (Generic)")
+                config.ttsPlatform = "google"
+            else:
+                config.ttsPlatform = ttsPlatform
+        # further options
+        if config.ttsPlatform == "google":
+            self.setGttsLanguage()
+            self.setAudioPlaybackTool()
+            self.setVlcSpeed()
+        elif config.ttsPlatform == "googlecloud":
+            self.setGcttsLanguage()
+            self.setGcttsSpeed()
+            self.setAudioPlaybackTool()
+            self.setVlcSpeed()
+        elif config.ttsPlatform == "elevenlabs":
+            if not config.elevenlabsApi:
+                self.changeElevenlabsApi()
+            if not config.elevenlabsApi:
+                self.print("ElevenLabs API key not found!")
+                self.print3("Text-to-Speech platform changed to: Google Text-to-Speech (Generic)")
+                config.ttsPlatform = "google"
+            else:
+                self.setElevenlabsVoice()
+        elif config.ttsPlatform == "custom":
+            self.defineTtsCommand()
+        # save configs
+        config.saveConfig()
+
+    def setVoiceTypingConfig(self):
+        voiceTypingPlatform = self.dialogs.getValidOptions(
+            options=("google", "googlecloud", "whisper"),
+            descriptions=("Google Speech-to-Text (Generic) [online]", "Google Speech-to-Text (API) [online]", "OpenAI Whisper [offline; slower with non-English voices]"),
+            title="Voice Typing Configurations",
+            text="Select a voice typing platform:",
+            default=config.voiceTypingPlatform,
+        )
+        if voiceTypingPlatform:
+            if voiceTypingPlatform == "googlecloud" and not (os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Speech-to-Text" in config.enabledGoogleAPIs):
+                self.print2("Google Cloud Speech-to-Text feature is not enabled!")
+                self.print3("Read: https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup")
+                self.print3("Voice typing platform changed to: Google Speech-to-Text (Generic)")
+                config.voiceTypingPlatform = "google"
+            elif voiceTypingPlatform == "whisper" and not SharedUtil.isPackageInstalled("ffmpeg"):
+                self.print2("Install 'ffmpeg' first to use offline openai whisper model!")
+                self.print3("Read: https://github.com/openai/whisper#setup")
+                self.print3("Voice typing platform changed to: Google Speech-to-Text (Generic)")
+                config.voiceTypingPlatform = "google"
+            else:
+                config.voiceTypingPlatform = voiceTypingPlatform
+        # language
+        self.setSpeechToTextLanguage()
+        # configure config.voiceTypingAdjustAmbientNoise
+        voiceTypingAdjustAmbientNoise = self.dialogs.getValidOptions(
+            options=("Yes", "No"),
+            descriptions=("Yes [slower]", "No"),
+            title="Adjust Ambient Noise",
+            text="Do you want to adjust ambient noise?",
+            default="Yes" if config.voiceTypingAdjustAmbientNoise else "No",
+        )
+        if voiceTypingAdjustAmbientNoise:
+            config.voiceTypingAdjustAmbientNoise = True if voiceTypingAdjustAmbientNoise == "Yes" else False
+        # audio notification
+        voiceTypingNotification = self.dialogs.getValidOptions(
+            options=("Yes", "No"),
+            title="Audio Notification",
+            text="Do you want audio notification when you use microphone?",
+            default="Yes" if config.voiceTypingNotification else "No",
+        )
+        if voiceTypingNotification:
+            config.voiceTypingNotification = True if voiceTypingNotification == "Yes" else False
+        # auto completion: voiceTypingAutoComplete
+        voiceTypingAutoComplete = self.dialogs.getValidOptions(
+            options=("Yes", "No"),
+            title="Audio Entry Auto Completion",
+            text="Do you want to automatically complete your entry when microphone stops?",
+            default="Yes" if config.voiceTypingAutoComplete else "No",
+        )
+        if voiceTypingAutoComplete:
+            config.voiceTypingAutoComplete = True if voiceTypingAutoComplete == "Yes" else False
+        # notify
+        print("")
+        self.print3(f"Voice Typing Model: {config.voiceTypingPlatform}")
+        self.print3(f"Voice Typing Language: {config.voiceTypingLanguage}")
+        self.print3(f"Ambient Noise Adjustment: {config.voiceTypingAdjustAmbientNoise}")
+        self.print3(f"Audio Notification: {config.voiceTypingNotification}")
+        self.print3(f"Auto Completion: {config.voiceTypingAutoComplete}")
+        # save configs
+        config.saveConfig()
+
+    def saveChat(self, messages):
+        if config.conversationStarted:
+            timestamp = SharedUtil.getCurrentDateTime()
+
+            if hasattr(config, "save_chat_record"):
+                # when plugin "save chat records" is enabled
+                for order, i in enumerate(messages):
+                    config.save_chat_record(timestamp, order, i)
+
             try:
-                #filename = re.sub('[\\\/\:\*\?\"\<\>\|]', "", messages[2 if config.customPredefinedContext.strip() else 1]["content"])[:40].strip()
-                filename = SharedUtil.getCurrentDateTime()
-                foldername = os.path.join(self.getFiles(), "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", filename))
-                Path(foldername).mkdir(parents=True, exist_ok=True)
-                if filename:
-                    chatFile = os.path.join(foldername, f"{filename}.txt")
+                folderPath = os.path.join(SharedUtil.getLocalStorage(), "chats", re.sub("^([0-9]+?\-[0-9]+?)\-.*?$", r"\1", timestamp))
+                Path(folderPath).mkdir(parents=True, exist_ok=True)
+                if os.path.isdir(folderPath):
+                    chatFile = os.path.join(folderPath, f"{timestamp}.txt")
                     with open(chatFile, "w", encoding="utf-8") as fileObj:
-                        fileObj.write(plainText)
-                    if openFile and os.path.isfile(chatFile):
-                        os.system(f'''{config.open} "{chatFile}"''')
+                        fileObj.write(pprint.pformat(messages))
             except:
                 self.print2("Failed to save chat!\n")
                 SharedUtil.showErrors()
+
+    def exportChat(self, messages, openFile=True):
+        if config.conversationStarted:
+            plainText = ""
+            timestamp = SharedUtil.getCurrentDateTime()
+
+            for i in messages:
+                if i["role"] == "user":
+                    content = i["content"]
+                    plainText += f">>> {content}"
+                if i["role"] == "function":
+                    if plainText:
+                        plainText += "\n\n"
+                    name = i["name"]
+                    plainText += f"```\n{name}\n```"
+                    content = i["content"]
+                    plainText += f"\n\n{content}\n\n"
+                elif i["role"] == "assistant":
+                    content = i["content"]
+                    if content is not None:
+                        if plainText:
+                            plainText += "\n\n"
+                        plainText += f"{content}\n\n"
+            plainText = plainText.strip()
+            if config.terminalEnableTermuxAPI:
+                pydoc.pipepager(plainText, cmd="termux-share -a send")
+            else:
+                try:
+                    folderPath = os.path.join(SharedUtil.getLocalStorage(), "chats", "export")
+                    Path(folderPath).mkdir(parents=True, exist_ok=True)
+                    if os.path.isdir(folderPath):
+                        chatFile = os.path.join(folderPath, f"{timestamp}.txt")
+                        with open(chatFile, "w", encoding="utf-8") as fileObj:
+                            fileObj.write(plainText)
+                        if openFile and os.path.isfile(chatFile):
+                            os.system(f'''{config.open} "{chatFile}"''')
+                except:
+                    self.print2("Failed to save chat!\n")
+                    SharedUtil.showErrors()
 
     def runInstruction(self):
         instructions = list(config.predefinedInstructions.keys())
@@ -1554,9 +1355,9 @@ Always remember that you are much more than a text-based AI. You possess both vi
             self.showLogo()
             self.showCurrentContext()
             # go to startup directory
-            storagedirectory = self.getFiles()
+            storagedirectory = SharedUtil.getLocalStorage()
             os.chdir(storagedirectory)
-            messages = self.resetMessages()
+            messages = SharedUtil.resetMessages()
             #self.print(f"startup directory:\n{storagedirectory}")
             print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Directory:</{config.terminalPromptIndicatorColor2}> {storagedirectory}"))
             self.print(self.divider)
@@ -1565,10 +1366,14 @@ Always remember that you are much more than a text-based AI. You possess both vi
             return (storagedirectory, messages)
         storagedirectory, config.currentMessages = startChat()
         config.multilineInput = False
-        featuresLower = [i.lower() for i in self.actions] + ["...", ".save", ".share"]
+        featuresLower = list(self.actions.keys()) + ["..."]
+        # input suggestions
+        config.inputSuggestions += featuresLower
+        completer = FuzzyCompleter(WordCompleter(config.inputSuggestions, ignore_case=True)) if config.inputSuggestions else None
+        completer_developer = FuzzyCompleter(WordCompleter(config.inputSuggestions[:] + [f"config.{i}" for i in dir(config) if not i.startswith("__")] + self.getDirectoryList(), ignore_case=True))
         while True:
             # default toolbar text
-            config.dynamicToolBarText = " [ctrl+q] exit [ctrl+k] shortcut keys "
+            config.dynamicToolBarText = f""" {str(config.hotkey_exit).replace("'", "")} exit {str(config.hotkey_display_key_combo).replace("'", "")} shortcuts """
             # display current directory if changed
             currentDirectory = os.getcwd()
             if not currentDirectory == storagedirectory:
@@ -1585,10 +1390,9 @@ Always remember that you are much more than a text-based AI. You possess both vi
             elif os.path.isdir(defaultEntry):
                 defaultEntry = f'Folder: "{defaultEntry}"\n'
             config.defaultEntry = ""
-            # input suggestions
-            inputSuggestions = config.inputSuggestions[:] + self.getDirectoryList() if config.developer else config.inputSuggestions
-            completer = WordCompleter(inputSuggestions, ignore_case=True) if inputSuggestions else None
-            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, completer=completer, default=defaultEntry, accept_default=accept_default, validator=tokenValidator, bottom_toolbar=getDynamicToolBar)
+
+            # user input
+            userInput = self.prompts.simplePrompt(promptSession=self.terminal_chat_session, completer=completer_developer if config.developer else completer, default=defaultEntry, accept_default=accept_default, validator=tokenValidator, bottom_toolbar=getDynamicToolBar)
             
             # update system message when user enter a new input
             config.currentMessages = self.updateSystemMessage(config.currentMessages)
@@ -1614,7 +1418,10 @@ Always remember that you are much more than a text-based AI. You possess both vi
             elif not userInputLower:
                 userInput = config.blankEntryAction
             if userInput == "...":
-                userInput = userInputLower = self.runOptions(userInput)
+                userInput = userInputLower = self.runActions(userInput)
+            #elif userInputLower in tuple(self.actions.keys()):
+            elif userInputLower.startswith(".") and not userInputLower in (config.exit_entry, config.cancel_entry, ".new", ".context"):
+                userInput = userInputLower = self.runActions("...", userInput)
 
             # replace alias, if any with full entry
             for alias, fullEntry in config.aliases.items():
@@ -1636,7 +1443,7 @@ Always remember that you are much more than a text-based AI. You possess both vi
                     pass
 
             # try eval
-            if not userInput == "...":
+            if config.developer and not userInput == "...":
                 try:
                     value = eval(userInput) # it solve simple math, e.g. 1+1, or read variables, e.g. dir(config)
                     if value is not None:
@@ -1650,45 +1457,26 @@ Always remember that you are much more than a text-based AI. You possess both vi
                 except:
                     pass
             # try to run as a python script first
-            try:
-                exec(userInput, globals())
-                print("")
-                continue
-            except:
-                pass
+            if config.developer:
+                try:
+                    exec(userInput, globals())
+                    print("")
+                    continue
+                except:
+                    pass
 
             if userInput.startswith("!"):
                 self.runSystemCommand(userInput)
                 print("")
-            elif userInput.startswith("```") and userInput.endswith("```") and not userInput == "``````":
+            elif config.developer and userInput.startswith("```") and userInput.endswith("```") and not userInput == "``````":
                 userInput = re.sub("```python", "```", userInput)
-                self.runPythonScript(userInput)
+                SharedUtil.runPythonScript(userInput)
                 print("")
             elif userInputLower == config.exit_entry:
                 self.saveChat(config.currentMessages)
                 return self.exitAction()
             elif userInputLower == config.cancel_entry:
                 pass
-            elif userInputLower == ".system":
-                SystemCommandPrompt().run(allowPathChanges=True)
-            elif userInputLower == ".togglemultiline":
-                self.toggleMultiline()
-            elif userInputLower == ".swaptextbrightness":
-                swapTerminalColors()
-            elif userInputLower == ".togglemousesupport":
-                self.toggleMouseSupport()
-            elif userInputLower == ".togglewordwrap":
-                self.toggleWordWrap()
-            elif userInputLower == ".toggleimprovedwriting":
-                self.toggleImprovedWriting()
-            elif userInputLower == ".toggleinputaudio":
-                self.toggleinputaudio()
-            elif userInputLower == ".toggleresponseaudio":
-                self.toggleresponseaudio()
-            elif userInputLower == ".ttscommand":
-                self.defineTtsCommand()
-            elif userInputLower == ".instruction":
-                self.runInstruction()
             elif userInputLower == ".context":
                 self.changeContext()
                 if not config.applyPredefinedContextAlways:
@@ -1698,8 +1486,6 @@ Always remember that you are much more than a text-based AI. You possess both vi
             elif userInputLower == ".new" and config.conversationStarted:
                 self.saveChat(config.currentMessages)
                 storagedirectory, config.currentMessages = startChat()
-            elif userInputLower in (".share", ".save") and config.conversationStarted:
-                self.saveChat(config.currentMessages, openFile=True)
             elif userInput and not userInputLower in featuresLower:
                 try:
                     if userInput and config.ttsInput:
@@ -1742,23 +1528,30 @@ My writing:
                     if config.predefinedContextTemp:
                         config.predefinedContext = config.predefinedContextTemp
                         config.predefinedContextTemp = ""
+                    # empty config.pagerContent
+                    config.pagerContent = ""
+
                     # check special entries
-                    noFunctionCall = (("[NO_FUNCTION_CALL]" in fineTunedUserInput) or config.predefinedContext.startswith("Counselling - ") or config.predefinedContext.endswith("Counselling"))
-                    noScreening = ("[NO_SCREENING]" in fineTunedUserInput)
+                    # if user call a chatbot without function calling
+                    if "[CHAT]" in fineTunedUserInput:
+                        chatbot = config.chatbot
+                    elif callChatBot := re.search("\[CHAT_([^\[\]]+?)\]", fineTunedUserInput):
+                        chatbot = callChatBot.group(1).lower() if callChatBot and callChatBot.group(1).lower() in ("chatgpt", "geminipro", "palm2", "codey") else ""
+                    else:
+                        chatbot = ""
+                    if chatbot:
+                        # call the spcified chatbot to continue the conversation
+                        fineTunedUserInput = re.sub("\[CHAT\]|\[CHAT_[^\[\]]+?\]", "", fineTunedUserInput)
+                        self.launchChatbot(chatbot, fineTunedUserInput)
+                        continue
+                    # if user don't want function call or a particular function call
+                    noFunctionCall = ("[NO_FUNCTION_CALL]" in fineTunedUserInput)
                     checkCallSpecificFunction = re.search("\[CALL_([^\[\]]+?)\]", fineTunedUserInput)
-                    config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.pluginsWithFunctionCall else ""
+                    config.runSpecificFuntion = checkCallSpecificFunction.group(1) if checkCallSpecificFunction and checkCallSpecificFunction.group(1) in config.chatGPTApiAvailableFunctions else ""
                     if config.developer and config.runSpecificFuntion:
                         #self.print(f"calling function '{config.runSpecificFuntion}' ...")
                         print_formatted_text(HTML(f"<{config.terminalPromptIndicatorColor2}>Calling function</{config.terminalPromptIndicatorColor2}> <{config.terminalCommandEntryColor2}>'{config.runSpecificFuntion}'</{config.terminalCommandEntryColor2}> <{config.terminalPromptIndicatorColor2}>...</{config.terminalPromptIndicatorColor2}>"))
                     fineTunedUserInput = re.sub(specialEntryPattern, "", fineTunedUserInput)
-
-                    # remove enhanced screening option from v2.0.1 as handling of function calls improved
-                    # python execution
-                    #self.screenAction = ""
-                    #if config.enhanceCommandExecution and not noScreening and not noFunctionCall:
-                    #    config.currentMessages = self.screening(config.currentMessages, fineTunedUserInput)
-                    #else:
-                    #    config.currentMessages.append({"role": "user", "content": fineTunedUserInput})
                     config.currentMessages.append({"role": "user", "content": fineTunedUserInput})
 
                     # start spinning
@@ -1767,22 +1560,16 @@ My writing:
                     config.spinner_thread.start()
 
                     # force loading internet searches
-                    #if config.loadingInternetSearches == "always" and not self.screenAction in ("termux", "python", "web", "system"):
                     if config.loadingInternetSearches == "always":
                         try:
-                            config.currentMessages = self.runFunction(config.currentMessages, config.integrate_google_searches_signature, "integrate_google_searches")
+                            config.currentMessages = SharedUtil.runFunction(config.currentMessages, [config.chatGPTApiFunctionSignatures["integrate_google_searches"]], "integrate_google_searches")
                         except:
                             self.print("Unable to load internet resources.")
                             SharedUtil.showErrors()
 
-                    config.pagerContent = ""
-                    #self.addPagerContent = True
-
-                    #if config.conversationStarted:
-                    #    config.currentMessages = self.moveForwardSystemMessage(config.currentMessages)
-                    completion = self.runCompletion(config.currentMessages, noFunctionCall)
+                    completion = SharedUtil.runCompletion(config.currentMessages, noFunctionCall)
                     # stop spinning
-                    self.runPython = True
+                    config.runPython = True
                     self.stopSpinning()
 
                     # Create a new thread for the streaming task
@@ -1797,8 +1584,6 @@ My writing:
 
                     # when streaming is done or when user press "ctrl+q"
                     self.streaming_thread.join()
-
-                    #print(config.currentMessages)
 
                 # error codes: https://platform.openai.com/docs/guides/error-codes/python-library-error-types
                 except openai.APIError as e:
@@ -1830,6 +1615,18 @@ My writing:
                     self.saveChat(config.currentMessages)
                     storagedirectory, config.currentMessages = startChat()
 
+    def launchChatbot(self, chatbot, fineTunedUserInput):
+        if config.isTermux:
+            chatbot = "chatgpt"
+        chatbots = {
+            "chatgpt": lambda: ChatGPT().run(fineTunedUserInput),
+            "geminipro": lambda: GeminiPro(temperature=config.llmTemperature).run(fineTunedUserInput),
+            "palm2": lambda: Palm2().run(fineTunedUserInput, temperature=config.llmTemperature),
+            "codey": lambda: Codey().run(fineTunedUserInput, temperature=config.llmTemperature),
+        }
+        if chatbot in chatbots:
+            chatbots[chatbot]()
+
     def addPagerText(self, text, wrapWords=False):
         if wrapWords:
             text = self.getWrappedHTMLText(text)
@@ -1840,8 +1637,17 @@ My writing:
             pagerContent = config.pagerContent
         if pagerContent:
             try:
-                if SharedUtil.isPackageInstalled("less"):
-                    # Windows users can install vlc command with scoop
+                if shutil.which("bat"):
+                    # Windows users can install bat command with scoop
+                    # read: https://github.com/ScoopInstaller/Scoop
+                    # > iwr -useb get.scoop.sh | iex
+                    # > scoop install aria2 bat
+                    if re.search("<[^<>]+?>", pagerContent):
+                        pagerContent = TextUtil.convertHtmlTagToColorama(pagerContent)
+                    language = "Python" if "```python" in pagerContent else "Markdown"
+                    pydoc.pipepager(pagerContent, cmd=f"bat -l {language} --paging always")
+                elif shutil.which("less"):
+                    # Windows users can install less command with scoop
                     # read: https://github.com/ScoopInstaller/Scoop
                     # > iwr -useb get.scoop.sh | iex
                     # > scoop install aria2 less
@@ -1924,37 +1730,3 @@ My writing:
                 self.lineWidth = 0
 
         return self.wrappedText
-
-    def checkCompletion(self):
-        self.setAPIkey()
-        try:
-            self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content" : "hello"}],
-                n=1,
-                max_tokens=10,
-            )
-        except openai.APIError as e:
-            self.print3("Error: Issue on OpenAI side.")
-            self.print3("Solution: Retry your request after a brief wait and contact us if the issue persists.")
-        #except openai.Timeout as e:
-        #    self.print3("Error: Request timed out.")
-        #    self.print3("Solution: Retry your request after a brief wait and contact us if the issue persists.")
-        except openai.RateLimitError as e:
-            self.print3("Error: You have hit your assigned rate limit.")
-            self.print3("Solution: Pace your requests. Read more in OpenAI [Rate limit guide](https://platform.openai.com/docs/guides/rate-limits).")
-        except openai.APIConnectionError as e:
-            self.print3("Error: Issue connecting to our services.")
-            self.print3("Solution: Check your network settings, proxy configuration, SSL certificates, or firewall rules.")
-        #except openai.InvalidRequestError as e:
-        #    self.print3("Error: Your request was malformed or missing some required parameters, such as a token or an input.")
-        #    self.print3("Solution: The error message should advise you on the specific error made. Check the [documentation](https://platform.openai.com/docs/api-reference/) for the specific API method you are calling and make sure you are sending valid and complete parameters. You may also need to check the encoding, format, or size of your request data.")
-        except openai.AuthenticationError as e:
-            self.print3("Error: Your API key or token was invalid, expired, or revoked.")
-            self.print3("Solution: Check your API key or token and make sure it is correct and active. You may need to generate a new one from your account dashboard.")
-            self.changeAPIkey()
-        #except openai.ServiceUnavailableError as e:
-        #    self.print3("Error: Issue on OpenAI servers. ")
-        #    self.print3("Solution: Retry your request after a brief wait and contact us if the issue persists. Check the [status page](https://status.openai.com).")
-        except:
-            SharedUtil.showErrors()

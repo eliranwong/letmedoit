@@ -1,5 +1,5 @@
 import vertexai, os, traceback, argparse
-from vertexai.preview.generative_models import GenerativeModel
+from vertexai.preview.generative_models import GenerativeModel, Content, Part
 from vertexai.generative_models._generative_models import (
     GenerationConfig,
     HarmCategory,
@@ -8,11 +8,10 @@ from vertexai.generative_models._generative_models import (
 from letmedoit import config
 from letmedoit.utils.streaming_word_wrapper import StreamingWordWrapper
 from letmedoit.health_check import HealthCheck
-if not hasattr(config, "exit_entry"):
+if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
-    HealthCheck.saveConfig()
-    print("Updated!")
-HealthCheck.setPrint()
+    config.saveConfig()
+    #print("Configurations updated!")
 from prompt_toolkit.styles import Style
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -29,12 +28,10 @@ class GeminiPro:
 
     def __init__(self, name="Gemini Pro", temperature=0.9, max_output_tokens=8192):
         # authentication
-        authpath1 = os.path.join(HealthCheck.getFiles(), "credentials_googleaistudio.json")
-        if os.path.isfile(authpath1):
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = authpath1
+        if os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Vertex AI" in config.enabledGoogleAPIs:
             self.runnable = True
         else:
-            print(f"API key json file '{authpath1}' not found!")
+            print("Vertex AI is disabled!")
             print("Read https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup for setting up Google API.")
             self.runnable = False
         # initiation
@@ -45,19 +42,32 @@ class GeminiPro:
             max_output_tokens=max_output_tokens, # default
             candidate_count=1,
         )
+        # Note: BLOCK_NONE is not allowed
         self.safety_settings={
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_UNSPECIFIED: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
         }
+        """
+        Alternately,
+        from google.cloud.aiplatform_v1beta1.types.content import SafetySetting
+        self.safety_settings = [
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_UNSPECIFIED, threshold=HarmBlockThreshold.BLOCK_ONLY_HIGH)
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold=HarmBlockThreshold.BLOCK_ONLY_HIGH)
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold=HarmBlockThreshold.BLOCK_ONLY_HIGH)
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=HarmBlockThreshold.BLOCK_ONLY_HIGH)
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold=HarmBlockThreshold.BLOCK_ONLY_HIGH)
+        ]
+        """
         self.defaultPrompt = ""
         #self.enableVision = (os.path.realpath(__file__).endswith("vision.py"))
 
     def run(self, prompt=""):
         if self.defaultPrompt:
             prompt, self.defaultPrompt = self.defaultPrompt, ""
-        historyFolder = os.path.join(HealthCheck.getFiles(), "history")
+        historyFolder = os.path.join(HealthCheck.getLocalStorage(), "history")
         Path(historyFolder).mkdir(parents=True, exist_ok=True)
         chat_history = os.path.join(historyFolder, "geminipro")
         chat_session = PromptSession(history=FileHistory(chat_history))
@@ -69,31 +79,51 @@ class GeminiPro:
             "indicator": config.terminalPromptIndicatorColor2,
         })
 
-        #completer = WordCompleter(["[", "[NO_FUNCTION_CALL]"], ignore_case=True) if self.enableVision else None
-
         if not self.runnable:
             print(f"{self.name} is not running due to missing configurations!")
             return None
         model = GenerativeModel("gemini-pro")
-        chat = model.start_chat(
-            #context=f"You're {self.name}, a helpful AI assistant.",
-        )
+        # on-going history
+        if hasattr(config, "currentMessages") and config.currentMessages:
+            history = []
+            user = True
+            for i in config.currentMessages:
+                if i["role"] == "user" if user else "assistant":
+                    history.append(Content(role="user" if user else "model", parts=[Part.from_text(i["content"])]))
+                    user = not user
+            # e.g. history=[
+            #    Content(role="user", parts=[Part.from_text("Hello!")]),
+            #    Content(role="model", parts=[Part.from_text("Hello! How can I assist you today?")]),
+            #]
+            if history and history[-1].role == "user":
+                history = history[:-1]
+            elif not history:
+                history = None
+        else:
+            history = None
+        chat = model.start_chat(history=history)
+        justStarted = True
         #HealthCheck.print2(f"\n{self.name} + Vision loaded!" if self.enableVision else f"\n{self.name} loaded!")
         HealthCheck.print2(f"\n{self.name} loaded!")
-        print("(To start a new chart, enter '.new')")
-        print(f"(To quit, enter '{config.exit_entry}')\n")
+        if hasattr(config, "currentMessages"):
+            bottom_toolbar = f""" {str(config.hotkey_exit).replace("'", "")} {config.exit_entry}"""
+        else:
+            bottom_toolbar = f""" {str(config.hotkey_exit).replace("'", "")} {config.exit_entry} {str(config.hotkey_new).replace("'", "")} .new"""
+            print("(To start a new chart, enter '.new')")
+        print(f"(To exit, enter '{config.exit_entry}')\n")
         while True:
             if not prompt:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar)
                 if prompt and not prompt in (".new", config.exit_entry) and hasattr(config, "currentMessages"):
                     config.currentMessages.append({"content": prompt, "role": "user"})
             else:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, default=prompt, accept_default=True)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar, default=prompt, accept_default=True)
             if prompt == config.exit_entry:
                 break
-            elif prompt == ".new":
+            elif prompt == ".new" and not hasattr(config, "currentMessages"):
                 clear()
                 chat = model.start_chat()
+                justStarted = True
                 print("New chat started!")
             elif prompt := prompt.strip():
                 streamingWordWrapper = StreamingWordWrapper()
@@ -124,6 +154,9 @@ class GeminiPro:
 #                )
 
                 try:
+                    if not hasattr(config, "currentMessages") and config.systemMessage_geminipro and justStarted:
+                        prompt = f"{config.systemMessage_geminipro}\n{prompt}"
+                        justStarted = False
                     # https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini
                     # Note: At the time of writing, function call feature with Gemini Pro is very weak, compared with the function call feature offerred by ChatGPT:
                     # 1. Gemini Pro do not accept multiple tools in a single message
@@ -165,6 +198,8 @@ class GeminiPro:
             prompt = ""
 
         HealthCheck.print2(f"\n{self.name} closed!")
+        if hasattr(config, "currentMessages"):
+            HealthCheck.print2(f"Return back to {config.letMeDoItName} prompt ...")
 
 def main():
     # Create the parser

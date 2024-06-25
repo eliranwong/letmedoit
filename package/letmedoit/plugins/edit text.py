@@ -37,6 +37,12 @@ def edit_text(function_args):
         return "Finished! Text editor closed!"
 
 functionSignature = {
+    "intent": [
+        "change files",
+    ],
+    "examples": [
+        "Edit test.txt",
+    ],
     "name": "edit_text",
     "description": f'''Edit text files with extensions: '*.{"', '*.".join(config.textFileExtensions)}'.''',
     "parameters": {
@@ -51,6 +57,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("edit_text")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["edit_text"] = edit_text
+config.addFunctionCall(signature=functionSignature, method=edit_text)

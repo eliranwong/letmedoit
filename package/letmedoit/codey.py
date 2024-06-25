@@ -1,12 +1,11 @@
 import vertexai, os, traceback, argparse
-from vertexai.language_models import CodeChatModel
+from vertexai.language_models import CodeChatModel, ChatMessage
 from letmedoit import config
 from letmedoit.health_check import HealthCheck
-if not hasattr(config, "exit_entry"):
+if not hasattr(config, "currentMessages"):
     HealthCheck.setBasicConfig()
-    HealthCheck.saveConfig()
-    print("Updated!")
-HealthCheck.setPrint()
+    config.saveConfig()
+    #print("Configurations updated!")
 import pygments
 from pygments.lexers.markup import MarkdownLexer
 from prompt_toolkit.formatted_text import PygmentsTokens
@@ -26,12 +25,10 @@ class Codey:
 
     def __init__(self, name="Codey"):
         # authentication
-        authpath1 = os.path.join(HealthCheck.getFiles(), "credentials_googleaistudio.json")
-        if os.path.isfile(authpath1):
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = authpath1
+        if os.environ["GOOGLE_APPLICATION_CREDENTIALS"] and "Vertex AI" in config.enabledGoogleAPIs:
             self.runnable = True
         else:
-            print(f"API key json file '{authpath1}' not found!")
+            print("Vertex AI is disabled!")
             print("Read https://github.com/eliranwong/letmedoit/wiki/Google-API-Setup for setting up Google API.")
             self.runnable = False
         # initiation
@@ -39,7 +36,7 @@ class Codey:
         self.name = name
 
     def run(self, prompt="", model="codechat-bison-32k", temperature=0.2, max_output_tokens=2048):
-        historyFolder = os.path.join(HealthCheck.getFiles(), "history")
+        historyFolder = os.path.join(HealthCheck.getLocalStorage(), "history")
         Path(historyFolder).mkdir(parents=True, exist_ok=True)
         chat_history = os.path.join(historyFolder, self.name.replace(" ", "_"))
         chat_session = PromptSession(history=FileHistory(chat_history))
@@ -60,22 +57,42 @@ class Codey:
             "temperature": temperature,  # Temperature controls the degree of randomness in token selection; 0.0–1.0; Default: 0.2
             "max_output_tokens": max_output_tokens,  # Token limit determines the maximum amount of text output; 1–2048; Default: 1024
         }
+        # chat history
+        if hasattr(config, "currentMessages") and config.currentMessages:
+            history = []
+            user = True
+            for i in config.currentMessages:
+                if i["role"] == "user" if user else "assistant":
+                    history.append(ChatMessage(content=i["content"], author="user" if user else "model"))
+                    user = not user
+            if history and history[-1].author == "user":
+                history = history[:-1]
+            elif not history:
+                history = None
+        else:
+            history = None
+        # start chat
         chat = model.start_chat(
-            context=f"You're {self.name}, an expert in coding.",
+            context=config.systemMessage_codey,
+            message_history=history,
         )
         HealthCheck.print2(f"\n{self.name} loaded!")
-        print("(To start a new chart, enter '.new')")
-        print(f"(To quit, enter '{config.exit_entry}')\n")
+        if hasattr(config, "currentMessages"):
+            bottom_toolbar = f""" {str(config.hotkey_exit).replace("'", "")} {config.exit_entry}"""
+        else:
+            bottom_toolbar = f""" {str(config.hotkey_exit).replace("'", "")} {config.exit_entry} {str(config.hotkey_new).replace("'", "")} .new"""
+            print("(To start a new chart, enter '.new')")
+        print(f"(To exit, enter '{config.exit_entry}')\n")
         while True:
             if not prompt:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar)
                 if prompt and not prompt in (".new", config.exit_entry) and hasattr(config, "currentMessages"):
                     config.currentMessages.append({"content": prompt, "role": "user"})
             else:
-                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, default=prompt, accept_default=True)
+                prompt = HealthCheck.simplePrompt(style=promptStyle, promptSession=chat_session, bottom_toolbar=bottom_toolbar, default=prompt, accept_default=True)
             if prompt == config.exit_entry:
                 break
-            elif prompt == ".new":
+            elif prompt == ".new" and not hasattr(config, "currentMessages"):
                 clear()
                 chat = model.start_chat()
                 print("New chat started!")
@@ -100,6 +117,8 @@ class Codey:
             prompt = ""
 
         HealthCheck.print2(f"\n{self.name} closed!")
+        if hasattr(config, "currentMessages"):
+            HealthCheck.print2(f"Return back to {config.letMeDoItName} prompt ...")
 
 def main():
     # Create the parser

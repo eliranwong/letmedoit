@@ -1,5 +1,5 @@
 from letmedoit import config
-import os, sys, re, platform, subprocess
+import os, sys, re, platform, subprocess, shutil
 from letmedoit.utils.shared_utils import SharedUtil
 
 class VlcUtil:
@@ -16,7 +16,7 @@ class VlcUtil:
         if platform.system() == "Windows":
             if os.path.isfile(windowsVlc):
                 VlcUtil.windowsVlc = windowsVlc
-            elif SharedUtil.isPackageInstalled("vlc"):
+            elif shutil.which("vlc"):
                 # Windows users can install vlc command with scoop
                 # read: https://github.com/ScoopInstaller/Scoop
                 # instll scoop
@@ -28,7 +28,7 @@ class VlcUtil:
                 VlcUtil.windowsVlc = "vlc"
             else:
                 VlcUtil.windowsVlc = ""
-        if (VlcUtil.macVlc or VlcUtil.windowsVlc or SharedUtil.isPackageInstalled("vlc")):
+        if (VlcUtil.macVlc or VlcUtil.windowsVlc or shutil.which("vlc")):
             return True
         else:
             return False
@@ -36,14 +36,14 @@ class VlcUtil:
     @staticmethod
     def openVlcPlayer():
         def run(command):
-            os.system("{0}{1} > /dev/null 2>&1 &".format("nohup " if SharedUtil.isPackageInstalled("nohup") else "", command))
+            os.system("{0}{1} > /dev/null 2>&1 &".format("nohup " if shutil.which("nohup") else "", command))
         VlcUtil.closeVlcPlayer()
         try:
             if VlcUtil.windowsVlc:
                 os.system(VlcUtil.windowsVlc)
             elif VlcUtil.macVlc:
                 run(VlcUtil.macVlc)
-            elif SharedUtil.isPackageInstalled("vlc"):
+            elif shutil.which("vlc"):
                 run("vlc")
         except:
             print("No VLC player is found!")
@@ -84,7 +84,7 @@ class VlcUtil:
         elif VlcUtil.windowsVlc:
             command = f'''"{VlcUtil.windowsVlc}" --intf dummy --play-and-exit --rate {vlcSpeed} "{filePath}"'''
         # vlc on other platforms
-        elif SharedUtil.isPackageInstalled("cvlc"):
+        elif shutil.which("cvlc"):
             command = f'''cvlc --play-and-exit --rate {vlcSpeed} "{filePath}" &> /dev/null'''
         # use .communicate() to wait for the playback to be completed as .wait() or checking pid existence does not work
         subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
@@ -100,7 +100,7 @@ class VlcUtil:
         elif VlcUtil.windowsVlc:
             command = f'''"{VlcUtil.windowsVlc}" --play-and-exit --rate {vlcSpeed} "{filePath}"'''
         # vlc on other platforms
-        elif SharedUtil.isPackageInstalled("vlc"):
+        elif shutil.which("vlc"):
             command = f'''vlc --play-and-exit --rate {vlcSpeed} "{filePath}" &> /dev/null'''
         # use .communicate() to wait for the playback to be completed as .wait() or checking pid existence does not work
         subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()

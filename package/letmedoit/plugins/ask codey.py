@@ -8,15 +8,21 @@ Ask Google Codey for information about coding
 
 
 from letmedoit import config
-from letmedoit.palm2 import VertexAIModel
+from letmedoit.codey import Codey
 
 def ask_codey(function_args):
     query = function_args.get("query") # required
     config.stopSpinning()
-    VertexAIModel().run(query, temperature=config.llmTemperature)
+    Codey().run(query, temperature=config.llmTemperature)
     return ""
 
 functionSignature = {
+    "intent": [
+        "ask a chatbot",
+    ],
+    "examples": [
+        "Ask Codey about",
+    ],
     "name": "ask_codey",
     "description": "Ask Codey for information about coding",
     "parameters": {
@@ -24,14 +30,12 @@ functionSignature = {
         "properties": {
             "query": {
                 "type": "string",
-                "description": "The request in detail",
+                "description": "The request in detail, including any supplementary information",
             },
         },
         "required": ["query"],
     },
 }
 
-config.pluginsWithFunctionCall.append("ask_codey")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["ask_codey"] = ask_codey
+config.addFunctionCall(signature=functionSignature, method=ask_codey)
 config.inputSuggestions.append("Ask Codey: ")

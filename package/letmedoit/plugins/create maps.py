@@ -24,6 +24,12 @@ def create_map(function_args):
     return ""
 
 functionSignature = {
+    "intent": [
+        "create content",
+    ],
+    "examples": [
+        "Create a map",
+    ],
     "name": "create_map",
     "description": f'''Create maps''',
     "parameters": {
@@ -38,6 +44,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("create_map")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["create_map"] = create_map
+config.addFunctionCall(signature=functionSignature, method=create_map)

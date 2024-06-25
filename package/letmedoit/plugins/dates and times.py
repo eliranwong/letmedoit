@@ -15,6 +15,13 @@ def datetimes(function_args):
     return information
 
 functionSignature = {
+    "intent": [
+        "access to internet real-time information",
+    ],
+    "examples": [
+        "What is the current time in Hong Kong?",
+        "Tell me the date of the upcoming Friday?",
+    ],
     "name": "datetimes",
     "description": f'''Get information about dates and times''',
     "parameters": {
@@ -29,6 +36,4 @@ functionSignature = {
     },
 }
 
-config.pluginsWithFunctionCall.append("datetimes")
-config.chatGPTApiFunctionSignatures.append(functionSignature)
-config.chatGPTApiAvailableFunctions["datetimes"] = datetimes
+config.addFunctionCall(signature=functionSignature, method=datetimes)
