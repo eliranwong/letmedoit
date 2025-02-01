@@ -1,8 +1,8 @@
-# From LetMeDoIt AI to ToolMate AI
+# From LetMeDoIt AI to AgentMake AI
 
 The development of this project is being further advanced in this separate project:
 
-https://github.com/eliranwong/toolmate
+https://github.com/eliranwong/agentmake
 
 # LetMeDoIt AI
 
