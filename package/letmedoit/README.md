@@ -1,4 +1,95 @@
-# LetMeDoIt AI
+# LetMeDoIt AI 3.0
+
+[LetMeDoIt AI](https://letmedoit.ai/) (version 3+) is a fully automatic AI agent, built on [AgentMake AI tools](https://github.com/eliranwong/agentmake), to resolve complex tasks.
+
+The version 3.0 is completely written with [AgentMake AI SDK](https://github.com/eliranwong/agentmake). The following features distinguish it from the previous version:
+
+Fully automatic:
+- Automate prompt engineering
+- Automate tool instruction refinement
+- Automate task resolution
+- Automate action plan crafting
+- Automate agent creation tailor-made to resolve user request
+- Automate multiple tools selection
+- Automate multiple steps execution
+- Automate Quality Control
+- Automate Report Generation
+
+As version 3.0 is completely written with [AgentMake AI SDK](https://github.com/eliranwong/agentmake), it [supports 14 AI backends](https://github.com/eliranwong/agentmake#supported-backends). It runs with less dependencies than that required by preivious versions. It starts up much faster. Much more ...
+
+# Installation
+
+> pip install letmedoit
+
+Setting up a virtual environment is recommended, e.g.
+
+```
+python3 -m venv tm
+source tm/bin/activate
+pip install --upgrade letmedoit
+# setup
+ai -m
+```
+
+Install extra package `genai` to support backend Vertex AI via `google-genai` library:
+
+```
+python3 -m venv tm
+source tm/bin/activate
+pip install --upgrade "letmedoit[genai]"
+# setup
+ai -m
+```
+
+# Command Line Interface
+
+LetMeDoIt AI 3.0 offers mainly one command `letmedoit` / `lmdi` to resolve complex tasks.
+
+The following tools are considered, by default, for action plan crafting and tool selection:
+
+`@chat @search/google @files/extract_text @install_python_package @magic`
+
+To resolve a task, e.g.:
+
+> letmedoit "Tidy up my Desktop content."
+
+To specify additional tools for a task, e.g.:
+
+> letmedoit "@azure/deepseekr1 @perplexica/googleai Do a deep research on the limitations of Generative AI"
+
+Remarks: `lmdi` is an alias to `letmedoit`.
+
+# More CLI Options
+
+For more CLI options, run:
+
+> letmedoit -h
+
+# AI Backends and Configurations
+
+LetMeDoIt AI uses [AgentMake AI](https://github.com/eliranwong/agentmake) configurations. The default AI backend is Ollama, but you can easily edit the default backend and other configurations. To configure, run:
+
+> ai -ec
+
+# LetMeDoIt Agentic Workflow
+
+<img width="708" alt="Image" src="https://github.com/user-attachments/assets/5a7240ae-dd17-48a6-b4e2-712309b4b130" />
+
+# Limitations and Solutions
+
+[AgentMake AI](https://github.com/eliranwong/agentmake) is built with a large set of tools for problem solving. To list all of them, run:
+
+> ai -lt
+
+Limitation: As LetMeDoIt AI uses AgentMake AI tools, it can only solve requests within the capbilities of [AgentMake AI](https://github.com/eliranwong/agentmake) tools. Though there are numerous tools that have been built for solving different tasks, there may be some use cases that are out of range.
+
+Go Beyond the limitations: AgentMake AI supports custom tools to extend its capabilities.  You can create [AgentMake AI custom tools](https://github.com/eliranwong/agentmake/blob/main/docs/create_tools.md) to meet your own needs.
+
+# Disclaimer
+
+In response to your instructions, LetMeDoIt AI is capable of applying tools to generate files or make changes. Please use it with your sound judgment and at your own risk. We will not take any responsibility for any negative impacts, such as data loss or other issues.
+
+# LetMeDoIt AI (BEFORE VERSION 3.0)
 
 Welcome to LetMeDoIt AI, your premier virtual assistant designed to revolutionize the way you work! More than a mere chatbot, I am equipped with the capability to conduct meaningful interactions and actively carry out computing tasks as per your directives. My real-time code generation and execution prowess guarantees not only effectiveness but also efficiency in task fulfillment. With an advanced auto-correction feature, I autonomously repair any malfunctioning code segments and automatically install necessary libraries, ensuring uninterrupted workflow. My commitment to your digital safety is paramount, with inbuilt risk assessments and tailored user confirmation protocols to protect your data and device.
 
