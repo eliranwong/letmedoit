@@ -47,7 +47,7 @@ ai -m
 
 # Command Line Interface
 
-LetMeDoIt AI 3.0 offers mainly two commands: 
+LetMeDoIt AI 3.0.2+ offers mainly two commands: 
 
 1. `letmedoit` / `lmdi` to resolve complex tasks.
 1. `letmedoitlite` / `lmdil` to resolve simple tasks.
