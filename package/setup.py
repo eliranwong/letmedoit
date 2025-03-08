@@ -48,8 +48,8 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="3.0.3",
-    python_requires=">=3.8, <3.12",
+    version="3.0.4",
+    python_requires=">=3.8, <3.13",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of AI models, to resolve daily tasks for you.",
     long_description=long_description,
     author="Eliran Wong",
@@ -105,5 +105,6 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
     ],
 )
