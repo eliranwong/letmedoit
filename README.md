@@ -47,7 +47,10 @@ ai -m
 
 # Command Line Interface
 
-LetMeDoIt AI 3.0 offers mainly one command `letmedoit` / `lmdi` to resolve complex tasks.
+LetMeDoIt AI 3.0 offers mainly two commands: 
+
+1. `letmedoit` / `lmdi` to resolve complex tasks.
+1. `letmedoitlite` / `lmdil` to resolve simple tasks.
 
 The following tools are considered, by default, for action plan crafting and tool selection:
 
