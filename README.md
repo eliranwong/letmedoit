@@ -52,7 +52,7 @@ LetMeDoIt AI 3.0.2+ offers mainly two commands:
 1. `letmedoit` / `lmdi` to resolve complex tasks.
 1. `letmedoitlite` / `lmdil` to resolve simple tasks.
 
-The following tools are considered, by default, for action plan crafting and tool selection:
+Below are the default tool choices:
 
 `@chat @search/google @files/extract_text @install_python_package @magic`
 
@@ -69,6 +69,18 @@ To resolve simple task, e.g.:
 > letmedoitlite "Create three folders, named 'test1' 'test2' 'test3', on my Desktop."
 
 Remarks: `lmdi` is an alias to `letmedoit` whereas `lmdil` is an alias to `letmedoitlite`
+
+# Override Default Tool Choices
+
+To make a persistent change, locate and edit the configuration item `DEFAULT_TOOL_CHOICES`:
+
+> ai -ec
+
+To make a temporary change, use CLI option `--default_tool_choices` or `-dtc`:
+
+> letmedoit -dtc "@chat @magic" "Tell me a joke"
+
+> letmedoitlite -dtc "@chat @magic" "Create a folder named 'testing'"
 
 # More CLI Options
 

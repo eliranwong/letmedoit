@@ -1,5 +1,5 @@
 from agentmake import agentmake, DEFAULT_AI_BACKEND
-import argparse
+import argparse, os
 
 def lite():
     main(agent="letmedoit_lite")
@@ -26,8 +26,12 @@ def main(agent="letmedoit"):
     parser.add_argument("-ww", "--word_wrap", action="store_true", dest="word_wrap", help="wrap output text according to current terminal width")
     #parser.add_argument("-p", "--prompts", action="store_true", dest="prompts", help="enable mult-turn prompts for the user interface")
     #parser.add_argument("-u", "--upgrade", action="store_true", dest="upgrade", help="upgrade `agentmake` pip package")
+    parser.add_argument("-dtc", "--default_tool_choices", action="store", dest="default_tool_choices", help="override the default tool choices for agents to select, e.g. '@chat @magic'")
     # Parse arguments
     args = parser.parse_args()
+
+    if args.default_tool_choices:
+        os.environ["DEFAULT_TOOL_CHOICES"] = args.default_tool_choices
 
     user_prompt = " ".join(args.default) if args.default is not None else ""
     if user_prompt:
