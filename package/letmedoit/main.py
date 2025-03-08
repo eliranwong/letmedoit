@@ -1,6 +1,9 @@
 from agentmake import agentmake, DEFAULT_AI_BACKEND
 import argparse
 
+def lite():
+    main(agent="letmedoit_lite")
+
 def main(agent="letmedoit"):
     # Create the parser
     parser = argparse.ArgumentParser(description = """LetMeDoIt AI cli options""")

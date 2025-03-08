@@ -17,6 +17,10 @@ Fully automatic:
 
 As version 3.0 is completely written with [AgentMake AI SDK](https://github.com/eliranwong/agentmake), it [supports 14 AI backends](https://github.com/eliranwong/agentmake#supported-backends). It runs with less dependencies than that required by preivious versions. It starts up much faster. Much more ...
 
+# Disclaimer
+
+In response to your instructions, LetMeDoIt AI is capable of applying tools to generate files or make changes on your devices. Please use it with your sound judgment and at your own risk. We will not take any responsibility for any negative impacts, such as data loss or other issues.
+
 # Installation
 
 > pip install letmedoit
@@ -49,15 +53,19 @@ The following tools are considered, by default, for action plan crafting and too
 
 `@chat @search/google @files/extract_text @install_python_package @magic`
 
-To resolve a task, e.g.:
+To resolve tasks that involves multiple tools or multiple steps, e.g.:
 
 > letmedoit "Tidy up my Desktop content."
 
 To specify additional tools for a task, e.g.:
 
-> letmedoit "@azure/deepseekr1 @perplexica/googleai Do a deep research on the limitations of Generative AI"
+> letmedoit "@azure/deepseekr1 @perplexica/googleai Conduct a deep research on the limitations of Generative AI"
 
-Remarks: `lmdi` is an alias to `letmedoit`.
+To resolve simple task, e.g.:
+
+> letmedoitlite "Create three folders, named 'test1' 'test2' 'test3', on my Desktop."
+
+Remarks: `lmdi` is an alias to `letmedoit` whereas `lmdil` is an alias to `letmedoitlite`
 
 # More CLI Options
 
@@ -75,6 +83,10 @@ LetMeDoIt AI uses [AgentMake AI](https://github.com/eliranwong/agentmake) config
 
 <img width="708" alt="Image" src="https://github.com/user-attachments/assets/5a7240ae-dd17-48a6-b4e2-712309b4b130" />
 
+# LetMeDoIt Lite Agentic Workflow
+
+<img width="869" alt="Image" src="https://github.com/user-attachments/assets/cbdca81d-409a-4474-97a8-c0c2f3cccc9f" />
+
 # Limitations and Solutions
 
 [AgentMake AI](https://github.com/eliranwong/agentmake) is built with a large set of tools for problem solving. To list all of them, run:
@@ -85,9 +97,13 @@ Limitation: As LetMeDoIt AI uses AgentMake AI tools, it can only solve requests 
 
 Go Beyond the limitations: AgentMake AI supports custom tools to extend its capabilities.  You can create [AgentMake AI custom tools](https://github.com/eliranwong/agentmake/blob/main/docs/create_tools.md) to meet your own needs.
 
-# Disclaimer
+# Sibling projects
 
-In response to your instructions, LetMeDoIt AI is capable of applying tools to generate files or make changes. Please use it with your sound judgment and at your own risk. We will not take any responsibility for any negative impacts, such as data loss or other issues.
+[AgentMake AI](https://github.com/eliranwong/agentmake)
+
+[ToolMate AI](https://github.com/eliranwong/toolmate)
+
+[TeamGen AI](https://github.com/eliranwong/teamgenai)
 
 # LetMeDoIt AI (BEFORE VERSION 3.0)
 

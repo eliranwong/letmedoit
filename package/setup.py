@@ -48,7 +48,7 @@ open(os.path.join(package, "config.py"), "w").close()
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 setup(
     name=package,
-    version="3.0.0",
+    version="3.0.1",
     python_requires=">=3.8, <3.12",
     description=f"{appFullName}, an advanced AI assistant, leveraging the capabilities of AI models, to resolve daily tasks for you.",
     long_description=long_description,
@@ -69,6 +69,8 @@ setup(
         "console_scripts": [
             f"{package}={package}.main:main",
             f"lmdi={package}.main:main",
+            f"{package}lite={package}.main:lite",
+            f"lmdil={package}.main:lite",
         ],
     },
     keywords="ai assistant openai chatgpt gemini autogen rag interpreter auto-heal",
