@@ -34,7 +34,7 @@ torchvision==0.17.2
 sentence-transformers
 chromadb==0.4.24
 unstructured[all-docs]
-pyautogen[retrievechat,autobuild]==0.2.24
+ag2[retrievechat,autobuild]==0.2.24
 autogenstudio==0.0.56
 tiktoken
 pygame
