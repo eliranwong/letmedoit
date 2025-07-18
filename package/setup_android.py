@@ -53,7 +53,7 @@ exclude_packages = (
     "google-cloud-speech",
     "google-cloud-texttospeech",
     "pygame",
-    "pyautogen[retrievechat,autobuild,mathchat]==0.2.14",
+    "ag2[retrievechat,autobuild,mathchat]==0.2.14",
     "unstructured[all-docs]",
     "chromadb",
     "docker",
